@@ -1,0 +1,17 @@
+[project]
+name = "docx2slides-py"
+version = "0.0.0"
+requires-python = ">=3.10"
+description = "Convert Word documents to PowerPoint slides"
+dependencies = [
+    "python-docx",
+    "python-pptx",
+]
+authors = [{name = "talosgl"}]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["docx2slides"]
