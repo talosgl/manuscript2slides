@@ -1,5 +1,3 @@
-# docx2slides-py README
-
 ## What is doc2slides-py?
 A Python script that converts a Microsoft Word .docx manuscript file into a set of basic PowerPoint .pptx text-frame slides.
 

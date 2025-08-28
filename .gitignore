@@ -49,3 +49,5 @@ resources/*.docx
 resources/*.pptx
 !resources/blank_pptx.pptx
 !resources/sample_doc.docx
+
+homework.md

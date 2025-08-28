@@ -9,6 +9,9 @@ dependencies = [
 ]
 authors = [{name = "talosgl"}]
 
+[tool.ruff]
+lint.select = ["D100", "D101", "D102", "D103", "ANN"]
+
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"

@@ -1,9 +1,39 @@
+# pyright: strict
+"""
+Convert Microsoft Word documents to PowerPoint presentations.
+
+This tool processes .docx files and converts them into .pptx slide decks by chunking
+the document content based on various strategies (paragraphs, headings, or page breaks).
+Text formatting like bold, italics, and colors can optionally be preserved.
+
+The main workflow:
+1. Load a .docx file using python-docx
+2. Chunk the content based on the selected strategy
+3. Create slides from chunks using a PowerPoint template
+4. Save the resulting .pptx file
+
+Supported chunking methods:
+- paragraph: Each paragraph becomes a slide
+- heading_flat: New slide for each heading (any level)
+- heading_nested: New slide based on heading hierarchy
+- page: New slide for each page break
+
+Example:
+    python docx2slides.py
+
+    (Configure INPUT_DOCX_FILE and other constants before running)
+"""
+
+from __future__ import annotations
+
 import sys
 import docx
 from docx import document
+from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 import pptx
 from pptx import presentation
+from pptx.text.text import _Run  # type: ignore
 from pathlib import Path
 import re
 import platform
@@ -14,26 +44,17 @@ import io
 """
 Features to Add:
 v1 (additive features)
-- Write a concise how-to guide for installation and use that I'd be comfortable strangers following without any support
-- Polish up CLI version enough to put on github
-    - CONSISTENT & CORRECT TYPE HINTS
-    - CONSISTENT DOC STRINGS
-    - CONSISTENT/ better error handling
-    - What does is "done enough for github mean"? "ready when I'm comfortable having strangers use it without asking me questions." 
-        - That usually means:
-            - Clear setup instructions that work without prior knowledge
-            - Error messages that tell users what went wrong and how to fix it
-            - At least one working example/demo
-            - Code that doesn't crash on common edge cases.
+- Polish up enough to make repo public
+- What does is "done enough for public github repo mean"? "ready when I'm comfortable having strangers use it without asking me questions." 
+    - Error messages that tell users what went wrong and how to fix it
+    - Code that doesn't crash on common edge cases.
 
-v1.N - Don't block v1 for this but probably small enough to consider if implementation is easy
-- Add additional chunking by...
-    - + ?? character count? line count?
-
-Maybe Py-Features:
+Wishlist Features for Python version:
 - Add support for importing .doc (can't use python-docx and will need to learn and use python-docbinary)
 - Add support for importing .md and .txt; split by whitespaces or character like \n\n.
 - Add support for outputting to other slide formats that aren't pptx
+- Add support to break chunks (of any type) at a word count threshold
+
 
 Features deferred to C# Rewrite:
 - Reverse flow: export slide text frame content to docx paragraphs with the annotations kept as comments, inline
@@ -47,11 +68,11 @@ Features deferred to C# Rewrite:
 # endregion
 
 # region CONSTANTS
-# Get the directory where this script lives
+# Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
 SCRIPT_DIR = Path(__file__).parent
 
 
-# === Consts for script user to alter as desired ===
+# === Consts for script user to alter per-run ===
 
 # The pptx file to use as the template for the slide deck
 TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_pptx_landscape_notes_view.pptx"
@@ -72,7 +93,10 @@ OUTPUT_PPTX_FOLDER = SCRIPT_DIR / "output"
 OUTPUT_PPTX_FILENAME = r"sample_slides.pptx"
 
 # CASE-SENSITIVE: Specify the headings prefixes to use when building slide chunks based on headings.
-ALLOWED_HEADING_PREFIXES = {"Heading", "Chapter"}  # E.g., Heading1, Heading2, Heading3, Chapter1, Chapter2
+ALLOWED_HEADING_PREFIXES = {
+    "Heading",
+    "Chapter",
+}  # E.g., Heading1, Heading2, Heading3, Chapter1, Chapter2
 # You can alter this if your word.docx has custom heading names.
 # For chunking based on headings, flat, it doesn't matter what comes after the prefix.
 # For chunking based on nested headings, the code assumes there will be a number AT THE END of the name.
@@ -87,8 +111,9 @@ HEADING_HIERARCHY = {
     # Add more as needed
 }
 
-# Input file to process
-INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"  
+# Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
+# then update the name at the end of the next line from "sample_doc.docx" to the real name.
+INPUT_DOCX_FILE = SCRIPT_DIR / "user_input" / "your_file_name_here.docx"
 
 # Which chunking method to use to divide the docx into slides
 CHUNK_TYPE = "heading_flat"  # Options: "heading_nested", "heading_flat", "paragraph", "page" -- see create_docx_chunks()
@@ -102,8 +127,7 @@ KEEP_FORMATTING = True
 
 
 # region Main program flow
-# (call is at the bottom)
-def main():
+def main() -> None:
     """Entry point for program flow."""
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
@@ -120,15 +144,10 @@ def main():
         print(f"Error: {e}")
         sys.exit(1)
     except PermissionError:
-        print(
-            f"I don't have permission to read that file ({user_path})! Maybe you still have it open?"
-        )
-        sys.exit(1)
-    except RuntimeWarning:
-        print("Oops, something went wrong when I tried to use that file path.")
+        print(f"I don't have permission to read that file ({user_path})!")
         sys.exit(1)
 
-    # Load the docx file at that path. We have to pass the string version of the path.
+    # Load the docx file at that path.
     user_docx = open_and_load_docx(user_path_validated)
 
     # Chunk the docx by ___
@@ -137,14 +156,25 @@ def main():
     # chunks = create_docx_chunks(user_docx, "heading_nested")
     chunks = create_docx_chunks(user_docx, CHUNK_TYPE)
 
-    # Create the prs object from template
-    output_prs = create_empty_slide_deck()
+    # Create the presentation object from template
+    try:
+        output_prs = create_empty_slide_deck()
+    except Exception as e:
+        print(f"Could not load template file (may be corrupted): {e}")
+        sys.exit(1)
 
-    # Mutate the prs object
+    # Mutate the presentation object by adding slides
     slides_from_chunks(user_docx, output_prs, chunks)
 
-    # actually save the pptx
-    save_pptx(output_prs)
+    # Save the presentation to an actual pptx on disk
+    try:
+        save_pptx(output_prs)
+    except PermissionError:
+        print("Save failed: File may be open in another program")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Save failed with error: {e}")
+        sys.exit(1)
 
 
 # endregion
@@ -165,7 +195,9 @@ def open_and_load_docx(input_filepath: Path) -> document.Document:
     return doc
 
 
-def create_docx_chunks(doc: document.Document, chunk_type="paragraph"):
+def create_docx_chunks(
+    doc: document.Document, chunk_type: str = "paragraph"
+) -> list[list[Paragraph]]:
     """
     Orchestrator function to create chunks (that will become slides) from the document
     contents, either from paragraph, heading (heading_nested or heading_flat),
@@ -181,24 +213,36 @@ def create_docx_chunks(doc: document.Document, chunk_type="paragraph"):
         chunks = chunk_by_paragraph(doc)
     return chunks
 
-def copy_run_formatting(source_run: Run, target_run):
+
+def copy_run_formatting(source_run: Run, target_run: _Run) -> None:
+    """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
     from pptx.dml.color import RGBColor
+
     target_run.text = source_run.text
     font = target_run.font
     font.name = source_run.font.name
-    font.size = source_run.font.size
     font.bold = source_run.font.bold
     font.italic = source_run.font.italic
     if source_run.font.color.rgb and source_run.font.color.rgb:
-        font.color.rgb = RGBColor(source_run.font.color.rgb[0],source_run.font.color.rgb[1], source_run.font.color.rgb[2])
+        font.color.rgb = RGBColor(
+            source_run.font.color.rgb[0],
+            source_run.font.color.rgb[1],
+            source_run.font.color.rgb[2],
+        )
 
 
-def slides_from_chunks(doc: document.Document, prs: presentation.Presentation, chunks):
+def slides_from_chunks(
+    doc: document.Document,
+    prs: presentation.Presentation,
+    chunks: list[list[Paragraph]],
+) -> None:
     """Generate slide objects, one for each chunk created by earlier pipeline steps."""
     # For every paragraph in the docx that has content, create a slide and populate the content.text with the paragraph's text.
     if SLD_LAYOUT_CUSTOM >= len(prs.slide_layouts):
-        raise ValueError(f"Slide layout index {SLD_LAYOUT_CUSTOM} doesn't exist. Template has {len(prs.slide_layouts)} layouts (0-{len(prs.slide_layouts)-1})")
-    
+        raise ValueError(
+            f"Slide layout index {SLD_LAYOUT_CUSTOM} doesn't exist. Template has {len(prs.slide_layouts)} layouts (0-{len(prs.slide_layouts)-1})"
+        )
+
     slide_layout = prs.slide_layouts[SLD_LAYOUT_CUSTOM]
 
     for chunk in chunks:
@@ -206,22 +250,22 @@ def slides_from_chunks(doc: document.Document, prs: presentation.Presentation, c
         # debug_print(f"First 100 chars: {body[:100]}...")
         new_slide = prs.slides.add_slide(slide_layout)
         content = new_slide.placeholders[1]
-        text_frame = content.text_frame # type:ignore
-        text_frame.clear()
+        text_frame = content.text_frame  # type:ignore
+        text_frame.clear()  # type:ignore
 
         if not KEEP_FORMATTING:
             body = "\n".join(para.text for para in chunk)
             text_frame.text = body
         else:
             for paragraph in chunk:
-                pptx_paragraph = text_frame.add_paragraph()
+                pptx_paragraph = text_frame.add_paragraph()  # type:ignore
                 for run in paragraph.runs:
                     if run.text:
-                        pptx_run = pptx_paragraph.add_run()
-                        copy_run_formatting(run, pptx_run)
+                        pptx_run = pptx_paragraph.add_run()  # type:ignore
+                        copy_run_formatting(run, pptx_run)  # type:ignore
 
         # add an empty notes area to the slide for annotations
-        notes_slide_ptr = new_slide.notes_slide  # noqa
+        notes_slide_ptr = new_slide.notes_slide  # type: ignore # noqa
 
 
 # TODO: The "best" way to globally auto-fit all text in all slides in the PPTX UI is to go to the
@@ -230,7 +274,8 @@ def slides_from_chunks(doc: document.Document, prs: presentation.Presentation, c
 # alter the master slide and get it to apply the new setting to existing slides. Ideally we'd be able to
 # run this BEFORE saving the prs object to .pptx on disk, but maybe if we can't, we can reopen what we just
 # saved and save over it?
-def resize_text_in_slides(prs):
+def resize_text_in_slides(prs: presentation.Presentation) -> None:
+    """Auto-fit text to the slides' text-frames."""
     pass
     # PREVIOUS ATTEMPT BELOW
     # TODO, FIX: This appropriately sets the property to auto size the text to fit the shape,
@@ -241,15 +286,6 @@ def resize_text_in_slides(prs):
     # content.text_frame._apply_fit("Bookerly", 12, False, False)
 
 
-# TODO, v2 Feature: add comments into the notes pages for a chunk. This might need to live INSIDE the chunking functions rather
-# than as a follow-up pipeline step.
-def add_comments_to_chunks(doc: document.Document):
-    for comment in doc.comments:
-        print(comment)
-
-    raise NotImplementedError
-
-
 # endregion
 
 # region === Chunking Functions ===
@@ -257,12 +293,12 @@ def add_comments_to_chunks(doc: document.Document):
 
 
 # region by Paragraph
-def chunk_by_paragraph(doc) -> list:
+def chunk_by_paragraph(doc: document.Document) -> list[list[Paragraph]]:
     """
     Creates chunks (which will become slides) based on paragraph, which are blocks of content
     separated by whitespace.
     """
-    paragraphs = list()
+    paragraphs: list[list[Paragraph]] = []
     for para in doc.paragraphs:
         # If this paragraph has no text (whitespace break), skip it
         if para.text == "":
@@ -276,12 +312,12 @@ def chunk_by_paragraph(doc) -> list:
 
 
 # region by Page
-def chunk_by_page(doc: document.Document):
+def chunk_by_page(doc: document.Document) -> list[list[Paragraph]]:
     """Creates chunks based on page breaks"""
 
     # Start building the chunks
-    chunks = list()
-    current_chunk = list()
+    chunks: list[list[Paragraph]] = []
+    current_chunk: list[Paragraph] = []
 
     for para in doc.paragraphs:
         if para.text == "":
@@ -317,7 +353,7 @@ def chunk_by_page(doc: document.Document):
 # region by Heading (nested)
 
 
-def chunk_by_heading_nested(doc: document.Document):
+def chunk_by_heading_nested(doc: document.Document) -> list[list[Paragraph]]:
     """
     Creates chunks based on headings, using nesting logic to group "deeper" headings
 
@@ -364,13 +400,12 @@ def chunk_by_heading_nested(doc: document.Document):
         print("Falling back to flat heading chunking...")
         return chunk_by_heading_flat(doc)
 
-
     # Find which paragraphs are headings; return the index number and the style_id
     heading_paras = find_heading_indices(doc, doc_headings)
 
     # Start building the chunks
-    chunks = list()
-    current_chunk = list()
+    chunks: list[list[Paragraph]] = []
+    current_chunk: list[Paragraph] = []
 
     # Initialize current_heading_style_id  - handle case where no headings exist
     if heading_paras:
@@ -436,8 +471,9 @@ def chunk_by_heading_nested(doc: document.Document):
 
 ## === chunk_by_heading_nested() helpers ===
 
-# Split the style_id into prefix & number using RegEx
-def get_style_parts(style_id) -> tuple[str, int] | None:
+
+def get_style_parts(style_id: str) -> tuple[str, int] | None:
+    """Split the style_id into prefix & number using RegEx"""
     match = re.match(r"([A-Za-z]+)(\d+)$", style_id)
     if match:
         style_prefix, style_num_str = match.groups()
@@ -445,9 +481,10 @@ def get_style_parts(style_id) -> tuple[str, int] | None:
         return (style_prefix, style_num)
     return None
 
-def find_doc_prefixed_headings(doc: document.Document):
+
+def find_doc_prefixed_headings(doc: document.Document) -> set[str]:
     """Generate the set of style_ids used by paragraphs in this document that match the approved prefixes list."""
-    styles_found = set()
+    styles_found: set[str] = set()
 
     for para in doc.paragraphs:
 
@@ -463,9 +500,11 @@ def find_doc_prefixed_headings(doc: document.Document):
     debug_print(sorted(styles_found))
     return styles_found
 
-def find_numbered_headings(doc: document.Document):
-    all_headings = find_doc_prefixed_headings(doc)
-    numbered_headings = []
+
+def find_numbered_headings(doc: document.Document) -> list[str] | None:
+    """Find headings used in this document that end in a number."""
+    all_headings: set[str] = find_doc_prefixed_headings(doc)
+    numbered_headings: list[str] = []
     for heading in all_headings:
         style_parts = get_style_parts(heading)
         if style_parts:
@@ -475,9 +514,12 @@ def find_numbered_headings(doc: document.Document):
     else:
         return None
 
-def find_heading_indices(doc: document.Document, headings) -> list:
+
+def find_heading_indices(
+    doc: document.Document, headings: list[str]
+) -> list[tuple[int, str]]:
     """Find all paragraphs in this document that are headings and store their (index, style_id) in a set."""
-    heading_paragraphs = set()
+    heading_paragraphs: set[tuple[int, str]] = set()
     for i, para in enumerate(doc.paragraphs):
         if para.style:
             style_id = para.style.style_id
@@ -488,7 +530,8 @@ def find_heading_indices(doc: document.Document, headings) -> list:
     return sorted(heading_paragraphs)
 
 
-def get_heading_depth(style_id):
+def get_heading_depth(style_id: str) -> int | float:
+    """Compute a heading depth based on the defined hierarchy and style_id number."""
     style_parts = get_style_parts(style_id)
 
     if not style_parts:
@@ -517,7 +560,7 @@ def get_heading_depth(style_id):
 
 
 # region by Heading (flat)
-def chunk_by_heading_flat(doc: document.Document):
+def chunk_by_heading_flat(doc: document.Document) -> list[list[Paragraph]]:
     """
     Creates chunks based on headings; no nesting logic used. New chunks are created when:
     - a page break happens in the middle of a paragraph
@@ -559,15 +602,17 @@ def chunk_by_heading_flat(doc: document.Document):
     # Collect the possible heading-like style_ids in THIS document
     doc_headings = find_doc_prefixed_headings(doc)
     if not doc_headings:
-        print(f"Warning: No headings found matching prefixes {ALLOWED_HEADING_PREFIXES}")
+        print(
+            f"Warning: No headings found matching prefixes {ALLOWED_HEADING_PREFIXES}"
+        )
         print("Falling back to paragraph chunking...")
         return chunk_by_paragraph(doc)
 
     # Start building the chunks
-    chunks = list()
-    current_chunk = list()
+    chunks: list[list[Paragraph]] = []
+    current_chunk: list[Paragraph] = []
 
-    for i, para in enumerate(doc.paragraphs):
+    for para in doc.paragraphs:
         # Skip empty paragraphs
         if para.text == "":
             continue
@@ -613,13 +658,13 @@ def chunk_by_heading_flat(doc: document.Document):
 
 
 # region Utils - Basic
-def debug_print(msg):
+def debug_print(msg: str | list[str]) -> None:
     """Basic debug printing function"""
     if DEBUG_MODE:
         print(f"DEBUG: {msg}")
 
 
-def setup_console_encoding():
+def setup_console_encoding() -> None:
     """Configure UTF-8 encoding for Windows console to prevent UnicodeEncodeError when printing non-ASCII characters (like emojis)."""
     if platform.system() == "Windows":
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -629,15 +674,17 @@ def setup_console_encoding():
 
 
 # region Utils - I/O
-def validate_path(user_path):
+def validate_path(user_path: str | Path) -> Path:
+    """Ensure filepath exists and is a file."""
     path = Path(user_path)
     if not path.exists():
         raise FileNotFoundError(f"File not found: {user_path}")
     if not path.is_file():
         raise ValueError("That's not a file.")
-    return(path)
+    return path
 
-def validate_docx_path(user_path):
+
+def validate_docx_path(user_path: str | Path) -> Path:
     """Validates the user-provided filepath exists and is actually a docx file."""
     path = validate_path(user_path)
     # Verify it's the right extension:
@@ -650,15 +697,18 @@ def validate_docx_path(user_path):
 
     return path
 
-def validate_pptx_path(user_path):
+
+def validate_pptx_path(user_path: str | Path) -> Path:
+    """Validates the pptx template filepath exists and is actually a pptx file."""
     path = validate_path(user_path)
     # Verify it's the right extension:
     if path.suffix.lower() != ".pptx":
         raise ValueError(f"Expected a .pptx file, but got: {path.suffix}")
     return path
 
+
 def create_empty_slide_deck() -> presentation.Presentation:
-    """Really hope this function name speaks for itself but ruff gonna complain if I don't put a docstring."""
+    """Load the PowerPoint template and create a new presentation object."""
     template_path = validate_pptx_path(Path(TEMPLATE_PPTX))
 
     # === testing
@@ -666,31 +716,23 @@ def create_empty_slide_deck() -> presentation.Presentation:
     # slide = prs.slides.add_slide(slide_layout)
     # content = slide.placeholders[1]
     # content.text = "Test Slide!" # type:ignore
-    try:
-        prs = pptx.Presentation(str(template_path))
-        return prs
-    except Exception as e:
-        raise ValueError(f"Could not load template file (may be corrupted): {e}")
+
+    prs = pptx.Presentation(str(template_path))
+    return prs
 
 
-def save_pptx(prs):
-    """Save the generated slides into our empty slide deck."""
+def save_pptx(prs: presentation.Presentation) -> None:
+    """Save the generated slides to disk."""
     # Construct output path
     if OUTPUT_PPTX_FOLDER:
         folder = Path(OUTPUT_PPTX_FOLDER)
-        folder.mkdir(parents=True, exist_ok=True)  # Create the folder
+        folder.mkdir(parents=True, exist_ok=True)
         output_filepath = folder / OUTPUT_PPTX_FILENAME
     else:
         output_filepath = Path(OUTPUT_PPTX_FILENAME)
 
-    try:
-        prs.save(output_filepath)
-        print(f"Successfully saved to {output_filepath}")
-    # TODO, v1: Probably this could be more robust. Also, should this be in main,
-    # with logic matching the input I/O validation/error handling?
-    except Exception as e:
-        print(f"Save failed with error: {e}")
-        print(f"Error type: {type(e)}")
+    prs.save(str(output_filepath))
+    print(f"Successfully saved to {output_filepath}")
 
 
 # endregion
