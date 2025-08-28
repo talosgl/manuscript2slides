@@ -34,6 +34,7 @@ from docx.text.run import Run
 import pptx
 from pptx import presentation
 from pptx.text.text import _Run  # type: ignore
+from pptx.dml.color import RGBColor
 from pathlib import Path
 import re
 import platform
@@ -113,7 +114,7 @@ HEADING_HIERARCHY = {
 
 # Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
-INPUT_DOCX_FILE = SCRIPT_DIR / "user_input" / "your_file_name_here.docx"
+INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"
 
 # Which chunking method to use to divide the docx into slides
 CHUNK_TYPE = "heading_flat"  # Options: "heading_nested", "heading_flat", "paragraph", "page" -- see create_docx_chunks()
@@ -216,19 +217,25 @@ def create_docx_chunks(
 
 def copy_run_formatting(source_run: Run, target_run: _Run) -> None:
     """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
-    from pptx.dml.color import RGBColor
+    sfont = source_run.font
+    tfont = target_run.font
 
     target_run.text = source_run.text
-    font = target_run.font
-    font.name = source_run.font.name
-    font.bold = source_run.font.bold
-    font.italic = source_run.font.italic
-    if source_run.font.color.rgb and source_run.font.color.rgb:
-        font.color.rgb = RGBColor(
-            source_run.font.color.rgb[0],
-            source_run.font.color.rgb[1],
-            source_run.font.color.rgb[2],
-        )
+
+    # Bold/Italics: Only overwrite when explicitly set on the source (avoid clobbering inheritance)
+    if sfont.bold is not None:
+        tfont.bold = sfont.bold
+    if sfont.italic is not None:
+        tfont.italic = sfont.italic
+
+    # Underline: collapse any explicit value (True/False/WD_UNDERLINE.*) to bool
+    if sfont.underline is not None:
+        tfont.underline = bool(sfont.underline)
+
+    # Color: copy only if source has an explicit RGB
+    src_rgb = getattr(getattr(sfont, "color", None), "rgb", None)
+    if src_rgb is not None:
+        tfont.color.rgb = RGBColor(*src_rgb)
 
 
 def slides_from_chunks(
