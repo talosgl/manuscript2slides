@@ -1,4 +1,4 @@
-# pyright: strict
+# pyright: basic
 """
 Convert Microsoft Word documents to PowerPoint presentations.
 
@@ -33,38 +33,48 @@ from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 import pptx
 from pptx import presentation
-from pptx.text.text import _Run  # type: ignore
+from pptx.slide import Slide
+from pptx.text.text import TextFrame, _Run  # type: ignore
 from pptx.dml.color import RGBColor
 from pathlib import Path
 import re
 import platform
 import io
+from enum import Enum
+from docx.comments import Comment
+from pptx.slide import SlideLayout
 
 
 # region Overarching TODOs
 """
-Features to Add:
-v1 (additive features)
+Must-Implement v0 Features:
+- Provide the user the option to retain comments for a block of text and provide the user a toggle to either:
+    1) put them into the speaker notes for the slide where that block goes
+    2) put them in the slide as comments
+- Provide a way to retain footnotes & endnotes
+- Reverse flow: export slide text frame content to docx paragraphs with the annotations kept as comments, inline
+    - This could allow a flow where you can iterate back and forth (and remove the need to "update" an existing deck with manuscript updates)
+
+v1 features I'd like:
+- Create Documents/docx2pptx/input/output/resources structure
+    - Copies sample files from app resources to user folders
+    - Cleanup mode for debug runs
+- Change consts configuration to use a class or something
+- Build a simple UI + Package this so that any writer can use it without needing to know WTF python is
+    - + Consider reworking into C# for this; good practice for me
+
+
+Public v1
 - Polish up enough to make repo public
 - What does is "done enough for public github repo mean"? "ready when I'm comfortable having strangers use it without asking me questions." 
     - Error messages that tell users what went wrong and how to fix it
     - Code that doesn't crash on common edge cases.
 
-Wishlist Features for Python version:
+Stretch Wishlist Features:
 - Add support for importing .doc (can't use python-docx and will need to learn and use python-docbinary)
 - Add support for importing .md and .txt; split by whitespaces or character like \n\n.
 - Add support for outputting to other slide formats that aren't pptx
 - Add support to break chunks (of any type) at a word count threshold
-
-
-Features deferred to C# Rewrite:
-- Reverse flow: export slide text frame content to docx paragraphs with the annotations kept as comments, inline
-    - This could allow a flow where you can iterate back and forth (and remove the need to "update" an existing deck with manuscript updates)
-- Retain comments for a block of text and put them into the speaker notes for the slide where that block goes
-- Retain footnotes & endnotes
-- Build a simple UI + Package this so that any writer can use it without needing to know WTF python is
-    - + Consider reworking into C# for this; good practice for me
-
 """
 # endregion
 
@@ -76,14 +86,13 @@ SCRIPT_DIR = Path(__file__).parent
 # === Consts for script user to alter per-run ===
 
 # The pptx file to use as the template for the slide deck
-TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_pptx_landscape_notes_view.pptx"
+TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_template.pptx"
 # You can make your own template with the master slide and master notes page
 # to determine how the output will look. You can customize things like font, paragraph style,
 # slide size, slide layout...
 
 # Desired slide layout. All slides use the same layout.
-SLD_LAYOUT_CUSTOM = 11
-# This is an index id. From the master slides template, count from 0, 1, 2...
+SLD_LAYOUT_CUSTOM_NAME = "docx2pptx"
 
 # Desired output directory/folder to save the pptx in
 OUTPUT_PPTX_FOLDER = SCRIPT_DIR / "output"
@@ -116,8 +125,18 @@ HEADING_HIERARCHY = {
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
 INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"
 
-# Which chunking method to use to divide the docx into slides
-CHUNK_TYPE = "heading_flat"  # Options: "heading_nested", "heading_flat", "paragraph", "page" -- see create_docx_chunks()
+
+# Which chunking method to use to divide the docx into slides. This enum lists the available choices:
+class ChunkType(Enum):
+    """Chunk Type Choices"""
+    HEADING_NESTED = "heading_nested"
+    HEADING_FLAT = "heading_flat"
+    PARAGRAPH = "paragraph"
+    PAGE = "page"
+
+# And this is where to set what will be used in this run
+CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
+
 
 # Toggle on/off whether to print debug_prints() to the console
 DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing
@@ -197,18 +216,18 @@ def open_and_load_docx(input_filepath: Path) -> document.Document:
 
 
 def create_docx_chunks(
-    doc: document.Document, chunk_type: str = "paragraph"
+    doc: document.Document, chunk_type: ChunkType = ChunkType.PARAGRAPH
 ) -> list[list[Paragraph]]:
     """
     Orchestrator function to create chunks (that will become slides) from the document
     contents, either from paragraph, heading (heading_nested or heading_flat),
     or page. Defaults to paragraph.
     """
-    if chunk_type == "heading_flat":
+    if chunk_type == ChunkType.HEADING_FLAT:
         chunks = chunk_by_heading_flat(doc)
-    elif chunk_type == "heading_nested":
+    elif chunk_type == ChunkType.HEADING_NESTED:
         chunks = chunk_by_heading_nested(doc)
-    elif chunk_type == "page":
+    elif chunk_type == ChunkType.PAGE:
         chunks = chunk_by_page(doc)
     else:
         chunks = chunk_by_paragraph(doc)
@@ -245,12 +264,13 @@ def slides_from_chunks(
 ) -> None:
     """Generate slide objects, one for each chunk created by earlier pipeline steps."""
     # For every paragraph in the docx that has content, create a slide and populate the content.text with the paragraph's text.
-    if SLD_LAYOUT_CUSTOM >= len(prs.slide_layouts):
-        raise ValueError(
-            f"Slide layout index {SLD_LAYOUT_CUSTOM} doesn't exist. Template has {len(prs.slide_layouts)} layouts (0-{len(prs.slide_layouts)-1})"
-        )
+    slide_layout = prs.slide_layouts.get_by_name(SLD_LAYOUT_CUSTOM_NAME)
 
-    slide_layout = prs.slide_layouts[SLD_LAYOUT_CUSTOM]
+    if slide_layout is None:
+        raise KeyError(f"No slide layout found to match provided custom name, {SLD_LAYOUT_CUSTOM_NAME}")
+
+    # If the doc has comments, build a dictionary of them for use by the chunks.
+    comments_dict = get_doc_comments_dict(doc) if hasattr(doc.part, 'comments') else {}
 
     for chunk in chunks:
         # debug_print(f"Creating slide with {len(chunk)} paragraphs, total length: {len(body)} characters")
@@ -701,8 +721,15 @@ def validate_docx_path(user_path: str | Path) -> Path:
         )
     elif path.suffix.lower() != ".docx":
         raise ValueError(f"Expected a .docx file, but got: {path.suffix}")
-
-    return path
+    
+    # Add document structure validation
+    try:
+        doc = docx.Document(path) # type: ignore
+        if not doc.paragraphs:
+            raise ValueError("Document appears to be empty")
+        return path
+    except Exception as e:
+        raise ValueError(f"Document appears to be corrupted: {e}")
 
 
 def validate_pptx_path(user_path: str | Path) -> Path:
@@ -713,7 +740,9 @@ def validate_pptx_path(user_path: str | Path) -> Path:
         raise ValueError(f"Expected a .pptx file, but got: {path.suffix}")
     return path
 
-
+# TODO: Add validation to ensure the template is in good shape
+# Like make sure it has all the pieces we're going to rely on; slide masters and slide layout, etc.,
+# and make sure whatever the slide layout name the user provided and wishes to use exists.
 def create_empty_slide_deck() -> presentation.Presentation:
     """Load the PowerPoint template and create a new presentation object."""
     template_path = validate_pptx_path(Path(TEMPLATE_PPTX))
@@ -727,7 +756,8 @@ def create_empty_slide_deck() -> presentation.Presentation:
     prs = pptx.Presentation(str(template_path))
     return prs
 
-
+# TODO: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
+# TODO: Probably add some kind of file rotation so the last 5 or so outputs are preserved
 def save_pptx(prs: presentation.Presentation) -> None:
     """Save the generated slides to disk."""
     # Construct output path
