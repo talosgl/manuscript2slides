@@ -146,6 +146,11 @@ DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing
 KEEP_FORMATTING = True
 
 
+PRESERVE_HYPERLINKS: bool = True
+PRESERVE_COMMENTS: bool = True
+COMMENTS_AS_SPEAKER_NOTES: bool = True
+RESIZE_TEXT: bool = False
+
 # region Main program flow
 def main() -> None:
     """Entry point for program flow."""
