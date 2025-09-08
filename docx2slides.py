@@ -201,6 +201,7 @@ def main() -> None:
 
 
 # region Pipeline Functions
+# TODO Add basic validation for docx contents (copy the validation we did in CSharp)
 def open_and_load_docx(input_filepath: Path) -> document.Document:
     """Use python-docx to read in the docx file contents and store to a runtime variable."""
     doc = docx.Document(input_filepath)  # type: ignore
