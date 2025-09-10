@@ -23,27 +23,30 @@ Example:
 
     (Configure INPUT_DOCX_FILE and other constants before running)
 """
-
+# region imports
 from __future__ import annotations
 
 import sys
 import docx
 from docx import document
-from docx.text.paragraph import Paragraph
-from docx.text.run import Run
+from docx.text.paragraph import Paragraph as Paragraph_docx
+from docx.text.run import Run as Run_docx
+from docx.text.hyperlink import Hyperlink as Hyperlink_docx
+from docx.table import Table as Table_docx
 import pptx
 from pptx import presentation
 from pptx.slide import Slide
-from pptx.text.text import TextFrame, _Run  # type: ignore
+from pptx.text.text import TextFrame, _Run as Run_pptx, _Paragraph as Paragraph_pptx  # type: ignore
 from pptx.dml.color import RGBColor
 from pathlib import Path
 import re
 import platform
 import io
 from enum import Enum
-from docx.comments import Comment
+from docx.comments import Comment as Comment_docx
 from pptx.slide import SlideLayout
 
+# endregion
 
 # region Overarching TODOs
 """
@@ -145,11 +148,52 @@ DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing
 # Specify whether to keep text formatting like italics, bold, color. Skipping can make the script go faster.
 KEEP_FORMATTING = True
 
-
-PRESERVE_HYPERLINKS: bool = True
-PRESERVE_COMMENTS: bool = True
-COMMENTS_AS_SPEAKER_NOTES: bool = True
+PRESERVE_ANNOTATIONS: bool = True
 RESIZE_TEXT: bool = False
+COMMENTS_SORT_BY_DATE: bool = True
+
+# region Classes
+from typing import Union
+from dataclasses import dataclass, field
+
+# Type aliases for clarity
+# ParagraphType = Union[Paragraph_docx, Paragraph_pptx] # might allow us to reuse functions for either-direction import/export (I hope)
+# InnerContentType_docx = Paragraph_docx | Table_docx # might allow us to support tables and paragraphs
+AnnotationType = Union[Comment_docx, str] # TODO: Do we need to make our own footnote and endnote class?
+
+@dataclass
+class Chunk_docx:
+
+    # Use "default_factory" to ensure every chunk gets its own list.
+    paragraphs: list[Paragraph_docx] = field(default_factory=list)
+
+    # TODO: if we support tables later
+    # inner_contents: list[InnerContentType_docx] = field(default_factory=list)
+
+    annotations: dict[str, list] = field(default_factory=lambda: {
+        "comments": [],     # Calls list() constructor
+        "footnotes": [],    # Calls list() constructor
+        "endnotes": []      # Calls list() constructor
+    } # Calls dict() constructor with our key-value pairs
+    )
+
+    @classmethod
+    def create_with_paragraph(cls, paragraph: Paragraph_docx) -> 'Chunk_docx':
+        return cls(paragraphs=[paragraph])
+    
+
+    def add_annotation(self, annotation_type: str, annotation: AnnotationType):
+        if annotation_type not in self.annotations:
+            self.annotations[annotation_type] = []
+        self.annotations[annotation_type].append(annotation)
+
+    def add_paragraph(self, new_paragraph: Paragraph_docx):
+        self.paragraphs.append(new_paragraph)
+
+    def add_paragraphs(self, new_paragraphs: list[Paragraph_docx]):
+        self.paragraphs.extend(new_paragraphs)  # Add multiple at once
+
+# endregion
 
 # region Main program flow
 def main() -> None:
@@ -174,6 +218,7 @@ def main() -> None:
 
     # Load the docx file at that path.
     user_docx = open_and_load_docx(user_path_validated)
+
 
     # Chunk the docx by ___
     # chunks = create_docx_chunks(user_docx, "paragraph")
@@ -223,7 +268,7 @@ def open_and_load_docx(input_filepath: Path) -> document.Document:
 
 def create_docx_chunks(
     doc: document.Document, chunk_type: ChunkType = ChunkType.PARAGRAPH
-) -> list[list[Paragraph]]:
+) -> list[Chunk_docx]:
     """
     Orchestrator function to create chunks (that will become slides) from the document
     contents, either from paragraph, heading (heading_nested or heading_flat),
@@ -240,7 +285,7 @@ def create_docx_chunks(
     return chunks
 
 
-def copy_run_formatting(source_run: Run, target_run: _Run) -> None:
+def copy_run_formatting(source_run: Run_docx, target_run: Run_pptx) -> None:
     """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
     sfont = source_run.font
     tfont = target_run.font
@@ -263,42 +308,103 @@ def copy_run_formatting(source_run: Run, target_run: _Run) -> None:
         tfont.color.rgb = RGBColor(*src_rgb)
 
 
+# region slide creation helpers
+def create_blank_slide_for_chunk(
+    prs: presentation.Presentation, slide_layout: SlideLayout
+) -> tuple[Slide, TextFrame]:
+    """Initialize an empty slide so that we can populate it with a chunk."""
+    new_slide = prs.slides.add_slide(slide_layout)
+    content = new_slide.placeholders[1]
+    text_frame = content.text_frame  # type:ignore
+    text_frame.clear()  # type:ignore
+
+    # Access the slide's notes_slide attribute in order to initialize it.
+    notes_slide_ptr = new_slide.notes_slide  # type: ignore # noqa
+
+    return new_slide, text_frame
+
+
+def process_paragraph_inner_contents(paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx) -> None:
+    """Iterate through a paragraph's runs and hyperlinks, in document order, and process each."""
+    items_processed = False
+
+    for item in paragraph.iter_inner_content():
+        items_processed = True
+        if isinstance(item, Run_docx):
+            # Regular run
+            process_run(item, pptx_paragraph)
+        elif hasattr(item, "url"):
+            # Process all runs within the hyperlink
+            for run in item.runs:
+                process_run(
+                    run, pptx_paragraph, item.url
+                )
+        else:
+            debug_print(f"Unknown content type in paragraph: {type(item)}")
+
+        # Fallback: if no content was processed but paragraph has text
+    if not items_processed and paragraph.text:
+        debug_print(
+            f"Fallback: paragraph has text but no runs/hyperlinks: {paragraph.text[:50]}"
+        )
+        pptx_run = pptx_paragraph.add_run()
+        pptx_run.text = paragraph.text
+
+def process_run(
+    run: Run_docx, pptx_paragraph: Paragraph_pptx, hyperlink: str | None = None
+) -> Run_pptx:
+    """Process a run, including copying its formatting."""
+    # Handle formatting
+
+    pptx_run = pptx_paragraph.add_run()
+    copy_run_formatting(run, pptx_run)
+
+    if hyperlink:
+        pptx_run_url = pptx_run.hyperlink
+        pptx_run_url.address = hyperlink
+
+    return pptx_run
+
+
+# endregion
+
+# region slides_from_chunks
 def slides_from_chunks(
     doc: document.Document,
     prs: presentation.Presentation,
-    chunks: list[list[Paragraph]],
+    chunks: list[Chunk_docx],
 ) -> None:
     """Generate slide objects, one for each chunk created by earlier pipeline steps."""
-    # For every paragraph in the docx that has content, create a slide and populate the content.text with the paragraph's text.
+    
+    # Specify which slide layout to use
     slide_layout = prs.slide_layouts.get_by_name(SLD_LAYOUT_CUSTOM_NAME)
 
     if slide_layout is None:
         raise KeyError(f"No slide layout found to match provided custom name, {SLD_LAYOUT_CUSTOM_NAME}")
-
-    # If the doc has comments, build a dictionary of them for use by the chunks.
-    comments_dict = get_doc_comments_dict(doc) if hasattr(doc.part, 'comments') else {}
+    
 
     for chunk in chunks:
-        # debug_print(f"Creating slide with {len(chunk)} paragraphs, total length: {len(body)} characters")
-        # debug_print(f"First 100 chars: {body[:100]}...")
-        new_slide = prs.slides.add_slide(slide_layout)
-        content = new_slide.placeholders[1]
-        text_frame = content.text_frame  # type:ignore
-        text_frame.clear()  # type:ignore
+        
+        # Create a new slide for this chunk.
+        new_slide, text_frame = create_blank_slide_for_chunk(prs, slide_layout)
 
-        if not KEEP_FORMATTING:
-            body = "\n".join(para.text for para in chunk)
-            text_frame.text = body
-        else:
-            for paragraph in chunk:
-                pptx_paragraph = text_frame.add_paragraph()  # type:ignore
-                for run in paragraph.runs:
-                    if run.text:
-                        pptx_run = pptx_paragraph.add_run()  # type:ignore
-                        copy_run_formatting(run, pptx_run)  # type:ignore
+        # For each paragraph in this chunk, handle adding it
+        for paragraph in chunk.paragraphs:
+            # Initialize a blank paragraph into the slide
+            pptx_paragraph = text_frame.add_paragraph()  # type:ignore
 
-        # add an empty notes area to the slide for annotations
-        notes_slide_ptr = new_slide.notes_slide  # type: ignore # noqa
+            # Process the docx's paragraph contents, including both runs & hyperlinks
+            process_paragraph_inner_contents(
+                paragraph, pptx_paragraph
+            )
+
+        # TODO: add the annotations to the slide, too.
+        #if PRESERVE_ANNOTATIONS:
+        #    notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame # type: ignore        
+        #    annotate_chunk(chunk, notes_text_frame)
+        # notes_blank_para = notes_para_content
+        
+# endregion
 
 
 # TODO: The "best" way to globally auto-fit all text in all slides in the PPTX UI is to go to the
@@ -326,59 +432,67 @@ def resize_text_in_slides(prs: presentation.Presentation) -> None:
 
 
 # region by Paragraph
-def chunk_by_paragraph(doc: document.Document) -> list[list[Paragraph]]:
+def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
     """
     Creates chunks (which will become slides) based on paragraph, which are blocks of content
     separated by whitespace.
     """
-    paragraphs: list[list[Paragraph]] = []
+    paragraph_chunks: list[Chunk_docx] = []
+
     for para in doc.paragraphs:
-        # If this paragraph has no text (whitespace break), skip it
+
+        # Skip empty paragraphs (but keep those that are new-lines to respect intentional whitespace)
         if para.text == "":
             continue
-        para_list = [para]
-        paragraphs.append(para_list)
-    return paragraphs
+    
+        new_chunk = Chunk_docx.create_with_paragraph(para)
+        paragraph_chunks.append(new_chunk)
+
+    return paragraph_chunks
 
 
 # endregion
 
-
 # region by Page
-def chunk_by_page(doc: document.Document) -> list[list[Paragraph]]:
+def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     """Creates chunks based on page breaks"""
 
     # Start building the chunks
-    chunks: list[list[Paragraph]] = []
-    current_chunk: list[Paragraph] = []
+    all_chunks: list[Chunk_docx] = []
+
+    # Start with a current chunk ready-to-go
+    current_page_chunk: Chunk_docx = Chunk_docx()
 
     for para in doc.paragraphs:
+        # Skip empty paragraphs (keep intentional whitespace newlines)
         if para.text == "":
             continue
 
-        # If the current_chunk is empty, append the current para regardless of style & continue to next para.
-        if not current_chunk:
-            current_chunk.append(para)
+        # If the current_page_chunk is empty, append the current para regardless of style & continue to next para.
+        if not current_page_chunk.paragraphs:
+            current_page_chunk.add_paragraph(para)
             continue
 
         # Handle page breaks - create new chunk and start fresh
         if para.contains_page_break:
             # Add the current_chunk to chunks list (if it has content)
-            if current_chunk:
-                chunks.append(current_chunk)
+            if current_page_chunk:
+                all_chunks.append(current_page_chunk)
+
             # Start new chunk with this paragraph
-            current_chunk = [para]
+            current_page_chunk = Chunk_docx.create_with_paragraph(para)
+            
             continue
 
         # If there was no page break, just append this paragraph to the current_chunk
-        current_chunk.append(para)
+        current_page_chunk.add_paragraph(para) # equivalent to current_chunk.add_paragraph(para) ?
 
     # Ensure final chunk from loop is added to chunks list
-    if current_chunk:
-        chunks.append(current_chunk)
+    if current_page_chunk:
+        all_chunks.append(current_page_chunk)
 
-    print(f"This document has {len(chunks)} page chunks.")
-    return chunks
+    print(f"This document has {len(all_chunks)} page chunks.")
+    return all_chunks
 
 
 # endregion
@@ -386,7 +500,7 @@ def chunk_by_page(doc: document.Document) -> list[list[Paragraph]]:
 # region by Heading (nested)
 
 
-def chunk_by_heading_nested(doc: document.Document) -> list[list[Paragraph]]:
+def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     """
     Creates chunks based on headings, using nesting logic to group "deeper" headings
 
@@ -437,8 +551,8 @@ def chunk_by_heading_nested(doc: document.Document) -> list[list[Paragraph]]:
     heading_paras = find_heading_indices(doc, doc_headings)
 
     # Start building the chunks
-    chunks: list[list[Paragraph]] = []
-    current_chunk: list[Paragraph] = []
+    all_chunks: list[Chunk_docx] = []
+    current_chunk: Chunk_docx = Chunk_docx()
 
     # Initialize current_heading_style_id  - handle case where no headings exist
     if heading_paras:
@@ -448,18 +562,19 @@ def chunk_by_heading_nested(doc: document.Document) -> list[list[Paragraph]]:
         current_heading_style_id = "Normal"  # Default for documents without headings
 
     for i, para in enumerate(doc.paragraphs):
+
         # Skip empty paragraphs
         if para.text == "":
             continue
 
-        # Make Pylance happy (it gets mad if we direct-check para.style.style_id later)
+        # Set a style_id to make Pylance happy (it gets mad if we direct-check para.style.style_id later)
         style_id = para.style.style_id if para.style else "Normal"
 
         debug_print(f"Paragraph begins: {para.text[:30]}... and is index: {i}")
 
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
-        if not current_chunk:
-            current_chunk.append(para)
+        if not current_chunk.paragraphs:
+            current_chunk.add_paragraph(para)
             if style_id in doc_headings:
                 current_heading_style_id = style_id
             continue
@@ -468,9 +583,11 @@ def chunk_by_heading_nested(doc: document.Document) -> list[list[Paragraph]]:
         if para.contains_page_break:
             # Add the current chunk to chunks list (if it has content)
             if current_chunk:
-                chunks.append(current_chunk)
+                all_chunks.append(current_chunk)
+
             # Start new chunk with this paragraph
-            current_chunk = [para]
+            current_chunk = Chunk_docx.create_with_paragraph(para)
+
             # Update heading depth if this paragraph is a heading
             if style_id in doc_headings:
                 current_heading_style_id = style_id
@@ -484,22 +601,22 @@ def chunk_by_heading_nested(doc: document.Document) -> list[list[Paragraph]]:
             ):
                 # If yes, start a new chunk
                 if current_chunk:
-                    chunks.append(current_chunk)
-                current_chunk = [para]
+                    all_chunks.append(current_chunk)
+                current_chunk = Chunk_docx.create_with_paragraph(para)
                 current_heading_style_id = style_id
             else:
                 # This heading is deeper, add to current chunk
-                current_chunk.append(para)
+                current_chunk.add_paragraph(para)
                 current_heading_style_id = style_id
         else:
             # Normal paragraph - add to current chunk
-            current_chunk.append(para)
+            current_chunk.add_paragraph(para)
 
     if current_chunk:
-        chunks.append(current_chunk)
+        all_chunks.append(current_chunk)
 
-    print(f"This document has {len(chunks)} nested heading chunks.")
-    return chunks
+    print(f"This document has {len(all_chunks)} nested heading chunks.")
+    return all_chunks
 
 
 ## === chunk_by_heading_nested() helpers ===
@@ -593,7 +710,7 @@ def get_heading_depth(style_id: str) -> int | float:
 
 
 # region by Heading (flat)
-def chunk_by_heading_flat(doc: document.Document) -> list[list[Paragraph]]:
+def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     """
     Creates chunks based on headings; no nesting logic used. New chunks are created when:
     - a page break happens in the middle of a paragraph
@@ -634,6 +751,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[list[Paragraph]]:
 
     # Collect the possible heading-like style_ids in THIS document
     doc_headings = find_doc_prefixed_headings(doc)
+
     if not doc_headings:
         print(
             f"Warning: No headings found matching prefixes {ALLOWED_HEADING_PREFIXES}"
@@ -642,49 +760,52 @@ def chunk_by_heading_flat(doc: document.Document) -> list[list[Paragraph]]:
         return chunk_by_paragraph(doc)
 
     # Start building the chunks
-    chunks: list[list[Paragraph]] = []
-    current_chunk: list[Paragraph] = []
+    all_chunks: list[Chunk_docx] = []
+    current_chunk: Chunk_docx = Chunk_docx()
 
     for para in doc.paragraphs:
         # Skip empty paragraphs
         if para.text == "":
             continue
 
-        # Make Pylance happy (it gets mad if we direct-check para.style.style_id later)
+        # Set a style_id to make Pylance happy (it gets mad if we direct-check para.style.style_id later)
         style_id = para.style.style_id if para.style else "Normal"
 
-        # debug_print(f"Paragraph begins: {para.text[:30]}... and is index: {i}")
+        debug_print(f"Paragraph begins: {para.text[:30]}...")
 
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
-        if not current_chunk:
-            current_chunk.append(para)
+        if not current_chunk.paragraphs:
+            current_chunk.add_paragraph(para)
             continue
 
         # Handle page breaks - always start a new chunk
         if para.contains_page_break:
             # Add the current chunk to chunks list (if it has content)
             if current_chunk:
-                chunks.append(current_chunk)
+                all_chunks.append(current_chunk)
+
             # Start new chunk with this paragraph
-            current_chunk = [para]
+            current_chunk = Chunk_docx.create_with_paragraph(para)
             continue
 
         # If this paragraph is a heading, start a new chunk
         if style_id in doc_headings:
             # If we already have content in current_chunk, save it and start fresh
             if current_chunk:
-                chunks.append(current_chunk)
-            # Start new chunk with this heading
-            current_chunk = [para]
+                all_chunks.append(current_chunk)
+                
+            # Start new chunk with this paragraph
+            current_chunk = Chunk_docx.create_with_paragraph(para)
+
         else:
             # This is a normal paragraph - add it to current chunk
-            current_chunk.append(para)
+            current_chunk.add_paragraph(para)
 
     if current_chunk:
-        chunks.append(current_chunk)
+        all_chunks.append(current_chunk)
 
-    print(f"This document has {len(chunks)} flat heading chunks.")
-    return chunks
+    print(f"This document has {len(all_chunks)} flat heading chunks.")
+    return all_chunks
 
 
 # endregion
