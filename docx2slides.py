@@ -54,10 +54,6 @@ from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_
 # region Overarching TODOs
 """
 Must-Implement v0 Features:
-- Provide the user the option to retain comments for a block of text and provide the user a toggle to either:
-    1) put them into the speaker notes for the slide where that block goes
-    2) put them in the slide as comments
-- Provide a way to retain footnotes & endnotes
 - Reverse flow: export slide text frame content to docx paragraphs with the annotations kept as comments, inline
     - This could allow a flow where you can iterate back and forth (and remove the need to "update" an existing deck with manuscript updates)
 
@@ -77,10 +73,49 @@ Public v1
     - Code that doesn't crash on common edge cases.
 
 Stretch Wishlist Features:
-- Add support for importing .doc (can't use python-docx and will need to learn and use python-docbinary)
 - Add support for importing .md and .txt; split by whitespaces or character like \n\n.
-- Add support for outputting to other slide formats that aren't pptx
 - Add support to break chunks (of any type) at a word count threshold
+
+"""
+
+"""
+Known Issues & Limitations:
+    -   We do not support .doc, only .docx. If you have a .doc file, convert it to .docx using Word, Google Docs, 
+        or LibreOffice before processing.
+
+    -   We do not support .ppt, only .pptx.
+
+    -   Field code hyperlinks not supported - Some hyperlinks (like the sample_doc.docx's first "Where are Data?" link) 
+        are stored using Word's field code format and display as plain text instead of clickable links. The exact 
+        conditions that cause this format are unclear, but it may occur with hyperlinks in headings or certain copy/paste 
+        scenarios. We think most normal hyperlinks will work fine.
+
+    -   Auto-fit text resizing doesn't work. PowerPoint only applies auto-fit when opened in the UI. 
+        You can get around this manually with these steps:
+            1. Open up the output presentation in PowerPoint Desktop > View > Slide Master
+            2. Select the text frame object, right-click > Format Shape
+            3. Click the Size & Properties icon {TODO ADD IMAGES}
+            4. Click Text Box to see the options
+            5. Toggle "Do not Autofit" and then back to "Shrink Text on overflow"
+            6. Close Master View
+            7. Now all the slides should have their text properly resized.
+
+    -   ANNOTATIONS LIMITATIONS
+        -   We collapse all comments, footnotes, and endnotes into a slide's speaker notes. PowerPoint itself doesn't 
+            support real footnotes or endnotes at all. It does have a comments functionality, but the library used here 
+            (python-pptx) doesn't support adding comments to slides yet. 
+
+        -   Note that inline reference numbers (1, 2, 3, etc.) from the docx body are not preserved in the slide text - 
+            only the annotation content appears in speaker notes.
+
+        -   You can choose to preserve some comment metadata (author, timestamps) in plain text, but not threading.
+    
+    -   REVERSE FLOW LIMITATIONS
+        -   The reverse flow (pptx2docx) is significantly less robust for annotations. There is no support for separating out
+            speaker notes into types of annotations. "We simply take all speaker notes and attach them to the final paragraph 
+            of each slide's content as a comment. Original source docx comment metadata is not preserved (apart from
+            plain text author/timestamps if kept during an original docx2pptx conversion).
+
 """
 # endregion
 
@@ -157,8 +192,9 @@ PRESERVE_ENDNOTES: bool = True
 PRESERVE_ANNOTATIONS: bool = (
     PRESERVE_COMMENTS or PRESERVE_FOOTNOTES or PRESERVE_ENDNOTES
 )
-RESIZE_TEXT: bool = False
+
 COMMENTS_SORT_BY_DATE: bool = True
+COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
 
 # region Classes
 from typing import Union
@@ -340,7 +376,6 @@ def create_blank_slide_for_chunk(
 
     return new_slide, text_frame
 
-
 def process_paragraph_inner_contents(
     paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx
 ) -> None:
@@ -350,8 +385,16 @@ def process_paragraph_inner_contents(
     for item in paragraph.iter_inner_content():
         items_processed = True
         if isinstance(item, Run_docx):
-            # Regular run
+            
+            # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
+            # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
+            # when it happens and report it to the user.
+            for child in item._element:
+                if child.tag.endswith('instrText') and child.text and child.text.startswith('HYPERLINK'):
+                    debug_print(f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {child.text}")
+
             process_run(item, pptx_paragraph)
+
         elif hasattr(item, "url"):
             # Process all runs within the hyperlink
             for run in item.runs:
@@ -404,14 +447,16 @@ def slides_from_chunks(
         )
 
     for chunk in chunks:
-
         # Create a new slide for this chunk.
         new_slide, text_frame = create_blank_slide_for_chunk(prs, slide_layout)
 
         # For each paragraph in this chunk, handle adding it
-        for paragraph in chunk.paragraphs:
-            # Initialize a blank paragraph into the slide
-            pptx_paragraph = text_frame.add_paragraph()  # type:ignore
+        for i, paragraph in enumerate(chunk.paragraphs):
+            if i == 0 and len(text_frame.paragraphs) > 0 and not text_frame.paragraphs[0].text:
+                # Use the existing first paragraph
+                pptx_paragraph = text_frame.paragraphs[0]
+            else:
+                pptx_paragraph = text_frame.add_paragraph() # type:ignore
 
             # Process the docx's paragraph contents, including both runs & hyperlinks
             process_paragraph_inner_contents(paragraph, pptx_paragraph)
@@ -420,29 +465,8 @@ def slides_from_chunks(
             notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore
             annotate_chunk(chunk, notes_text_frame)
 
-
 # endregion
 
-
-# TODO: The "best" way to globally auto-fit all text in all slides in the PPTX UI is to go to the
-# slide master and toggle the auto-fit setting on/off; that'll force all slides to fit the text to the
-# textbox frame. So experiment here and see if, after populating all the slides with text, we can then
-# alter the master slide and get it to apply the new setting to existing slides. Ideally we'd be able to
-# run this BEFORE saving the prs object to .pptx on disk, but maybe if we can't, we can reopen what we just
-# saved and save over it?
-def resize_text_in_slides(prs: presentation.Presentation) -> None:
-    """Auto-fit text to the slides' text-frames."""
-    pass
-    # PREVIOUS ATTEMPT BELOW
-    # TODO, FIX: This appropriately sets the property to auto size the text to fit the shape,
-    # but it doesn't actually auto-size it. Presumably inside of the PPTX UI it applies it at render-time.
-    # Is there a way to do it programmatically, or not?
-    # from pptx.enum.text import MSO_AUTO_SIZE
-    # content.text_frame.auto_size, content.text_frame.word_wrap  = (MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE, True) # type:ignore
-    # content.text_frame._apply_fit("Bookerly", 12, False, False)
-
-
-# endregion
 
 # region === Chunking Functions ===
 # endregion
@@ -916,7 +940,10 @@ def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx
                 if para.text.rstrip():
                     notes_para = notes_text_frame.add_paragraph()
                     comment_header = notes_para.add_run()
-                    comment_header.text = f"\n {i}. {comment.author} ({comment.timestamp.strftime('%A, %B %d, %Y at %I:%M %p')}):\n"
+                    if COMMENTS_KEEP_AUTHOR_AND_DATE:
+                        comment_header.text = f"\n {i}. {comment.author} ({comment.timestamp.strftime('%A, %B %d, %Y at %I:%M %p')}):\n"
+                    else:
+                        comment_header.text = "\n"
                     process_paragraph_inner_contents(para, notes_para)
             # comment_section +=
             # comment_section += f"   {comment.text}\n\n"
