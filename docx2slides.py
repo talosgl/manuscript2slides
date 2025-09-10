@@ -40,20 +40,22 @@ import docx
 import pptx
 from docx import document
 from docx.comments import Comment as Comment_docx
-#from docx.table import Table as Table_docx
-#from docx.text.hyperlink import Hyperlink as Hyperlink_docx
+
+# from docx.table import Table as Table_docx
+# from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 from pptx import presentation
 from pptx.dml.color import RGBColor
 from pptx.slide import Slide, SlideLayout
-from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
+from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx
 
 # endregion
 
 # region Overarching TODOs
 """
 Must-Implement v0 Features:
+- Complete feature to preserve docx footnotes & endnotes and append after comments in speaker notes.
 - Reverse flow: export slide text frame content to docx paragraphs with the annotations kept as comments, inline
     - This could allow a flow where you can iterate back and forth (and remove the need to "update" an existing deck with manuscript updates)
 
@@ -73,8 +75,10 @@ Public v1
     - Code that doesn't crash on common edge cases.
 
 Stretch Wishlist Features:
-- Add support for importing .md and .txt; split by whitespaces or character like \n\n.
-- Add support to break chunks (of any type) at a word count threshold
+-   Add support for importing .md and .txt; split by whitespaces or character like \n\n.
+-   Add support to break chunks (of any type) at a word count threshold.
+-   Add support to deconstruct standard technical marketing docx demo scripts 
+    (table parsing; consistent row structure (Column A = slides, Column B = notes)).
 
 """
 
@@ -182,12 +186,12 @@ CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
 
 
 # Toggle on/off whether to print debug_prints() to the console
-DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing
+DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing; update: TODO, UX: please god replace all these consts with a config class or something for v1
 # endregion
 
 PRESERVE_COMMENTS: bool = True
-PRESERVE_FOOTNOTES: bool = True
-PRESERVE_ENDNOTES: bool = True
+PRESERVE_FOOTNOTES: bool = False
+PRESERVE_ENDNOTES: bool = False
 
 PRESERVE_ANNOTATIONS: bool = (
     PRESERVE_COMMENTS or PRESERVE_FOOTNOTES or PRESERVE_ENDNOTES
@@ -205,7 +209,7 @@ from dataclasses import dataclass, field
 # InnerContentType_docx = Paragraph_docx | Table_docx # might allow us to support tables and paragraphs
 AnnotationType = Union[
     Comment_docx, str
-]  # TODO: Do we need to make our own footnote and endnote class?
+]  # TODO, ANNOTATIONS: Do we need to make our own footnote and endnote classes?
 
 
 @dataclass
@@ -215,7 +219,7 @@ class Chunk_docx:
     # Use "default_factory" to ensure every chunk gets its own list.
     paragraphs: list[Paragraph_docx] = field(default_factory=list)
 
-    # TODO: if we support tables later
+    # TODO, TABLE SUPPORT: if we support tables later
     # inner_contents: list[InnerContentType_docx] = field(default_factory=list)
 
     annotations: dict[str, list] = field(
@@ -244,6 +248,12 @@ class Chunk_docx:
     def add_paragraphs(self, new_paragraphs: list[Paragraph_docx]) -> None:
         """Add a list of paragraphs to this Chunk object's paragraphs list."""
         self.paragraphs.extend(new_paragraphs)  # Add multiple at once
+
+
+# TODO, REVERSE FLOW: We probably need a separate Chunk_pptx class
+# I think it would be:
+# list of body [Paragraph_pptx]
+# list of speaker notes [Paragraph_pptx]
 
 
 # endregion
@@ -304,7 +314,7 @@ def main() -> None:
 
 
 # region Pipeline Functions
-# TODO Add basic validation for docx contents (copy the validation we did in CSharp)
+# TODO, BASIC VALIDATION: Add basic validation for docx contents (copy the validation we did in CSharp)
 def open_and_load_docx(input_filepath: Path) -> document.Document:
     """Use python-docx to read in the docx file contents and store to a runtime variable."""
     doc = docx.Document(input_filepath)  # type: ignore
@@ -361,7 +371,9 @@ def copy_run_formatting(source_run: Run_docx, target_run: Run_pptx) -> None:
         tfont.color.rgb = RGBColor(*src_rgb)
 
 
-# region slide creation helpers
+# region Slide creation helpers
+
+
 def create_blank_slide_for_chunk(
     prs: presentation.Presentation, slide_layout: SlideLayout
 ) -> tuple[Slide, TextFrame]:
@@ -376,6 +388,11 @@ def create_blank_slide_for_chunk(
 
     return new_slide, text_frame
 
+
+# endregion
+
+
+# region process_paragraph_inner_contents (Chunk_docx)
 def process_paragraph_inner_contents(
     paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx
 ) -> None:
@@ -385,13 +402,19 @@ def process_paragraph_inner_contents(
     for item in paragraph.iter_inner_content():
         items_processed = True
         if isinstance(item, Run_docx):
-            
+
             # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
             # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
             # when it happens and report it to the user.
             for child in item._element:
-                if child.tag.endswith('instrText') and child.text and child.text.startswith('HYPERLINK'):
-                    debug_print(f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {child.text}")
+                if (
+                    child.tag.endswith("instrText")
+                    and child.text
+                    and child.text.startswith("HYPERLINK")
+                ):
+                    debug_print(
+                        f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {child.text}"
+                    )
 
             process_run(item, pptx_paragraph)
 
@@ -411,6 +434,10 @@ def process_paragraph_inner_contents(
         pptx_run.text = paragraph.text
 
 
+# endregion
+
+
+# region process_run (Chunk_docx)
 def process_run(
     run: Run_docx, pptx_paragraph: Paragraph_pptx, hyperlink: str | None = None
 ) -> Run_pptx:
@@ -425,6 +452,114 @@ def process_run(
         pptx_run_url.address = hyperlink
 
     return pptx_run
+
+
+# endregion
+
+
+# region annotation helpers (Chunk_docx)
+def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
+    """
+    Get all the comments in this document as a dictionary.
+
+    Elements of the dictionary are formatted as:
+    {
+        "comment_id_#" : this_comment_docx_object,
+        "3": "<docx.comments.Comment object at 0x00000###>
+    }
+    """
+    all_comments_dict = {}
+    if hasattr(doc, "comments") and doc.comments:
+        for comment in doc.comments:
+            all_comments_dict[str(comment.comment_id)] = comment
+    return all_comments_dict
+
+
+def process_chunk_annotations(
+    chunks: list[Chunk_docx], doc: document.Document
+) -> list[Chunk_docx]:
+    """For a list of Chunk_docx objects, populate the annotation dicts for each one."""
+    # Gather all the doc annotations
+    all_comments = get_all_docx_comments(doc)
+
+    # TODO, ANNOTATIONS: implement get_all_docx_footnotes and get_all_docx_endnotes
+    all_footnotes = []
+    all_endnotes = []
+
+    for chunk in chunks:
+        for paragraph in chunk.paragraphs:
+            for item in paragraph.iter_inner_content():
+                for child in item._element:
+                    # PROCESS COMMENTS
+                    if PRESERVE_COMMENTS and child.tag.endswith("commentReference"):
+                        # Extract the id attribute
+                        new_comment_id = child.get(
+                            "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id"
+                        )
+                        # item_comment_ids.append(new_comment_id)
+                        if new_comment_id and new_comment_id in all_comments:
+                            comment_object = all_comments[new_comment_id]
+                            chunk.add_annotation("comments", comment_object)
+
+                # TODO, ANNOTATIONS: complete this for footnotes and endnotes
+                if PRESERVE_FOOTNOTES and child.tag.endswith("footnoteReference"):
+                    pass
+                #     new_footnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
+                #     item_footnote_ids.append(new_footnote_id)
+
+                if PRESERVE_ENDNOTES and child.tag.endswith("endnoteReference"):
+                    pass
+                #     new_endnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
+                #     item_endnote_ids.append(new_endnote_id)
+
+    return chunks
+
+
+def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx:
+    """
+    Pull this chunk's preserved annotations and format them for a slide's speaker notes.
+
+    NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
+    comments' selected text ranges, nor do we preserve footnote or endnote numbering.
+    """
+
+    if chunk.annotations["comments"]:
+        if COMMENTS_SORT_BY_DATE:
+            # Sort comments by date (newest first, or change reverse=False for oldest first)
+            sorted_comments = sorted(
+                chunk.annotations["comments"],
+                key=lambda c: c.timestamp or datetime.min,
+                reverse=False,
+            )
+        else:
+            sorted_comments = chunk.annotations["comments"]
+
+        comment_para = notes_text_frame.add_paragraph()
+        comment_run = comment_para.add_run()
+        comment_run.text = "COMMENTS FROM SOURCE DOCUMENT:\n" + "=" * 40
+
+        for i, comment in enumerate(sorted_comments, 1):
+            for para in comment.paragraphs:
+                if para.text.rstrip():
+                    notes_para = notes_text_frame.add_paragraph()
+                    comment_header = notes_para.add_run()
+                    if COMMENTS_KEEP_AUTHOR_AND_DATE:
+                        comment_header.text = f"\n {i}. {comment.author} ({comment.timestamp.strftime('%A, %B %d, %Y at %I:%M %p')}):\n"
+                    else:
+                        comment_header.text = "\n"
+                    process_paragraph_inner_contents(para, notes_para)
+
+    # TODO, ANNOTATIONS: complete this for footnotes and endnotes
+    if chunk.annotations["footnotes"]:
+        footnote_section = "FOOTNOTES FROM SOURCE DOCUMENT:\n" + "=" * 40 + "\n\n"
+        for i, (footnote_id, footnote_text) in chunk.annotations["footnotes"]:
+            footnote_section += f"{i}. Footnote {footnote_id}:\n"
+            footnote_section += f"   {footnote_text}\n\n"
+
+    if chunk.annotations["endnotes"]:
+        pass
+
+    return chunk
 
 
 # endregion
@@ -452,11 +587,15 @@ def slides_from_chunks(
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
-            if i == 0 and len(text_frame.paragraphs) > 0 and not text_frame.paragraphs[0].text:
+            if (
+                i == 0
+                and len(text_frame.paragraphs) > 0
+                and not text_frame.paragraphs[0].text
+            ):
                 # Use the existing first paragraph
                 pptx_paragraph = text_frame.paragraphs[0]
             else:
-                pptx_paragraph = text_frame.add_paragraph() # type:ignore
+                pptx_paragraph = text_frame.add_paragraph()  # type:ignore
 
             # Process the docx's paragraph contents, including both runs & hyperlinks
             process_paragraph_inner_contents(paragraph, pptx_paragraph)
@@ -465,10 +604,12 @@ def slides_from_chunks(
             notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore
             annotate_chunk(chunk, notes_text_frame)
 
+
 # endregion
 
 
 # region === Chunking Functions ===
+
 # endregion
 
 
@@ -855,114 +996,6 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
 # endregion
 
 
-# region Chunk Annotation Functions
-
-
-def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
-    """
-    Get all the comments in this document as a dictionary.
-
-    Elements of the dictionary are formatted as:
-    {
-        "comment_id_#" : this_comment_docx_object,
-        "3": "<docx.comments.Comment object at 0x00000###>
-    }
-    """
-    all_comments_dict = {}
-    if hasattr(doc, "comments") and doc.comments:
-        for comment in doc.comments:
-            all_comments_dict[str(comment.comment_id)] = comment
-    return all_comments_dict
-
-
-def process_chunk_annotations(
-    chunks: list[Chunk_docx], doc: document.Document
-) -> list[Chunk_docx]:
-    """For a list of Chunk_docx objects, populate the annotation dicts for each one."""
-    # Gather all the doc annotations
-    all_comments = get_all_docx_comments(doc)
-    all_footnotes = []
-    all_endnotes = []
-
-    for chunk in chunks:
-        for paragraph in chunk.paragraphs:
-            for item in paragraph.iter_inner_content():
-                for child in item._element:
-                    # PROCESS COMMENTS
-                    if PRESERVE_COMMENTS and child.tag.endswith("commentReference"):
-                        # Extract the id attribute
-                        new_comment_id = child.get(
-                            "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id"
-                        )
-                        # item_comment_ids.append(new_comment_id)
-                        if new_comment_id and new_comment_id in all_comments:
-                            comment_object = all_comments[new_comment_id]
-                            chunk.add_annotation("comments", comment_object)
-
-                if PRESERVE_FOOTNOTES and child.tag.endswith("footnoteReference"):
-                    pass
-                #     new_footnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
-                #     item_footnote_ids.append(new_footnote_id)
-
-                if PRESERVE_ENDNOTES and child.tag.endswith("endnoteReference"):
-                    pass
-                #     new_endnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
-                #     item_endnote_ids.append(new_endnote_id)
-
-    return chunks
-
-
-def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx:
-    """
-    Pull this chunk's preserved annotations and format them for a slide's speaker notes.
-
-    NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
-    comments' selected text ranges, nor do we preserve footnote or endnote numbering.
-    """
-
-    if chunk.annotations["comments"]:
-        if COMMENTS_SORT_BY_DATE:
-            # Sort comments by date (newest first, or change reverse=False for oldest first)
-            sorted_comments = sorted(
-                chunk.annotations["comments"],
-                key=lambda c: c.timestamp or datetime.min,
-                reverse=False,
-            )
-        else:
-            sorted_comments = chunk.annotations["comments"]
-
-        comment_para = notes_text_frame.add_paragraph()
-        comment_run = comment_para.add_run()
-        comment_run.text = "COMMENTS FROM SOURCE DOCUMENT:\n" + "=" * 40
-
-        for i, comment in enumerate(sorted_comments, 1):
-            for para in comment.paragraphs:
-                if para.text.rstrip():
-                    notes_para = notes_text_frame.add_paragraph()
-                    comment_header = notes_para.add_run()
-                    if COMMENTS_KEEP_AUTHOR_AND_DATE:
-                        comment_header.text = f"\n {i}. {comment.author} ({comment.timestamp.strftime('%A, %B %d, %Y at %I:%M %p')}):\n"
-                    else:
-                        comment_header.text = "\n"
-                    process_paragraph_inner_contents(para, notes_para)
-            # comment_section +=
-            # comment_section += f"   {comment.text}\n\n"
-
-    if chunk.annotations["footnotes"]:
-        footnote_section = "FOOTNOTES FROM SOURCE DOCUMENT:\n" + "=" * 40 + "\n\n"
-        for i, (footnote_id, footnote_text) in chunk.annotations["footnotes"]:
-            footnote_section += f"{i}. Footnote {footnote_id}:\n"
-            footnote_section += f"   {footnote_text}\n\n"
-
-    if chunk.annotations["endnotes"]:
-        pass
-
-    return chunk
-
-
-# endregion
-
-
 # region Utils - Basic
 def debug_print(msg: str | list[str]) -> None:
     """Basic debug printing function"""
@@ -1020,7 +1053,7 @@ def validate_pptx_path(user_path: str | Path) -> Path:
     return path
 
 
-# TODO: Add validation to ensure the template is in good shape
+# TODO, BASIC VALIDATION: Add validation to ensure the template is in good shape
 # Like make sure it has all the pieces we're going to rely on; slide masters and slide layout, etc.,
 # and make sure whatever the slide layout name the user provided and wishes to use exists.
 def create_empty_slide_deck() -> presentation.Presentation:
@@ -1037,8 +1070,8 @@ def create_empty_slide_deck() -> presentation.Presentation:
     return prs
 
 
-# TODO: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
-# TODO: Probably add some kind of file rotation so the last 5 or so outputs are preserved
+# TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
+# TODO, UX: Probably add some kind of file rotation so the last 5 or so outputs are preserved
 def save_pptx(prs: presentation.Presentation) -> None:
     """Save the generated slides to disk."""
     # Construct output path
