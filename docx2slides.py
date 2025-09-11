@@ -1,4 +1,4 @@
-# pyright: strict
+# pyright: basic
 """
 Convert Microsoft Word documents to PowerPoint presentations.
 
@@ -43,6 +43,7 @@ import pptx
 from docx import document
 from docx.comments import Comment as Comment_docx
 
+
 # from docx.table import Table as Table_docx
 # from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
@@ -52,6 +53,7 @@ from pptx.dml.color import RGBColor
 from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
+import xml.etree.ElementTree as ET
 
 # endregion
 
@@ -299,6 +301,25 @@ def main() -> None:
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, CHUNK_TYPE)
 
+ 
+    # ====== EXPERIMENT ZONE
+
+    all_footnotes_dict = {}
+    explore_footnotes(user_docx)
+    
+    
+        
+    sys.exit(0)
+    
+
+    #first_child = user_docx.element.xml
+
+    #debug_print(str(first_child))
+
+
+
+    # ====== / EXPERIMENT ZONE
+
     if PRESERVE_ANNOTATIONS:
         chunks = process_chunk_annotations(chunks, user_docx)
 
@@ -321,6 +342,152 @@ def main() -> None:
 
 
 # endregion
+def explore_footnotes(doc: document.Document):
+    from docx.opc.part import Part
+    # Inspect the doc as if it were a zip file
+    zip_package = doc.part.package
+    if not zip_package:
+        raise ValueError
+    else: 
+        parts = zip_package.parts
+
+    # Check if there's a footnotes part.       
+    if not parts:
+        raise ValueError
+    else: # if any of the parts have a filename/partname of "footnotes.xml", grab it. The output is a list.
+        footnote_parts = [p for p in zip_package.parts if 'footnotes.xml' in str(p.partname)]
+
+    # if the list is empty, there weren't footnotes.
+    if not footnote_parts:
+        raise ValueError
+        # return empty dict
+        # return all_footnotes_dict = {}
+    
+    # We think this will always be a list of one item, so assign that item to a variable.
+    footnote_part = footnote_parts[0]
+
+    # Double-check on another field that this is a footnote type.
+    if "footnote" in str(footnote_part.content_type):
+        print("we think it's really a footnote")
+
+    footnote_blob = footnote_part.blob
+    
+
+    # Step 1: Parse the XML
+    # footnote_blob might be bytes, so we convert to string first
+    if isinstance(footnote_blob, bytes):
+        xml_string = footnote_blob.decode('utf-8')
+    else:
+        # if it wasn't bytes, we assume it's a string already
+        xml = footnote_blob
+
+    # Step 2: Create an ElementTree object by deserializing it into a Python object
+    root = ET.fromstring(xml_string)
+    print(f"Type of root is: {type(root)}")
+
+    # Step 3 explore what we have:
+    print("Root tag: ", root.tag)
+    print("Root attributes: ", root.attrib)
+    
+    # See what's inside the root:
+    print("Number of child elements: ", len(root))
+
+    # Look at the first few elements:
+    for i, child in enumerate(root[:3]): # start with just the first 3
+        print(f"Child {i}: tag = {child.tag}")
+        print(f"Child {i}: attributes: {child.attrib}")
+        print("-----")
+
+    # Step 5: Look specifically at a real footnote, which starts at element 2
+    real_footnote = root[2] # This should be id='1'. The 0th and 1st items were special footnotes that Word uses for formatting separators, and had the IDs "-1" (o m g) and "0".
+    print(f"Real footnote id: {real_footnote.attrib}")
+    print(f"Number of children in this footnote item: {len(real_footnote)}")
+
+    # Look inside it.
+    for i, child in enumerate(real_footnote):
+        print(f"    Inner child {i}: tag = {child.tag}")
+        if child.text:
+            print(f"    Inner child {i}: text = '{child.text[:50]}'...")
+        print("---")
+
+    # Step 6: Look at the first paragraph of footnote 1:
+    first_para = real_footnote[0]
+    print(f"First paragraph has {len(first_para)} children.")
+
+    for i, child in enumerate(first_para):
+        print(f"    Para Child {i}: tag = {child.tag}")
+        if child.text and child.text.strip():
+            print(f"    Para child {i}: direct text = '{child.text[:30]}...'")
+
+        # Let's also look one level deeper, since Word text is often nested
+        if len(child) > 0:
+            print(f"    Para child {i} has {len(child)} grandchildren")
+            for j, grandchild in enumerate(child[:2]): # let's look at just the first 2 grandkids
+                print(f"        Grandchild {j}: tag = {grandchild.tag}")
+                if grandchild.text and grandchild.text.strip():
+                    print(f"        Grandchild {j} text = '{grandchild.text[:30]}...'")
+        print("--------")
+
+    footnote_1 = root[2]
+    all_text = extract_text_from_element(footnote_1)
+    full_text = ''.join(all_text)
+
+    print(f"Full footnote 1 text:\n {full_text}")
+
+    # Step... whatever we're on:
+    
+    # Extract all footnotes
+    all_footnotes = extract_all_footnotes(root)
+
+    print(f"Found {len(all_footnotes)} real footnotes:")
+    for footnote_id, text in list(all_footnotes.items())[:3]: # show first 3
+        print(f"Footnote {footnote_id}: {text[:80]}...")
+
+
+def extract_text_from_element(element: ET.Element) -> list[str]:
+    """Recursively extract all text from an XML element and its children."""
+    text_parts = []
+
+    # Get the direct text of this element
+    if element.text:
+        text_parts.append(element.text)
+    
+    # Get the text from its child elements
+    for child in element:
+        text_parts.extend(extract_text_from_element(child))
+        # Also get the tail (text that comes after the child element
+        if child.tail:
+            text_parts.append(child.tail)
+    return text_parts
+
+def extract_all_footnotes(root: ET.Element) -> dict[str, str]:    
+    """Extract all footnotes from the doc, returning a dict of {id: text}"""
+
+    # We need to define the namespace first
+    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+
+    footnotes_dict = {}
+
+    for footnote in root:
+        # Get the footnote ID
+        footnote_id = footnote.get(f'{{{ns["w"]}}}id')
+        footnote_type = footnote.get(f'{{{ns["w"]}}}type')
+
+        # Skip separator footnotes (they're just formatting)
+        if footnote_type in ['separator', 'continuationSeparator']:
+            continue
+                
+        # DEBUG: Let's see what we're getting
+        print(f"DEBUG: id={footnote_id}, type={footnote_type}")
+        
+        text_parts = extract_text_from_element(footnote)
+        full_text = ''.join(text_parts).strip()
+
+        footnotes_dict[footnote_id] = full_text
+    
+    return footnotes_dict
+                                   
+    
 
 
 # region Pipeline Functions
