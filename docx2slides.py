@@ -420,11 +420,10 @@ def process_paragraph_inner_contents(
             # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
             # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
             # when it happens and report it to the user.
-<<<<<<< HEAD
+
             # TODO, POLISH: fix this code to more safely handle unexpected XML structures (if hasattr() etc.)
             # TODO, POLISH: maybe put this into a helper function handle_instrText_hyperlinks() or something?
-=======
->>>>>>> 7de168d73cdacc1302b4db453b9adb6363189977
+
             for child in item._element:  # type: ignore
                 if (
                     child.tag.endswith("instrText")  # type: ignore
