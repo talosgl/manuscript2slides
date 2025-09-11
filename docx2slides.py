@@ -34,6 +34,8 @@ import sys
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Union
+from dataclasses import dataclass, field
 
 # Third-party libraries
 import docx
@@ -48,7 +50,7 @@ from docx.text.run import Run as Run_docx
 from pptx import presentation
 from pptx.dml.color import RGBColor
 from pptx.slide import Slide, SlideLayout
-from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx # type: ignore
+from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
 
 # endregion
@@ -202,8 +204,6 @@ COMMENTS_SORT_BY_DATE: bool = True
 COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
 
 # region Classes
-from typing import Union
-from dataclasses import dataclass, field
 
 
 @dataclass
@@ -211,17 +211,18 @@ class Footnote_docx:
     footnote_id: str
     paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
 
-@dataclass  
+
+@dataclass
 class Endnote_docx:
     endnote_id: str
     paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
 
+
 # Type aliases for clarity
 # ParagraphType = Union[Paragraph_docx, Paragraph_pptx] # might allow us to reuse functions for either-direction import/export (I hope)
 # InnerContentType_docx = Paragraph_docx | Table_docx # might allow us to support tables and paragraphs
-AnnotationType = Union[
-    Comment_docx, Footnote_docx, Endnote_docx
-]  
+AnnotationType = Union[Comment_docx, Footnote_docx, Endnote_docx]
+
 
 @dataclass
 class Chunk_docx:
@@ -233,10 +234,10 @@ class Chunk_docx:
     # TODO, TABLE SUPPORT: if we support tables later
     # inner_contents: list[InnerContentType_docx] = field(default_factory=list)
 
-    annotations: dict[str, list[AnnotationType]] = field( # type: ignore
+    annotations: dict[str, list[AnnotationType]] = field(  # type: ignore
         default_factory=lambda: {
             "comments": [],
-            "footnotes": [], 
+            "footnotes": [],
             "endnotes": [],
         }  # Calls dict() constructor with our key-value pairs
     )
@@ -265,6 +266,7 @@ class Chunk_docx:
 # I think it would be:
 # list of body [Paragraph_pptx]
 # list of speaker notes [Paragraph_pptx]
+# make sure to use a factory for these lists because lists are mutable!
 
 
 # endregion
@@ -388,10 +390,10 @@ def create_blank_slide_for_chunk(
     """Initialize an empty slide so that we can populate it with a chunk."""
     new_slide = prs.slides.add_slide(slide_layout)
     content = new_slide.placeholders[1]
-    
+
     if not isinstance(content, SlidePlaceholder):
         raise TypeError(f"Expected SlidePlaceholder, got {type(content)}")
-    
+
     text_frame: TextFrame = content.text_frame
     text_frame.clear()
 
@@ -418,14 +420,16 @@ def process_paragraph_inner_contents(
             # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
             # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
             # when it happens and report it to the user.
-            for child in item._element: # type: ignore
+            # TODO, POLISH: fix this code to more safely handle unexpected XML structures (if hasattr() etc.)
+            # TODO, POLISH: maybe put this into a helper function handle_instrText_hyperlinks() or something?
+            for child in item._element:  # type: ignore
                 if (
-                    child.tag.endswith("instrText") # type: ignore
-                    and child.text # type: ignore
-                    and child.text.startswith("HYPERLINK") # type: ignore
+                    child.tag.endswith("instrText")  # type: ignore
+                    and child.text  # type: ignore
+                    and child.text.startswith("HYPERLINK")  # type: ignore
                 ):
                     debug_print(
-                        f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {child.text}" # type: ignore
+                        f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {child.text}"  # type: ignore
                     )
 
             process_run(item, pptx_paragraph)
@@ -437,7 +441,7 @@ def process_paragraph_inner_contents(
         else:
             debug_print(f"Unknown content type in paragraph: {type(item)}")
 
-        # Fallback: if no content was processed but paragraph has text
+    # Fallback: if no content was processed but paragraph has text
     if not items_processed and paragraph.text:
         debug_print(
             f"Fallback: paragraph has text but no runs/hyperlinks: {paragraph.text[:50]}"
@@ -481,13 +485,14 @@ def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
     }
     """
     all_comments_dict: dict[str, Comment_docx] = {}
-    
+
     if hasattr(doc, "comments") and doc.comments:
         for comment in doc.comments:
             all_comments_dict[str(comment.comment_id)] = comment
     return all_comments_dict
 
 
+# TODO, ANNOTATIONS: split up into 3 calls: get_docx_comments, get_docx_footnotes, get_docx_endnotes, and use this as orchestrator
 def process_chunk_annotations(
     chunks: list[Chunk_docx], doc: document.Document
 ) -> list[Chunk_docx]:
@@ -505,13 +510,13 @@ def process_chunk_annotations(
                 for child in item._element:  # type: ignore[attr-defined]
                     # PROCESS COMMENTS
 
-                     # Check if child has the attributes we need
-                    if not (hasattr(child, 'tag') and hasattr(child, 'get')): # type: ignore[attr-defined]
+                    # Check if child has the attributes we need
+                    if not (hasattr(child, "tag") and hasattr(child, "get")):  # type: ignore[attr-defined]
                         continue
 
-                    if PRESERVE_COMMENTS and child.tag.endswith("commentReference"): # type: ignore[attr-defined]
+                    if PRESERVE_COMMENTS and child.tag.endswith("commentReference"):  # type: ignore[attr-defined]
                         # Extract the id attribute
-                        new_comment_id = child.get( # type: ignore[attr-defined]
+                        new_comment_id = child.get(  # type: ignore[attr-defined]
                             "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id"
                         )
                         # item_comment_ids.append(new_comment_id)
@@ -520,12 +525,12 @@ def process_chunk_annotations(
                             chunk.add_annotation("comments", comment_object)
 
                 # TODO, ANNOTATIONS: complete this for footnotes and endnotes
-                if PRESERVE_FOOTNOTES and child.tag.endswith("footnoteReference"): # type: ignore[attr-defined]
+                if PRESERVE_FOOTNOTES and child.tag.endswith("footnoteReference"):  # type: ignore[attr-defined]
                     pass
                 #     new_footnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
                 #     item_footnote_ids.append(new_footnote_id)
 
-                if PRESERVE_ENDNOTES and child.tag.endswith("endnoteReference"): # type: ignore[attr-defined]
+                if PRESERVE_ENDNOTES and child.tag.endswith("endnoteReference"):  # type: ignore[attr-defined]
                     pass
                 #     new_endnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
                 #     item_endnote_ids.append(new_endnote_id)
@@ -533,6 +538,7 @@ def process_chunk_annotations(
     return chunks
 
 
+# TODO, ANNOTATIONS: as above-- split up into 3 calls: get_chunk_comments, get_chunk_footnotes, get_chunk_endnotes, and use this as orchestrator
 def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx:
     """
     Pull this chunk's preserved annotations and format them for a slide's speaker notes.
@@ -547,7 +553,7 @@ def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx
             # Sort comments by date (newest first, or change reverse=False for oldest first)
             sorted_comments = sorted(
                 comments_list,
-                key=lambda c: getattr(c, 'timestamp', None) or datetime.min,
+                key=lambda c: getattr(c, "timestamp", None) or datetime.min,
                 reverse=False,
             )
         else:
@@ -559,25 +565,29 @@ def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx
 
         for i, comment in enumerate(sorted_comments, 1):
             # Check if comment has paragraphs attribute
-            if hasattr(comment, 'paragraphs'):
+            if hasattr(comment, "paragraphs"):
                 # Get paragraphs safely, default to empty list if not present
-                this_comment_paragraphs = getattr(comment, 'paragraphs', [])
+                this_comment_paragraphs = getattr(comment, "paragraphs", [])
                 for para in this_comment_paragraphs:
-                    if hasattr(para, 'text') and para.text.rstrip():
+                    if hasattr(para, "text") and para.text.rstrip():
                         notes_para = notes_text_frame.add_paragraph()
                         comment_header = notes_para.add_run()
 
                         if COMMENTS_KEEP_AUTHOR_AND_DATE:
-                            author = getattr(comment, 'author', 'Unknown Author')
-                            timestamp = getattr(comment, 'timestamp', None)
+                            author = getattr(comment, "author", "Unknown Author")
+                            timestamp = getattr(comment, "timestamp", None)
 
-                            if timestamp and hasattr(timestamp, 'strftime'):
-                                timestamp_str = timestamp.strftime('%A, %B %d, %Y at %I:%M %p')
+                            if timestamp and hasattr(timestamp, "strftime"):
+                                timestamp_str = timestamp.strftime(
+                                    "%A, %B %d, %Y at %I:%M %p"
+                                )
                             else:
-                                timestamp_str = 'Unknown Date'
+                                timestamp_str = "Unknown Date"
 
-                            comment_header.text = f"\n {i}. {author} ({timestamp_str}):\n"
-                            
+                            comment_header.text = (
+                                f"\n {i}. {author} ({timestamp_str}):\n"
+                            )
+
                         else:
                             comment_header.text = "\n"
                         process_paragraph_inner_contents(para, notes_para)
@@ -586,11 +596,12 @@ def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx
     footnotes_list = chunk.annotations.get("footnotes", [])
     if footnotes_list:
         footnote_section = "FOOTNOTES FROM SOURCE DOCUMENT:\n" + "=" * 40 + "\n\n"
+        # TODO: I don't know about using i here; footnote starting numbers are gonna change page over page
         for i, footnote_item in enumerate(footnotes_list, 1):
 
             # Handle different possible footnote formats
             if isinstance(footnote_item, tuple) and len(footnote_item) >= 2:
-                footnote_id, footnote_text = footnote_item[0], footnote_item[1] # type: ignore (while in dev)
+                footnote_id, footnote_text = footnote_item[0], footnote_item[1]  # type: ignore (while in dev)
             else:
                 footnote_id = i
                 footnote_text = str(footnote_item)
@@ -629,21 +640,24 @@ def slides_from_chunks(
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
+
+            # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
+            # So if we're at the start of our list, use that existing empty paragraph.
             if (
                 i == 0
                 and len(text_frame.paragraphs) > 0
                 and not text_frame.paragraphs[0].text
             ):
-                # Use the existing first paragraph
+                # Use the existing first/0th paragraph
                 pptx_paragraph = text_frame.paragraphs[0]
             else:
-                pptx_paragraph = text_frame.add_paragraph()  # type:ignore
+                pptx_paragraph = text_frame.add_paragraph()
 
             # Process the docx's paragraph contents, including both runs & hyperlinks
             process_paragraph_inner_contents(paragraph, pptx_paragraph)
 
         if PRESERVE_ANNOTATIONS:
-            notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore
+            notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore # TODO, POLISH: is there a reasonable way to fix this type hint?
             annotate_chunk(chunk, notes_text_frame)
 
 
@@ -665,7 +679,7 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
 
     for para in doc.paragraphs:
 
-        # Skip empty paragraphs (but keep those that are new-lines to respect intentional whitespace)
+        # Skip empty paragraphs (but keep those that are new-lines to respect intentional whitespace newlines)
         if para.text == "":
             continue
 
@@ -712,7 +726,7 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
         # If there was no page break, just append this paragraph to the current_chunk
         current_page_chunk.add_paragraph(
             para
-        )  # equivalent to current_chunk.add_paragraph(para) ?
+        )
 
     # Ensure final chunk from loop is added to chunks list
     if current_page_chunk:
@@ -725,7 +739,6 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
 # endregion
 
 # region by Heading (nested)
-
 
 def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     """
@@ -1102,7 +1115,7 @@ def create_empty_slide_deck() -> presentation.Presentation:
     """Load the PowerPoint template and create a new presentation object."""
 
     try:
-        template_path = validate_pptx_path(Path(TEMPLATE_PPTX))        
+        template_path = validate_pptx_path(Path(TEMPLATE_PPTX))
         prs = pptx.Presentation(str(template_path))
         return prs
     except Exception as e:
@@ -1113,7 +1126,6 @@ def create_empty_slide_deck() -> presentation.Presentation:
     # slide = prs.slides.add_slide(slide_layout)
     # content = slide.placeholders[1]
     # content.text = "Test Slide!" # type:ignore
-
 
 
 # TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
@@ -1127,7 +1139,7 @@ def save_pptx(prs: presentation.Presentation) -> None:
             folder.mkdir(parents=True, exist_ok=True)
             output_filepath = folder / OUTPUT_PPTX_FILENAME
         else:
-            output_filepath = Path(OUTPUT_PPTX_FILENAME)        
+            output_filepath = Path(OUTPUT_PPTX_FILENAME)
         prs.save(str(output_filepath))
         print(f"Successfully saved to {output_filepath}")
     except PermissionError:
