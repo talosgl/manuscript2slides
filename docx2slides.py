@@ -1,4 +1,4 @@
-# pyright: basic
+# pyright: strict
 """
 Convert Microsoft Word documents to PowerPoint presentations.
 
@@ -36,12 +36,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Union
 from dataclasses import dataclass, field
+#import warnings
 
 # Third-party libraries
 import docx
 import pptx
 from docx import document
 from docx.comments import Comment as Comment_docx
+
+from docx.opc.part import Part
 
 
 # from docx.table import Table as Table_docx
@@ -118,6 +121,8 @@ Known Issues & Limitations:
             only the annotation content appears in speaker notes.
 
         -   You can choose to preserve some comment metadata (author, timestamps) in plain text, but not threading.
+
+        -   Footnotes and endnotes don't preserve formatting, only plain text.
     
     -   REVERSE FLOW LIMITATIONS
         -   The reverse flow (pptx2docx) is significantly less robust for annotations. There is no support for separating out
@@ -195,7 +200,7 @@ DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing; update: TO
 # endregion
 
 PRESERVE_COMMENTS: bool = True
-PRESERVE_FOOTNOTES: bool = False
+PRESERVE_FOOTNOTES: bool = True
 PRESERVE_ENDNOTES: bool = False
 
 PRESERVE_ANNOTATIONS: bool = (
@@ -205,19 +210,36 @@ PRESERVE_ANNOTATIONS: bool = (
 COMMENTS_SORT_BY_DATE: bool = True
 COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
 
+FAIL_FAST: bool = False
 # region Classes
 
 
 @dataclass
 class Footnote_docx:
+    """
+    Represents a footnote extracted from a docx.
+    
+    Contains the footnote ID, text content, and any hyperlinks found within.
+    Used for preserving footnote information when python-docx doesn't provide 
+    direct access to footnote content.
+    """
     footnote_id: str
-    paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
+    text_body: str
+    hyperlinks: list[str] = field(default_factory=list[str])
 
 
 @dataclass
 class Endnote_docx:
+    """
+    Represents a endnote extracted from a docx.
+    
+    Contains the endnote ID, text content, and any hyperlinks found within.
+    Used for preserving endnote information when python-docx doesn't provide 
+    direct access to endnote content.
+    """
     endnote_id: str
-    paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
+    text_body: str
+    hyperlinks: list[str] = field(default_factory=list[str])
 
 
 # Type aliases for clarity
@@ -304,20 +326,6 @@ def main() -> None:
  
     # ====== EXPERIMENT ZONE
 
-    all_footnotes_dict = {}
-    explore_footnotes(user_docx)
-    
-    
-        
-    sys.exit(0)
-    
-
-    #first_child = user_docx.element.xml
-
-    #debug_print(str(first_child))
-
-
-
     # ====== / EXPERIMENT ZONE
 
     if PRESERVE_ANNOTATIONS:
@@ -342,152 +350,7 @@ def main() -> None:
 
 
 # endregion
-def explore_footnotes(doc: document.Document):
-    from docx.opc.part import Part
-    # Inspect the doc as if it were a zip file
-    zip_package = doc.part.package
-    if not zip_package:
-        raise ValueError
-    else: 
-        parts = zip_package.parts
 
-    # Check if there's a footnotes part.       
-    if not parts:
-        raise ValueError
-    else: # if any of the parts have a filename/partname of "footnotes.xml", grab it. The output is a list.
-        footnote_parts = [p for p in zip_package.parts if 'footnotes.xml' in str(p.partname)]
-
-    # if the list is empty, there weren't footnotes.
-    if not footnote_parts:
-        raise ValueError
-        # return empty dict
-        # return all_footnotes_dict = {}
-    
-    # We think this will always be a list of one item, so assign that item to a variable.
-    footnote_part = footnote_parts[0]
-
-    # Double-check on another field that this is a footnote type.
-    if "footnote" in str(footnote_part.content_type):
-        print("we think it's really a footnote")
-
-    footnote_blob = footnote_part.blob
-    
-
-    # Step 1: Parse the XML
-    # footnote_blob might be bytes, so we convert to string first
-    if isinstance(footnote_blob, bytes):
-        xml_string = footnote_blob.decode('utf-8')
-    else:
-        # if it wasn't bytes, we assume it's a string already
-        xml = footnote_blob
-
-    # Step 2: Create an ElementTree object by deserializing it into a Python object
-    root = ET.fromstring(xml_string)
-    print(f"Type of root is: {type(root)}")
-
-    # Step 3 explore what we have:
-    print("Root tag: ", root.tag)
-    print("Root attributes: ", root.attrib)
-    
-    # See what's inside the root:
-    print("Number of child elements: ", len(root))
-
-    # Look at the first few elements:
-    for i, child in enumerate(root[:3]): # start with just the first 3
-        print(f"Child {i}: tag = {child.tag}")
-        print(f"Child {i}: attributes: {child.attrib}")
-        print("-----")
-
-    # Step 5: Look specifically at a real footnote, which starts at element 2
-    real_footnote = root[2] # This should be id='1'. The 0th and 1st items were special footnotes that Word uses for formatting separators, and had the IDs "-1" (o m g) and "0".
-    print(f"Real footnote id: {real_footnote.attrib}")
-    print(f"Number of children in this footnote item: {len(real_footnote)}")
-
-    # Look inside it.
-    for i, child in enumerate(real_footnote):
-        print(f"    Inner child {i}: tag = {child.tag}")
-        if child.text:
-            print(f"    Inner child {i}: text = '{child.text[:50]}'...")
-        print("---")
-
-    # Step 6: Look at the first paragraph of footnote 1:
-    first_para = real_footnote[0]
-    print(f"First paragraph has {len(first_para)} children.")
-
-    for i, child in enumerate(first_para):
-        print(f"    Para Child {i}: tag = {child.tag}")
-        if child.text and child.text.strip():
-            print(f"    Para child {i}: direct text = '{child.text[:30]}...'")
-
-        # Let's also look one level deeper, since Word text is often nested
-        if len(child) > 0:
-            print(f"    Para child {i} has {len(child)} grandchildren")
-            for j, grandchild in enumerate(child[:2]): # let's look at just the first 2 grandkids
-                print(f"        Grandchild {j}: tag = {grandchild.tag}")
-                if grandchild.text and grandchild.text.strip():
-                    print(f"        Grandchild {j} text = '{grandchild.text[:30]}...'")
-        print("--------")
-
-    footnote_1 = root[2]
-    all_text = extract_text_from_element(footnote_1)
-    full_text = ''.join(all_text)
-
-    print(f"Full footnote 1 text:\n {full_text}")
-
-    # Step... whatever we're on:
-    
-    # Extract all footnotes
-    all_footnotes = extract_all_footnotes(root)
-
-    print(f"Found {len(all_footnotes)} real footnotes:")
-    for footnote_id, text in list(all_footnotes.items())[:3]: # show first 3
-        print(f"Footnote {footnote_id}: {text[:80]}...")
-
-
-def extract_text_from_element(element: ET.Element) -> list[str]:
-    """Recursively extract all text from an XML element and its children."""
-    text_parts = []
-
-    # Get the direct text of this element
-    if element.text:
-        text_parts.append(element.text)
-    
-    # Get the text from its child elements
-    for child in element:
-        text_parts.extend(extract_text_from_element(child))
-        # Also get the tail (text that comes after the child element
-        if child.tail:
-            text_parts.append(child.tail)
-    return text_parts
-
-def extract_all_footnotes(root: ET.Element) -> dict[str, str]:    
-    """Extract all footnotes from the doc, returning a dict of {id: text}"""
-
-    # We need to define the namespace first
-    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
-
-    footnotes_dict = {}
-
-    for footnote in root:
-        # Get the footnote ID
-        footnote_id = footnote.get(f'{{{ns["w"]}}}id')
-        footnote_type = footnote.get(f'{{{ns["w"]}}}type')
-
-        # Skip separator footnotes (they're just formatting)
-        if footnote_type in ['separator', 'continuationSeparator']:
-            continue
-                
-        # DEBUG: Let's see what we're getting
-        print(f"DEBUG: id={footnote_id}, type={footnote_type}")
-        
-        text_parts = extract_text_from_element(footnote)
-        full_text = ''.join(text_parts).strip()
-
-        footnotes_dict[footnote_id] = full_text
-    
-    return footnotes_dict
-                                   
-    
 
 
 # region Pipeline Functions
@@ -587,19 +450,7 @@ def process_paragraph_inner_contents(
             # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
             # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
             # when it happens and report it to the user.
-
-            # TODO, POLISH: fix this code to more safely handle unexpected XML structures (if hasattr() etc.)
-            # TODO, POLISH: maybe put this into a helper function handle_instrText_hyperlinks() or something?
-
-            for child in item._element:  # type: ignore
-                if (
-                    child.tag.endswith("instrText")  # type: ignore
-                    and child.text  # type: ignore
-                    and child.text.startswith("HYPERLINK")  # type: ignore
-                ):
-                    debug_print(
-                        f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {child.text}"  # type: ignore
-                    )
+            detect_field_code_hyperlinks(item)
 
             process_run(item, pptx_paragraph)
 
@@ -621,6 +472,23 @@ def process_paragraph_inner_contents(
 
 # endregion
 
+def detect_field_code_hyperlinks(run: Run_docx) -> None:
+    """
+    Detect if this Run has a field code for instrText and it begins with HYPERLINK. If so, report it to the user, because
+    we do not handle adding these to the pptx output.
+    """
+    try:
+        run_xml: str = run.element.xml  # type: ignore
+        root = ET.fromstring(run_xml)
+        
+        # Find instrText elements
+        instr_texts = root.findall('.//w:instrText', {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
+        for instr in instr_texts:
+            if instr.text and instr.text.startswith("HYPERLINK"):
+                debug_print(f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {instr.text}")
+                
+    except (AttributeError, ET.ParseError) as e:
+        debug_print(f"WARNING: Could not parse run XML for field codes: {e} while seeking instrText")
 
 # region process_run (Chunk_docx)
 def process_run(
@@ -661,48 +529,158 @@ def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
     return all_comments_dict
 
 
-# TODO, ANNOTATIONS: split up into 3 calls: get_docx_comments, get_docx_footnotes, get_docx_endnotes, and use this as orchestrator
+def extract_hyperlinks_from_footnote(element: ET.Element) -> list[str]:
+    """Extract all hyperlinks from a footnote element."""
+    hyperlinks: list[str] = []
+    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+
+    element.iter
+
+    for hyperlink in element.findall('.//w:hyperlink', ns):
+        # Get the link text
+        link_text = ''.join([t.text or '' for t in hyperlink.findall('.//w:t', ns)])
+        if link_text.strip():
+            hyperlinks.append(link_text.strip())
+    
+    return hyperlinks
+
+def get_all_docx_endnotes(doc: document.Document) -> dict[str, Endnote_docx]:
+    raise NotImplementedError
+
+def get_all_docx_footnotes(doc: document.Document) -> dict[str, Footnote_docx]:
+    """
+    Extract all footnotes from a docx document. 
+    Returns {id: {footnote_id: str, text_body: str, hyperlinks: list of str} }.
+    """
+    try:
+        # Inspect the docx package as a zip
+        zip_package = doc.part.package
+        if zip_package is None:
+            debug_print("WARNING: Could not access docx package")
+            return {}
+
+        footnote_parts: list[Part] = []
+        for part in zip_package.parts:
+            if 'footnotes.xml' in str(part.partname):
+                footnote_parts.append(part)
+
+        # If the list is empty, there weren't footnotes.
+        if not footnote_parts:            
+            return {}
+        
+        # Parse the footnotes XML
+
+        # We think this will always be a list of one item, so assign that item to a variable.
+        footnote_blob = footnote_parts[0].blob
+
+        # If footnote_blob is in bytes, convert it to a string
+        if isinstance(footnote_blob, bytes) or hasattr(footnote_blob, 'decode'):
+            xml_string = bytes(footnote_blob).decode('utf-8')
+        else:
+            # If it wasn't bytes, we assume it's a string already
+            xml_string = footnote_blob
+
+        # Create an ElementTree object by deserializing the footnotes.xml contents into a Python object
+        root: ET.Element = ET.fromstring(xml_string)
+        
+        return extract_all_footnotes(root)
+    
+    except Exception as e:
+        if FAIL_FAST:
+            raise
+        else:
+            debug_print(f"Warning: Could not extract footnotes: {e}")
+            return {}
+
+def extract_all_footnotes(root: ET.Element) -> dict[str, Footnote_docx]:    
+    """Extract all footnotes from the doc, returning a dict of {id: text}"""
+
+    # We need to define the namespace first
+    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
+
+    footnotes_dict: dict[str, Footnote_docx] = {}
+
+    for footnote in root:
+        # Get the footnote ID
+        footnote_id = footnote.get(f'{{{ns["w"]}}}id')
+        footnote_type = footnote.get(f'{{{ns["w"]}}}type')
+
+        # Skip if we can't get a valid ID
+        if footnote_id is None:
+            debug_print("WARNING: Found footnote without ID, skipping")
+            continue
+
+        # Skip separator footnotes (they're just formatting)
+        if footnote_type in ['separator', 'continuationSeparator']:
+            continue
+        
+        full_text = ''.join(footnote.itertext())
+        all_hyperlinks = extract_hyperlinks_from_footnote(footnote)
+
+        footnote_obj = Footnote_docx(footnote_id=footnote_id,
+                                     text_body=full_text,
+                                     hyperlinks=all_hyperlinks)
+
+        footnotes_dict[footnote_id] = footnote_obj
+    
+    return footnotes_dict
+
 def process_chunk_annotations(
     chunks: list[Chunk_docx], doc: document.Document
 ) -> list[Chunk_docx]:
     """For a list of Chunk_docx objects, populate the annotation dicts for each one."""
-    # Gather all the doc annotations
-    all_comments = get_all_docx_comments(doc)
-
-    # TODO, ANNOTATIONS: implement get_all_docx_footnotes and get_all_docx_endnotes
-    # all_footnotes = []
-    # all_endnotes = []
+        
+    # Gather all the doc annotations - use empty dict if feature disabled
+    all_comments = get_all_docx_comments(doc) if PRESERVE_COMMENTS else {}
+    all_footnotes = get_all_docx_footnotes(doc) if PRESERVE_FOOTNOTES else {}
+    all_endnotes = get_all_docx_endnotes(doc) if PRESERVE_ENDNOTES else {}
 
     for chunk in chunks:
         for paragraph in chunk.paragraphs:
             for item in paragraph.iter_inner_content():
-                for child in item._element:  # type: ignore[attr-defined]
-                    # PROCESS COMMENTS
+                try:
+                    # Get XML from the run using public API
+                    run_xml = item.element.xml # type: ignore
+                    
+                    # Parse it safely with ElementTree
+                    root = ET.fromstring(run_xml) # type: ignore
+                    
+                    # Define namespace
+                    ns = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
 
-                    # Check if child has the attributes we need
-                    if not (hasattr(child, "tag") and hasattr(child, "get")):  # type: ignore[attr-defined]
-                        continue
+                    # Find comment references
+                    if PRESERVE_COMMENTS:
+                        comment_refs = root.findall('.//w:commentReference', ns)
+                        for ref in comment_refs:
+                            comment_id = ref.get(f'{{{ns["w"]}}}id')
+                            if comment_id and comment_id in all_comments:
+                                comment_object = all_comments[comment_id]
+                                chunk.add_annotation("comments", comment_object)
 
-                    if PRESERVE_COMMENTS and child.tag.endswith("commentReference"):  # type: ignore[attr-defined]
-                        # Extract the id attribute
-                        new_comment_id = child.get(  # type: ignore[attr-defined]
-                            "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id"
-                        )
-                        # item_comment_ids.append(new_comment_id)
-                        if new_comment_id and new_comment_id in all_comments:
-                            comment_object = all_comments[new_comment_id]
-                            chunk.add_annotation("comments", comment_object)
+                    
 
-                # TODO, ANNOTATIONS: complete this for footnotes and endnotes
-                if PRESERVE_FOOTNOTES and child.tag.endswith("footnoteReference"):  # type: ignore[attr-defined]
-                    pass
-                #     new_footnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
-                #     item_footnote_ids.append(new_footnote_id)
+                    # Find footnote references
+                    if PRESERVE_FOOTNOTES:
+                        footnote_refs = root.findall('.//w:footnoteReference', ns)
+                        for ref in footnote_refs:
+                            footnote_id = ref.get(f'{{{ns["w"]}}}id')
+                            if footnote_id and footnote_id in all_footnotes:
+                                footnote_obj = all_footnotes[footnote_id]
+                                chunk.add_annotation("footnotes", footnote_obj)
 
-                if PRESERVE_ENDNOTES and child.tag.endswith("endnoteReference"):  # type: ignore[attr-defined]
-                    pass
-                #     new_endnote_id = child.get('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id')
-                #     item_endnote_ids.append(new_endnote_id)
+                    # Find endnote references - same pattern
+                    if PRESERVE_ENDNOTES:
+                        endnote_refs = root.findall('.//w:endnoteReference', ns)
+                        for ref in endnote_refs:
+                            endnote_id = ref.get(f'{{{ns["w"]}}}id')
+                            if endnote_id and endnote_id in all_endnotes:
+                                endnote_obj = all_endnotes[endnote_id]
+                                chunk.add_annotation("endnotes", endnote_obj)
+
+                except(AttributeError, ET.ParseError) as e:
+                    if FAIL_FAST:
+                        raise
+                    debug_print(f"WARNING: Could not parse run XML for references: {e}")
 
     return chunks
 
@@ -764,18 +742,15 @@ def annotate_chunk(chunk: Chunk_docx, notes_text_frame: TextFrame) -> Chunk_docx
     # TODO, ANNOTATIONS: complete this for footnotes and endnotes
     footnotes_list = chunk.annotations.get("footnotes", [])
     if footnotes_list:
-        footnote_section = "FOOTNOTES FROM SOURCE DOCUMENT:\n" + "=" * 40 + "\n\n"
-        # TODO: I don't know about using i here; footnote starting numbers are gonna change page over page
-        for i, footnote_item in enumerate(footnotes_list, 1):
-
-            # Handle different possible footnote formats
-            if isinstance(footnote_item, tuple) and len(footnote_item) >= 2:
-                footnote_id, footnote_text = footnote_item[0], footnote_item[1]  # type: ignore (while in dev)
-            else:
-                footnote_id = i
-                footnote_text = str(footnote_item)
-            footnote_section += f"{i}. Footnote {footnote_id}:\n"
-            footnote_section += f"   {footnote_text}\n\n"
+        footnote_para = notes_text_frame.add_paragraph()
+        footnote_run = footnote_para.add_run()
+        footnote_run.text = "\nFOOTNOTES FROM SOURCE DOCUMENT:\n" + "=" * 40
+        
+        for footnote_obj in footnotes_list:
+            if isinstance(footnote_obj, Footnote_docx): # Type narrowing to make Pylance happy
+                notes_para = notes_text_frame.add_paragraph()
+                footnote_run = notes_para.add_run()
+                footnote_run.text = f"\n{footnote_obj.footnote_id}. {footnote_obj.text_body}\n"
 
     endnotes_list = chunk.annotations.get("endnotes", [])
     if endnotes_list:
@@ -1232,6 +1207,13 @@ def setup_console_encoding() -> None:
     if platform.system() == "Windows":
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
+# TODO: cut?
+def fail_or_warn(error_msg: str, warning_msg: str, exception_type: type[Exception] = ValueError, fail_fast: bool = False) -> None:
+    """Handle error conditions with configurable fail-fast behavior."""    
+    if fail_fast:
+        raise exception_type(error_msg)
+    else:
+        debug_print(f"WARNING: {warning_msg}")
 
 # endregion
 
