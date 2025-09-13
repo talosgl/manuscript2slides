@@ -374,10 +374,119 @@ def copy_run_formatting(source_run: Run_docx, target_run: Run_pptx) -> None:
     if sfont.underline is not None:
         tfont.underline = bool(sfont.underline)
 
+    # TODO: add support for:
+    # highlighting
+    # strikethrough
+    # super/subscript
+    # font size
+    # all caps/small caps
+    if sfont.highlight_color is not None:
+        # NOTE: Not supported in python-pptx
+        # https://stackoverflow.com/questions/61922353/adding-highlighting-to-a-run-in-python-pptx
+        debug_print(
+            """We found a highlight. We can't apply highlights with python-pptx, 
+            but we'll apply a gradient to keep the semantic meaning.
+            """
+        )
+        tfont.fill.gradient()
+
+    if sfont.strike is not None or sfont.double_strike is not None:
+        # NOTE: Not supported in python-pptx
+        """
+        <a:p>
+        <a:r>
+        <a:rPr lang="en-US" strike="sngStrike" dirty="0"/>
+        <a:t>Strike thru me</a:t>
+        </a:r>
+        </a:p>
+        <a:p>
+        <a:r>
+        <a:rPr lang="en-US" strike="dblStrike" dirty="0" err="1"/>
+        <a:t>Doublestrikethru</a:t>
+        </a:r>
+        <a:r>
+        <a:rPr lang="en-US" strike="dblStrike" dirty="0"/>
+        <a:t> me</a:t>
+        </a:r>
+        </a:p>
+        """
+        pass
+
+    if sfont.subscript is not None:
+        # NOTE: Not supported in python-pptx
+
+        # negative baseline attribute
+        """
+        <a:r>
+        <a:rPr lang="en-US" baseline="-25000" dirty="0" err="1"/>
+        <a:t>fafff</a:t>
+        </a:r>
+        """
+
+        # maybe convert to latext?
+        # K_{8} / $x_1$
+
+        pass
+
+    if sfont.superscript is not None:
+        # NOTE: Not supported in python-pptx
+        # baseline attribute high
+        """
+        <a:r>
+        <a:rPr lang="en-US" baseline="30000" dirty="0" err="1"/>
+        <a:t>fffff</a:t>
+        </a:r>
+        """
+        # maybe prepend ^?
+
+        pass
+
+    if sfont.size is not None:
+        # this is supported in python-pptx but I'm not sure what to do about it.
+        # can we somehow change to be like, +/- the inherited style size?
+
+        """
+        <a:r>
+        <a:rPr lang="en-US" sz="8800" i="1" dirty="0"/>
+        <a:t>MAKE this text BIG</a:t>
+        </a:r>
+        """
+        pass
+
+    if sfont.all_caps is not None:
+        # NOTE: Not supported in python-pptx
+        target_run.text = target_run.text.upper()
+
+        """
+        <a:r>
+        <a:rPr lang="en-US" cap="all" dirty="0" err="1"/>
+        <a:t>adsg</a:t>
+        </a:r>
+        """
+        pass
+
+    if sfont.small_caps is not None:
+        # NOTE: Not supported in python-pptx
+
+        # ideas for ways to preserve semantic meaning:
+        # target_run.text = target_run.text.swapcase()
+        # target_run.text = target_run.text.title()
+
+        # or just add a prefix/suffix: <small_caps> </small_caps>
+        """
+        <a:r>
+        <a:rPr lang="en-US" cap="small" dirty="0" err="1"/>
+        <a:t>sa</a:t>
+        </a:r>
+        """
+        pass
+
     # Color: copy only if source has an explicit RGB
     src_rgb = getattr(getattr(sfont, "color", None), "rgb", None)
     if src_rgb is not None:
         tfont.color.rgb = RGBColor(*src_rgb)
+
+    # TODO: can we use "dirty" attribute to auto-resize slide text?
 
 
 def create_blank_slide_for_chunk(
