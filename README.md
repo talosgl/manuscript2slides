@@ -66,3 +66,8 @@ Still, you're welcome to submit issues if you get stuck or have feature suggesti
 Small bug fixes and feature additions are welcome as PRs, but architectural changes should probably be forked.
 
 (If I sent you this script because we're writing buds, feel free reach out to me directly. Sorry for all the tech setup!)
+
+
+## Credits
+Advanced text formatting features adapted from techniques used in 
+[md2pptx](https://github.com/MartinPacker/md2pptx) by Martin Packer (MIT License).
