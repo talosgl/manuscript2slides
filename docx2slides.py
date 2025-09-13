@@ -44,10 +44,7 @@ import docx
 import pptx
 from docx import document
 from docx.comments import Comment as Comment_docx
-
 from docx.opc.part import Part
-
-
 # from docx.table import Table as Table_docx
 # from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
@@ -57,9 +54,34 @@ from pptx.dml.color import RGBColor
 from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
+from pptx.oxml.xmlchemy import OxmlElement
+from pptx.util import Pt
 import xml.etree.ElementTree as ET
 
 # endregion
+
+# region colormap
+from docx.enum.text import WD_COLOR_INDEX
+
+COLOR_MAP_HEX = {
+    WD_COLOR_INDEX.YELLOW: "FFFF00",
+    WD_COLOR_INDEX.PINK: "FF00FF",
+    WD_COLOR_INDEX.BLACK: "000000",
+    WD_COLOR_INDEX.WHITE: "FFFFFF",
+    WD_COLOR_INDEX.BLUE: "0000FF",
+    WD_COLOR_INDEX.BRIGHT_GREEN: "00FF00",
+    WD_COLOR_INDEX.DARK_BLUE: "000080",
+    WD_COLOR_INDEX.DARK_RED: "800000",
+    WD_COLOR_INDEX.DARK_YELLOW: "808000",
+    WD_COLOR_INDEX.GRAY_25: "C0C0C0",
+    WD_COLOR_INDEX.GRAY_50: "808080",
+    WD_COLOR_INDEX.GREEN: "008000",
+    WD_COLOR_INDEX.RED: "FF0000",
+    WD_COLOR_INDEX.TEAL: "008080",
+    WD_COLOR_INDEX.TURQUOISE: "00FFFF",
+    WD_COLOR_INDEX.VIOLET: "800080",
+}
+#
 
 # region Overarching TODOs
 """
@@ -211,6 +233,8 @@ PRESERVE_ANNOTATIONS: bool = (
 COMMENTS_SORT_BY_DATE: bool = True
 COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
 
+EXPERIMENTAL_FORMATTING_ON: bool = True
+
 FAIL_FAST: bool = False
 
 
@@ -354,6 +378,9 @@ def main() -> None:
 
 # endregion
 
+# from docx.text.font import Font as Font_docx
+# from pptx.text.text import Font as Font_pptx
+
 
 # region create_slides.py
 # eventual destination: ./src/docxtext2pptx/create_slides.py
@@ -374,117 +401,200 @@ def copy_run_formatting(source_run: Run_docx, target_run: Run_pptx) -> None:
     if sfont.underline is not None:
         tfont.underline = bool(sfont.underline)
 
-    # TODO: add support for:
-    # highlighting
-    # strikethrough
-    # super/subscript
-    # font size
-    # all caps/small caps
-    if sfont.highlight_color is not None:
-        # NOTE: Not supported in python-pptx
-        # https://stackoverflow.com/questions/61922353/adding-highlighting-to-a-run-in-python-pptx
-        debug_print(
-            """We found a highlight. We can't apply highlights with python-pptx, 
-            but we'll apply a gradient to keep the semantic meaning.
-            """
-        )
-        tfont.fill.gradient()
-
-    if sfont.strike is not None or sfont.double_strike is not None:
-        # NOTE: Not supported in python-pptx
-        """
-        <a:p>
-        <a:r>
-        <a:rPr lang="en-US" strike="sngStrike" dirty="0"/>
-        <a:t>Strike thru me</a:t>
-        </a:r>
-        </a:p>
-        <a:p>
-        <a:r>
-        <a:rPr lang="en-US" strike="dblStrike" dirty="0" err="1"/>
-        <a:t>Doublestrikethru</a:t>
-        </a:r>
-        <a:r>
-        <a:rPr lang="en-US" strike="dblStrike" dirty="0"/>
-        <a:t> me</a:t>
-        </a:r>
-        </a:p>
-        """
-        pass
-
-    if sfont.subscript is not None:
-        # NOTE: Not supported in python-pptx
-
-        # negative baseline attribute
-        """
-        <a:r>
-        <a:rPr lang="en-US" baseline="-25000" dirty="0" err="1"/>
-        <a:t>fafff</a:t>
-        </a:r>
-        """
-
-        # maybe convert to latext?
-        # K_{8} / $x_1$
-
-        pass
-
-    if sfont.superscript is not None:
-        # NOTE: Not supported in python-pptx
-        # baseline attribute high
-        """
-        <a:r>
-        <a:rPr lang="en-US" baseline="30000" dirty="0" err="1"/>
-        <a:t>fffff</a:t>
-        </a:r>
-        """
-        # maybe prepend ^?
-
-        pass
-
-    if sfont.size is not None:
-        # this is supported in python-pptx but I'm not sure what to do about it.
-        # can we somehow change to be like, +/- the inherited style size?
-
-        """
-        <a:r>
-        <a:rPr lang="en-US" sz="8800" i="1" dirty="0"/>
-        <a:t>MAKE this text BIG</a:t>
-        </a:r>
-        """
-        pass
-
-    if sfont.all_caps is not None:
-        # NOTE: Not supported in python-pptx
-        target_run.text = target_run.text.upper()
-
-        """
-        <a:r>
-        <a:rPr lang="en-US" cap="all" dirty="0" err="1"/>
-        <a:t>adsg</a:t>
-        </a:r>
-        """
-        pass
-
-    if sfont.small_caps is not None:
-        # NOTE: Not supported in python-pptx
-
-        # ideas for ways to preserve semantic meaning:
-        # target_run.text = target_run.text.swapcase()
-        # target_run.text = target_run.text.title()
-
-        # or just add a prefix/suffix: <small_caps> </small_caps>
-        """
-        <a:r>
-        <a:rPr lang="en-US" cap="small" dirty="0" err="1"/>
-        <a:t>sa</a:t>
-        </a:r>
-        """
-        pass
-
     # Color: copy only if source has an explicit RGB
     src_rgb = getattr(getattr(sfont, "color", None), "rgb", None)
     if src_rgb is not None:
         tfont.color.rgb = RGBColor(*src_rgb)
+
+    # TODO: Test size
+    if sfont.size is not None:
+        tfont.size = Pt(sfont.size.pt)
+        """
+        <a:r>
+            <a:rPr lang="en-US" sz="8800" i="1" dirty="0"/>
+            <a:t>MAKE this text BIG!</a:t>
+        </a:r>
+        """
+        pass
+
+    # TODO: Probably move this into its own helper and just call that if the const is set to True.
+    if EXPERIMENTAL_FORMATTING_ON:
+        # The following code, which extends formatting support beyond python-pptx,
+        # is adapted from the md2pptx project, particularly from ./paragraph.py
+        # Original source: https://github.com/MartinPacker/md2pptx
+        # Author: Martin Packer
+        # License: MIT
+
+        # TODO: Make this highlighting code cleaner
+        if sfont.highlight_color is not None:
+            try:
+                # Convert the docx run highlight color to a hex string
+                tfont_hex_str = COLOR_MAP_HEX.get(sfont.highlight_color)
+
+                # Create an object to represent this run in memory
+                rPr = target_run._r.get_or_add_rPr()  # type: ignore[reportPrivateUsage]
+
+                # Create a highlight Oxml object in memory
+                hl = OxmlElement("a:highlight")
+
+                # Create a srgbClr Oxml object in memory
+                srgbClr = OxmlElement("a:srgbClr")
+
+                # Set the attribute val of the srgbClr Oxml object in memory to the desired color
+                setattr(srgbClr, "val", tfont_hex_str)
+
+                # Add srgbClr object inside the hl Oxml object
+                hl.append(srgbClr)  # type: ignore[reportPrivateUsage]
+
+                # Add the hl object to the run representation object, which will add all our Oxml elements inside it
+                rPr.append(hl)  # type: ignore[reportPrivateUsage]
+
+            except Exception as e:
+                debug_print(
+                    f"We found a highlight in the docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
+                )
+                debug_print(
+                    "In order to attempt to preserve the visual difference of the highlighted text, we'll apply a basic gradient effect instead."
+                )
+                tfont.fill.gradient()
+            """
+            Reference pptx XML for highlighting:
+            <a:r>
+                <a:rPr>
+                    <a:highlight>
+                        <a:srgbClr val="FFFF00"/>
+                    </a:highlight>
+                </a:rPr>
+                <a:t>Highlight this text.</a:t>
+            </a:r>
+            """
+
+        if sfont.strike is not None:
+            try:
+                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                debug_print(
+                    f"Failed to apply strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
+                )
+
+            """
+            Reference pptx XML for single strikethrough:
+            <a:p>
+                <a:r>
+                    <a:rPr lang="en-US" strike="sngStrike" dirty="0"/>
+                    <a:t>Strike this text.</a:t>
+                </a:r>
+            </a:p>        
+            """
+
+        if sfont.double_strike is not None:
+            try:
+                tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                debug_print(
+                    f"""
+                            Failed to apply double-strikthrough.
+                            \nRun text: {source_run.text[:50]}... \n Error: {e}
+                            \nWe'll attempt single strikethrough."""
+                )
+                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+            """
+            Reference pptx XML for double strikethrough:
+            <a:p>
+                <a:r>
+                    <a:rPr lang="en-US" strike="dblStrike" dirty="0" err="1"/>
+                    <a:t>Double strike this text.</a:t>
+                </a:r>        
+            </a:p>
+            """
+
+        if sfont.subscript is not None:
+            try:
+                if tfont.size is None:
+                    tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
+
+                if tfont.size is not None and tfont.size < Pt(24):
+                    tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
+                else:
+                    tfont._element.set("baseline", "-25000")  # type: ignore[reportPrivateUsage]
+
+            except Exception as e:
+                debug_print(
+                    f"""
+                            Failed to apply subscript. 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference pptx XML for subscript:
+            <a:r>
+                <a:rPr lang="en-US" baseline="-25000" dirty="0" err="1"/>
+                <a:t>Subscripted text</a:t>
+            </a:r>
+            """
+
+        if sfont.superscript is not None:
+            try:
+                if tfont.size is None:
+                    tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
+
+                if tfont.size is not None and tfont.size < Pt(24):
+                    tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
+                else:
+                    tfont._element.set("baseline", "30000")  # type: ignore[reportPrivateUsage]
+
+            except Exception as e:
+                debug_print(
+                    f"""
+                            Failed to apply superscript. 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference pptx XML for superscript
+            <a:r>
+                <a:rPr lang="en-US" baseline="30000" dirty="0" err="1"/>
+                <a:t>Superscript this text.</a:t>
+            </a:r>
+            """
+
+        # The below caps-handling code is not directly from md2pptx,
+        # but is heavily influenced by it.
+        if sfont.all_caps is not None:
+            try:
+                tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                debug_print(
+                    f"""
+                            Failed to apply all caps. 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference XML for all caps:
+            <a:r>
+                <a:rPr lang="en-US" cap="all" dirty="0" err="1"/>
+                <a:t>Put this text in all caps.</a:t>
+            </a:r>
+            """
+
+        if sfont.small_caps is not None:
+            try:
+                tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                debug_print(
+                    f"""
+                            Failed to apply small caps on run with text body: 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference pptx XML for small caps:
+            <a:r>
+                <a:rPr lang="en-US" cap="small" dirty="0" err="1"/>
+                <a:t>Put this text in small caps.</a:t>
+            </a:r>
+            """
 
     # TODO: can we use "dirty" attribute to auto-resize slide text?
 

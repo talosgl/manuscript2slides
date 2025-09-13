@@ -43,6 +43,7 @@ Thumbs.db
 # Output
 output/*.pptx
 !output/.gitkeep
+output/
 
 # Resources - ignore user files but keep samples
 resources/*.docx
