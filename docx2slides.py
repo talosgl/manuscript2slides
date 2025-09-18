@@ -155,13 +155,14 @@ Known Issues & Limitations:
 
 """
 # endregion
+# TODO: docx2pptx-text / pptx2docx-text
 
 # region CONSTANTS / config.py
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
 SCRIPT_DIR = Path(__file__).parent
 
 
-# === docxtext2pptx Consts for script user to alter per-run ===
+# === docx2pptx Consts for script user to alter per-run ===
 
 # The pptx file to use as the template for the slide deck
 TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_template.pptx"
@@ -341,15 +342,15 @@ class Chunk_docx:
 
 
 # region __main__.py & run_pipeline.py
-# eventual destination: ./src/docxtext2pptx/__main__.py
+# eventual destination: ./src/docx2pptx/__main__.py
 def main() -> None:
     """Entry point for program flow."""
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    # run_docxtext2pptx_pipeline(INPUT_DOCX_FILE)
+    # run_docx2pptx_pipeline(INPUT_DOCX_FILE)
 
-    run_pptx2docxtext_pipeline(INPUT_PPTX_FILE)
+    run_pptx2docx_pipeline(INPUT_PPTX_FILE)
 
 
 # endregion
@@ -358,7 +359,7 @@ def main() -> None:
 # from pptx.text.text import Font as Font_pptx
 
 # region pptx2docxtext
-def run_pptx2docxtext_pipeline(pptx_path: Path) -> None:
+def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     """Orchestrates the pptx2docxtext pipeline."""
 
     # Validate the user's pptx filepath
@@ -488,8 +489,8 @@ Below are all the functions written for the docx2pptx original pipeline flow; we
 
 
 # region run_docxtext2pptx_pipeline()
-def run_docxtext2pptx_pipeline(docx_path: Path) -> None:
-    """Orchestrates the docxtext2pptx pipeline."""
+def run_docx2pptx_pipeline(docx_path: Path) -> None:
+    """Orchestrates the docx2pptx pipeline."""
     user_path = docx_path
 
     # Validate it's a real path of the correct type. If it's not, return the error.
@@ -530,7 +531,7 @@ def run_docxtext2pptx_pipeline(docx_path: Path) -> None:
 # endregion
 
 # region create_slides.py
-# eventual destination: ./src/docxtext2pptx/create_slides.py
+# eventual destination: ./src/docx2pptx/create_slides.py
 def copy_run_formatting(source_run: Run_docx, target_run: Run_pptx) -> None:
     """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
     sfont = source_run.font
@@ -888,7 +889,7 @@ def process_run(
 # endregion
 
 # region GET annotation helpers
-# eventual destination: ./src/docxtext2pptx/annotations/annotate_chunks.py
+# eventual destination: ./src/docx2pptx/annotations/annotate_chunks.py
 # endregion
 
 
@@ -988,7 +989,7 @@ def process_run_annotations(
 # endregion
 
 
-# eventual destination: ./src/docxtext2pptx/annotations/get_docx_annotations.py
+# eventual destination: ./src/docx2pptx/annotations/get_docx_annotations.py
 # region Get all notes in this docx
 def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
     """
@@ -1160,7 +1161,7 @@ def extract_hyperlinks_from_note(element: ET.Element) -> list[str]:
 
 
 # region annotate_slides.py
-# eventual destination: ./src/docxtext2pptx/annotations/annotate_slides.py
+# eventual destination: ./src/docx2pptx/annotations/annotate_slides.py
 
 
 def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
@@ -1315,7 +1316,7 @@ def add_endnotes_to_notes(
 
 
 # region create_chunks.py
-# eventual destination: ./src/docxtext2pptx/create_chunks.py
+# eventual destination: ./src/docx2pptx/create_chunks.py
 def create_docx_chunks(
     doc: document.Document, chunk_type: ChunkType = ChunkType.PARAGRAPH
 ) -> list[Chunk_docx]:
@@ -1794,7 +1795,7 @@ def validate_pptx_path(user_path: str | Path) -> Path:
 # TODO, BASIC VALIDATION: Add basic validation for docx contents (copy the validation we did in CSharp)
 # TODO 1_ validate the document body is not null
 # TODO 2_ validate that there is at least 1 paragraph with text in it
-# eventual destination: ./src/docxtext2pptx/io.py (?)
+# eventual destination: ./src/docx2pptx/io.py (?)
 def open_and_load_docx(input_filepath: Path) -> document.Document:
     """Use python-docx to read in the docx file contents and store to a runtime variable."""
     doc = docx.Document(input_filepath)  # type: ignore
