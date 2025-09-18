@@ -1,4 +1,4 @@
-# pyright: strict
+# pyright: basic
 """
 Convert Microsoft Word documents to PowerPoint presentations.
 
@@ -161,7 +161,7 @@ Known Issues & Limitations:
 SCRIPT_DIR = Path(__file__).parent
 
 
-# === Consts for script user to alter per-run ===
+# === docxtext2pptx Consts for script user to alter per-run ===
 
 # The pptx file to use as the template for the slide deck
 TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_template.pptx"
@@ -178,7 +178,7 @@ OUTPUT_PPTX_FOLDER = SCRIPT_DIR / "output"
 # If you leave it blank it'll save in the root of where you run the script from the command line
 
 # Desired output filename; Note that this will clobber an existing file of the same name!
-OUTPUT_PPTX_FILENAME = r"sample_slides.pptx"
+OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
 
 # CASE-SENSITIVE: Specify the headings prefixes to use when building slide chunks based on headings.
 ALLOWED_HEADING_PREFIXES = {
@@ -236,6 +236,18 @@ COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
 EXPERIMENTAL_FORMATTING_ON: bool = True
 
 FAIL_FAST: bool = False
+
+# ========== pptx2docxtext pipeline consts
+
+INPUT_PPTX_FILE = SCRIPT_DIR / "resources" / "sample_slides.pptx"
+
+TEMPLATE_DOCX = SCRIPT_DIR / "resources" / "docx_template.docx"
+
+OUTPUT_DOCX_FOLDER = SCRIPT_DIR / "output"
+# e.g., r"c:\my_manuscripts"
+
+OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
+
 
 
 # region models.py
@@ -319,6 +331,7 @@ class Chunk_docx:
 
 
 # TODO, REVERSE FLOW: We probably need a separate Chunk_pptx class
+
 # I think it would be:
 # list of body [Paragraph_pptx]
 # list of speaker notes [Paragraph_pptx]
@@ -334,7 +347,150 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    user_path = INPUT_DOCX_FILE
+    # run_docxtext2pptx_pipeline(INPUT_DOCX_FILE)
+
+    run_pptx2docxtext_pipeline(INPUT_PPTX_FILE)
+
+
+# endregion
+
+# from docx.text.font import Font as Font_docx
+# from pptx.text.text import Font as Font_pptx
+
+# region pptx2docxtext
+def run_pptx2docxtext_pipeline(pptx_path: Path) -> None:
+    """Orchestrates the pptx2docxtext pipeline."""
+
+    # Validate the user's pptx filepath
+    try:
+        validated_pptx_path = validate_pptx_path(pptx_path)
+    except FileNotFoundError:
+        print(f"Error: File not found: {pptx_path}")
+        sys.exit(1)
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+    except PermissionError:
+        print(f"I don't have permission to read that file ({pptx_path})!")
+        sys.exit(1)
+
+    # Load the pptx at that validated filepath
+    try:
+        user_prs: presentation.Presentation = open_and_load_pptx(validated_pptx_path)
+    except Exception as e:
+        print(f"Content of powerpoint file invalid for pptx2docxtext pipeline run. Error: {e}.")
+        sys.exit(1)
+
+
+    # Create an empty docx
+    new_doc = docx.Document(str(TEMPLATE_DOCX))
+
+    # TODO: Populate the body of the docx with the pptx slide text content
+    
+    # natural language outline
+    # Work sequentially through each slide in list(prs.slides), and
+        # Work sequentialy through each paragraph of that slide body's text frame(s)? # TODO: Should we support multiple text frames?
+            # Work sequentially through each Run_pptx of that paragraph, and...
+            # Copy the run and run formatting to a Run_docx
+            # (Append that run to the paragraph)
+        # Next, copy everything from the slide's notes_slide text (if it exists) into a comment, and attach the comment
+        # to either the beginning or end of the paragraphs we just copied into the docx
+
+    # Pseudo... code.. ish
+    # copy_slides_to_docx_body(prs, newdoc)
+        # slide_list = list(prs.slides)
+        # for slide in slide_list:
+            # find_and_copy_all_slide_text(slide)
+                # paragraphs: list() = get_slide_paragraphs(text_frames)
+                # for para in paragraph:
+                    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
+                    # copy_Run_pptx_with_formatting()
+            # find_and_copy_speaker_notes(slide)
+
+    # TODO: This is temp to make sure we can actually create shit
+    """
+    When creating a new document with python-docx using Document(), 
+    it inherently includes a single empty paragraph at the start. 
+    This behavior is mandated by the Open XML .docx standard, which 
+    requires at least one paragraph within the w:body element in the
+    document's XML structure.
+    """
+    first_paragraph = new_doc.paragraphs[0] # This appears to be the only way to access the very first paragraph.
+    first_paragraph.add_run("This is the content of the first paragraph.")    
+    new_para = new_doc.add_paragraph()
+    new_para.text = "Lorem Ipsum"
+    # === end temp
+
+
+    debug_print("Attempting to save new docx file.")
+    save_output(new_doc)
+
+
+def open_and_load_pptx(pptx_path: Path | str) -> presentation.Presentation:
+    """Use python-pptx to read in the pptx file contents, validate minimum content is present, and store to a runtime object."""
+    prs = pptx.Presentation(str(pptx_path))
+
+    # Count and report slides to validate we can see the content within this file.
+    slide_count = len(prs.slides)
+    if slide_count > 0:
+        debug_print(f"The pptx file {pptx_path} has {slide_count} slide(s) in it.")
+
+        slide_list = list(prs.slides)
+        # Observations: 
+        # 1)    Sequential iteration order matters: slide_ids will iterate here in the order that they appear in the visual slide deck.
+        # 2)    slide_id does NOT imply its place in the slide order: slide_ids appear to be n+1 generated, 
+        #       but a person can easily move slides around in the sequence of slides as desired. The only meaning that you can gain
+        #       by sorting by slide_id is (maybe) the order in which the slide items were added to the deck, not the order that the
+        #       user wants them to be viewed/read.
+
+        first_slide = find_first_slide_with_text(slide_list)
+        if first_slide is None:
+            raise RuntimeError(f"No slides in {pptx_path} contain text content, so there's nothing for the pipeline to do.")
+        
+        first_slide_paragraphs = get_slide_paragraphs(first_slide)
+        debug_print(f"The first slide detected with text content is slide_id: {first_slide.slide_id}. The text content is: \n")
+        for p in first_slide_paragraphs:
+            debug_print(p.text)
+
+    # Return the runtime object
+    return prs
+
+def find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
+    """Find the first slide that contains any paragraphs with text content."""
+    for slide in slides:
+        if get_slide_paragraphs(slide):
+            return slide
+    return None
+
+
+def get_slide_paragraphs(slide: Slide) -> list[Paragraph_pptx]:
+    """Extract all paragraphs from all text placeholders in a slide."""
+    paragraphs: list[Paragraph_pptx] = []
+
+    for placeholder in slide.placeholders:
+        if isinstance(placeholder, SlidePlaceholder) and hasattr(placeholder, "text_frame") and placeholder.text_frame:
+            textf: TextFrame = placeholder.text_frame
+            for para in textf.paragraphs:
+                if para.runs or para.text:
+                    paragraphs.append(para)
+
+    return paragraphs
+# endregion
+
+# region ===========
+# endregion
+
+# region docxtext2pptx pipeline
+"""
+Below are all the functions written for the docx2pptx original pipeline flow; we'll start the reverse flow above.
+"""
+# endregion
+
+
+# region run_docxtext2pptx_pipeline()
+def run_docxtext2pptx_pipeline(docx_path: Path) -> None:
+    """Orchestrates the docxtext2pptx pipeline."""
+    user_path = docx_path
 
     # Validate it's a real path of the correct type. If it's not, return the error.
     try:
@@ -369,18 +525,9 @@ def main() -> None:
     slides_from_chunks(user_docx, output_prs, chunks)
 
     # Save the presentation to an actual pptx on disk
-    try:
-        save_pptx(output_prs)
-    except Exception as e:
-        print(f"Save failed with error: {e}")
-        sys.exit(1)
-
-
+    
+    save_output(output_prs)
 # endregion
-
-# from docx.text.font import Font as Font_docx
-# from pptx.text.text import Font as Font_pptx
-
 
 # region create_slides.py
 # eventual destination: ./src/docxtext2pptx/create_slides.py
@@ -710,6 +857,8 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None:
         )
         for instr in instr_texts:
             if instr.text and instr.text.startswith("HYPERLINK"):
+                # TODO, polish, leafy: Add a const switch that would allow us to simply add the string {instr.text} 
+                # into the main text body if the user desires
                 debug_print(
                     f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {instr.text}"
                 )
@@ -1643,6 +1792,8 @@ def validate_pptx_path(user_path: str | Path) -> Path:
 
 # region io.py
 # TODO, BASIC VALIDATION: Add basic validation for docx contents (copy the validation we did in CSharp)
+# TODO 1_ validate the document body is not null
+# TODO 2_ validate that there is at least 1 paragraph with text in it
 # eventual destination: ./src/docxtext2pptx/io.py (?)
 def open_and_load_docx(input_filepath: Path) -> document.Document:
     """Use python-docx to read in the docx file contents and store to a runtime variable."""
@@ -1676,12 +1827,43 @@ def create_empty_slide_deck() -> presentation.Presentation:
     # slide = prs.slides.add_slide(slide_layout)
     # content = slide.placeholders[1]
     # content.text = "Test Slide!" # type:ignore
+OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
+
+def save_output(save_object: OUTPUT_TYPE) -> None:
+    """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
+    if isinstance(save_object, document.Document):
+        save_folder = OUTPUT_DOCX_FOLDER
+        save_filename = OUTPUT_DOCX_FILENAME
+    elif isinstance(save_object, presentation.Presentation):
+        save_folder = OUTPUT_PPTX_FOLDER
+        save_filename = OUTPUT_PPTX_FILENAME
+    else:
+        raise RuntimeError(f"Unexpected output object type: {save_object}")
+    
+    try:
+        # Construct output path
+        if save_folder:
+            folder = Path(save_folder)
+            folder.mkdir(parents=True, exist_ok=True)
+            output_filepath = folder / save_filename
+        else:
+            output_filepath = Path(save_filename)
+        save_object.save(str(output_filepath))
+        print(f"Successfully saved to {output_filepath}")
+    except PermissionError:
+        raise PermissionError("Save failed: File may be open in another program")
+    except Exception as e:
+        raise RuntimeError(f"Save failed with error: {e}")
 
 
+
+
+# TODO: use typeVar to make this work with both docx and pptx
 # TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
 # TODO, UX: Probably add some kind of file rotation so the last 5 or so outputs are preserved
 def save_pptx(prs: presentation.Presentation) -> None:
     """Save the generated slides to disk."""
+    
     try:
         # Construct output path
         if OUTPUT_PPTX_FOLDER:
