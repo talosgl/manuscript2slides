@@ -1937,6 +1937,9 @@ def create_empty_slide_deck() -> presentation.Presentation:
     # slide = prs.slides.add_slide(slide_layout)
     # content = slide.placeholders[1]
     # content.text = "Test Slide!" # type:ignore
+
+# TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
+# TODO, UX: Probably add some kind of file rotation so the last 5 or so outputs are preserved
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
 def save_output(save_object: OUTPUT_TYPE) -> None:
@@ -1975,28 +1978,6 @@ def sanitize_xml_text(text: str) -> str:
     
     # Ensure it's a proper string
     return str(sanitized)
-
-# TODO: use typeVar to make this work with both docx and pptx
-# TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
-# TODO, UX: Probably add some kind of file rotation so the last 5 or so outputs are preserved
-def save_pptx(prs: presentation.Presentation) -> None:
-    """Save the generated slides to disk."""
-    
-    try:
-        # Construct output path
-        if OUTPUT_PPTX_FOLDER:
-            folder = Path(OUTPUT_PPTX_FOLDER)
-            folder.mkdir(parents=True, exist_ok=True)
-            output_filepath = folder / OUTPUT_PPTX_FILENAME
-        else:
-            output_filepath = Path(OUTPUT_PPTX_FILENAME)
-        prs.save(str(output_filepath))
-        print(f"Successfully saved to {output_filepath}")
-    except PermissionError:
-        raise PermissionError("Save failed: File may be open in another program")
-    except Exception as e:
-        raise RuntimeError(f"Save failed with error: {e}")
-
 
 # endregion
 
