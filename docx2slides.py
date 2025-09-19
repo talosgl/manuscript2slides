@@ -620,7 +620,7 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
 # region create_slides.py
 # eventual destination: ./src/docx2pptx/create_slides.py
 
-def _copy_basic_run_formatting(source_font, target_font) -> None:
+def _copy_basic_run_formatting(source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]) -> None:
     """Extract common formatting logic for Runs."""
 
     # Bold/Italics: Only overwrite when explicitly set on the source (avoid clobbering inheritance)
@@ -635,7 +635,7 @@ def _copy_basic_run_formatting(source_font, target_font) -> None:
 
     # TODO: Test size
     if source_font.size is not None:
-        target_font.size = Pt(target_font.size.pt)
+        target_font.size = Pt(source_font.size.pt)
         """
         <a:r>
             <a:rPr lang="en-US" sz="8800" i="1" dirty="0"/>
