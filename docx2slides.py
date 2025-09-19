@@ -45,6 +45,7 @@ import pptx
 from docx import document
 from docx.comments import Comment as Comment_docx
 from docx.opc.part import Part
+
 # from docx.table import Table as Table_docx
 # from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
@@ -289,6 +290,11 @@ class Footnote_docx:
     text_body: str
     hyperlinks: list[str] = field(default_factory=list[str])
 
+    @property
+    def note_id(self) -> str:
+        """Alias for footnote_id to provide a common interface with other note types."""
+        return self.footnote_id
+
 
 @dataclass
 class Endnote_docx:
@@ -303,6 +309,11 @@ class Endnote_docx:
     endnote_id: str
     text_body: str
     hyperlinks: list[str] = field(default_factory=list[str])
+
+    @property
+    def note_id(self) -> str:
+        """Alias for endnote_id to provide a common interface with other note types."""
+        return self.endnote_id
 
 
 @dataclass
@@ -1322,35 +1333,43 @@ def add_comments_to_notes(
                         copy_chunk_paragraph_inner_contents(para, notes_para)
 
 
-# def add_notes_to_speaker_notes(
-#     notes_list: list[Footnote_docx] | list[Endnote_docx],
-#     notes_text_frame: TextFrame,
-#     header_text: str
-# ) -> None:
-#     """Generic function for adding footnotes or endnotes to speaker notes."""
+# EXPERIMENT
+def add_notes_to_speaker_notes(
+    notes_list: list[Footnote_docx] | list[Endnote_docx],
+    notes_text_frame: TextFrame,
+    note_class: type[NOTE_TYPE],
+) -> None:
+    """Generic function for adding footnotes or endnotes to speaker notes."""
 
-#     if notes_list:
-#         note_para = notes_text_frame.add_paragraph()
-#         note_run = note_para.add_run()
-#         note_run.text = f"\n{header_text}:\n" + "=" * 40
+    if note_class is Footnote_docx:
+        header_text = "FOOTNOTES FROM SOURCE DOCUMENT"
+    elif note_class is Endnote_docx:
+        header_text = "ENDNOTES FROM SOURCE DOCUMENT"
+    else:
+        header_text = "Unknown Note Type from Source Document:"
 
-#         for note_obj in notes_list:
-#             notes_para = notes_text_frame.add_paragraph()
-#             note_run = notes_para.add_run()
+    if notes_list:
+        note_para = notes_text_frame.add_paragraph()
+        note_run = note_para.add_run()
+        note_run.text = f"\n{header_text}:\n" + "=" * 40
 
-#             # Start with the main note text
-#             note_text = f"\n{note_obj.note_id}. {note_obj.text_body}\n"
+        for note_obj in notes_list:
+            notes_para = notes_text_frame.add_paragraph()
+            note_run = notes_para.add_run()
 
-#             # Add hyperlinks if they exist
-#             if note_obj.hyperlinks:
-#                 note_text += "\nHyperlinks:"
-#                 for hyperlink in note_obj.hyperlinks:
-#                     note_text += f"\n{hyperlink}"
+            # Start with the main note text
+            note_text = f"\n{note_obj.note_id}. {note_obj.text_body}\n"
 
-#             note_run.text = note_text
+            # Add hyperlinks if they exist
+            if note_obj.hyperlinks:
+                note_text += "\nHyperlinks:"
+                for hyperlink in note_obj.hyperlinks:
+                    note_text += f"\n{hyperlink}"
+
+            note_run.text = note_text
 
 
-# TODO, ANNOTATIONS: complete for footnotes and endnotes
+# TODO, ANNOTATIONS: Replace specific functions with this generic one, and test
 def add_footnotes_to_notes(
     footnotes_list: list[Footnote_docx], notes_text_frame: TextFrame
 ) -> None:
