@@ -50,13 +50,21 @@ from docx.opc.part import Part
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 from pptx import presentation
-from pptx.dml.color import RGBColor
+from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Pt
 import xml.etree.ElementTree as ET
+
+from pptx.slide import NotesSlide
+
+# RUN_TYPE = TypeVar("RUN_TYPE", Run_docx, Run_pptx)
+from docx.shared import RGBColor as RGBColor_docx
+from docx.text.font import Font as Font_docx
+from pptx.text.text import Font as Font_pptx
+from typing import Union
 
 # endregion
 
@@ -86,15 +94,16 @@ COLOR_MAP_HEX = {
 # region Overarching TODOs
 """
 Must-Implement v0 Features:
-- Complete feature to preserve docx footnotes & endnotes and append after comments in speaker notes.
 - Reverse flow: export slide text frame content to docx paragraphs with the annotations kept as comments, inline
     - This could allow a flow where you can iterate back and forth (and remove the need to "update" an existing deck with manuscript updates)
+- Change consts configuration to use a class or something
+- Rearchitect to be multi-file
 
 v1 features I'd like:
 - Create Documents/docx2pptx/input/output/resources structure
     - Copies sample files from app resources to user folders
     - Cleanup mode for debug runs
-- Change consts configuration to use a class or something
+    - Have the output do a rotating 5 files or so
 - Build a simple UI + Package this so that any writer can use it without needing to know WTF python is
     - + Consider reworking into C# for this; good practice for me
 
@@ -115,17 +124,15 @@ Stretch Wishlist Features:
 
 """
 Known Issues & Limitations:
-    -   We do not support .doc, only .docx. If you have a .doc file, convert it to .docx using Word, Google Docs, 
+    -   We only support text content. No images, tables, etc., are copied between the formats, and we do not have plans 
+        to support these in future.
+
+    -   We do not support .doc or .ppt, only .docx. If you have a .doc file, convert it to .docx using Word, Google Docs, 
         or LibreOffice before processing.
 
     -   We do not support .ppt, only .pptx.
 
-    -   Field code hyperlinks not supported - Some hyperlinks (like the sample_doc.docx's first "Where are Data?" link) 
-        are stored using Word's field code format and display as plain text instead of clickable links. The exact 
-        conditions that cause this format are unclear, but it may occur with hyperlinks in headings or certain copy/paste 
-        scenarios. We think most normal hyperlinks will work fine.
-
-    -   Auto-fit text resizing doesn't work. PowerPoint only applies auto-fit when opened in the UI. 
+    -   Auto-fit text resizing in slides doesn't work. PowerPoint only applies auto-fit sizing when opened in the UI. 
         You can get around this manually with these steps:
             1. Open up the output presentation in PowerPoint Desktop > View > Slide Master
             2. Select the text frame object, right-click > Format Shape
@@ -134,6 +141,12 @@ Known Issues & Limitations:
             5. Toggle "Do not Autofit" and then back to "Shrink Text on overflow"
             6. Close Master View
             7. Now all the slides should have their text properly resized.
+
+    -   Field code hyperlinks not supported - Some hyperlinks (like the sample_doc.docx's first "Where are Data?" link) 
+        are stored using Word's field code format and display as plain text instead of clickable links. The exact 
+        conditions that cause this format are unclear, but it may occur with hyperlinks in headings or certain copy/paste 
+        scenarios. We think most normal hyperlinks will work fine. We try to report when we detect these are present but cannot
+        reliably copy them as text into the body.
 
     -   ANNOTATIONS LIMITATIONS
         -   We collapse all comments, footnotes, and endnotes into a slide's speaker notes. PowerPoint itself doesn't 
@@ -148,14 +161,23 @@ Known Issues & Limitations:
         -   Footnotes and endnotes don't preserve formatting, only plain text.
     
     -   REVERSE FLOW LIMITATIONS
-        -   The reverse flow (pptx2docx) is significantly less robust for annotations. There is no support for separating out
-            speaker notes into types of annotations. "We simply take all speaker notes and attach them to the final paragraph 
-            of each slide's content as a comment. Original source docx comment metadata is not preserved (apart from
-            plain text author/timestamps if kept during an original docx2pptx conversion).
+        -   The reverse flow (pptx2docx) is significantly less robust. 
+
+        -   There is no support for separating out speaker notes into types of annotations. We simply take all speaker notes and attach
+            them to the final paragraph of each slide's content as a comment. Original source docx comment metadata is not preserved 
+            (apart from plain text author/timestamps if kept during an original docx2pptx conversion). We do not preserve any text formatting 
+            for speaker notes.
+
+        -   There will always be a blank line at the start of the reverse-pipeline document. When creating a new document with python-docx 
+            using Document(), it inherently includes a single empty paragraph at the start. This behavior is mandated by the Open XML 
+            .docx standard, which requires at least one paragraph within the w:body element in the document's XML structure.
+
+        -   Powerpoint has no concept of headings. TODO: We experimentally attempt to preserve heading metadata during the docx2pptx pipeline.
+            If this metadata is detected during the pptx2docx pipeline, we attempt to reapply the headings
 
 """
 # endregion
-# TODO: docx2pptx-text / pptx2docx-text
+# TODO: rename to docx2pptx-text / pptx2docx-text
 
 # region CONSTANTS / config.py
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
@@ -191,6 +213,7 @@ ALLOWED_HEADING_PREFIXES = {
 # For chunking based on nested headings, the code assumes there will be a number AT THE END of the name.
 # If the number is somewhere else (start, middle), you'll have to adjust the code in (at least) get_style_parts()
 
+# TODO: Remove support for custom headings so that we can implement heading support for Headings 1-6 in the reverse pipeline.
 # For chunking by NESTED headings, specify their hierarchy below. 1 is the topmost level, 1+N are deeper levels.
 HEADING_HIERARCHY = {
     "Chapter": 1,
@@ -355,8 +378,7 @@ def main() -> None:
 
 # endregion
 
-# from docx.text.font import Font as Font_docx
-# from pptx.text.text import Font as Font_pptx
+
 
 # region pptx2docxtext
 def run_pptx2docx_pipeline(pptx_path: Path) -> None:
@@ -386,8 +408,7 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     # Create an empty docx
     new_doc = docx.Document(str(TEMPLATE_DOCX))
 
-    # TODO: Populate the body of the docx with the pptx slide text content
-    
+        
     # natural language outline
     # Work sequentially through each slide in list(prs.slides), and
         # Work sequentialy through each paragraph of that slide body's text frame(s)? # TODO: Should we support multiple text frames?
@@ -409,22 +430,77 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
             # find_and_copy_speaker_notes(slide)
 
     # TODO: This is temp to make sure we can actually create shit
-    """
-    When creating a new document with python-docx using Document(), 
-    it inherently includes a single empty paragraph at the start. 
-    This behavior is mandated by the Open XML .docx standard, which 
-    requires at least one paragraph within the w:body element in the
-    document's XML structure.
-    """
-    first_paragraph = new_doc.paragraphs[0] # This appears to be the only way to access the very first paragraph.
-    first_paragraph.add_run("This is the content of the first paragraph.")    
-    new_para = new_doc.add_paragraph()
-    new_para.text = "Lorem Ipsum"
+    # first_paragraph = new_doc.paragraphs[0] # This appears to be the only way to access the very first paragraph.
+    # first_paragraph.add_run("This is the content of the first paragraph.")    
+    # new_para = new_doc.add_paragraph()
+    # new_para.text = "Lorem Ipsum"
     # === end temp
 
+    # Pseudo... code.. ish
+    copy_slides_to_docx_body(user_prs, new_doc)
+        # slide_list = list(prs.slides)
+        # for slide in slide_list:
+            # find_and_copy_all_slide_text(slide)
+                # paragraphs: list() = get_slide_paragraphs(slide)
+                # for para in paragraph:
+                    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
+                    # copy_Run_pptx_with_formatting()
+            # find_and_copy_speaker_notes(slide)
 
     debug_print("Attempting to save new docx file.")
     save_output(new_doc)
+
+
+def copy_slides_to_docx_body(prs: presentation.Presentation, new_doc: document.Document) -> None:
+    """
+    For every slide in the deck, copy its main body text into the docx body, and append any slide speaker notes
+    to the end of the docx paragraphs that came from that slide.
+    """
+    
+    # Make a list of all slides
+    slide_list = list(prs.slides)
+
+    # For each slide...
+    for slide in slide_list:
+                
+        # TODO:
+        # - Figure out how to preserve headings
+
+        # Get a list of this slide's paragraphs
+        paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
+
+        last_run = None
+
+        # For every paragraph, copy it to the new document
+        for para in paragraphs:
+            new_para = new_doc.add_paragraph()
+            
+            for run in para.runs:
+                new_docx_run = new_para.add_run()
+                last_run = new_docx_run
+                copy_run_formatting_pptx2docx(run, new_docx_run)
+        
+        # After copying the last of this slide's runs, append the speaker notes to the last-copied run
+        if slide.has_notes_slide and slide.notes_slide.notes_text_frame is not None and last_run is not None:
+            raw_comment_text = slide.notes_slide.notes_text_frame.text
+            comment_text = sanitize_xml_text(raw_comment_text)
+
+            if comment_text.strip():
+                new_doc.add_comment(last_run, comment_text)
+
+
+def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) -> None:
+    """Mutates a docx Run object to apply text and formatting from a pptx _Run object."""
+    sfont = source_run.font
+    tfont = target_run.font
+
+    target_run.text = source_run.text
+
+    _copy_basic_run_formatting(sfont, tfont)
+
+    _copy_run_color_formatting(sfont, tfont)
+
+    # TODO REVERSE ALL THE EXPERIMENTAL FORMATTING STUFF
 
 
 def open_and_load_pptx(pptx_path: Path | str) -> presentation.Presentation:
@@ -464,7 +540,7 @@ def find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
     return None
 
 
-def get_slide_paragraphs(slide: Slide) -> list[Paragraph_pptx]:
+def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx]:
     """Extract all paragraphs from all text placeholders in a slide."""
     paragraphs: list[Paragraph_pptx] = []
 
@@ -532,220 +608,234 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
 
 # region create_slides.py
 # eventual destination: ./src/docx2pptx/create_slides.py
-def copy_run_formatting(source_run: Run_docx, target_run: Run_pptx) -> None:
-    """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
-    sfont = source_run.font
-    tfont = target_run.font
 
-    target_run.text = source_run.text
+def _copy_basic_run_formatting(source_font, target_font) -> None:
+    """Extract common formatting logic for Runs."""
 
     # Bold/Italics: Only overwrite when explicitly set on the source (avoid clobbering inheritance)
-    if sfont.bold is not None:
-        tfont.bold = sfont.bold
-    if sfont.italic is not None:
-        tfont.italic = sfont.italic
+    if source_font.bold is not None:
+        target_font.bold = source_font.bold
+    if source_font.italic is not None:
+        target_font.italic = source_font.italic
 
     # Underline: collapse any explicit value (True/False/WD_UNDERLINE.*) to bool
-    if sfont.underline is not None:
-        tfont.underline = bool(sfont.underline)
-
-    # Color: copy only if source has an explicit RGB
-    src_rgb = getattr(getattr(sfont, "color", None), "rgb", None)
-    if src_rgb is not None:
-        tfont.color.rgb = RGBColor(*src_rgb)
+    if source_font.underline is not None:
+        target_font.underline = bool(source_font.underline)
 
     # TODO: Test size
-    if sfont.size is not None:
-        tfont.size = Pt(sfont.size.pt)
+    if source_font.size is not None:
+        target_font.size = Pt(target_font.size.pt)
         """
         <a:r>
             <a:rPr lang="en-US" sz="8800" i="1" dirty="0"/>
             <a:t>MAKE this text BIG!</a:t>
         </a:r>
         """
-        pass
 
-    # TODO: Probably move this into its own helper and just call that if the const is set to True.
-    if EXPERIMENTAL_FORMATTING_ON:
-        # The following code, which extends formatting support beyond python-pptx,
-        # is adapted from the md2pptx project, particularly from ./paragraph.py
-        # Original source: https://github.com/MartinPacker/md2pptx
-        # Author: Martin Packer
-        # License: MIT
+def _copy_run_color_formatting(source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]) -> None:
+    # Color: copy only if source has an explicit RGB
+    src_rgb = getattr(getattr(source_font, "color", None), "rgb", None)
+    if src_rgb is not None:
+        if isinstance(target_font, Font_pptx):
+            target_font.color.rgb = RGBColor_pptx(*src_rgb)
+        elif isinstance(target_font, Font_docx):
+            target_font.color.rgb = RGBColor_docx(*src_rgb)
 
-        # TODO: Make this highlighting code cleaner
-        if sfont.highlight_color is not None:
-            try:
-                # Convert the docx run highlight color to a hex string
-                tfont_hex_str = COLOR_MAP_HEX.get(sfont.highlight_color)
 
-                # Create an object to represent this run in memory
-                rPr = target_run._r.get_or_add_rPr()  # type: ignore[reportPrivateUsage]
+def copy_run_formatting_docx2pptx(source_run: Run_docx, target_run: Run_pptx) -> None:
+    """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
+    sfont = source_run.font
+    tfont = target_run.font
 
-                # Create a highlight Oxml object in memory
-                hl = OxmlElement("a:highlight")
+    target_run.text = source_run.text
 
-                # Create a srgbClr Oxml object in memory
-                srgbClr = OxmlElement("a:srgbClr")
+    _copy_basic_run_formatting(sfont, tfont)
 
-                # Set the attribute val of the srgbClr Oxml object in memory to the desired color
-                setattr(srgbClr, "val", tfont_hex_str)
+    _copy_run_color_formatting(sfont, tfont)     
 
-                # Add srgbClr object inside the hl Oxml object
-                hl.append(srgbClr)  # type: ignore[reportPrivateUsage]
-
-                # Add the hl object to the run representation object, which will add all our Oxml elements inside it
-                rPr.append(hl)  # type: ignore[reportPrivateUsage]
-
-            except Exception as e:
-                debug_print(
-                    f"We found a highlight in the docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
-                )
-                debug_print(
-                    "In order to attempt to preserve the visual difference of the highlighted text, we'll apply a basic gradient effect instead."
-                )
-                tfont.fill.gradient()
-            """
-            Reference pptx XML for highlighting:
-            <a:r>
-                <a:rPr>
-                    <a:highlight>
-                        <a:srgbClr val="FFFF00"/>
-                    </a:highlight>
-                </a:rPr>
-                <a:t>Highlight this text.</a:t>
-            </a:r>
-            """
-
-        if sfont.strike is not None:
-            try:
-                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
-            except Exception as e:
-                debug_print(
-                    f"Failed to apply strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
-                )
-
-            """
-            Reference pptx XML for single strikethrough:
-            <a:p>
-                <a:r>
-                    <a:rPr lang="en-US" strike="sngStrike" dirty="0"/>
-                    <a:t>Strike this text.</a:t>
-                </a:r>
-            </a:p>        
-            """
-
-        if sfont.double_strike is not None:
-            try:
-                tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
-            except Exception as e:
-                debug_print(
-                    f"""
-                            Failed to apply double-strikthrough.
-                            \nRun text: {source_run.text[:50]}... \n Error: {e}
-                            \nWe'll attempt single strikethrough."""
-                )
-                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
-            """
-            Reference pptx XML for double strikethrough:
-            <a:p>
-                <a:r>
-                    <a:rPr lang="en-US" strike="dblStrike" dirty="0" err="1"/>
-                    <a:t>Double strike this text.</a:t>
-                </a:r>        
-            </a:p>
-            """
-
-        if sfont.subscript is not None:
-            try:
-                if tfont.size is None:
-                    tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
-
-                if tfont.size is not None and tfont.size < Pt(24):
-                    tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
-                else:
-                    tfont._element.set("baseline", "-25000")  # type: ignore[reportPrivateUsage]
-
-            except Exception as e:
-                debug_print(
-                    f"""
-                            Failed to apply subscript. 
-                            \nRun text: {source_run.text[:50]}... 
-                            \n Error: {e}"""
-                )
-            """
-            Reference pptx XML for subscript:
-            <a:r>
-                <a:rPr lang="en-US" baseline="-25000" dirty="0" err="1"/>
-                <a:t>Subscripted text</a:t>
-            </a:r>
-            """
-
-        if sfont.superscript is not None:
-            try:
-                if tfont.size is None:
-                    tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
-
-                if tfont.size is not None and tfont.size < Pt(24):
-                    tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
-                else:
-                    tfont._element.set("baseline", "30000")  # type: ignore[reportPrivateUsage]
-
-            except Exception as e:
-                debug_print(
-                    f"""
-                            Failed to apply superscript. 
-                            \nRun text: {source_run.text[:50]}... 
-                            \n Error: {e}"""
-                )
-            """
-            Reference pptx XML for superscript
-            <a:r>
-                <a:rPr lang="en-US" baseline="30000" dirty="0" err="1"/>
-                <a:t>Superscript this text.</a:t>
-            </a:r>
-            """
-
-        # The below caps-handling code is not directly from md2pptx,
-        # but is heavily influenced by it.
-        if sfont.all_caps is not None:
-            try:
-                tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
-            except Exception as e:
-                debug_print(
-                    f"""
-                            Failed to apply all caps. 
-                            \nRun text: {source_run.text[:50]}... 
-                            \n Error: {e}"""
-                )
-            """
-            Reference XML for all caps:
-            <a:r>
-                <a:rPr lang="en-US" cap="all" dirty="0" err="1"/>
-                <a:t>Put this text in all caps.</a:t>
-            </a:r>
-            """
-
-        if sfont.small_caps is not None:
-            try:
-                tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
-            except Exception as e:
-                debug_print(
-                    f"""
-                            Failed to apply small caps on run with text body: 
-                            \nRun text: {source_run.text[:50]}... 
-                            \n Error: {e}"""
-                )
-            """
-            Reference pptx XML for small caps:
-            <a:r>
-                <a:rPr lang="en-US" cap="small" dirty="0" err="1"/>
-                <a:t>Put this text in small caps.</a:t>
-            </a:r>
-            """
+    if isinstance(source_run, Run_docx) and EXPERIMENTAL_FORMATTING_ON:
+        _copy_experimental_formatting_docx2pptx(source_run, target_run)        
 
     # TODO: can we use "dirty" attribute to auto-resize slide text?
 
+def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Run_pptx) -> None:
+    sfont = source_run.font
+    tfont = target_run.font
+
+    # The following code, which extends formatting support beyond python-pptx's capabilities,
+    # is adapted from the md2pptx project, particularly from ./paragraph.py
+    # Original source: https://github.com/MartinPacker/md2pptx
+    # Author: Martin Packer
+    # License: MIT
+    if sfont.highlight_color is not None:
+        try:
+            # Convert the docx run highlight color to a hex string
+            tfont_hex_str = COLOR_MAP_HEX.get(sfont.highlight_color)
+
+            # Create an object to represent this run in memory
+            rPr = target_run._r.get_or_add_rPr()  # type: ignore[reportPrivateUsage]
+
+            # Create a highlight Oxml object in memory
+            hl = OxmlElement("a:highlight")
+
+            # Create a srgbClr Oxml object in memory
+            srgbClr = OxmlElement("a:srgbClr")
+
+            # Set the attribute val of the srgbClr Oxml object in memory to the desired color
+            setattr(srgbClr, "val", tfont_hex_str)
+
+            # Add srgbClr object inside the hl Oxml object
+            hl.append(srgbClr)  # type: ignore[reportPrivateUsage]
+
+            # Add the hl object to the run representation object, which will add all our Oxml elements inside it
+            rPr.append(hl)  # type: ignore[reportPrivateUsage]
+
+        except Exception as e:
+            debug_print(
+                f"We found a highlight in the docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
+            )
+            debug_print(
+                "In order to attempt to preserve the visual difference of the highlighted text, we'll apply a basic gradient effect instead."
+            )
+            tfont.fill.gradient()
+        """
+        Reference pptx XML for highlighting:
+        <a:r>
+            <a:rPr>
+                <a:highlight>
+                    <a:srgbClr val="FFFF00"/>
+                </a:highlight>
+            </a:rPr>
+            <a:t>Highlight this text.</a:t>
+        </a:r>
+        """
+
+    if sfont.strike is not None:
+        try:
+            tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+        except Exception as e:
+            debug_print(
+                f"Failed to apply strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
+            )
+
+        """
+        Reference pptx XML for single strikethrough:
+        <a:p>
+            <a:r>
+                <a:rPr lang="en-US" strike="sngStrike" dirty="0"/>
+                <a:t>Strike this text.</a:t>
+            </a:r>
+        </a:p>        
+        """
+
+    if sfont.double_strike is not None:
+        try:
+            tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
+        except Exception as e:
+            debug_print(
+                f"""
+                        Failed to apply double-strikthrough.
+                        \nRun text: {source_run.text[:50]}... \n Error: {e}
+                        \nWe'll attempt single strikethrough."""
+            )
+            tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+        """
+        Reference pptx XML for double strikethrough:
+        <a:p>
+            <a:r>
+                <a:rPr lang="en-US" strike="dblStrike" dirty="0" err="1"/>
+                <a:t>Double strike this text.</a:t>
+            </a:r>        
+        </a:p>
+        """
+
+    if sfont.subscript is not None:
+        try:
+            if tfont.size is None:
+                tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
+
+            if tfont.size is not None and tfont.size < Pt(24):
+                tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
+            else:
+                tfont._element.set("baseline", "-25000")  # type: ignore[reportPrivateUsage]
+
+        except Exception as e:
+            debug_print(
+                f"""
+                        Failed to apply subscript. 
+                        \nRun text: {source_run.text[:50]}... 
+                        \n Error: {e}"""
+            )
+        """
+        Reference pptx XML for subscript:
+        <a:r>
+            <a:rPr lang="en-US" baseline="-25000" dirty="0" err="1"/>
+            <a:t>Subscripted text</a:t>
+        </a:r>
+        """
+
+    if sfont.superscript is not None:
+        try:
+            if tfont.size is None:
+                tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
+
+            if tfont.size is not None and tfont.size < Pt(24):
+                tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
+            else:
+                tfont._element.set("baseline", "30000")  # type: ignore[reportPrivateUsage]
+
+        except Exception as e:
+            debug_print(
+                f"""
+                        Failed to apply superscript. 
+                        \nRun text: {source_run.text[:50]}... 
+                        \n Error: {e}"""
+            )
+        """
+        Reference pptx XML for superscript
+        <a:r>
+            <a:rPr lang="en-US" baseline="30000" dirty="0" err="1"/>
+            <a:t>Superscript this text.</a:t>
+        </a:r>
+        """
+
+    # The below caps-handling code is not directly from md2pptx,
+    # but is heavily influenced by it.
+    if sfont.all_caps is not None:
+        try:
+            tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
+        except Exception as e:
+            debug_print(
+                f"""
+                        Failed to apply all caps. 
+                        \nRun text: {source_run.text[:50]}... 
+                        \n Error: {e}"""
+            )
+        """
+        Reference XML for all caps:
+        <a:r>
+            <a:rPr lang="en-US" cap="all" dirty="0" err="1"/>
+            <a:t>Put this text in all caps.</a:t>
+        </a:r>
+        """
+
+    if sfont.small_caps is not None:
+        try:
+            tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
+        except Exception as e:
+            debug_print(
+                f"""
+                        Failed to apply small caps on run with text body: 
+                        \nRun text: {source_run.text[:50]}... 
+                        \n Error: {e}"""
+            )
+        """
+        Reference pptx XML for small caps:
+        <a:r>
+            <a:rPr lang="en-US" cap="small" dirty="0" err="1"/>
+            <a:t>Put this text in small caps.</a:t>
+        </a:r>
+        """
 
 def create_blank_slide_for_chunk(
     prs: presentation.Presentation, slide_layout: SlideLayout
@@ -877,7 +967,7 @@ def process_run(
     # Handle formatting
 
     pptx_run = pptx_paragraph.add_run()
-    copy_run_formatting(run, pptx_run)
+    copy_run_formatting_docx2pptx(run, pptx_run)
 
     if hyperlink:
         pptx_run_url = pptx_run.hyperlink
@@ -1856,8 +1946,16 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
     except Exception as e:
         raise RuntimeError(f"Save failed with error: {e}")
 
-
-
+def sanitize_xml_text(text: str) -> str:
+    """Remove characters that aren't valid in XML."""
+    if not text:
+        return ""
+    
+    # Remove NULL bytes and control characters (except tab, newline, carriage return)
+    sanitized = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)
+    
+    # Ensure it's a proper string
+    return str(sanitized)
 
 # TODO: use typeVar to make this work with both docx and pptx
 # TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
