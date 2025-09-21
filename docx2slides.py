@@ -1072,7 +1072,7 @@ def add_metadata_to_slide_notes(
         header_para = notes_text_frame.add_paragraph()
         header_run = header_para.add_run()
         header_run.text = (
-            "\n\n\n\n\n\n\nJSON METADATA FROM SOURCE DOCUMENT:\n" + "=" * 40
+            "\n\n\n\n\n\n\nSTART OF JSON METADATA FROM SOURCE DOCUMENT:\n" + "=" * 40
         )
 
         json_para = notes_text_frame.add_paragraph()
@@ -1080,6 +1080,10 @@ def add_metadata_to_slide_notes(
 
         combined_metadata = {**baseline_metadata, **extra_metadata}
         json_run.text = json.dumps(combined_metadata, indent=2)
+
+        footer_para = notes_text_frame.add_paragraph()
+        footer_run = footer_para.add_run()
+        footer_run.text = "=" * 40 + "\nEND OF JSON METADATA FROM SOURCE DOCUMENT" 
 
 
 def process_chunk_paragraph_inner_contents(
