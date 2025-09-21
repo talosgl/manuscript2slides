@@ -961,13 +961,9 @@ def slides_from_chunks(
 
         # Store custom metadata for this chunk that we'll want to tuck into the speaker notes as JSON
         # (for the purposes of restoring during reverse pipeline runs).
-        extra_metadata = {}
-        slide_headings = []
-
-        slide_experimental_formatting_metadata: list[dict] = []
-        # Then append items like:
-        # {"ref_text": "In a cold concrete", "bold": True, "highlight": "yellow"}
-        # {"ref_text": "Global Internet Is", "italic": True, "size": 14}
+        slide_metadata = {}
+        headings = []
+        experimental_formatting: list[dict] = []
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
@@ -990,24 +986,20 @@ def slides_from_chunks(
             )
 
             if para_experimental_formatting:
-                slide_experimental_formatting_metadata.extend(
-                    para_experimental_formatting
-                )
+                experimental_formatting.extend(para_experimental_formatting)
 
             if paragraph.style and is_standard_heading(paragraph.style.style_id):
-                slide_headings.append(
+                headings.append(
                     {
                         "text": paragraph.text.strip(),
                         "style_id": paragraph.style.style_id,
                     }
                 )
 
-        if slide_headings:
-            extra_metadata["headings"] = slide_headings
-        if slide_experimental_formatting_metadata:
-            extra_metadata["experimental_formatting"] = (
-                slide_experimental_formatting_metadata
-            )
+        if headings:
+            slide_metadata["headings"] = headings
+        if experimental_formatting:
+            slide_metadata["experimental_formatting"] = experimental_formatting
 
         notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore # TODO, POLISH: is there a reasonable way to fix this type hint?
 
@@ -1015,19 +1007,19 @@ def slides_from_chunks(
             annotate_slide(chunk, notes_text_frame)
 
         if PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
-            add_metadata_to_slide_notes(notes_text_frame, chunk, extra_metadata)
+            add_metadata_to_slide_notes(notes_text_frame, chunk, slide_metadata)
 
 
 def add_metadata_to_slide_notes(
-    notes_text_frame: TextFrame, chunk: Chunk_docx, extra_metadata: dict
+    notes_text_frame: TextFrame, chunk: Chunk_docx, slide_body_metadata: dict
 ) -> None:
     """
     Populate the slide notes text frame with docx metadata so that we may restore it during a round-trip pptx2docx pipeline.
     """
-    baseline_metadata = {}
+    annotation_metadata = {}
 
     if chunk.comments:
-        baseline_metadata["comments"] = [
+        annotation_metadata["comments"] = [
             {
                 "original": {
                     "text": c.comment_obj.text,
@@ -1047,28 +1039,28 @@ def add_metadata_to_slide_notes(
         ]
 
     if chunk.footnotes:
-        baseline_metadata["footnotes"] = [
-        {
-            "footnote_id": f.footnote_id,
-            "text_body": f.text_body,
-            "hyperlinks": f.hyperlinks,
-            "reference_text": f.reference_text,
-        }
-        for f in chunk.footnotes
-    ]
+        annotation_metadata["footnotes"] = [
+            {
+                "footnote_id": f.footnote_id,
+                "text_body": f.text_body,
+                "hyperlinks": f.hyperlinks,
+                "reference_text": f.reference_text,
+            }
+            for f in chunk.footnotes
+        ]
 
     if chunk.endnotes:
-        baseline_metadata["endnotes"] = [
-        {
-            "endnote_id": e.endnote_id,
-            "text_body": e.text_body,
-            "hyperlinks": e.hyperlinks,
-            "reference_text": e.reference_text,
-        }
-        for e in chunk.endnotes
-    ]
+        annotation_metadata["endnotes"] = [
+            {
+                "endnote_id": e.endnote_id,
+                "text_body": e.text_body,
+                "hyperlinks": e.hyperlinks,
+                "reference_text": e.reference_text,
+            }
+            for e in chunk.endnotes
+        ]
 
-    if extra_metadata or baseline_metadata:
+    if slide_body_metadata or annotation_metadata:
         header_para = notes_text_frame.add_paragraph()
         header_run = header_para.add_run()
         header_run.text = (
@@ -1078,12 +1070,12 @@ def add_metadata_to_slide_notes(
         json_para = notes_text_frame.add_paragraph()
         json_run = json_para.add_run()
 
-        combined_metadata = {**baseline_metadata, **extra_metadata}
+        combined_metadata = {**annotation_metadata, **slide_body_metadata}
         json_run.text = json.dumps(combined_metadata, indent=2)
 
         footer_para = notes_text_frame.add_paragraph()
         footer_run = footer_para.add_run()
-        footer_run.text = "=" * 40 + "\nEND OF JSON METADATA FROM SOURCE DOCUMENT" 
+        footer_run.text = "=" * 40 + "\nEND OF JSON METADATA FROM SOURCE DOCUMENT"
 
 
 def process_chunk_paragraph_inner_contents(
@@ -1132,7 +1124,7 @@ def process_chunk_paragraph_inner_contents(
         )
         pptx_run = pptx_paragraph.add_run()
         pptx_run.text = paragraph.text
-    
+
     return experimental_formatting_metadata
 
 
