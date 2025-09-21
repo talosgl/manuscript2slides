@@ -36,6 +36,7 @@ from enum import Enum
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import TypeVar
+import json
 
 # import warnings
 
@@ -209,6 +210,7 @@ OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
 INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"
 
+
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
 class ChunkType(Enum):
     """Chunk Type Choices"""
@@ -225,7 +227,7 @@ CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
 
 # Toggle on/off whether to print debug_prints() to the console
 DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing; update: TODO, UX: please god replace all these consts with a config class or something for v1
-# endregion
+
 
 DISPLAY_COMMENTS: bool = True
 DISPLAY_FOOTNOTES: bool = True
@@ -235,10 +237,9 @@ DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES: bool = (
     DISPLAY_COMMENTS or DISPLAY_FOOTNOTES or DISPLAY_ENDNOTES
 )
 
-# We ought to support some way to leave speaker notes completely empty if the user really wants that. 
-# They need to be told it'll mean metadata loss for round-trip pipeline stuff but there's probably
-# plenty of cases where people would want them empty despite the lossy conversion.
-KEEP_SPEAKER_NOTES_EMPTY: bool = False
+# We ought to support some way to leave speaker notes completely empty if the user really wants that, it's a valid use case.
+# Documentation and tooltips should make it clear that this means metadata loss for round-trip pipeline data.
+PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES: bool = True
 
 COMMENTS_SORT_BY_DATE: bool = True
 COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
@@ -255,11 +256,23 @@ OUTPUT_DOCX_FOLDER = SCRIPT_DIR / "output"
 # e.g., r"c:\my_manuscripts"
 
 OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
+# endregion
 
 
-# TODO: add new field to notes classes: "reference_text" that is whatever string this thing's attached to
-# TODO: figure out how to capture that string for each one... maybe in process_chunk_annotations()
 # region models.py
+@dataclass
+class Comment_docx_custom:
+    """A custom wrapper for the python-docx Comment class, allowing us to capture reference text."""
+
+    comment_obj: Comment_docx
+    reference_text: str | None = None  # The text this comment is attached to
+
+    @property
+    def note_id(self) -> int:
+        """Alias for comment_id to provide a common interface with other note types."""
+        return self.comment_obj.comment_id
+
+
 @dataclass
 class Footnote_docx:
     """
@@ -273,6 +286,7 @@ class Footnote_docx:
     footnote_id: str
     text_body: str
     hyperlinks: list[str] = field(default_factory=list[str])
+    reference_text: str | None = None
 
     @property
     def note_id(self) -> str:
@@ -293,6 +307,7 @@ class Endnote_docx:
     endnote_id: str
     text_body: str
     hyperlinks: list[str] = field(default_factory=list[str])
+    reference_text: str | None = None
 
     @property
     def note_id(self) -> str:
@@ -318,8 +333,12 @@ class Chunk_docx:
     #
     # And then inside the class definition we'd make a new list, like this:
     # inner_contents: list[InnerContentType_docx] = field(default_factory=list)
+    #
+    # We'd probably also need to preserve special metadata about the table for reverse-pipeline stuff.
 
-    comments: list[Comment_docx] = field(default_factory=list[Comment_docx])
+    comments: list[Comment_docx_custom] = field(
+        default_factory=list[Comment_docx_custom]
+    )
     footnotes: list[Footnote_docx] = field(default_factory=list[Footnote_docx])
     endnotes: list[Endnote_docx] = field(default_factory=list[Endnote_docx])
 
@@ -336,7 +355,7 @@ class Chunk_docx:
         """Add a list of paragraphs to this Chunk object's paragraphs list."""
         self.paragraphs.extend(new_paragraphs)  # Add multiple at once
 
-    def add_comment(self, comment: Comment_docx) -> None:
+    def add_comment(self, comment: Comment_docx_custom) -> None:
         """Add a comment to this Chunk object's comment list."""
         self.comments.append(comment)
 
@@ -348,6 +367,7 @@ class Chunk_docx:
         """Add a endnote to this Chunk object's endnote list."""
         self.endnotes.append(endnote)
 
+
 # TODO, REVERSE FLOW: We probably need a separate Chunk_pptx class
 
 # I think it would be:
@@ -356,6 +376,7 @@ class Chunk_docx:
 # make sure to use a factory for these lists because lists are mutable!
 
 # endregion
+
 
 # region __main__.py & run_pipeline.py
 # eventual destination: ./src/docx2pptx/__main__.py
@@ -370,7 +391,6 @@ def main() -> None:
 
 
 # endregion
-
 
 
 # region pptx2docxtext
@@ -394,70 +414,76 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     try:
         user_prs: presentation.Presentation = open_and_load_pptx(validated_pptx_path)
     except Exception as e:
-        print(f"Content of powerpoint file invalid for pptx2docxtext pipeline run. Error: {e}.")
+        print(
+            f"Content of powerpoint file invalid for pptx2docxtext pipeline run. Error: {e}."
+        )
         sys.exit(1)
-
 
     # Create an empty docx
     new_doc = docx.Document(str(TEMPLATE_DOCX))
 
-        
     # natural language outline
     # Work sequentially through each slide in list(prs.slides), and
-        # Work sequentialy through each paragraph of that slide body's text frame(s)? # TODO: Should we support multiple text frames?
-            # Work sequentially through each Run_pptx of that paragraph, and...
-            # Copy the run and run formatting to a Run_docx
-            # (Append that run to the paragraph)
-        # Next, copy everything from the slide's notes_slide text (if it exists) into a comment, and attach the comment
-        # to either the beginning or end of the paragraphs we just copied into the docx
+    # Work sequentialy through each paragraph of that slide body's text frame(s)? # TODO: Should we support multiple text frames?
+    # Work sequentially through each Run_pptx of that paragraph, and...
+    # Copy the run and run formatting to a Run_docx
+    # (Append that run to the paragraph)
+    # Next, copy everything from the slide's notes_slide text (if it exists) into a comment, and attach the comment
+    # to either the beginning or end of the paragraphs we just copied into the docx
 
     # Pseudo... code.. ish
     # copy_slides_to_docx_body(prs, newdoc)
-        # slide_list = list(prs.slides)
-        # for slide in slide_list:
-            # find_and_copy_all_slide_text(slide)
-                # paragraphs: list() = get_slide_paragraphs(text_frames)
-                # for para in paragraph:
-                    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
-                    # copy_Run_pptx_with_formatting()
-            # find_and_copy_speaker_notes(slide)
+    # slide_list = list(prs.slides)
+    # for slide in slide_list:
+    # find_and_copy_all_slide_text(slide)
+    # paragraphs: list() = get_slide_paragraphs(text_frames)
+    # for para in paragraph:
+    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
+    # copy_Run_pptx_with_formatting()
+    # find_and_copy_speaker_notes(slide)
 
     # TODO: This is temp to make sure we can actually create shit
     # first_paragraph = new_doc.paragraphs[0] # This appears to be the only way to access the very first paragraph.
-    # first_paragraph.add_run("This is the content of the first paragraph.")    
+    # first_paragraph.add_run("This is the content of the first paragraph.")
     # new_para = new_doc.add_paragraph()
     # new_para.text = "Lorem Ipsum"
     # === end temp
 
     # Pseudo... code.. ish
     copy_slides_to_docx_body(user_prs, new_doc)
-        # slide_list = list(prs.slides)
-        # for slide in slide_list:
-            # find_and_copy_all_slide_text(slide)
-                # paragraphs: list() = get_slide_paragraphs(slide)
-                # for para in paragraph:
-                    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
-                    # copy_Run_pptx_with_formatting()
-            # find_and_copy_speaker_notes(slide)
+    # slide_list = list(prs.slides)
+    # for slide in slide_list:
+    # find_and_copy_all_slide_text(slide)
+    # paragraphs: list() = get_slide_paragraphs(slide)
+    # for para in paragraph:
+    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
+    # TODO: apply heading styles
+    # copy_Run_pptx_with_formatting()
+    # find_and_copy_speaker_notes(slide)
 
     debug_print("Attempting to save new docx file.")
     save_output(new_doc)
 
 
-def copy_slides_to_docx_body(prs: presentation.Presentation, new_doc: document.Document) -> None:
+def copy_slides_to_docx_body(
+    prs: presentation.Presentation, new_doc: document.Document
+) -> None:
     """
     For every slide in the deck, copy its main body text into the docx body, and append any slide speaker notes
     to the end of the docx paragraphs that came from that slide.
     """
-    
+
     # Make a list of all slides
     slide_list = list(prs.slides)
 
     # For each slide...
     for slide in slide_list:
-                
+
         # TODO:
-        # - Figure out how to preserve headings
+        # - Restore heading metadata from speaker notes json and apply to the correct paragraph
+        # - Restore comments, endnotes, footnotes from speaker notes and apply to the correct run if possible; paragraph if not.
+        #       NOTE: If even the specific paragraph is undetected because of text body changes, fallback to apply it to the last
+        #       paragraph from this slide, as before.
 
         # Get a list of this slide's paragraphs
         paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
@@ -467,14 +493,19 @@ def copy_slides_to_docx_body(prs: presentation.Presentation, new_doc: document.D
         # For every paragraph, copy it to the new document
         for para in paragraphs:
             new_para = new_doc.add_paragraph()
-            
+
             for run in para.runs:
                 new_docx_run = new_para.add_run()
                 last_run = new_docx_run
                 copy_run_formatting_pptx2docx(run, new_docx_run)
-        
+
+        # TODO: cut this behavior/alter it to support restoreing metadata properly from the speaker notes.
         # After copying the last of this slide's runs, append the speaker notes to the last-copied run
-        if slide.has_notes_slide and slide.notes_slide.notes_text_frame is not None and last_run is not None:
+        if (
+            slide.has_notes_slide
+            and slide.notes_slide.notes_text_frame is not None
+            and last_run is not None
+        ):
             raw_comment_text = slide.notes_slide.notes_text_frame.text
             comment_text = sanitize_xml_text(raw_comment_text)
 
@@ -506,24 +537,29 @@ def open_and_load_pptx(pptx_path: Path | str) -> presentation.Presentation:
         debug_print(f"The pptx file {pptx_path} has {slide_count} slide(s) in it.")
 
         slide_list = list(prs.slides)
-        # Observations: 
+        # Observations:
         # 1)    Sequential iteration order matters: slide_ids will iterate here in the order that they appear in the visual slide deck.
-        # 2)    slide_id does NOT imply its place in the slide order: slide_ids appear to be n+1 generated, 
+        # 2)    slide_id does NOT imply its place in the slide order: slide_ids appear to be n+1 generated,
         #       but a person can easily move slides around in the sequence of slides as desired. The only meaning that you can gain
         #       by sorting by slide_id is (maybe) the order in which the slide items were added to the deck, not the order that the
         #       user wants them to be viewed/read.
 
         first_slide = find_first_slide_with_text(slide_list)
         if first_slide is None:
-            raise RuntimeError(f"No slides in {pptx_path} contain text content, so there's nothing for the pipeline to do.")
-        
+            raise RuntimeError(
+                f"No slides in {pptx_path} contain text content, so there's nothing for the pipeline to do."
+            )
+
         first_slide_paragraphs = get_slide_paragraphs(first_slide)
-        debug_print(f"The first slide detected with text content is slide_id: {first_slide.slide_id}. The text content is: \n")
+        debug_print(
+            f"The first slide detected with text content is slide_id: {first_slide.slide_id}. The text content is: \n"
+        )
         for p in first_slide_paragraphs:
             debug_print(p.text)
 
     # Return the runtime object
     return prs
+
 
 def find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
     """Find the first slide that contains any paragraphs with text content."""
@@ -538,13 +574,19 @@ def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx
     paragraphs: list[Paragraph_pptx] = []
 
     for placeholder in slide.placeholders:
-        if isinstance(placeholder, SlidePlaceholder) and hasattr(placeholder, "text_frame") and placeholder.text_frame:
+        if (
+            isinstance(placeholder, SlidePlaceholder)
+            and hasattr(placeholder, "text_frame")
+            and placeholder.text_frame
+        ):
             textf: TextFrame = placeholder.text_frame
             for para in textf.paragraphs:
                 if para.runs or para.text:
                     paragraphs.append(para)
 
     return paragraphs
+
+
 # endregion
 
 # region ===========
@@ -581,7 +623,7 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, CHUNK_TYPE)
 
-    if DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES:
+    if PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
         chunks = process_chunk_annotations(chunks, user_docx)
 
     # Create the presentation object from template
@@ -595,15 +637,19 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
     slides_from_chunks(user_docx, output_prs, chunks)
 
     # Save the presentation to an actual pptx on disk
-    
+
     save_output(output_prs)
+
+
 # endregion
 
 # region create_slides.py
 # eventual destination: ./src/docx2pptx/create_slides.py
 
 
-def _copy_basic_run_formatting(source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]) -> None:
+def _copy_basic_run_formatting(
+    source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
+) -> None:
     """Extract common formatting logic for Runs."""
 
     # Bold/Italics: Only overwrite when explicitly set on the source (avoid clobbering inheritance)
@@ -626,7 +672,10 @@ def _copy_basic_run_formatting(source_font: Union[Font_docx, Font_pptx], target_
         </a:r>
         """
 
-def _copy_run_color_formatting(source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]) -> None:
+
+def _copy_run_color_formatting(
+    source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
+) -> None:
     # Color: copy only if source has an explicit RGB
     src_rgb = getattr(getattr(source_font, "color", None), "rgb", None)
     if src_rgb is not None:
@@ -636,7 +685,12 @@ def _copy_run_color_formatting(source_font: Union[Font_docx, Font_pptx], target_
             target_font.color.rgb = RGBColor_docx(*src_rgb)
 
 
-def copy_run_formatting_docx2pptx(source_run: Run_docx, target_run: Run_pptx) -> None:
+def copy_run_formatting_docx2pptx(
+    source_run: Run_docx,
+    target_run: Run_pptx,
+    source_paragraph: Paragraph_docx,
+    experimental_formatting_metadata: list,
+) -> None:
     """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
     sfont = source_run.font
     tfont = target_run.font
@@ -645,14 +699,23 @@ def copy_run_formatting_docx2pptx(source_run: Run_docx, target_run: Run_pptx) ->
 
     _copy_basic_run_formatting(sfont, tfont)
 
-    _copy_run_color_formatting(sfont, tfont)     
+    _copy_run_color_formatting(sfont, tfont)
 
     if isinstance(source_run, Run_docx) and EXPERIMENTAL_FORMATTING_ON:
-        _copy_experimental_formatting_docx2pptx(source_run, target_run)        
+        if source_run.text and source_run.text.strip():
+            _copy_experimental_formatting_docx2pptx(
+                source_run, target_run, experimental_formatting_metadata
+            )
 
-    # TODO: can we use "dirty" attribute to auto-resize slide text?
+    # TODO: can we use the run object's "dirty" XML attribute to force-auto-resize slide text?
 
-def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Run_pptx) -> None:
+
+# TODO: Extracting all the experimental formatting for the purpose of restoring during the reverse pipeline.
+def _copy_experimental_formatting_docx2pptx(
+    source_run: Run_docx,
+    target_run: Run_pptx,
+    experimental_formatting_metadata: list,
+) -> None:
     sfont = source_run.font
     tfont = target_run.font
 
@@ -662,6 +725,14 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
     # Author: Martin Packer
     # License: MIT
     if sfont.highlight_color is not None:
+        # TODO: ADD TO THE experimental_formatting_metadata list
+        experimental_formatting_metadata.append(
+            {
+                "ref_text": source_run.text,
+                "highlight_color": COLOR_MAP_HEX.get(sfont.highlight_color),
+                "formatting_type": "highlight",
+            }
+        )
         try:
             # Convert the docx run highlight color to a hex string
             tfont_hex_str = COLOR_MAP_HEX.get(sfont.highlight_color)
@@ -705,6 +776,9 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
         """
 
     if sfont.strike is not None:
+        experimental_formatting_metadata.append(
+            {"ref_text": source_run.text, "formatting_type": "strike"}
+        )
         try:
             tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
         except Exception as e:
@@ -723,6 +797,9 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
         """
 
     if sfont.double_strike is not None:
+        experimental_formatting_metadata.append(
+            {"ref_text": source_run.text, "formatting_type": "double_strike"}
+        )
         try:
             tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
         except Exception as e:
@@ -744,6 +821,9 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
         """
 
     if sfont.subscript is not None:
+        experimental_formatting_metadata.append(
+            {"ref_text": source_run.text, "formatting_type": "subscript"}
+        )
         try:
             if tfont.size is None:
                 tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
@@ -769,6 +849,9 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
         """
 
     if sfont.superscript is not None:
+        experimental_formatting_metadata.append(
+            {"ref_text": source_run.text, "formatting_type": "superscript"}
+        )
         try:
             if tfont.size is None:
                 tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
@@ -796,6 +879,9 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
     # The below caps-handling code is not directly from md2pptx,
     # but is heavily influenced by it.
     if sfont.all_caps is not None:
+        experimental_formatting_metadata.append(
+            {"ref_text": source_run.text, "formatting_type": "all_caps"}
+        )
         try:
             tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
         except Exception as e:
@@ -814,6 +900,9 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
         """
 
     if sfont.small_caps is not None:
+        experimental_formatting_metadata.append(
+            {"ref_text": source_run.text, "formatting_type": "small_caps"}
+        )
         try:
             tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
         except Exception as e:
@@ -830,6 +919,7 @@ def _copy_experimental_formatting_docx2pptx(source_run: Run_docx, target_run: Ru
             <a:t>Put this text in small caps.</a:t>
         </a:r>
         """
+
 
 def create_blank_slide_for_chunk(
     prs: presentation.Presentation, slide_layout: SlideLayout
@@ -865,21 +955,26 @@ def slides_from_chunks(
             f"No slide layout found to match provided custom name, {SLD_LAYOUT_CUSTOM_NAME}"
         )
 
-    # Store custom metadata, starting with headings
-    custom_metadata = {}
-
     for chunk in chunks:
         # Create a new slide for this chunk.
         new_slide, text_frame = create_blank_slide_for_chunk(prs, slide_layout)
 
+        # Store custom metadata for this chunk that we'll want to tuck into the speaker notes as JSON
+        # (for the purposes of restoring during reverse pipeline runs).
+        extra_metadata = {}
         slide_headings = []
+
+        slide_experimental_formatting_metadata: list[dict] = []
+        # Then append items like:
+        # {"ref_text": "In a cold concrete", "bold": True, "highlight": "yellow"}
+        # {"ref_text": "Global Internet Is", "italic": True, "size": 14}
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
 
             # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
             # So if we're at the start of our list, use that existing empty paragraph.
-            if ( # TODO: can we use this logic in the reverse pipeline flow for para 0?
+            if (  # TODO: can we use this logic in the reverse pipeline flow for para 0 so it's not always empty?
                 i == 0
                 and len(text_frame.paragraphs) > 0
                 and not text_frame.paragraphs[0].text
@@ -890,36 +985,98 @@ def slides_from_chunks(
                 pptx_paragraph = text_frame.add_paragraph()
 
             # Process the docx's paragraph contents, including both runs & hyperlinks
-            copy_chunk_paragraph_inner_contents(paragraph, pptx_paragraph)
+            para_experimental_formatting = process_chunk_paragraph_inner_contents(
+                paragraph, pptx_paragraph
+            )
+
+            if para_experimental_formatting:
+                slide_experimental_formatting_metadata.extend(
+                    para_experimental_formatting
+                )
 
             if paragraph.style and is_standard_heading(paragraph.style.style_id):
-                slide_headings.append({"text": paragraph.text.strip(),
-                                       "style_id": paragraph.style.style_id
-                                       })
+                slide_headings.append(
+                    {
+                        "text": paragraph.text.strip(),
+                        "style_id": paragraph.style.style_id,
+                    }
+                )
 
-        custom_metadata[str(new_slide.slide_id)] = slide_headings
+        if slide_headings:
+            extra_metadata["headings"] = slide_headings
+        if slide_experimental_formatting_metadata:
+            extra_metadata["experimental_formatting"] = (
+                slide_experimental_formatting_metadata
+            )
+
+        notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore # TODO, POLISH: is there a reasonable way to fix this type hint?
 
         if DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES:
-            notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore # TODO, POLISH: is there a reasonable way to fix this type hint?
             annotate_slide(chunk, notes_text_frame)
 
-    # Store metadata in pptx custom properties
-    add_metadata_to_custom_properties(custom_metadata, prs)
-    
-def add_metadata_to_custom_properties(metadata: dict, prs: presentation.Presentation) -> None:
-    # Here's what we'd need to implement:
-    # Check if a custom properties part exists in the PowerPoint package
-    # https://stackoverflow.com/questions/78836502/python-pptx-adding-custom-properties-to-the-pptx-file
-    # Create the part if missing using python-pptx internals
-    # Write/read XML in the custom properties format
+        if PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
+            add_metadata_to_slide_notes(notes_text_frame, chunk, extra_metadata)
 
-    raise NotImplementedError
 
-def copy_chunk_paragraph_inner_contents(
-    paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx
+def add_metadata_to_slide_notes(
+    notes_text_frame: TextFrame, chunk: Chunk_docx, extra_metadata: dict
 ) -> None:
-    """Iterate through a paragraph's runs and hyperlinks, in document order, and process each."""
+    """
+    Populate the slide notes text frame with docx metadata so that we may restore it during a round-trip pptx2docx pipeline.
+    """
+    baseline_metadata = {}
+
+    if chunk.comments:
+        baseline_metadata["comments"] = [
+            {
+                "original": {
+                    "text": c.comment_obj.text,
+                    "author": c.comment_obj.author,
+                    "comment_id": c.comment_obj.comment_id,
+                    "initials": c.comment_obj.initials,
+                    "timestamp": (
+                        str(c.comment_obj.timestamp)
+                        if c.comment_obj.timestamp
+                        else None
+                    ),
+                },
+                "reference_text": c.reference_text,
+                "id": c.note_id,
+            }
+            for c in chunk.comments
+        ]
+
+    if chunk.footnotes:
+        baseline_metadata["footnotes"] = str(chunk.footnotes)
+
+    if chunk.endnotes:
+        baseline_metadata["endnotes"] = str(chunk.endnotes)
+
+    if extra_metadata or baseline_metadata:
+        header_para = notes_text_frame.add_paragraph()
+        header_run = header_para.add_run()
+        header_run.text = (
+            "\n\n\n\n\n\n\nJSON METADATA FROM SOURCE DOCUMENT:\n" + "=" * 40
+        )
+
+        json_para = notes_text_frame.add_paragraph()
+        json_run = json_para.add_run()
+
+        combined_metadata = {**baseline_metadata, **extra_metadata}
+        json_run.text = json.dumps(combined_metadata, indent=2)
+
+
+def process_chunk_paragraph_inner_contents(
+    paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx
+) -> list[dict]:
+    """
+    Iterate through a paragraph's runs and hyperlinks, in document order, and:
+    - copy it into the slide, with formatting
+    - capture any additional metadata (like experimental formatting) that we cannot apply directly to the copied-over
+        pptx objects
+    """
     items_processed = False
+    experimental_formatting_metadata = []
 
     for item in paragraph.iter_inner_content():
         items_processed = True
@@ -931,12 +1088,20 @@ def copy_chunk_paragraph_inner_contents(
             if "instrText" in item.element.xml and "HYPERLINK" in item.element.xml:
                 detect_field_code_hyperlinks(item)
 
-            process_run(item, pptx_paragraph)
+            process_run(
+                item, paragraph, pptx_paragraph, experimental_formatting_metadata
+            )
 
         elif hasattr(item, "url"):
             # Process all runs within the hyperlink
             for run in item.runs:
-                process_run(run, pptx_paragraph, item.url)
+                process_run(
+                    run,
+                    paragraph,
+                    pptx_paragraph,
+                    experimental_formatting_metadata,
+                    item.url,
+                )
         else:
             debug_print(f"Unknown content type in paragraph: {type(item)}")
 
@@ -947,6 +1112,8 @@ def copy_chunk_paragraph_inner_contents(
         )
         pptx_run = pptx_paragraph.add_run()
         pptx_run.text = paragraph.text
+    
+    return experimental_formatting_metadata
 
 
 def detect_field_code_hyperlinks(run: Run_docx) -> None:
@@ -965,7 +1132,7 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None:
         )
         for instr in instr_texts:
             if instr.text and instr.text.startswith("HYPERLINK"):
-                # TODO, polish, leafy: Add a const switch that would allow us to simply add the string {instr.text} 
+                # TODO, polish, leafy: Add a const switch that would allow us to simply add the string {instr.text}
                 # into the main text body if the user desires
                 debug_print(
                     f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {instr.text}"
@@ -978,13 +1145,19 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None:
 
 
 def process_run(
-    run: Run_docx, pptx_paragraph: Paragraph_pptx, hyperlink: str | None = None
+    run: Run_docx,
+    docx_paragraph: Paragraph_docx,
+    pptx_paragraph: Paragraph_pptx,
+    experimental_formatting_metadata: list,
+    hyperlink: str | None = None,
 ) -> Run_pptx:
     """Copy a run from the docx parent to the pptx paragraph, including copying its formatting."""
     # Handle formatting
 
     pptx_run = pptx_paragraph.add_run()
-    copy_run_formatting_docx2pptx(run, pptx_run)
+    copy_run_formatting_docx2pptx(
+        run, pptx_run, docx_paragraph, experimental_formatting_metadata
+    )
 
     if hyperlink:
         pptx_run_url = pptx_run.hyperlink
@@ -1006,10 +1179,10 @@ def process_chunk_annotations(
 ) -> list[Chunk_docx]:
     """For a list of Chunk_docx objects, populate the annotation dicts for each one."""
 
-    # Gather all the doc annotations - use empty dict if feature disabled
-    all_comments = get_all_docx_comments(doc) if DISPLAY_COMMENTS else {}
-    all_footnotes = get_all_docx_footnotes(doc) if DISPLAY_FOOTNOTES else {}
-    all_endnotes = get_all_docx_endnotes(doc) if DISPLAY_ENDNOTES else {}
+    # Gather all the doc annotations
+    all_raw_comments = get_all_docx_comments(doc)
+    all_footnotes = get_all_docx_footnotes(doc)
+    all_endnotes = get_all_docx_endnotes(doc)
 
     for chunk in chunks:
         for paragraph in chunk.paragraphs:
@@ -1018,8 +1191,9 @@ def process_chunk_annotations(
                 if isinstance(item, Run_docx):
                     process_run_annotations(
                         chunk,
+                        paragraph,
                         item,
-                        all_comments=all_comments,
+                        all_raw_comments=all_raw_comments,
                         all_footnotes=all_footnotes,
                         all_endnotes=all_endnotes,
                     )
@@ -1031,8 +1205,9 @@ def process_chunk_annotations(
                     for run in item.runs:
                         process_run_annotations(
                             chunk,
+                            paragraph,
                             run,
-                            all_comments=all_comments,
+                            all_raw_comments=all_raw_comments,
                             all_footnotes=all_footnotes,
                             all_endnotes=all_endnotes,
                         )
@@ -1044,8 +1219,9 @@ def process_chunk_annotations(
 
 def process_run_annotations(
     chunk: Chunk_docx,
+    paragraph: Paragraph_docx,
     run: Run_docx,
-    all_comments: dict[str, Comment_docx],
+    all_raw_comments: dict[str, Comment_docx],
     all_footnotes: dict[str, Footnote_docx],
     all_endnotes: dict[str, Endnote_docx],
 ) -> None:
@@ -1060,38 +1236,60 @@ def process_run_annotations(
         # Define namespace
         ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 
+        # get the reference text to be used by comments, footnotes, or endnotes
+        ref_text = get_ref_text(run, paragraph)
+
         # Find comment references
-        if DISPLAY_COMMENTS:
-            comment_refs = root.findall(".//w:commentReference", ns)
-            for ref in comment_refs:
-                comment_id = ref.get(f'{{{ns["w"]}}}id')
-                if comment_id and comment_id in all_comments:
-                    comment_object = all_comments[comment_id]
-                    chunk.add_comment(comment_object)
+        comment_refs = root.findall(".//w:commentReference", ns)
+        for ref in comment_refs:
+            comment_id = ref.get(f'{{{ns["w"]}}}id')
+            if comment_id and comment_id in all_raw_comments:
+                comment_object = all_raw_comments[comment_id]
+
+                custom_comment_obj = Comment_docx_custom(
+                    comment_obj=comment_object, reference_text=ref_text
+                )
+                chunk.add_comment(custom_comment_obj)
 
         # Find footnote references
-        if DISPLAY_FOOTNOTES:
-            footnote_refs = root.findall(".//w:footnoteReference", ns)
-            for ref in footnote_refs:
-                footnote_id = ref.get(f'{{{ns["w"]}}}id')
-                if footnote_id and footnote_id in all_footnotes:
-                    footnote_obj = all_footnotes[footnote_id]
-                    chunk.add_footnote(footnote_obj)
+        footnote_refs = root.findall(".//w:footnoteReference", ns)
+        for ref in footnote_refs:
+            footnote_id = ref.get(f'{{{ns["w"]}}}id')
+            if footnote_id and footnote_id in all_footnotes:
+                footnote_obj = all_footnotes[footnote_id]
+                footnote_obj.reference_text = ref_text
+                chunk.add_footnote(footnote_obj)
 
         # Find endnote references - same pattern
-        if DISPLAY_ENDNOTES:
-            endnote_refs = root.findall(".//w:endnoteReference", ns)
-            for ref in endnote_refs:
-                endnote_id = ref.get(f'{{{ns["w"]}}}id')
-                if endnote_id and endnote_id in all_endnotes:
-                    endnote_obj = all_endnotes[endnote_id]
-                    chunk.add_endnote(endnote_obj)
+        endnote_refs = root.findall(".//w:endnoteReference", ns)
+        for ref in endnote_refs:
+            endnote_id = ref.get(f'{{{ns["w"]}}}id')
+            if endnote_id and endnote_id in all_endnotes:
+                endnote_obj = all_endnotes[endnote_id]
+                endnote_obj.reference_text = ref_text
+                chunk.add_endnote(endnote_obj)
 
     except (AttributeError, ET.ParseError) as e:
         debug_print(f"WARNING: Could not parse run XML for references: {e}")
 
 
 # endregion
+
+
+def get_ref_text(run: Run_docx, paragraph: Paragraph_docx) -> str | None:
+    """
+    Get the Run or Paragraph text with which a piece of metadata is associated in the docx so that we can store that in
+    metadata and reference it on reverse-pipeline runs.
+    """
+    if run.text and run.text.strip():
+        ref_text = run.text
+    elif paragraph.text and paragraph.text.strip():
+        # Grab the first (up to 10) words of this paragraph if the run text is empty
+        ref_text = " ".join(paragraph.text.split()[:10])
+    else:
+        ref_text = None
+
+    return ref_text
 
 
 # eventual destination: ./src/docx2pptx/annotations/get_docx_annotations.py
@@ -1270,19 +1468,23 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
     NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
     comments' selected text ranges, nor do we preserve footnote or endnote numbering.
     """
-    if chunk.comments:
+    if DISPLAY_COMMENTS and chunk.comments:
         add_comments_to_notes(chunk.comments, notes_text_frame)
 
-    if chunk.footnotes:
+    if DISPLAY_FOOTNOTES and chunk.footnotes:
         add_footnotes_to_notes(chunk.footnotes, notes_text_frame)
 
-    if chunk.endnotes:
+    if DISPLAY_ENDNOTES and chunk.endnotes:
         add_endnotes_to_notes(chunk.endnotes, notes_text_frame)
+
+    if PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
+        pass
+        # add_metadata_to_slide_notes(chunk.metadata, notes_text_frame)
 
 
 # region Add annotations to pptx speaker notes text frame
 def add_comments_to_notes(
-    comments_list: list[Comment_docx], notes_text_frame: TextFrame
+    comments_list: list[Comment_docx_custom], notes_text_frame: TextFrame
 ) -> None:
     """Copy logic for appending the comments portion of the speaker notes."""
 
@@ -1291,7 +1493,7 @@ def add_comments_to_notes(
             # Sort comments by date (newest first, or change reverse=False for oldest first)
             sorted_comments = sorted(
                 comments_list,
-                key=lambda c: getattr(c, "timestamp", None) or datetime.min,
+                key=lambda c: getattr(c.comment_obj, "timestamp", None) or datetime.min,
                 reverse=False,
             )
         else:
@@ -1303,17 +1505,19 @@ def add_comments_to_notes(
 
         for i, comment in enumerate(sorted_comments, 1):
             # Check if comment has paragraphs attribute
-            if hasattr(comment, "paragraphs"):
+            if hasattr(comment.comment_obj, "paragraphs"):
                 # Get paragraphs safely, default to empty list if not present
-                this_comment_paragraphs = getattr(comment, "paragraphs", [])
+                this_comment_paragraphs = getattr(comment.comment_obj, "paragraphs", [])
                 for para in this_comment_paragraphs:
                     if hasattr(para, "text") and para.text.rstrip():
                         notes_para = notes_text_frame.add_paragraph()
                         comment_header = notes_para.add_run()
 
                         if COMMENTS_KEEP_AUTHOR_AND_DATE:
-                            author = getattr(comment, "author", "Unknown Author")
-                            timestamp = getattr(comment, "timestamp", None)
+                            author = getattr(
+                                comment.comment_obj, "author", "Unknown Author"
+                            )
+                            timestamp = getattr(comment.comment_obj, "timestamp", None)
 
                             if timestamp and hasattr(timestamp, "strftime"):
                                 timestamp_str = timestamp.strftime(
@@ -1328,7 +1532,7 @@ def add_comments_to_notes(
 
                         else:
                             comment_header.text = "\n"
-                        copy_chunk_paragraph_inner_contents(para, notes_para)
+                        process_chunk_paragraph_inner_contents(para, notes_para)
 
 
 # EXPERIMENT
@@ -1518,22 +1722,25 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
 
 ## === chunk by heading helpers ===
 
+
 def is_standard_heading(style_id: str) -> bool:
     """Check if style_id is a standard Word Heading (Heading1, Heading2, ..., Heading6)"""
     return style_id.startswith("Heading") and style_id[7:].isdigit()
 
+
 def get_heading_level(style_id: str) -> int | float:
     """
-    Extract the numeric level from a heading style (e.g., 'Heading2' -> 2), 
+    Extract the numeric level from a heading style (e.g., 'Heading2' -> 2),
     or return infinity if the style_id doesn't have a number.
     """
     try:
         return int(style_id[7:])
     except (ValueError, IndexError):
-        return float('inf')  # Treat non-headings as "deepest possible"
-        
+        return float("inf")  # Treat non-headings as "deepest possible"
+
 
 ## ===
+
 
 def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     """
@@ -1578,7 +1785,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     current_chunk: Chunk_docx = Chunk_docx()
 
     # Initialize current_heading_style_id
-    current_heading_style_id = "Normal" # Default for documents without headings
+    current_heading_style_id = "Normal"  # Default for documents without headings
 
     for i, para in enumerate(doc.paragraphs):
 
@@ -1608,7 +1815,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
             # Start new chunk with this paragraph
             current_chunk = Chunk_docx.create_with_paragraph(para)
 
-            # Update heading depth if this paragraph is a heading            
+            # Update heading depth if this paragraph is a heading
             if is_standard_heading(style_id):
                 # TODO: store this heading information somewhere
                 current_heading_style_id = style_id
@@ -1749,6 +1956,7 @@ def setup_console_encoding() -> None:
     if platform.system() == "Windows":
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
+
 # endregion
 
 
@@ -1831,9 +2039,11 @@ def create_empty_slide_deck() -> presentation.Presentation:
     # content = slide.placeholders[1]
     # content.text = "Test Slide!" # type:ignore
 
+
 # TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
 # TODO, UX: Probably add some kind of file rotation so the last 5 or so outputs are preserved
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
+
 
 def save_output(save_object: OUTPUT_TYPE) -> None:
     """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
@@ -1845,7 +2055,7 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
         save_filename = OUTPUT_PPTX_FILENAME
     else:
         raise RuntimeError(f"Unexpected output object type: {save_object}")
-    
+
     try:
         # Construct output path
         if save_folder:
@@ -1861,16 +2071,18 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
     except Exception as e:
         raise RuntimeError(f"Save failed with error: {e}")
 
+
 def sanitize_xml_text(text: str) -> str:
     """Remove characters that aren't valid in XML."""
     if not text:
         return ""
-    
+
     # Remove NULL bytes and control characters (except tab, newline, carriage return)
-    sanitized = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)
-    
+    sanitized = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", text)
+
     # Ensure it's a proper string
     return str(sanitized)
+
 
 # endregion
 
