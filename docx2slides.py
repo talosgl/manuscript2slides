@@ -1047,10 +1047,26 @@ def add_metadata_to_slide_notes(
         ]
 
     if chunk.footnotes:
-        baseline_metadata["footnotes"] = str(chunk.footnotes)
+        baseline_metadata["footnotes"] = [
+        {
+            "footnote_id": f.footnote_id,
+            "text_body": f.text_body,
+            "hyperlinks": f.hyperlinks,
+            "reference_text": f.reference_text,
+        }
+        for f in chunk.footnotes
+    ]
 
     if chunk.endnotes:
-        baseline_metadata["endnotes"] = str(chunk.endnotes)
+        baseline_metadata["endnotes"] = [
+        {
+            "endnote_id": e.endnote_id,
+            "text_body": e.text_body,
+            "hyperlinks": e.hyperlinks,
+            "reference_text": e.reference_text,
+        }
+        for e in chunk.endnotes
+    ]
 
     if extra_metadata or baseline_metadata:
         header_para = notes_text_frame.add_paragraph()
