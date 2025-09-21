@@ -14,12 +14,12 @@ The main workflow:
 
 Supported chunking methods:
 - paragraph: Each paragraph becomes a slide
+- page: New slide for each page break
 - heading_flat: New slide for each heading (any level)
 - heading_nested: New slide based on heading hierarchy
-- page: New slide for each page break
 
 Example:
-    python docx2slides.py
+    python docx2pptx-text.py
 
     (Configure INPUT_DOCX_FILE and other constants before running)
 """
@@ -204,30 +204,10 @@ OUTPUT_PPTX_FOLDER = SCRIPT_DIR / "output"
 # Desired output filename; Note that this will clobber an existing file of the same name!
 OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
 
-# CASE-SENSITIVE: Specify the headings prefixes to use when building slide chunks based on headings.
-ALLOWED_HEADING_PREFIXES = {
-    "Heading",
-    "Chapter",
-}  # E.g., Heading1, Heading2, Heading3, Chapter1, Chapter2
-# You can alter this if your word.docx has custom heading names.
-# For chunking based on headings, flat, it doesn't matter what comes after the prefix.
-# For chunking based on nested headings, the code assumes there will be a number AT THE END of the name.
-# If the number is somewhere else (start, middle), you'll have to adjust the code in (at least) get_style_parts()
-
-# TODO: Remove support for custom headings so that we can implement heading support for Headings 1-6 in the reverse pipeline.
-# For chunking by NESTED headings, specify their hierarchy below. 1 is the topmost level, 1+N are deeper levels.
-HEADING_HIERARCHY = {
-    "Chapter": 1,
-    "Heading": 2,
-    "Scene": 3,
-    "Beat": 4,
-    # Add more as needed
-}
 
 # Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
 INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"
-
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
 class ChunkType(Enum):
@@ -247,20 +227,23 @@ CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
 DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing; update: TODO, UX: please god replace all these consts with a config class or something for v1
 # endregion
 
-PRESERVE_COMMENTS: bool = True
-PRESERVE_FOOTNOTES: bool = True
-PRESERVE_ENDNOTES: bool = True
+DISPLAY_COMMENTS: bool = True
+DISPLAY_FOOTNOTES: bool = True
+DISPLAY_ENDNOTES: bool = True
 
-PRESERVE_ANNOTATIONS: bool = (
-    PRESERVE_COMMENTS or PRESERVE_FOOTNOTES or PRESERVE_ENDNOTES
+DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES: bool = (
+    DISPLAY_COMMENTS or DISPLAY_FOOTNOTES or DISPLAY_ENDNOTES
 )
+
+# We ought to support some way to leave speaker notes completely empty if the user really wants that. 
+# They need to be told it'll mean metadata loss for round-trip pipeline stuff but there's probably
+# plenty of cases where people would want them empty despite the lossy conversion.
+KEEP_SPEAKER_NOTES_EMPTY: bool = False
 
 COMMENTS_SORT_BY_DATE: bool = True
 COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
 
 EXPERIMENTAL_FORMATTING_ON: bool = True
-
-FAIL_FAST: bool = False
 
 # ========== pptx2docxtext pipeline consts
 
@@ -274,7 +257,8 @@ OUTPUT_DOCX_FOLDER = SCRIPT_DIR / "output"
 OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
 
 
-
+# TODO: add new field to notes classes: "reference_text" that is whatever string this thing's attached to
+# TODO: figure out how to capture that string for each one... maybe in process_chunk_annotations()
 # region models.py
 @dataclass
 class Footnote_docx:
@@ -364,7 +348,6 @@ class Chunk_docx:
         """Add a endnote to this Chunk object's endnote list."""
         self.endnotes.append(endnote)
 
-
 # TODO, REVERSE FLOW: We probably need a separate Chunk_pptx class
 
 # I think it would be:
@@ -374,7 +357,6 @@ class Chunk_docx:
 
 # endregion
 
-
 # region __main__.py & run_pipeline.py
 # eventual destination: ./src/docx2pptx/__main__.py
 def main() -> None:
@@ -382,9 +364,9 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    # run_docx2pptx_pipeline(INPUT_DOCX_FILE)
+    run_docx2pptx_pipeline(INPUT_DOCX_FILE)
 
-    run_pptx2docx_pipeline(INPUT_PPTX_FILE)
+    # run_pptx2docx_pipeline(INPUT_PPTX_FILE)
 
 
 # endregion
@@ -599,7 +581,7 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, CHUNK_TYPE)
 
-    if PRESERVE_ANNOTATIONS:
+    if DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES:
         chunks = process_chunk_annotations(chunks, user_docx)
 
     # Create the presentation object from template
@@ -619,6 +601,7 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
 
 # region create_slides.py
 # eventual destination: ./src/docx2pptx/create_slides.py
+
 
 def _copy_basic_run_formatting(source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]) -> None:
     """Extract common formatting logic for Runs."""
@@ -882,16 +865,21 @@ def slides_from_chunks(
             f"No slide layout found to match provided custom name, {SLD_LAYOUT_CUSTOM_NAME}"
         )
 
+    # Store custom metadata, starting with headings
+    custom_metadata = {}
+
     for chunk in chunks:
         # Create a new slide for this chunk.
         new_slide, text_frame = create_blank_slide_for_chunk(prs, slide_layout)
+
+        slide_headings = []
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
 
             # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
             # So if we're at the start of our list, use that existing empty paragraph.
-            if (
+            if ( # TODO: can we use this logic in the reverse pipeline flow for para 0?
                 i == 0
                 and len(text_frame.paragraphs) > 0
                 and not text_frame.paragraphs[0].text
@@ -904,10 +892,28 @@ def slides_from_chunks(
             # Process the docx's paragraph contents, including both runs & hyperlinks
             copy_chunk_paragraph_inner_contents(paragraph, pptx_paragraph)
 
-        if PRESERVE_ANNOTATIONS:
+            if paragraph.style and is_standard_heading(paragraph.style.style_id):
+                slide_headings.append({"text": paragraph.text.strip(),
+                                       "style_id": paragraph.style.style_id
+                                       })
+
+        custom_metadata[str(new_slide.slide_id)] = slide_headings
+
+        if DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES:
             notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore # TODO, POLISH: is there a reasonable way to fix this type hint?
             annotate_slide(chunk, notes_text_frame)
 
+    # Store metadata in pptx custom properties
+    add_metadata_to_custom_properties(custom_metadata, prs)
+    
+def add_metadata_to_custom_properties(metadata: dict, prs: presentation.Presentation) -> None:
+    # Here's what we'd need to implement:
+    # Check if a custom properties part exists in the PowerPoint package
+    # https://stackoverflow.com/questions/78836502/python-pptx-adding-custom-properties-to-the-pptx-file
+    # Create the part if missing using python-pptx internals
+    # Write/read XML in the custom properties format
+
+    raise NotImplementedError
 
 def copy_chunk_paragraph_inner_contents(
     paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx
@@ -1001,9 +1007,9 @@ def process_chunk_annotations(
     """For a list of Chunk_docx objects, populate the annotation dicts for each one."""
 
     # Gather all the doc annotations - use empty dict if feature disabled
-    all_comments = get_all_docx_comments(doc) if PRESERVE_COMMENTS else {}
-    all_footnotes = get_all_docx_footnotes(doc) if PRESERVE_FOOTNOTES else {}
-    all_endnotes = get_all_docx_endnotes(doc) if PRESERVE_ENDNOTES else {}
+    all_comments = get_all_docx_comments(doc) if DISPLAY_COMMENTS else {}
+    all_footnotes = get_all_docx_footnotes(doc) if DISPLAY_FOOTNOTES else {}
+    all_endnotes = get_all_docx_endnotes(doc) if DISPLAY_ENDNOTES else {}
 
     for chunk in chunks:
         for paragraph in chunk.paragraphs:
@@ -1055,7 +1061,7 @@ def process_run_annotations(
         ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 
         # Find comment references
-        if PRESERVE_COMMENTS:
+        if DISPLAY_COMMENTS:
             comment_refs = root.findall(".//w:commentReference", ns)
             for ref in comment_refs:
                 comment_id = ref.get(f'{{{ns["w"]}}}id')
@@ -1064,7 +1070,7 @@ def process_run_annotations(
                     chunk.add_comment(comment_object)
 
         # Find footnote references
-        if PRESERVE_FOOTNOTES:
+        if DISPLAY_FOOTNOTES:
             footnote_refs = root.findall(".//w:footnoteReference", ns)
             for ref in footnote_refs:
                 footnote_id = ref.get(f'{{{ns["w"]}}}id')
@@ -1073,7 +1079,7 @@ def process_run_annotations(
                     chunk.add_footnote(footnote_obj)
 
         # Find endnote references - same pattern
-        if PRESERVE_ENDNOTES:
+        if DISPLAY_ENDNOTES:
             endnote_refs = root.findall(".//w:endnoteReference", ns)
             for ref in endnote_refs:
                 endnote_id = ref.get(f'{{{ns["w"]}}}id')
@@ -1082,8 +1088,6 @@ def process_run_annotations(
                     chunk.add_endnote(endnote_obj)
 
     except (AttributeError, ET.ParseError) as e:
-        if FAIL_FAST:
-            raise
         debug_print(f"WARNING: Could not parse run XML for references: {e}")
 
 
@@ -1116,7 +1120,7 @@ def get_all_docx_footnotes(doc: document.Document) -> dict[str, Footnote_docx]:
     Returns {id: {footnote_id: str, text_body: str, hyperlinks: list of str} }.
     """
 
-    if not PRESERVE_FOOTNOTES:
+    if not DISPLAY_FOOTNOTES:
         return {}
 
     try:
@@ -1130,11 +1134,8 @@ def get_all_docx_footnotes(doc: document.Document) -> dict[str, Footnote_docx]:
         return extract_notes_from_xml(root, Footnote_docx)
 
     except Exception as e:
-        if FAIL_FAST:
-            raise
-        else:
-            debug_print(f"Warning: Could not extract footnotes: {e}")
-            return {}
+        debug_print(f"Warning: Could not extract footnotes: {e}")
+        return {}
 
 
 def get_all_docx_endnotes(doc: document.Document) -> dict[str, Endnote_docx]:
@@ -1142,7 +1143,7 @@ def get_all_docx_endnotes(doc: document.Document) -> dict[str, Endnote_docx]:
     Extract all endnotes from a docx document.
     Returns {id: {footnote_id: str, text_body: str, hyperlinks: list of str} }.
     """
-    if not PRESERVE_ENDNOTES:
+    if not DISPLAY_ENDNOTES:
         return {}
 
     try:
@@ -1155,11 +1156,8 @@ def get_all_docx_endnotes(doc: document.Document) -> dict[str, Endnote_docx]:
         return extract_notes_from_xml(root, Endnote_docx)
 
     except Exception as e:
-        if FAIL_FAST:
-            raise
-        else:
-            debug_print(f"Warning: Could not extract endnotes: {e}")
-            return {}
+        debug_print(f"Warning: Could not extract endnotes: {e}")
+        return {}
 
 
 # endregion
@@ -1518,6 +1516,25 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
 # region by Heading (nested)
 
 
+## === chunk by heading helpers ===
+
+def is_standard_heading(style_id: str) -> bool:
+    """Check if style_id is a standard Word Heading (Heading1, Heading2, ..., Heading6)"""
+    return style_id.startswith("Heading") and style_id[7:].isdigit()
+
+def get_heading_level(style_id: str) -> int | float:
+    """
+    Extract the numeric level from a heading style (e.g., 'Heading2' -> 2), 
+    or return infinity if the style_id doesn't have a number.
+    """
+    try:
+        return int(style_id[7:])
+    except (ValueError, IndexError):
+        return float('inf')  # Treat non-headings as "deepest possible"
+        
+
+## ===
+
 def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     """
     Creates chunks based on headings, using nesting logic to group "deeper" headings
@@ -1556,28 +1573,12 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     Normal Paragraph
 
     """
-
-    # Collect the possible heading-like style_ids in THIS document
-    doc_headings = find_numbered_headings(doc)
-
-    if not doc_headings:
-        print("No valid numbered headings found for chunk by headings nested.")
-        print("Falling back to flat heading chunking...")
-        return chunk_by_heading_flat(doc)
-
-    # Find which paragraphs are headings; return the index number and the style_id
-    heading_paras = find_heading_indices(doc, doc_headings)
-
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
     current_chunk: Chunk_docx = Chunk_docx()
 
-    # Initialize current_heading_style_id  - handle case where no headings exist
-    if heading_paras:
-        # Set to the style_id of the first-found heading paragraph in the doc
-        current_heading_style_id = sorted(heading_paras)[0][1]
-    else:
-        current_heading_style_id = "Normal"  # Default for documents without headings
+    # Initialize current_heading_style_id
+    current_heading_style_id = "Normal" # Default for documents without headings
 
     for i, para in enumerate(doc.paragraphs):
 
@@ -1593,7 +1594,8 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_chunk.paragraphs:
             current_chunk.add_paragraph(para)
-            if style_id in doc_headings:
+            if is_standard_heading(style_id):
+                # TODO: store this heading information somewhere
                 current_heading_style_id = style_id
             continue
 
@@ -1606,15 +1608,17 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
             # Start new chunk with this paragraph
             current_chunk = Chunk_docx.create_with_paragraph(para)
 
-            # Update heading depth if this paragraph is a heading
-            if style_id in doc_headings:
+            # Update heading depth if this paragraph is a heading            
+            if is_standard_heading(style_id):
+                # TODO: store this heading information somewhere
                 current_heading_style_id = style_id
             continue
 
         # Handle headings
-        if style_id in doc_headings:
-            # Check if this heading is at same level or higher (less deep) than current
-            if get_heading_depth(style_id) <= get_heading_depth(
+        if is_standard_heading(style_id):
+            # TODO: store this heading information somewhere
+            # Check if this heading is at same level or higher (less deep) than current. Smaller numbers are higher up in the hierarchy.
+            if get_heading_level(style_id) <= get_heading_level(
                 current_heading_style_id
             ):
                 # If yes, start a new chunk
@@ -1636,93 +1640,6 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     print(f"This document has {len(all_chunks)} nested heading chunks.")
     return all_chunks
 
-
-## === chunk_by_heading_nested() helpers ===
-
-
-def get_style_parts(style_id: str) -> tuple[str, int] | None:
-    """Split the style_id into prefix & number using RegEx"""
-    match = re.match(r"([A-Za-z]+)(\d+)$", style_id)
-    if match:
-        style_prefix, style_num_str = match.groups()
-        style_num = int(style_num_str)
-        return (style_prefix, style_num)
-    return None
-
-
-def find_doc_prefixed_headings(doc: document.Document) -> set[str]:
-    """Generate the set of style_ids used by paragraphs in this document that match the approved prefixes list."""
-    styles_found: set[str] = set()
-
-    for para in doc.paragraphs:
-
-        # If this paragraph doesn't even have a style_id then we don't care; skip it
-        if not (para.style and para.style.style_id):
-            continue
-        style_id = para.style.style_id
-
-        # # Split out the prefix and see if it is in the allowed headings prefixes
-        if style_id.startswith(tuple(ALLOWED_HEADING_PREFIXES)):
-            styles_found.add(style_id)
-
-    debug_print(sorted(styles_found))
-    return styles_found
-
-
-def find_numbered_headings(doc: document.Document) -> list[str] | None:
-    """Find headings used in this document that end in a number."""
-    all_headings: set[str] = find_doc_prefixed_headings(doc)
-    numbered_headings: list[str] = []
-    for heading in all_headings:
-        style_parts = get_style_parts(heading)
-        if style_parts:
-            numbered_headings.append(heading)
-    if numbered_headings:
-        return numbered_headings
-    else:
-        return None
-
-
-def find_heading_indices(
-    doc: document.Document, headings: list[str]
-) -> list[tuple[int, str]]:
-    """Find all paragraphs in this document that are headings and store their (index, style_id) in a set."""
-    heading_paragraphs: set[tuple[int, str]] = set()
-    for i, para in enumerate(doc.paragraphs):
-        if para.style:
-            style_id = para.style.style_id
-        else:
-            continue
-        if style_id in headings:
-            heading_paragraphs.add((i, style_id))
-    return sorted(heading_paragraphs)
-
-
-def get_heading_depth(style_id: str) -> int | float:
-    """Compute a heading depth based on the defined hierarchy and style_id number."""
-    style_parts = get_style_parts(style_id)
-
-    if not style_parts:
-        return float("inf")
-
-    style_prefix, style_num = style_parts
-
-    # Look up this heading's prefix in the hierarchy list. If it's not there, default it to 99 so it's low-pri.
-    # (Enough checks prior to this call should prevent that case, but let's not just assume I got the logic right...)
-    hierarchy_depth = HEADING_HIERARCHY.get(style_prefix, 99)
-
-    # Multiply the hierarchy depth by 1000, then add the style's depth.
-    # E.g., if Chapter = 1, Heading = 2, then:
-    # Chapter2 = 1002
-    # Heading1 = 2001
-    # Heading12 = 2012
-    # Safe up to heading numbers < 1000 (current max expected: ~15)
-    comparison_depth = (hierarchy_depth * 1000) + style_num
-
-    return comparison_depth
-
-
-## ===
 
 # endregion
 
@@ -1767,16 +1684,6 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     Normal Paragraph
     """
 
-    # Collect the possible heading-like style_ids in THIS document
-    doc_headings = find_doc_prefixed_headings(doc)
-
-    if not doc_headings:
-        print(
-            f"Warning: No headings found matching prefixes {ALLOWED_HEADING_PREFIXES}"
-        )
-        print("Falling back to paragraph chunking...")
-        return chunk_by_paragraph(doc)
-
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
     current_chunk: Chunk_docx = Chunk_docx()
@@ -1807,7 +1714,8 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
             continue
 
         # If this paragraph is a heading, start a new chunk
-        if style_id in doc_headings:
+        if is_standard_heading(style_id):
+            # TODO: store this heading information somewhere
             # If we already have content in current_chunk, save it and start fresh
             if current_chunk:
                 all_chunks.append(current_chunk)
@@ -1840,21 +1748,6 @@ def setup_console_encoding() -> None:
     """Configure UTF-8 encoding for Windows console to prevent UnicodeEncodeError when printing non-ASCII characters (like emojis)."""
     if platform.system() == "Windows":
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-
-
-# TODO: cut?
-def fail_or_warn(
-    error_msg: str,
-    warning_msg: str,
-    exception_type: type[Exception] = ValueError,
-    fail_fast: bool = False,
-) -> None:
-    """Handle error conditions with configurable fail-fast behavior."""
-    if fail_fast:
-        raise exception_type(error_msg)
-    else:
-        debug_print(f"WARNING: {warning_msg}")
-
 
 # endregion
 
