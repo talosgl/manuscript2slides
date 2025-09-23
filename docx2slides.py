@@ -208,7 +208,7 @@ OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
 
 # Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
-INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"
+INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_slides_output.docx"#"sample_doc.docx"
 
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
@@ -248,7 +248,7 @@ EXPERIMENTAL_FORMATTING_ON: bool = True
 
 # ========== pptx2docxtext pipeline consts
 
-INPUT_PPTX_FILE = SCRIPT_DIR / "resources" / "sample_slides.pptx"
+INPUT_PPTX_FILE = SCRIPT_DIR / "resources" / "sample_slides_output.pptx" #"sample_slides.pptx"
 
 TEMPLATE_DOCX = SCRIPT_DIR / "resources" / "docx_template.docx"
 
@@ -368,7 +368,17 @@ class Chunk_docx:
         self.endnotes.append(endnote)
 
 
-# TODO, REVERSE FLOW: We probably need a separate Chunk_pptx class
+# TODO, REVERSE FLOW: We might need a separate Chunk_pptx class
+@dataclass
+class Chunk_pptx:
+    """Class for Chunk objects made from pptx slides and their slide notes."""
+    paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
+
+    comments: list[Comment_docx_custom] = field(
+        default_factory=list[Comment_docx_custom]
+    )
+    footnotes: list[Footnote_docx] = field(default_factory=list[Footnote_docx])
+    endnotes: list[Endnote_docx] = field(default_factory=list[Endnote_docx])
 
 # I think it would be:
 # list of body [Paragraph_pptx]
@@ -385,9 +395,9 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    run_docx2pptx_pipeline(INPUT_DOCX_FILE)
+    #run_docx2pptx_pipeline(INPUT_DOCX_FILE)
 
-    # run_pptx2docx_pipeline(INPUT_PPTX_FILE)
+    run_pptx2docx_pipeline(INPUT_PPTX_FILE)
 
 
 # endregion
@@ -464,13 +474,70 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     debug_print("Attempting to save new docx file.")
     save_output(new_doc)
 
+METADATA_MARKER_HEADER: str = "START OF JSON METADATA FROM SOURCE DOCUMENT"
+METADATA_MARKER_FOOTER: str = "END OF JSON METADATA FROM SOURCE DOCUMENT"
+
+def parse_slide_JSON_metadata(slide_notes_text: str):
+    
+    # 0) Lightly validate the JSON string is as we expect: e.g, it starts and ends with =======
+    # 1) Attempt to parse the JSON string
+    try:
+        pass
+
+    except:
+        pass
+
+
+"""
+Split speaker notes by the "JSON METADATA FROM SOURCE DOCUMENT:" marker
+Extract everything after that marker as potential JSON
+Try to parse it, with fallbacks if it fails
+"""
+
+def extract_metadata_from_speaker_notes(speaker_notes_text: str):
+    if METADATA_MARKER_HEADER not in speaker_notes_text or METADATA_MARKER_FOOTER not in speaker_notes_text:
+        return None # no metadata found
+    
+    start_idx = speaker_notes_text.find(METADATA_MARKER_HEADER)
+    end_idx = speaker_notes_text.find(METADATA_MARKER_FOOTER)
+    if start_idx != -1 and end_idx != -1:        
+        json_content = speaker_notes_text[start_idx + len(METADATA_MARKER_HEADER):end_idx]
+
+    # Split and take everything after the marker
+    json_content = speaker_notes_text[start_idx + len(METADATA_MARKER_HEADER):end_idx].strip()
+    
+    # Remove the separator line if present
+    json_content = json_content.lstrip("=").strip()
+    
+    try:
+        return json.loads(json_content)
+    except json.JSONDecodeError:
+        return None  # Invalid JSON, treat as regular notes
+    # try:
+    #     json_dict = json.loads(json_content)
+    #     return json_dict
+    # except Exception as e:
+    #     debug_print(f"Failed to parse JSON: {e}")
+    #     return None
+
+def analyze_slide_and_notes(slide: Slide):
+    if (
+            slide.has_notes_slide
+            and slide.notes_slide.notes_text_frame is not None
+            and "JSON" in slide.notes_slide.notes_text_frame.text
+    ):
+        metadata = extract_metadata_from_speaker_notes(slide.notes_slide.notes_text_frame.text)
+    
+        return metadata
+        
 
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document
 ) -> None:
     """
-    For every slide in the deck, copy its main body text into the docx body, and append any slide speaker notes
-    to the end of the docx paragraphs that came from that slide.
+    Sequentially process each slide in the deck by copying the paragraphs from the slide body into the docx's body. Analyze
+    the speaker notes of the slide, seeking stored JSON metadata there from previous docx2pptx runs, and use that to apply
+    formatting and/or annotations.
     """
 
     # Make a list of all slides
@@ -478,6 +545,8 @@ def copy_slides_to_docx_body(
 
     # For each slide...
     for slide in slide_list:
+
+        analyze_slide_and_notes(slide)
 
         # TODO:
         # - Restore heading metadata from speaker notes json and apply to the correct paragraph
@@ -1072,7 +1141,7 @@ def add_metadata_to_slide_notes(
         header_para = notes_text_frame.add_paragraph()
         header_run = header_para.add_run()
         header_run.text = (
-            "\n\n\n\n\n\n\nSTART OF JSON METADATA FROM SOURCE DOCUMENT:\n" + "=" * 40
+            f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
         )
 
         json_para = notes_text_frame.add_paragraph()
@@ -1083,7 +1152,7 @@ def add_metadata_to_slide_notes(
 
         footer_para = notes_text_frame.add_paragraph()
         footer_run = footer_para.add_run()
-        footer_run.text = "=" * 40 + "\nEND OF JSON METADATA FROM SOURCE DOCUMENT" 
+        footer_run.text = "=" * 40 + f"\n{METADATA_MARKER_FOOTER}" 
 
 
 def process_chunk_paragraph_inner_contents(
