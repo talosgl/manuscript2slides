@@ -560,14 +560,40 @@ def split_speaker_notes(speaker_notes_text: str) -> dict:
 def remove_ranges_from_text(text: str, ranges: list) -> str:
     """Remove multiple ranges from text, working backwards to preserve positions."""
 
+    # First merge any overlapping ranges
+    ranges_merged = merge_overlapping_ranges(ranges)
+
     # Sort ranges by start position, then work backwards
-    ranges_sorted = sorted(ranges, reverse=True)  # Start from end
+    ranges_sorted = sorted(ranges_merged, reverse=True)  # Start from end
 
     result = text
     for start, end in ranges_sorted:
         result = result[:start] + result[end:]
 
     return result
+
+
+def merge_overlapping_ranges(ranges: list) -> list:
+    """If any (int, int) index ranges overlap, merge them."""
+    if not ranges:
+        return []
+
+    # Sort by start position
+    sorted_ranges = sorted(ranges)
+    merged = [sorted_ranges[0]]
+
+    for current in sorted_ranges[1:]:
+        last = merged[-1]
+
+        # Check if current overlaps with last merged range
+        if current[0] <= last[1]:  # start of current <= end of last
+            # Merge: extend the end position if needed
+            merged[-1] = (last[0], max(last[1], current[1]))
+        else:
+            # No overlap, add as new range
+            merged.append(current)
+
+    return merged
 
 
 def process_slide_paragraphs(
@@ -602,6 +628,9 @@ def copy_slides_to_docx_body(
                 slide.notes_slide.notes_text_frame.text
             )
 
+        # ==================================================================================
+        # TODO: Should all this nonsense be stored in a class object instead? It might be an
+        # unnecessary layer of abstraction, but this is kinda hard to read!
         if speaker_notes_dict is not None and speaker_notes_dict["has_metadata"]:
             # Extract the actual data structures
             has_metadata = speaker_notes_dict["has_metadata"]
@@ -627,6 +656,8 @@ def copy_slides_to_docx_body(
         else:
             has_user_notes = False
 
+        # ==================================================================================
+
         slide_paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
 
         unmatched_annotations = []
@@ -649,6 +680,7 @@ def copy_slides_to_docx_body(
                         new_para.style = heading["style_id"]
                         break  # we should only ever apply one style to a paragraph
 
+            # TODO: Should we add hyperlink vs run support? How do we detect hyperlinks in pptx runs?
             for run in pptx_para.runs:
                 new_docx_run = new_para.add_run()
                 last_run = new_docx_run
@@ -1344,7 +1376,6 @@ def process_chunk_paragraph_inner_contents(
         )
         pptx_run = pptx_paragraph.add_run()
         pptx_run.text = paragraph.text
-
 
     return experimental_formatting_metadata
 
