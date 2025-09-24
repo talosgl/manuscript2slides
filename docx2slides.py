@@ -208,7 +208,7 @@ OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
 
 # Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
-INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_slides_output.docx"#"sample_doc.docx"
+INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"
 
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
@@ -248,7 +248,9 @@ EXPERIMENTAL_FORMATTING_ON: bool = True
 
 # ========== pptx2docxtext pipeline consts
 
-INPUT_PPTX_FILE = SCRIPT_DIR / "resources" / "sample_slides_output.pptx" #"sample_slides.pptx"
+INPUT_PPTX_FILE = (
+    SCRIPT_DIR / "resources" / "sample_slides_output.pptx"
+)  # "sample_slides.pptx"
 
 TEMPLATE_DOCX = SCRIPT_DIR / "resources" / "docx_template.docx"
 
@@ -372,6 +374,7 @@ class Chunk_docx:
 @dataclass
 class Chunk_pptx:
     """Class for Chunk objects made from pptx slides and their slide notes."""
+
     paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
 
     comments: list[Comment_docx_custom] = field(
@@ -379,6 +382,7 @@ class Chunk_pptx:
     )
     footnotes: list[Footnote_docx] = field(default_factory=list[Footnote_docx])
     endnotes: list[Endnote_docx] = field(default_factory=list[Endnote_docx])
+
 
 # I think it would be:
 # list of body [Paragraph_pptx]
@@ -395,7 +399,7 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    #run_docx2pptx_pipeline(INPUT_DOCX_FILE)
+    # run_docx2pptx_pipeline(INPUT_DOCX_FILE)
 
     run_pptx2docx_pipeline(INPUT_PPTX_FILE)
 
@@ -474,12 +478,15 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     debug_print("Attempting to save new docx file.")
     save_output(new_doc)
 
+
 METADATA_MARKER_HEADER: str = "START OF JSON METADATA FROM SOURCE DOCUMENT"
 METADATA_MARKER_FOOTER: str = "END OF JSON METADATA FROM SOURCE DOCUMENT"
+NOTES_MARKER_HEADER: str = "START OF COPIED NOTES FROM SOURCE DOCX"
+NOTES_MARKER_FOOTER: str = "END OF COPIED NOTES FROM SOURCE DOCX"
+
 
 def parse_slide_JSON_metadata(slide_notes_text: str):
-    
-    # 0) Lightly validate the JSON string is as we expect: e.g, it starts and ends with =======
+
     # 1) Attempt to parse the JSON string
     try:
         pass
@@ -494,43 +501,86 @@ Extract everything after that marker as potential JSON
 Try to parse it, with fallbacks if it fails
 """
 
-def extract_metadata_from_speaker_notes(speaker_notes_text: str):
-    if METADATA_MARKER_HEADER not in speaker_notes_text or METADATA_MARKER_FOOTER not in speaker_notes_text:
-        return None # no metadata found
-    
-    start_idx = speaker_notes_text.find(METADATA_MARKER_HEADER)
-    end_idx = speaker_notes_text.find(METADATA_MARKER_FOOTER)
-    if start_idx != -1 and end_idx != -1:        
-        json_content = speaker_notes_text[start_idx + len(METADATA_MARKER_HEADER):end_idx]
 
-    # Split and take everything after the marker
-    json_content = speaker_notes_text[start_idx + len(METADATA_MARKER_HEADER):end_idx].strip()
-    
-    # Remove the separator line if present
-    json_content = json_content.lstrip("=").strip()
-    
-    try:
-        return json.loads(json_content)
-    except json.JSONDecodeError:
-        return None  # Invalid JSON, treat as regular notes
-    # try:
-    #     json_dict = json.loads(json_content)
-    #     return json_dict
-    # except Exception as e:
-    #     debug_print(f"Failed to parse JSON: {e}")
-    #     return None
+def split_speaker_notes(speaker_notes_text: str) -> dict:
+    """
+    Extract user notes, JSON metadata, and discard copied annotations.
+    Returns dict with parsed sections.
+    """
 
-def analyze_slide_and_notes(slide: Slide):
-    if (
-            slide.has_notes_slide
-            and slide.notes_slide.notes_text_frame is not None
-            and "JSON" in slide.notes_slide.notes_text_frame.text
-    ):
-        metadata = extract_metadata_from_speaker_notes(slide.notes_slide.notes_text_frame.text)
-    
-        return metadata
-        
+    # Find all marker positions
+    json_start = speaker_notes_text.find(METADATA_MARKER_HEADER)
+    json_end = speaker_notes_text.find(METADATA_MARKER_FOOTER)
 
+    notes_start = speaker_notes_text.find(NOTES_MARKER_HEADER)
+    notes_end = speaker_notes_text.find(NOTES_MARKER_FOOTER)
+
+    # Extract JSON if present
+    json_content = None
+    if json_start != -1 and json_end != -1:
+        json_text = speaker_notes_text[
+            json_start + len(METADATA_MARKER_HEADER) : json_end
+        ]
+        # Clean up both ends - remove separator lines
+        json_text = json_text.strip().lstrip("=").rstrip("=").strip()
+        try:
+            json_content = json.loads(json_text)
+        except json.JSONDecodeError:
+            json_content = None
+            debug_print(
+                "We found what looked like a JSON section but then failed to load it."
+            )
+
+    # Build list of ranges to remove (inclusive of markers)
+    ranges_to_remove = []
+
+    # If we found a range of JSON start/end, mark that for removal
+    if json_start != -1 and json_end != -1:
+        ranges_to_remove.append((json_start, json_end + len(METADATA_MARKER_FOOTER)))
+
+    # If we found a range of notes start/end, mark that for removal
+    if notes_start != -1 and notes_end != -1:
+        ranges_to_remove.append((notes_start, notes_end + len(NOTES_MARKER_FOOTER)))
+
+    # Sort ranges by start position (for consistent removal)
+    ranges_to_remove.sort()
+
+    # Extract user notes by removing the marked sections
+    user_notes = remove_ranges_from_text(speaker_notes_text, ranges_to_remove)
+    user_notes = user_notes.strip()
+
+    return {
+        "user_notes": user_notes,
+        "has_user_notes": len(user_notes) > 0,
+        "json_metadata": json_content,
+        "has_metadata": json_content is not None,
+    }
+
+
+def remove_ranges_from_text(text: str, ranges: list) -> str:
+    """Remove multiple ranges from text, working backwards to preserve positions."""
+
+    # Sort ranges by start position, then work backwards
+    ranges_sorted = sorted(ranges, reverse=True)  # Start from end
+
+    result = text
+    for start, end in ranges_sorted:
+        result = result[:start] + result[end:]
+
+    return result
+
+
+def process_slide_paragraphs(
+    slide: Slide, new_doc: document.Document, speaker_notes_dict: dict | None
+) -> None:
+
+    # Create the docx paragraph
+    new_para: Paragraph_docx = new_doc.add_paragraph()
+
+    # Check if this paragraph should be a heading
+
+
+# TODO: split into helpers because this is a behemoth of a function
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document
 ) -> None:
@@ -545,44 +595,141 @@ def copy_slides_to_docx_body(
 
     # For each slide...
     for slide in slide_list:
+        speaker_notes_dict = None
 
-        analyze_slide_and_notes(slide)
+        if slide.has_notes_slide and slide.notes_slide.notes_text_frame is not None:
+            speaker_notes_dict = split_speaker_notes(
+                slide.notes_slide.notes_text_frame.text
+            )
 
-        # TODO:
-        # - Restore heading metadata from speaker notes json and apply to the correct paragraph
-        # - Restore comments, endnotes, footnotes from speaker notes and apply to the correct run if possible; paragraph if not.
-        #       NOTE: If even the specific paragraph is undetected because of text body changes, fallback to apply it to the last
-        #       paragraph from this slide, as before.
+        if speaker_notes_dict is not None and speaker_notes_dict["has_metadata"]:
+            # Extract the actual data structures
+            has_metadata = speaker_notes_dict["has_metadata"]
+            slide_metadata = speaker_notes_dict["json_metadata"]
+            slide_comments = slide_metadata.get("comments", [])
+            slide_footnotes = slide_metadata.get("footnotes", [])
+            slide_endnotes = slide_metadata.get("endnotes", [])
+            slide_headings = slide_metadata.get("headings", [])
+            slide_experimental_formatting = slide_metadata.get(
+                "experimental_formatting", []
+            )
+        else:
+            has_metadata = False
+            slide_metadata = []
+            slide_comments = []
+            slide_footnotes = []
+            slide_endnotes = []
+            slide_headings = []
+            slide_experimental_formatting = []
 
-        # Get a list of this slide's paragraphs
-        paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
+        if speaker_notes_dict is not None and speaker_notes_dict["has_user_notes"]:
+            has_user_notes = speaker_notes_dict["has_user_notes"]
+        else:
+            has_user_notes = False
+
+        slide_paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
+
+        unmatched_annotations = []
+        matched_comment_ids = set()
+        matched_footnote_ids = set()
+        matched_endnote_ids = set()
 
         last_run = None
 
-        # For every paragraph, copy it to the new document
-        for para in paragraphs:
+        # For every pptx paragraph.....
+        for pptx_para in slide_paragraphs:
+
+            # Make a new docx para
             new_para = new_doc.add_paragraph()
 
-            for run in para.runs:
+            # If the text of this paragraph exactly matches a previous heading's text, apply that heading style
+            if has_metadata and slide_headings:
+                for heading in slide_headings:
+                    if heading["text"].strip() == pptx_para.text.strip():
+                        new_para.style = heading["style_id"]
+                        break  # we should only ever apply one style to a paragraph
+
+            for run in pptx_para.runs:
                 new_docx_run = new_para.add_run()
                 last_run = new_docx_run
-                copy_run_formatting_pptx2docx(run, new_docx_run)
+                copy_run_formatting_pptx2docx(
+                    run, new_docx_run, slide_experimental_formatting
+                )
+                # check_for_notes()
+                if slide_comments:
+                    # check to see if the run text matches any comment's ref text
+                    for comment in slide_comments:
+                        if comment["reference_text"] in run.text:
+                            original = comment["original"]
+                            text = original["text"]
+                            author = original["author"]
+                            initials = original["initials"]
+                            new_doc.add_comment(new_docx_run, text, author, initials)
+                            matched_comment_ids.add(comment["id"])
 
-        # TODO: cut this behavior/alter it to support restoreing metadata properly from the speaker notes.
-        # After copying the last of this slide's runs, append the speaker notes to the last-copied run
-        if (
-            slide.has_notes_slide
-            and slide.notes_slide.notes_text_frame is not None
-            and last_run is not None
-        ):
-            raw_comment_text = slide.notes_slide.notes_text_frame.text
-            comment_text = sanitize_xml_text(raw_comment_text)
+                        # don't break because there can be multiple comments added to a single run
+
+                if slide_footnotes:
+                    for footnote in slide_footnotes:
+                        # check to see if the run text matches any footnote's ref text
+                        if footnote["reference_text"] in run.text:
+                            # TODO:  Python-docx doesn't support footnotes or endnotes. I had to do some BS XML manipulation to extract them.
+                            # So. Now I am realizing. I will have to do some stupid BS to insert them, too! Fuck!
+                            pass
+
+                if slide_endnotes:
+                    for endnote in slide_endnotes:
+
+                        # check to see if the run text matches any endnote's ref text
+                        if endnote["reference_text"] in run.text:
+                            # TODO: SAME THING AS FOOTNOTES
+                            pass
+
+        unmatched_comments = [
+            c for c in slide_comments if c["id"] not in matched_comment_ids
+        ]
+        unmatched_footnotes = [
+            f for f in slide_footnotes if f["footnote_id"] not in matched_footnote_ids
+        ]
+        unmatched_endnotes = [
+            e for e in slide_endnotes if e["endnote_id"] not in matched_endnote_ids
+        ]
+
+        unmatched_annotations.extend(unmatched_comments)
+        unmatched_annotations.extend(unmatched_footnotes)
+        unmatched_annotations.extend(unmatched_endnotes)
+
+        # Now process user notes and any unmatched comments/endnotes/usernotes:
+        if speaker_notes_dict and has_user_notes is True and last_run is not None:
+            # append as a comment to the last run
+            raw_comment_text = speaker_notes_dict["user_notes"]
+            comment_header = "Copied from the PPTX Speaker Notes: \n\n"
+            comment_text = comment_header + sanitize_xml_text(raw_comment_text)
+
+            if comment_text.strip():
+                new_doc.add_comment(last_run, comment_text)
+
+        if unmatched_annotations and last_run is not None:
+            unmatched_parts = []
+            # append as a comment to the last run
+            for annotation in unmatched_annotations:
+                if "original" in annotation:  # comments
+                    unmatched_parts.append(f"Comment: {annotation['original']['text']}")
+                elif "text_body" in annotation:  # footnotes/endnotes
+                    unmatched_parts.append(f"Note: {annotation['text_body']}")
+            combined = "\n\n".join(unmatched_parts)
+
+            raw_comment_text = combined
+            comment_header = "We found metadata for these annotations (comments, footnotes, or endnotes), but weren't able to match them to specific text in this paragraph: \n\n"
+            comment_text = comment_header + sanitize_xml_text(raw_comment_text)
 
             if comment_text.strip():
                 new_doc.add_comment(last_run, comment_text)
 
 
-def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) -> None:
+def copy_run_formatting_pptx2docx(
+    source_run: Run_pptx, target_run: Run_docx, experimental_formatting: list
+) -> None:
     """Mutates a docx Run object to apply text and formatting from a pptx _Run object."""
     sfont = source_run.font
     tfont = target_run.font
@@ -594,6 +741,10 @@ def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) ->
     _copy_run_color_formatting(sfont, tfont)
 
     # TODO REVERSE ALL THE EXPERIMENTAL FORMATTING STUFF
+    if experimental_formatting:
+        # TODO do it
+        pass
+        # raise NotImplementedError
 
 
 def open_and_load_pptx(pptx_path: Path | str) -> presentation.Presentation:
@@ -1117,32 +1268,32 @@ def add_metadata_to_slide_notes(
 
     if chunk.footnotes:
         baseline_metadata["footnotes"] = [
-        {
-            "footnote_id": f.footnote_id,
-            "text_body": f.text_body,
-            "hyperlinks": f.hyperlinks,
-            "reference_text": f.reference_text,
-        }
-        for f in chunk.footnotes
-    ]
+            {
+                "footnote_id": f.footnote_id,
+                "text_body": f.text_body,
+                "hyperlinks": f.hyperlinks,
+                "reference_text": f.reference_text,
+            }
+            for f in chunk.footnotes
+        ]
 
     if chunk.endnotes:
         baseline_metadata["endnotes"] = [
-        {
-            "endnote_id": e.endnote_id,
-            "text_body": e.text_body,
-            "hyperlinks": e.hyperlinks,
-            "reference_text": e.reference_text,
-        }
-        for e in chunk.endnotes
-    ]
+            {
+                "endnote_id": e.endnote_id,
+                "text_body": e.text_body,
+                "hyperlinks": e.hyperlinks,
+                "reference_text": e.reference_text,
+            }
+            for e in chunk.endnotes
+        ]
 
     if extra_metadata or baseline_metadata:
         header_para = notes_text_frame.add_paragraph()
         header_run = header_para.add_run()
-        header_run.text = (
-            f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
-        )
+        header_run.text = f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
+
+        notes_text_frame.add_paragraph()  # blank paragraph to ensure separation for JSON block
 
         json_para = notes_text_frame.add_paragraph()
         json_run = json_para.add_run()
@@ -1152,7 +1303,7 @@ def add_metadata_to_slide_notes(
 
         footer_para = notes_text_frame.add_paragraph()
         footer_run = footer_para.add_run()
-        footer_run.text = "=" * 40 + f"\n{METADATA_MARKER_FOOTER}" 
+        footer_run.text = "=" * 40 + f"\n{METADATA_MARKER_FOOTER}"
 
 
 def process_chunk_paragraph_inner_contents(
@@ -1201,7 +1352,7 @@ def process_chunk_paragraph_inner_contents(
         )
         pptx_run = pptx_paragraph.add_run()
         pptx_run.text = paragraph.text
-    
+
     return experimental_formatting_metadata
 
 
@@ -1557,6 +1708,12 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
     NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
     comments' selected text ranges, nor do we preserve footnote or endnote numbering.
     """
+    notes_text_frame.add_paragraph()  # add a blank first line for actual annotations by the user
+
+    header_para = notes_text_frame.add_paragraph()
+    header_run = header_para.add_run()
+    header_run.text = f"\n\n\n\n\n\n\n{NOTES_MARKER_HEADER}\n" + "=" * 40 + "\n"
+
     if DISPLAY_COMMENTS and chunk.comments:
         add_comments_to_notes(chunk.comments, notes_text_frame)
 
@@ -1566,9 +1723,9 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
     if DISPLAY_ENDNOTES and chunk.endnotes:
         add_endnotes_to_notes(chunk.endnotes, notes_text_frame)
 
-    if PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
-        pass
-        # add_metadata_to_slide_notes(chunk.metadata, notes_text_frame)
+    footer_para = notes_text_frame.add_paragraph()
+    footer_run = footer_para.add_run()
+    footer_run.text = "=" * 40 + f"\n{NOTES_MARKER_FOOTER}"
 
 
 # region Add annotations to pptx speaker notes text frame
