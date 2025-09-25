@@ -59,7 +59,7 @@ from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
-from pptx.oxml.xmlchemy import OxmlElement
+from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.util import Pt
 import xml.etree.ElementTree as ET
 
@@ -595,7 +595,6 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
     return run
 
 
-
 def process_slide_paragraphs(
     slide: Slide,  slide_notes: SlideNotes, new_doc: document.Document, new_doc_notes_parts: dict
 ) -> None:
@@ -612,7 +611,7 @@ def process_slide_paragraphs(
     unmatched_annotations = []
     matched_comment_ids = set()
     matched_footnote_ids = set()
-    matched_endnote_ids = set()
+    matched_endnote_ids = set()    
 
     last_run = None
 
@@ -626,7 +625,7 @@ def process_slide_paragraphs(
         if slide_notes and slide_notes.has_metadata and slide_notes.headings:
             for heading in slide_notes.headings:
                 if heading["text"].strip() == pptx_para.text.strip():
-                    new_para.style = heading["style_id"]
+                    new_para.style = heading["name"]
                     break  # we should only ever apply one style to a paragraph
 
         
@@ -662,13 +661,25 @@ def process_slide_paragraphs(
 
             if slide_notes.footnotes:
                 for footnote in slide_notes.footnotes:
-                    if footnote["reference_text"] in run.text and new_doc_notes_parts.get("footnotes_part"):
+
+                    reference_text = footnote["reference_text"]
+                    footnote_id = footnote["footnote_id"]
+
+                    if (reference_text in run.text or reference_text in pptx_para.text) and (footnote_id not in matched_footnote_ids) and new_doc_notes_parts.get("footnotes_part"):
                         # TODO:  Python-docx doesn't support footnotes or endnotes. I had to do some BS XML manipulation to extract them.
                         # So. Now I am realizing. I will have to do some stupid BS to insert them, too! Fuck!
+
+                        footnote_part = new_doc_notes_parts.get("footnotes_part")
                         
-                        # TODO: add specific footnote to footnote.xml and add the footnoteReference to the run XML
-                        # Check what the original looks like
-                        pass
+                        # Step 1) Add the footnoteReference to the paragraph/run.
+                        # add_footnote_reference_to_run(new_para, footnote_id)
+                        
+                        # Step 2) Add the actual footnote object to the footnotes.xml part of the doc package
+                        # add_footnote_to_package(footnote_part, footnote)
+
+                        # Step 3) Record that we've matched this footnote.
+                        # matched_footnote_ids.add(footnote_id)
+                        
 
             if slide_notes.endnotes:
                 for endnote in slide_notes.endnotes:
@@ -724,6 +735,7 @@ def get_notes_parts(new_doc: document.Document) -> dict:
     """Get the docx package parts for footnotes and endnotes and add them to a dict if they exist."""
     from docx.opc.part import XmlPart
     from docx.oxml import parse_xml
+    from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
     notes_parts = {}
     footnotes_parts = find_xml_parts(new_doc, "footnotes.xml")
@@ -731,6 +743,10 @@ def get_notes_parts(new_doc: document.Document) -> dict:
         basic_part = footnotes_parts[0]
         element = parse_xml(basic_part.blob)
         footnote_xml_part = XmlPart(basic_part.partname, basic_part.content_type, element, basic_part.package) #type:ignore
+        
+        # This is the key step bayoo-docx does:
+        new_doc.part.relate_to(footnote_xml_part, RT.FOOTNOTES)
+        
         notes_parts["footnotes_part"] = footnote_xml_part
 
     endnotes_parts = find_xml_parts(new_doc, "endnotes.xml")
@@ -738,6 +754,9 @@ def get_notes_parts(new_doc: document.Document) -> dict:
         basic_part = endnotes_parts[0]
         element = parse_xml(basic_part.blob)
         endnote_xml_part = XmlPart(basic_part.partname, basic_part.content_type, element, basic_part.package) #type:ignore
+        
+        new_doc.part.relate_to(endnote_xml_part, RT.ENDNOTES)
+
         notes_parts["endnotes_part"] = endnote_xml_part
     
     return notes_parts
@@ -1001,10 +1020,10 @@ def _copy_experimental_formatting_docx2pptx(
             rPr = target_run._r.get_or_add_rPr()  # type: ignore[reportPrivateUsage]
 
             # Create a highlight Oxml object in memory
-            hl = OxmlElement("a:highlight")
+            hl = OxmlElement_pptx("a:highlight")
 
             # Create a srgbClr Oxml object in memory
-            srgbClr = OxmlElement("a:srgbClr")
+            srgbClr = OxmlElement_pptx("a:srgbClr")
 
             # Set the attribute val of the srgbClr Oxml object in memory to the desired color
             setattr(srgbClr, "val", tfont_hex_str)
@@ -1249,11 +1268,12 @@ def slides_from_chunks(
             if para_experimental_formatting:
                 experimental_formatting.extend(para_experimental_formatting)
 
-            if paragraph.style and is_standard_heading(paragraph.style.style_id):
+            if paragraph.style and paragraph.style.name and is_standard_heading(paragraph.style.name):
                 headings.append(
                     {
                         "text": paragraph.text.strip(),
                         "style_id": paragraph.style.style_id,
+                        "name": paragraph.style.name
                     }
                 )
 
@@ -2002,18 +2022,18 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
 ## === chunk by heading helpers ===
 
 
-def is_standard_heading(style_id: str) -> bool:
-    """Check if style_id is a standard Word Heading (Heading1, Heading2, ..., Heading6)"""
-    return style_id.startswith("Heading") and style_id[7:].isdigit()
+def is_standard_heading(style_name: str) -> bool:
+    """Check if paragraph.style.name is a standard Word Heading (Heading 1, Heading 2, ..., Heading 6)"""    
+    return style_name.startswith("Heading") and style_name[8:].isdigit()
 
 
-def get_heading_level(style_id: str) -> int | float:
+def get_heading_level(style_name: str) -> int | float:
     """
-    Extract the numeric level from a heading style (e.g., 'Heading2' -> 2),
-    or return infinity if the style_id doesn't have a number.
+    Extract the numeric level from a heading style name (e.g., 'Heading 2' -> 2),
+    or return infinity if the style name doesn't have a number.
     """
     try:
-        return int(style_id[7:])
+        return int(style_name[8:])
     except (ValueError, IndexError):
         return float("inf")  # Treat non-headings as "deepest possible"
 
@@ -2063,8 +2083,8 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     all_chunks: list[Chunk_docx] = []
     current_chunk: Chunk_docx = Chunk_docx()
 
-    # Initialize current_heading_style_id
-    current_heading_style_id = "Normal"  # Default for documents without headings
+    # Initialize current_heading_style_name
+    current_heading_style_name = "Normal"  # Default for documents without headings
 
     for i, para in enumerate(doc.paragraphs):
 
@@ -2072,17 +2092,17 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
         if para.text == "":
             continue
 
-        # Set a style_id to make Pylance happy (it gets mad if we direct-check para.style.style_id later)
-        style_id = para.style.style_id if para.style else "Normal"
+        # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.style_name later)
+        style_name = para.style.name if para.style and para.style.name else "Normal"
 
         debug_print(f"Paragraph begins: {para.text[:30]}... and is index: {i}")
 
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_chunk.paragraphs:
             current_chunk.add_paragraph(para)
-            if is_standard_heading(style_id):
+            if is_standard_heading(style_name):
                 # TODO: store this heading information somewhere
-                current_heading_style_id = style_id
+                current_heading_style_name = style_name
             continue
 
         # Handle page breaks - create new chunk and start fresh
@@ -2095,27 +2115,27 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
             current_chunk = Chunk_docx.create_with_paragraph(para)
 
             # Update heading depth if this paragraph is a heading
-            if is_standard_heading(style_id):
+            if is_standard_heading(style_name):
                 # TODO: store this heading information somewhere
-                current_heading_style_id = style_id
+                current_heading_style_name = style_name
             continue
 
         # Handle headings
-        if is_standard_heading(style_id):
+        if is_standard_heading(style_name):
             # TODO: store this heading information somewhere
             # Check if this heading is at same level or higher (less deep) than current. Smaller numbers are higher up in the hierarchy.
-            if get_heading_level(style_id) <= get_heading_level(
-                current_heading_style_id
+            if get_heading_level(style_name) <= get_heading_level(
+                current_heading_style_name
             ):
                 # If yes, start a new chunk
                 if current_chunk:
                     all_chunks.append(current_chunk)
                 current_chunk = Chunk_docx.create_with_paragraph(para)
-                current_heading_style_id = style_id
+                current_heading_style_name = style_name
             else:
                 # This heading is deeper, add to current chunk
                 current_chunk.add_paragraph(para)
-                current_heading_style_id = style_id
+                current_heading_style_name = style_name
         else:
             # Normal paragraph - add to current chunk
             current_chunk.add_paragraph(para)
@@ -2179,8 +2199,8 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
         if para.text == "":
             continue
 
-        # Set a style_id to make Pylance happy (it gets mad if we direct-check para.style.style_id later)
-        style_id = para.style.style_id if para.style else "Normal"
+        # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.name later)
+        style_name = para.style.name if para.style and para.style.name else "Normal"
 
         debug_print(f"Paragraph begins: {para.text[:30]}...")
 
@@ -2200,7 +2220,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
             continue
 
         # If this paragraph is a heading, start a new chunk
-        if is_standard_heading(style_id):
+        if is_standard_heading(style_name):
             # TODO: store this heading information somewhere
             # If we already have content in current_chunk, save it and start fresh
             if current_chunk:
