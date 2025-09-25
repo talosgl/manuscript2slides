@@ -46,6 +46,9 @@ import pptx
 from docx import document
 from docx.comments import Comment as Comment_docx
 from docx.opc.part import Part
+from docx.opc import constants
+from docx.oxml.ns import qn
+from docx.oxml.parser import OxmlElement as OxmlElement_docx
 
 # from docx.table import Table as Table_docx
 # from docx.text.hyperlink import Hyperlink as Hyperlink_docx
@@ -326,7 +329,9 @@ class Chunk_docx:
     # shared amongst every instance of a class, rather than one per instance.)
     paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
 
-    # TODO, TABLE SUPPORT:
+    # NOTE REGARDING SOMEDAY-TABLE SUPPORT:
+    # There are no plans to add table support to this tool. However, some notes, if that were to change, someday:
+    #
     # If we want to support tables later, we'll need a list that has both the paragraphs
     # and tables together, in document order.
     #
@@ -337,6 +342,10 @@ class Chunk_docx:
     # inner_contents: list[InnerContentType_docx] = field(default_factory=list)
     #
     # We'd probably also need to preserve special metadata about the table for reverse-pipeline stuff.
+    #
+    # (It still seems extremely difficult to add image support easily. We'd need some way to write/read from disk,
+    # I think for both directions of the pipeline. It would be like the super-saiyan version of the brittle 
+    # metadata-in-speaker-notes hack.)
 
     comments: list[Comment_docx_custom] = field(
         default_factory=list[Comment_docx_custom]
@@ -369,25 +378,30 @@ class Chunk_docx:
         """Add a endnote to this Chunk object's endnote list."""
         self.endnotes.append(endnote)
 
-
-# TODO, REVERSE FLOW: We might need a separate Chunk_pptx class
 @dataclass
-class Chunk_pptx:
-    """Class for Chunk objects made from pptx slides and their slide notes."""
+class SlideNotes:
+    """User notes and metadata extracted from a slide's speaker notes."""
 
-    paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
+    metadata: dict = field(default_factory=dict)
+    user_notes: str = ""
+    comments: list = field(default_factory=list)
+    footnotes: list = field(default_factory=list)
+    endnotes: list = field(default_factory=list)
+    headings: list = field(default_factory=list)
+    experimental_formatting: list = field(default_factory=list)
 
-    comments: list[Comment_docx_custom] = field(
-        default_factory=list[Comment_docx_custom]
-    )
-    footnotes: list[Footnote_docx] = field(default_factory=list[Footnote_docx])
-    endnotes: list[Endnote_docx] = field(default_factory=list[Endnote_docx])
+    @property
+    def has_metadata(self) -> bool:
+        """Returns a bool to indicate whether we did or did not find/store JSON metadata from these SlideNotes."""
+        return bool(self.metadata)  # True if dict is non-empty
 
-
-# I think it would be:
-# list of body [Paragraph_pptx]
-# list of speaker notes [Paragraph_pptx]
-# make sure to use a factory for these lists because lists are mutable!
+    @property
+    def has_user_notes(self) -> bool:
+        """
+        Returns a bool to indicate whether we did or did not find/store unique user notes (not JSON metadata, and not 
+        copied annotations from earlier docx2pptx pipeline runs) from these SlideNotes.
+        """
+        return bool(self.user_notes.strip())
 
 # endregion
 
@@ -402,8 +416,6 @@ def main() -> None:
     # run_docx2pptx_pipeline(INPUT_DOCX_FILE)
 
     run_pptx2docx_pipeline(INPUT_PPTX_FILE)
-
-
 # endregion
 
 
@@ -436,46 +448,10 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     # Create an empty docx
     new_doc = docx.Document(str(TEMPLATE_DOCX))
 
-    # natural language outline
-    # Work sequentially through each slide in list(prs.slides), and
-    # Work sequentialy through each paragraph of that slide body's text frame(s)? # TODO: Should we support multiple text frames?
-    # Work sequentially through each Run_pptx of that paragraph, and...
-    # Copy the run and run formatting to a Run_docx
-    # (Append that run to the paragraph)
-    # Next, copy everything from the slide's notes_slide text (if it exists) into a comment, and attach the comment
-    # to either the beginning or end of the paragraphs we just copied into the docx
-
-    # Pseudo... code.. ish
-    # copy_slides_to_docx_body(prs, newdoc)
-    # slide_list = list(prs.slides)
-    # for slide in slide_list:
-    # find_and_copy_all_slide_text(slide)
-    # paragraphs: list() = get_slide_paragraphs(text_frames)
-    # for para in paragraph:
-    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
-    # copy_Run_pptx_with_formatting()
-    # find_and_copy_speaker_notes(slide)
-
-    # TODO: This is temp to make sure we can actually create shit
-    # first_paragraph = new_doc.paragraphs[0] # This appears to be the only way to access the very first paragraph.
-    # first_paragraph.add_run("This is the content of the first paragraph.")
-    # new_para = new_doc.add_paragraph()
-    # new_para.text = "Lorem Ipsum"
-    # === end temp
-
-    # Pseudo... code.. ish
     copy_slides_to_docx_body(user_prs, new_doc)
-    # slide_list = list(prs.slides)
-    # for slide in slide_list:
-    # find_and_copy_all_slide_text(slide)
-    # paragraphs: list() = get_slide_paragraphs(slide)
-    # for para in paragraph:
-    # TODO: is there any processing needed before processing runs, like analyzing "Run_docx" vs Hyperlink? (It doesn't seem like it)
-    # TODO: apply heading styles
-    # copy_Run_pptx_with_formatting()
-    # find_and_copy_speaker_notes(slide)
 
     debug_print("Attempting to save new docx file.")
+
     save_output(new_doc)
 
 
@@ -484,28 +460,13 @@ METADATA_MARKER_FOOTER: str = "END OF JSON METADATA FROM SOURCE DOCUMENT"
 NOTES_MARKER_HEADER: str = "START OF COPIED NOTES FROM SOURCE DOCX"
 NOTES_MARKER_FOOTER: str = "END OF COPIED NOTES FROM SOURCE DOCX"
 
+# endregion
 
-def parse_slide_JSON_metadata(slide_notes_text: str):
-
-    # 1) Attempt to parse the JSON string
-    try:
-        pass
-
-    except:
-        pass
-
-
-"""
-Split speaker notes by the "JSON METADATA FROM SOURCE DOCUMENT:" marker
-Extract everything after that marker as potential JSON
-Try to parse it, with fallbacks if it fails
-"""
-
-
-def split_speaker_notes(speaker_notes_text: str) -> dict:
+# region pptx2docx-text helpers
+def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
     """
     Extract user notes, JSON metadata, and discard copied annotations.
-    Returns dict with parsed sections.
+    Returns a SlideNotes object with parsed sections (or an empty object if parsing failed).
     """
 
     # Find all marker positions
@@ -525,6 +486,7 @@ def split_speaker_notes(speaker_notes_text: str) -> dict:
         json_text = json_text.strip().lstrip("=").rstrip("=").strip()
         try:
             json_content = json.loads(json_text)
+            # TODO: add deeper JSON parsing. See `2025-09-24b JSON Validation TODO.md`
         except json.JSONDecodeError:
             json_content = None
             debug_print(
@@ -547,14 +509,22 @@ def split_speaker_notes(speaker_notes_text: str) -> dict:
 
     # Extract user notes by removing the marked sections
     user_notes = remove_ranges_from_text(speaker_notes_text, ranges_to_remove)
-    user_notes = user_notes.strip()
 
-    return {
-        "user_notes": user_notes,
-        "has_user_notes": len(user_notes) > 0,
-        "json_metadata": json_content,
-        "has_metadata": json_content is not None,
-    }
+    # Create and populate the chunk
+    slide_notes = SlideNotes()
+    slide_notes.user_notes = user_notes.strip()
+
+    if json_content:
+        slide_notes.metadata = json_content
+        slide_notes.comments = json_content.get("comments", [])
+        slide_notes.footnotes = json_content.get("footnotes", [])
+        slide_notes.endnotes = json_content.get("endnotes", [])
+        slide_notes.headings = json_content.get("headings", [])
+        slide_notes.experimental_formatting = json_content.get(
+            "experimental_formatting", []
+        )
+
+    return slide_notes
 
 
 def remove_ranges_from_text(text: str, ranges: list) -> str:
@@ -595,18 +565,183 @@ def merge_overlapping_ranges(ranges: list) -> list:
 
     return merged
 
+def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_docx:
+    """
+    Custom function to add Hyperlink objects to docx paragraphs using XML manipulation.
+
+    - Create a regular run using paragraph.add_run()
+    - Create the hyperlink XML element structure
+    - Move the run's XML element from being a direct child of the paragraph to being a nested child of the Hyperlink element
+    - Add the Hyperlink element (which now contains the run) to the paragraph
+
+    Adapted from https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
+    and https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130
+    """
+    # Create a new run on this paragraph
+    run = paragraph.add_run()
+
+    # Create the hyperlink structure
+    part = paragraph.part
+    r_id = part.relate_to(url, constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+    hyperlink = OxmlElement_docx('w:hyperlink')
+    hyperlink.set(qn('r:id'), r_id)
+
+    # Move the run from within the paragraph to within the Hyperlink
+    run_element = run._element
+    run_element.getparent().remove(run_element)  # Remove from paragraph
+    hyperlink.append(run_element)  # Add to hyperlink
+    paragraph._p.append(hyperlink)  # Add hyperlink to paragraph
+
+    return run
+
+
 
 def process_slide_paragraphs(
-    slide: Slide, new_doc: document.Document, speaker_notes_dict: dict | None
+    slide: Slide,  slide_notes: SlideNotes, new_doc: document.Document, new_doc_notes_parts: dict
 ) -> None:
+    """
+    Process a slide's body content, using any metadata stored in the speaker notes to restore formatting and annotation 
+    anchors from an earlier docx2pptx pipeline run. If we find metadata but aren't able to attach it to text content from
+    the body paragraphs/runs, attach that as a new comment to the very last copied paragraph/run from that slide.
 
-    # Create the docx paragraph
-    new_para: Paragraph_docx = new_doc.add_paragraph()
+    Additionally, store non-metadata speaker notes content as a new comment, too.
+    """
 
-    # Check if this paragraph should be a heading
+    slide_paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
 
+    unmatched_annotations = []
+    matched_comment_ids = set()
+    matched_footnote_ids = set()
+    matched_endnote_ids = set()
 
-# TODO: split into helpers because this is a behemoth of a function
+    last_run = None
+
+    # For every pptx paragraph.....
+    for pptx_para in slide_paragraphs:
+
+        # Make a new docx para
+        new_para = new_doc.add_paragraph()
+
+        # If the text of this paragraph exactly matches a previous heading's text, apply that heading style
+        if slide_notes and slide_notes.has_metadata and slide_notes.headings:
+            for heading in slide_notes.headings:
+                if heading["text"].strip() == pptx_para.text.strip():
+                    new_para.style = heading["style_id"]
+                    break  # we should only ever apply one style to a paragraph
+
+        
+        for run in pptx_para.runs:
+            
+            # Handle adding hyperlinks versus regular runs
+            if run.hyperlink.address:
+                debug_print("Hyperlink address found.")
+                run_from_hyperlink = add_hyperlink_to_docx_paragraph(new_para, run.hyperlink.address)
+                last_run = run_from_hyperlink
+                copy_run_formatting_pptx2docx(run, run_from_hyperlink, slide_notes.experimental_formatting)
+            else:
+                new_docx_run = new_para.add_run()
+                last_run = new_docx_run
+                copy_run_formatting_pptx2docx(
+                    run, new_docx_run, slide_notes.experimental_formatting
+                )
+
+            # Check if this run contains matching text for comments, footnotes, or endnotes from the speaker notes' stored JSON
+            # metadata, from previous docx2pptx pipeline processing
+            if slide_notes.comments:
+                # Check to see if the run text matches any comments' ref text
+                for comment in slide_notes.comments:
+                    # if there is a match, create a new comment based on the original, attached to this run.
+                    if comment["reference_text"] in run.text:
+                        original = comment["original"]
+                        text = original["text"]
+                        author = original["author"]
+                        initials = original["initials"]
+                        new_doc.add_comment(new_docx_run, text, author, initials)
+                        matched_comment_ids.add(comment["id"])
+                    # don't break because there can be multiple comments added to a single run
+
+            if slide_notes.footnotes:
+                for footnote in slide_notes.footnotes:
+                    if footnote["reference_text"] in run.text and new_doc_notes_parts.get("footnotes_part"):
+                        # TODO:  Python-docx doesn't support footnotes or endnotes. I had to do some BS XML manipulation to extract them.
+                        # So. Now I am realizing. I will have to do some stupid BS to insert them, too! Fuck!
+                        
+                        # TODO: add specific footnote to footnote.xml and add the footnoteReference to the run XML
+                        # Check what the original looks like
+                        pass
+
+            if slide_notes.endnotes:
+                for endnote in slide_notes.endnotes:
+                    if endnote["reference_text"] in run.text and new_doc_notes_parts.get("endnotes_part"):
+                        # TODO: SAME THING AS FOOTNOTES
+                        xml_blob = new_doc_notes_parts["endnotes_part"].blob
+                        pass
+
+    # Find all the unmatched annotations by getting the complement set to each of the matched_comments/footnotes/endnotes sets
+    unmatched_comments = [
+        c for c in slide_notes.comments if c["id"] not in matched_comment_ids
+    ]
+    unmatched_footnotes = [
+        f for f in slide_notes.footnotes if f["footnote_id"] not in matched_footnote_ids
+    ]
+    unmatched_endnotes = [
+        e for e in slide_notes.endnotes if e["endnote_id"] not in matched_endnote_ids
+    ]
+
+    unmatched_annotations.extend(unmatched_comments)
+    unmatched_annotations.extend(unmatched_footnotes)
+    unmatched_annotations.extend(unmatched_endnotes)
+
+    # Put the slide's user notes into a new comment attached to the last run
+    if slide_notes and slide_notes.has_user_notes is True and last_run is not None:
+        # append as a comment to the last run
+        raw_comment_text = slide_notes.user_notes
+        comment_header = "Copied from the PPTX Speaker Notes: \n\n"
+        comment_text = comment_header + sanitize_xml_text(raw_comment_text)
+
+        if comment_text.strip():
+            new_doc.add_comment(last_run, comment_text)
+
+    # If we have any unmatched annotations from the slide_notes.metadata, attach that as a new comment to the last run
+    if unmatched_annotations and last_run is not None:
+        unmatched_parts = []
+        # append as a comment to the last run
+        for annotation in unmatched_annotations:
+            if "original" in annotation:  # comments
+                unmatched_parts.append(f"Comment: {annotation['original']['text']}")
+            elif "text_body" in annotation:  # footnotes/endnotes
+                unmatched_parts.append(f"Note: {annotation['text_body']}")
+        combined = "\n\n".join(unmatched_parts)
+
+        raw_comment_text = combined
+        comment_header = "We found metadata for these annotations (comments, footnotes, or endnotes), but weren't able to match them to specific text in this paragraph: \n\n"
+        comment_text = comment_header + sanitize_xml_text(raw_comment_text)
+
+        if comment_text.strip():
+            new_doc.add_comment(last_run, comment_text)
+
+def get_notes_parts(new_doc: document.Document) -> dict:
+    """Get the docx package parts for footnotes and endnotes and add them to a dict if they exist."""
+    from docx.opc.part import XmlPart
+    from docx.oxml import parse_xml
+
+    notes_parts = {}
+    footnotes_parts = find_xml_parts(new_doc, "footnotes.xml")
+    if footnotes_parts and footnotes_parts[0]:
+        basic_part = footnotes_parts[0]
+        element = parse_xml(basic_part.blob)
+        footnote_xml_part = XmlPart(basic_part.partname, basic_part.content_type, element, basic_part.package) #type:ignore
+        notes_parts["footnotes_part"] = footnote_xml_part
+
+    endnotes_parts = find_xml_parts(new_doc, "endnotes.xml")
+    if endnotes_parts and endnotes_parts[0]:
+        basic_part = endnotes_parts[0]
+        element = parse_xml(basic_part.blob)
+        endnote_xml_part = XmlPart(basic_part.partname, basic_part.content_type, element, basic_part.package) #type:ignore
+        notes_parts["endnotes_part"] = endnote_xml_part
+    
+    return notes_parts
+
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document
 ) -> None:
@@ -619,144 +754,18 @@ def copy_slides_to_docx_body(
     # Make a list of all slides
     slide_list = list(prs.slides)
 
+    new_doc_notes_parts = get_notes_parts(new_doc)
+
     # For each slide...
     for slide in slide_list:
-        speaker_notes_dict = None
 
+        # If there's slide notes, process them into a SlideNotes object; otherwise, make an empty one.
         if slide.has_notes_slide and slide.notes_slide.notes_text_frame is not None:
-            speaker_notes_dict = split_speaker_notes(
-                slide.notes_slide.notes_text_frame.text
-            )
-
-        # ==================================================================================
-        # TODO: Should all this nonsense be stored in a class object instead? It might be an
-        # unnecessary layer of abstraction, but this is kinda hard to read!
-        if speaker_notes_dict is not None and speaker_notes_dict["has_metadata"]:
-            # Extract the actual data structures
-            has_metadata = speaker_notes_dict["has_metadata"]
-            slide_metadata = speaker_notes_dict["json_metadata"]
-            slide_comments = slide_metadata.get("comments", [])
-            slide_footnotes = slide_metadata.get("footnotes", [])
-            slide_endnotes = slide_metadata.get("endnotes", [])
-            slide_headings = slide_metadata.get("headings", [])
-            slide_experimental_formatting = slide_metadata.get(
-                "experimental_formatting", []
-            )
+            slide_notes = split_speaker_notes(slide.notes_slide.notes_text_frame.text)
         else:
-            has_metadata = False
-            slide_metadata = []
-            slide_comments = []
-            slide_footnotes = []
-            slide_endnotes = []
-            slide_headings = []
-            slide_experimental_formatting = []
+            slide_notes = SlideNotes()
 
-        if speaker_notes_dict is not None and speaker_notes_dict["has_user_notes"]:
-            has_user_notes = speaker_notes_dict["has_user_notes"]
-        else:
-            has_user_notes = False
-
-        # ==================================================================================
-
-        slide_paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
-
-        unmatched_annotations = []
-        matched_comment_ids = set()
-        matched_footnote_ids = set()
-        matched_endnote_ids = set()
-
-        last_run = None
-
-        # For every pptx paragraph.....
-        for pptx_para in slide_paragraphs:
-
-            # Make a new docx para
-            new_para = new_doc.add_paragraph()
-
-            # If the text of this paragraph exactly matches a previous heading's text, apply that heading style
-            if has_metadata and slide_headings:
-                for heading in slide_headings:
-                    if heading["text"].strip() == pptx_para.text.strip():
-                        new_para.style = heading["style_id"]
-                        break  # we should only ever apply one style to a paragraph
-
-            # TODO: Should we add hyperlink vs run support? How do we detect hyperlinks in pptx runs?
-            for run in pptx_para.runs:
-                new_docx_run = new_para.add_run()
-                last_run = new_docx_run
-                copy_run_formatting_pptx2docx(
-                    run, new_docx_run, slide_experimental_formatting
-                )
-                # check_for_notes()
-                if slide_comments:
-                    # check to see if the run text matches any comment's ref text
-                    for comment in slide_comments:
-                        if comment["reference_text"] in run.text:
-                            original = comment["original"]
-                            text = original["text"]
-                            author = original["author"]
-                            initials = original["initials"]
-                            new_doc.add_comment(new_docx_run, text, author, initials)
-                            matched_comment_ids.add(comment["id"])
-
-                        # don't break because there can be multiple comments added to a single run
-
-                if slide_footnotes:
-                    for footnote in slide_footnotes:
-                        # check to see if the run text matches any footnote's ref text
-                        if footnote["reference_text"] in run.text:
-                            # TODO:  Python-docx doesn't support footnotes or endnotes. I had to do some BS XML manipulation to extract them.
-                            # So. Now I am realizing. I will have to do some stupid BS to insert them, too! Fuck!
-                            pass
-
-                if slide_endnotes:
-                    for endnote in slide_endnotes:
-
-                        # check to see if the run text matches any endnote's ref text
-                        if endnote["reference_text"] in run.text:
-                            # TODO: SAME THING AS FOOTNOTES
-                            pass
-
-        unmatched_comments = [
-            c for c in slide_comments if c["id"] not in matched_comment_ids
-        ]
-        unmatched_footnotes = [
-            f for f in slide_footnotes if f["footnote_id"] not in matched_footnote_ids
-        ]
-        unmatched_endnotes = [
-            e for e in slide_endnotes if e["endnote_id"] not in matched_endnote_ids
-        ]
-
-        unmatched_annotations.extend(unmatched_comments)
-        unmatched_annotations.extend(unmatched_footnotes)
-        unmatched_annotations.extend(unmatched_endnotes)
-
-        # Now process user notes and any unmatched comments/endnotes/usernotes:
-        if speaker_notes_dict and has_user_notes is True and last_run is not None:
-            # append as a comment to the last run
-            raw_comment_text = speaker_notes_dict["user_notes"]
-            comment_header = "Copied from the PPTX Speaker Notes: \n\n"
-            comment_text = comment_header + sanitize_xml_text(raw_comment_text)
-
-            if comment_text.strip():
-                new_doc.add_comment(last_run, comment_text)
-
-        if unmatched_annotations and last_run is not None:
-            unmatched_parts = []
-            # append as a comment to the last run
-            for annotation in unmatched_annotations:
-                if "original" in annotation:  # comments
-                    unmatched_parts.append(f"Comment: {annotation['original']['text']}")
-                elif "text_body" in annotation:  # footnotes/endnotes
-                    unmatched_parts.append(f"Note: {annotation['text_body']}")
-            combined = "\n\n".join(unmatched_parts)
-
-            raw_comment_text = combined
-            comment_header = "We found metadata for these annotations (comments, footnotes, or endnotes), but weren't able to match them to specific text in this paragraph: \n\n"
-            comment_text = comment_header + sanitize_xml_text(raw_comment_text)
-
-            if comment_text.strip():
-                new_doc.add_comment(last_run, comment_text)
+        process_slide_paragraphs(slide, slide_notes, new_doc, new_doc_notes_parts)
 
 
 def copy_run_formatting_pptx2docx(
@@ -889,7 +898,6 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
     slides_from_chunks(user_docx, output_prs, chunks)
 
     # Save the presentation to an actual pptx on disk
-
     save_output(output_prs)
 
 
@@ -1219,10 +1227,11 @@ def slides_from_chunks(
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
-
+            
+            # TODO: can we use this logic in the reverse pipeline flow for para 0 so it's not always empty?
             # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
             # So if we're at the start of our list, use that existing empty paragraph.
-            if (  # TODO: can we use this logic in the reverse pipeline flow for para 0 so it's not always empty?
+            if (  
                 i == 0
                 and len(text_frame.paragraphs) > 0
                 and not text_frame.paragraphs[0].text
@@ -1586,13 +1595,13 @@ def get_all_docx_footnotes(doc: document.Document) -> dict[str, Footnote_docx]:
         return {}
 
     try:
-        footnote_parts = find_xml_parts(doc, "footnotes.xml")
+        footnotes_parts = find_xml_parts(doc, "footnotes.xml")
 
-        if not footnote_parts:
+        if not footnotes_parts:
             return {}
 
         # We think this will always be a list of one item, so assign that item to a variable.
-        root = parse_xml_blob(footnote_parts[0].blob)
+        root = parse_xml_blob(footnotes_parts[0].blob)
         return extract_notes_from_xml(root, Footnote_docx)
 
     except Exception as e:
@@ -1609,12 +1618,12 @@ def get_all_docx_endnotes(doc: document.Document) -> dict[str, Endnote_docx]:
         return {}
 
     try:
-        endnote_parts = find_xml_parts(doc, "endnotes.xml")
+        endnotes_parts = find_xml_parts(doc, "endnotes.xml")
 
-        if not endnote_parts:
+        if not endnotes_parts:
             return {}
 
-        root = parse_xml_blob(endnote_parts[0].blob)
+        root = parse_xml_blob(endnotes_parts[0].blob)
         return extract_notes_from_xml(root, Endnote_docx)
 
     except Exception as e:
@@ -1633,7 +1642,7 @@ def find_xml_parts(doc: document.Document, part_name: str) -> list[Part]:
     zip_package = doc.part.package
 
     if zip_package is None:
-        debug_print("WARNING: Could not access docx package")
+        debug_print("WARNING: Could not access docx package.")
         return []
 
     part_name_parts: list[Part] = []
