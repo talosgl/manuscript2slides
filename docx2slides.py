@@ -650,7 +650,7 @@ def process_slide_paragraphs(
                 # Check to see if the run text matches any comments' ref text
                 for comment in slide_notes.comments:
                     # if there is a match, create a new comment based on the original, attached to this run.
-                    if comment["reference_text"] in run.text:
+                    if comment["reference_text"] in run.text and comment["id"] not in matched_comment_ids:
                         original = comment["original"]
                         text = original["text"]
                         author = original["author"]
@@ -665,7 +665,7 @@ def process_slide_paragraphs(
                     reference_text = footnote["reference_text"]
                     footnote_id = footnote["footnote_id"]
 
-                    if (reference_text in run.text or reference_text in pptx_para.text) and (footnote_id not in matched_footnote_ids) and new_doc_notes_parts.get("footnotes_part"):
+                    if (reference_text in run.text) and (footnote_id not in matched_footnote_ids) and new_doc_notes_parts.get("footnotes_part"):
                         # TODO:  Python-docx doesn't support footnotes or endnotes. I had to do some BS XML manipulation to extract them.
                         # So. Now I am realizing. I will have to do some stupid BS to insert them, too! Fuck!
 
