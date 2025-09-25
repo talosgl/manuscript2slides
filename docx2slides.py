@@ -166,19 +166,14 @@ Known Issues & Limitations:
         -   Footnotes and endnotes don't preserve formatting, only plain text.
     
     -   REVERSE FLOW LIMITATIONS
-        -   The reverse flow (pptx2docx) is significantly less robust. 
-
-        -   There is no support for separating out speaker notes into types of annotations. We simply take all speaker notes and attach
-            them to the final paragraph of each slide's content as a comment. Original source docx comment metadata is not preserved 
-            (apart from plain text author/timestamps if kept during an original docx2pptx conversion). We do not preserve any text formatting 
-            for speaker notes.
+        -   The reverse flow (pptx2docx-text) is significantly less robust. Your original input document to the docx2pptx-text flow, and 
+            the output document from a follow-up pptx2docx-text flow will not look the same. Expect to lose images, tables, footnotes, 
+            endnotes, and fancy formatting. We attempt to preserve headings (text-matching based). Comments should be restored, but their 
+            anchor positioning may alter slightly.
 
         -   There will always be a blank line at the start of the reverse-pipeline document. When creating a new document with python-docx 
             using Document(), it inherently includes a single empty paragraph at the start. This behavior is mandated by the Open XML 
             .docx standard, which requires at least one paragraph within the w:body element in the document's XML structure.
-
-        -   Powerpoint has no concept of headings. TODO: We experimentally attempt to preserve heading metadata during the docx2pptx pipeline.
-            If this metadata is detected during the pptx2docx pipeline, we attempt to reapply the headings
 
 """
 # endregion
