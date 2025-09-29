@@ -324,24 +324,6 @@ class Chunk_docx:
     # shared amongst every instance of a class, rather than one per instance.)
     paragraphs: list[Paragraph_docx] = field(default_factory=list[Paragraph_docx])
 
-    # NOTE REGARDING SOMEDAY-TABLE SUPPORT:
-    # There are no plans to add table support to this tool. However, some notes, if that were to change, someday:
-    #
-    # If we want to support tables later, we'll need a list that has both the paragraphs
-    # and tables together, in document order.
-    #
-    # We could use a type alias like this (outside/above the Class definition):
-    # InnerContentType_docx = Paragraph_docx | Table_docx # might allow us to support tables and paragraphs
-    #
-    # And then inside the class definition we'd make a new list, like this:
-    # inner_contents: list[InnerContentType_docx] = field(default_factory=list)
-    #
-    # We'd probably also need to preserve special metadata about the table for reverse-pipeline stuff.
-    #
-    # (It still seems extremely difficult to add image support easily. We'd need some way to write/read from disk,
-    # I think for both directions of the pipeline. It would be like the super-saiyan version of the brittle 
-    # metadata-in-speaker-notes hack.)
-
     comments: list[Comment_docx_custom] = field(
         default_factory=list[Comment_docx_custom]
     )
@@ -380,8 +362,6 @@ class SlideNotes:
     metadata: dict = field(default_factory=dict)
     user_notes: str = ""
     comments: list = field(default_factory=list)
-    footnotes: list = field(default_factory=list)
-    endnotes: list = field(default_factory=list)
     headings: list = field(default_factory=list)
     experimental_formatting: list = field(default_factory=list)
 
@@ -512,8 +492,6 @@ def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
     if json_content:
         slide_notes.metadata = json_content
         slide_notes.comments = json_content.get("comments", [])
-        slide_notes.footnotes = json_content.get("footnotes", [])
-        slide_notes.endnotes = json_content.get("endnotes", [])
         slide_notes.headings = json_content.get("headings", [])
         slide_notes.experimental_formatting = json_content.get(
             "experimental_formatting", []
@@ -591,7 +569,7 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
 
 
 def process_slide_paragraphs(
-    slide: Slide,  slide_notes: SlideNotes, new_doc: document.Document, new_doc_notes_parts: dict
+    slide: Slide,  slide_notes: SlideNotes, new_doc: document.Document
 ) -> None:
     """
     Process a slide's body content, using any metadata stored in the speaker notes to restore formatting and annotation 
@@ -605,8 +583,6 @@ def process_slide_paragraphs(
 
     unmatched_annotations = []
     matched_comment_ids = set()
-    matched_footnote_ids = set()
-    matched_endnote_ids = set()    
 
     last_run = None
 
@@ -639,7 +615,7 @@ def process_slide_paragraphs(
                     run, new_docx_run, slide_notes.experimental_formatting
                 )
 
-            # Check if this run contains matching text for comments, footnotes, or endnotes from the speaker notes' stored JSON
+            # Check if this run contains matching text for comments from the speaker notes' stored JSON
             # metadata, from previous docx2pptx pipeline processing
             if slide_notes.comments:
                 # Check to see if the run text matches any comments' ref text
@@ -654,49 +630,12 @@ def process_slide_paragraphs(
                         matched_comment_ids.add(comment["id"])
                     # don't break because there can be multiple comments added to a single run
 
-            if slide_notes.footnotes:
-                for footnote in slide_notes.footnotes:
-
-                    reference_text = footnote["reference_text"]
-                    footnote_id = footnote["footnote_id"]
-
-                    if (reference_text in run.text) and (footnote_id not in matched_footnote_ids) and new_doc_notes_parts.get("footnotes_part"):
-                        # TODO:  Python-docx doesn't support footnotes or endnotes. I had to do some BS XML manipulation to extract them.
-                        # So. Now I am realizing. I will have to do some stupid BS to insert them, too! Fuck!
-
-                        footnote_part = new_doc_notes_parts.get("footnotes_part")
-                        
-                        # Step 1) Add the footnoteReference to the paragraph/run.
-                        # add_footnote_reference_to_run(new_para, footnote_id)
-                        
-                        # Step 2) Add the actual footnote object to the footnotes.xml part of the doc package
-                        # add_footnote_to_package(footnote_part, footnote)
-
-                        # Step 3) Record that we've matched this footnote.
-                        # matched_footnote_ids.add(footnote_id)
-                        
-
-            if slide_notes.endnotes:
-                for endnote in slide_notes.endnotes:
-                    if endnote["reference_text"] in run.text and new_doc_notes_parts.get("endnotes_part"):
-                        # TODO: SAME THING AS FOOTNOTES
-                        xml_blob = new_doc_notes_parts["endnotes_part"].blob
-                        pass
-
     # Find all the unmatched annotations by getting the complement set to each of the matched_comments/footnotes/endnotes sets
     unmatched_comments = [
         c for c in slide_notes.comments if c["id"] not in matched_comment_ids
     ]
-    unmatched_footnotes = [
-        f for f in slide_notes.footnotes if f["footnote_id"] not in matched_footnote_ids
-    ]
-    unmatched_endnotes = [
-        e for e in slide_notes.endnotes if e["endnote_id"] not in matched_endnote_ids
-    ]
 
     unmatched_annotations.extend(unmatched_comments)
-    unmatched_annotations.extend(unmatched_footnotes)
-    unmatched_annotations.extend(unmatched_endnotes)
 
     # Put the slide's user notes into a new comment attached to the last run
     if slide_notes and slide_notes.has_user_notes is True and last_run is not None:
@@ -726,36 +665,6 @@ def process_slide_paragraphs(
         if comment_text.strip():
             new_doc.add_comment(last_run, comment_text)
 
-def get_notes_parts(new_doc: document.Document) -> dict:
-    """Get the docx package parts for footnotes and endnotes and add them to a dict if they exist."""
-    from docx.opc.part import XmlPart
-    from docx.oxml import parse_xml
-    from docx.opc.constants import RELATIONSHIP_TYPE as RT
-
-    notes_parts = {}
-    footnotes_parts = find_xml_parts(new_doc, "footnotes.xml")
-    if footnotes_parts and footnotes_parts[0]:
-        basic_part = footnotes_parts[0]
-        element = parse_xml(basic_part.blob)
-        footnote_xml_part = XmlPart(basic_part.partname, basic_part.content_type, element, basic_part.package) #type:ignore
-        
-        # This is the key step bayoo-docx does:
-        new_doc.part.relate_to(footnote_xml_part, RT.FOOTNOTES)
-        
-        notes_parts["footnotes_part"] = footnote_xml_part
-
-    endnotes_parts = find_xml_parts(new_doc, "endnotes.xml")
-    if endnotes_parts and endnotes_parts[0]:
-        basic_part = endnotes_parts[0]
-        element = parse_xml(basic_part.blob)
-        endnote_xml_part = XmlPart(basic_part.partname, basic_part.content_type, element, basic_part.package) #type:ignore
-        
-        new_doc.part.relate_to(endnote_xml_part, RT.ENDNOTES)
-
-        notes_parts["endnotes_part"] = endnote_xml_part
-    
-    return notes_parts
-
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document
 ) -> None:
@@ -768,8 +677,6 @@ def copy_slides_to_docx_body(
     # Make a list of all slides
     slide_list = list(prs.slides)
 
-    new_doc_notes_parts = get_notes_parts(new_doc)
-
     # For each slide...
     for slide in slide_list:
 
@@ -779,7 +686,7 @@ def copy_slides_to_docx_body(
         else:
             slide_notes = SlideNotes()
 
-        process_slide_paragraphs(slide, slide_notes, new_doc, new_doc_notes_parts)
+        process_slide_paragraphs(slide, slide_notes, new_doc)
 
 
 def copy_run_formatting_pptx2docx(
@@ -1292,10 +1199,10 @@ def add_metadata_to_slide_notes(
     """
     Populate the slide notes text frame with docx metadata so that we may restore it during a round-trip pptx2docx pipeline.
     """
-    annotation_metadata = {}
+    comments = []
 
     if chunk.comments:
-        annotation_metadata["comments"] = [
+        comments = [
             {
                 "original": {
                     "text": c.comment_obj.text,
@@ -1314,29 +1221,7 @@ def add_metadata_to_slide_notes(
             for c in chunk.comments
         ]
 
-    if chunk.footnotes:
-        annotation_metadata["footnotes"] = [
-            {
-                "footnote_id": f.footnote_id,
-                "text_body": f.text_body,
-                "hyperlinks": f.hyperlinks,
-                "reference_text": f.reference_text,
-            }
-            for f in chunk.footnotes
-        ]
-
-    if chunk.endnotes:
-        annotation_metadata["endnotes"] = [
-            {
-                "endnote_id": e.endnote_id,
-                "text_body": e.text_body,
-                "hyperlinks": e.hyperlinks,
-                "reference_text": e.reference_text,
-            }
-            for e in chunk.endnotes
-        ]
-
-    if slide_body_metadata or annotation_metadata:
+    if slide_body_metadata or comments:
         header_para = notes_text_frame.add_paragraph()
         header_run = header_para.add_run()
         header_run.text = f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
@@ -1346,7 +1231,11 @@ def add_metadata_to_slide_notes(
         json_para = notes_text_frame.add_paragraph()
         json_run = json_para.add_run()
 
-        combined_metadata = {**annotation_metadata, **slide_body_metadata}
+        combined_metadata = {**slide_body_metadata}
+        
+        if comments: # only add if the list has content
+            combined_metadata["comments"] = comments
+
         json_run.text = json.dumps(combined_metadata, indent=2)
 
         footer_para = notes_text_frame.add_paragraph()
