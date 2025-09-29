@@ -162,14 +162,12 @@ Known Issues & Limitations:
             only the annotation content appears in speaker notes.
 
         -   You can choose to preserve some comment metadata (author, timestamps) in plain text, but not threading.
-
-        -   Footnotes and endnotes don't preserve formatting, only plain text.
     
     -   REVERSE FLOW LIMITATIONS
         -   The reverse flow (pptx2docx-text) is significantly less robust. Your original input document to the docx2pptx-text flow, and 
             the output document from a follow-up pptx2docx-text flow will not look the same. Expect to lose images, tables, footnotes, 
             endnotes, and fancy formatting. We attempt to preserve headings (text-matching based). Comments should be restored, but their 
-            anchor positioning may alter slightly.
+            anchor positioning may be altered slightly.
 
         -   There will always be a blank line at the start of the reverse-pipeline document. When creating a new document with python-docx 
             using Document(), it inherently includes a single empty paragraph at the start. This behavior is mandated by the Open XML 
@@ -388,9 +386,9 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    # run_docx2pptx_pipeline(INPUT_DOCX_FILE)
+    run_docx2pptx_pipeline(INPUT_DOCX_FILE)
 
-    run_pptx2docx_pipeline(INPUT_PPTX_FILE)
+    #run_pptx2docx_pipeline(INPUT_PPTX_FILE)
 # endregion
 
 
@@ -1232,7 +1230,7 @@ def add_metadata_to_slide_notes(
         json_run = json_para.add_run()
 
         combined_metadata = {**slide_body_metadata}
-        
+
         if comments: # only add if the list has content
             combined_metadata["comments"] = comments
 
@@ -1261,16 +1259,21 @@ def process_chunk_paragraph_inner_contents(
 
             # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
             # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
-            # when it happens and report it to the user.
-            if "instrText" in item.element.xml and "HYPERLINK" in item.element.xml:
-                detect_field_code_hyperlinks(item)
+            # when it happens and report it to the user.            
+            field_code_URL = detect_field_code_hyperlinks(item)
+            if field_code_URL:
+                item.text = f"[Link: {field_code_URL}]"
 
             process_run(
                 item, paragraph, pptx_paragraph, experimental_formatting_metadata
             )
 
+        # Run and Hyperlink objects are peers in docx, but Hyperlinks can contain lists of Runs.
+        # We check the item.url field because that seems the most reliable way to see if this is a
+        # basic run versus a Hyperlink containing its own nested runs.
+        # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.hyperlink.Hyperlink.url
         elif hasattr(item, "url"):
-            # Process all runs within the hyperlink
+            # Process all runs within the Hyperlink
             for run in item.runs:
                 process_run(
                     run,
@@ -1279,6 +1282,13 @@ def process_chunk_paragraph_inner_contents(
                     experimental_formatting_metadata,
                     item.url,
                 )
+        # elif hasattr(item, "fragment"):
+        #   ...
+        #   TODO, leafy: We need to handle document anchors differently from other hyperlinks.
+        #   We need to 1) process the nested runs as if it were a Hyperlink object, and
+        #   2) preserve the anchor somewhere, maybe the experimental formatting metadata.
+        #   https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.hyperlink.Hyperlink.fragment
+
         else:
             debug_print(f"Unknown content type in paragraph: {type(item)}")
 
@@ -1293,13 +1303,15 @@ def process_chunk_paragraph_inner_contents(
     return experimental_formatting_metadata
 
 
-def detect_field_code_hyperlinks(run: Run_docx) -> None:
+def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
     """
     Detect if this Run has a field code for instrText and it begins with HYPERLINK.
     If so, report it to the user, because we do not handle adding these to the pptx output.
     """
     try:
         run_xml: str = run.element.xml  # type: ignore
+        if "instrText" not in run_xml or  "HYPERLINK" not in run_xml:
+            return None
         root = ET.fromstring(run_xml)
 
         # Find instrText elements
@@ -1308,17 +1320,17 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None:
             {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"},
         )
         for instr in instr_texts:
-            if instr.text and instr.text.startswith("HYPERLINK"):
-                # TODO, polish, leafy: Add a const switch that would allow us to simply add the string {instr.text}
-                # into the main text body if the user desires
-                debug_print(
-                    f"WARNING: We found a field code hyperlink, but we don't have a way to attach it to any text: {instr.text}"
-                )
+            if instr.text and instr.text.startswith("HYPERLINK"):                
+                match = re.search(r'HYPERLINK\s+"([^"]+)"', instr.text)
+                if match and match.group(1):
+                    return match.group(1)
 
     except (AttributeError, ET.ParseError) as e:
         debug_print(
             f"WARNING: Could not parse run XML for field codes: {e} while seeking instrText"
         )
+
+    return None
 
 
 def process_run(
@@ -1655,10 +1667,10 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
         add_comments_to_notes(chunk.comments, notes_text_frame)
 
     if DISPLAY_FOOTNOTES and chunk.footnotes:
-        add_footnotes_to_notes(chunk.footnotes, notes_text_frame)
+        add_notes_to_speaker_notes(chunk.footnotes, notes_text_frame, Footnote_docx)
 
     if DISPLAY_ENDNOTES and chunk.endnotes:
-        add_endnotes_to_notes(chunk.endnotes, notes_text_frame)
+        add_notes_to_speaker_notes(chunk.endnotes, notes_text_frame, Endnote_docx)
 
     footer_para = notes_text_frame.add_paragraph()
     footer_run = footer_para.add_run()
@@ -1717,10 +1729,8 @@ def add_comments_to_notes(
                             comment_header.text = "\n"
                         process_chunk_paragraph_inner_contents(para, notes_para)
 
-
-# EXPERIMENT
 def add_notes_to_speaker_notes(
-    notes_list: list[Footnote_docx] | list[Endnote_docx],
+    notes_list: list[NOTE_TYPE],
     notes_text_frame: TextFrame,
     note_class: type[NOTE_TYPE],
 ) -> None:
@@ -1752,59 +1762,6 @@ def add_notes_to_speaker_notes(
                     note_text += f"\n{hyperlink}"
 
             note_run.text = note_text
-
-
-# TODO, ANNOTATIONS: Replace specific functions with this generic one, and test
-def add_footnotes_to_notes(
-    footnotes_list: list[Footnote_docx], notes_text_frame: TextFrame
-) -> None:
-    """Copy logic for appending the footnotes portion of the speaker notes."""
-
-    if footnotes_list:
-        footnote_para = notes_text_frame.add_paragraph()
-        footnote_run = footnote_para.add_run()
-        footnote_run.text = "\nFOOTNOTES FROM SOURCE DOCUMENT:\n" + "=" * 40
-
-        for footnote_obj in footnotes_list:
-            notes_para = notes_text_frame.add_paragraph()
-            footnote_run = notes_para.add_run()
-            footnote_text = f"\n{footnote_obj.footnote_id}. {footnote_obj.text_body}\n"
-
-            # Add any hyperlinks if they exist
-            if footnote_obj.hyperlinks:
-                footnote_text += "\nHyperlinks:"
-                for hyperlink in footnote_obj.hyperlinks:
-                    footnote_text += f"\n{hyperlink}"
-
-            # Assign the complete text to the run
-            footnote_run.text = footnote_text
-
-
-def add_endnotes_to_notes(
-    endnotes_list: list[Endnote_docx], notes_text_frame: TextFrame
-) -> None:
-    """Copy logic for appending the endnote portion of the speaker notes."""
-
-    if endnotes_list:
-        endnote_para = notes_text_frame.add_paragraph()
-        endnote_run = endnote_para.add_run()
-        endnote_run.text = "\nENDNOTES FROM SOURCE DOCUMENT:\n" + "=" * 40
-
-        for endnote_obj in endnotes_list:
-            notes_para = notes_text_frame.add_paragraph()
-            endnote_run = notes_para.add_run()
-            # Start with the main endnote text
-            endnote_text = f"\n{endnote_obj.endnote_id}. {endnote_obj.text_body}\n"
-
-            # Add any hyperlinks if they exist
-            if endnote_obj.hyperlinks:
-                endnote_text += "\nHyperlinks:"
-                for hyperlink in endnote_obj.hyperlinks:
-                    endnote_text += f"\n{hyperlink}"
-
-            # Assign the complete text to the run
-            endnote_run.text = endnote_text
-
 
 # endregion
 
