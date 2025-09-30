@@ -137,6 +137,8 @@ Stretch Wishlist Features:
 Known Issues & Limitations:
     -   We only support text content. No images, tables, etc., are copied between the formats, and we do not have plans 
         to support these in future.
+    
+    - "Sections" in both docx and pptx are not supported. TODO: investigate
 
     -   We do not support .doc or .ppt, only .docx. If you have a .doc file, convert it to .docx using Word, Google Docs, 
         or LibreOffice before processing.
@@ -2375,8 +2377,10 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
          raise OSError(f"Save failed (disk space or IO issue): {e}")
     except Exception as e:
         raise RuntimeError(f"Save failed with unexpected error: {e}")
+    
+# endregion
 
-
+# region sanitize xml
 def sanitize_xml_text(text: str) -> str:
     """Remove characters that aren't valid in XML."""
     if not text:
