@@ -551,7 +551,6 @@ def safely_extract_comment_data(comment: dict) -> dict | None:
     }
 
 
-# TODO: write similar to safely_extract_comments...
 def safely_extract_heading_data(heading: dict) -> dict | None:
     """Extract heading data with validation."""
     if not isinstance(heading, dict):
@@ -849,7 +848,6 @@ def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
     return message
 
 
-# TODO: test try/except and catch exceptions
 def _apply_experimental_formatting_from_metadata(
     target_run: Run_docx, format_info: dict
 ) -> None:
