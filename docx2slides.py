@@ -456,6 +456,152 @@ NOTES_MARKER_FOOTER: str = "END OF COPIED NOTES FROM SOURCE DOCX"
 
 
 # region pptx2docx-text helpers
+
+
+def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> SlideNotes:
+    """Extract metadata with safe defaults. Add to/mutate slide_notes object and return that object."""
+
+    # Defensively validate the json is a dict.
+    if not isinstance(json_metadata, dict):
+        # Even though we specified a dict type hint in the func signature, those are for static analysis;
+        # they tell Pylance what we expect the type to be, but they don't enforce anything at runtime.
+        # So someone could pass a string or list to this function at runtime and our code would still try
+        # to use it without this check.
+
+        debug_print(
+            f"JSON metadata from this slide should be a dict, but is a {type(json_metadata)}, so we can't use it."
+        )
+        # return unmutated
+        return slide_notes
+
+    # Validate each of the items inside the JSON dict are the expected type (list)
+    slide_comments = json_metadata.get("comments", [])
+    if not isinstance(slide_comments, list):
+        debug_print(
+            f"Comments from the slide notes JSON should be a list, but is a {type(slide_comments)}, so we can't use it."
+        )
+        slide_comments = []
+
+    slide_headings = json_metadata.get("headings", [])
+    if not isinstance(slide_headings, list):
+        debug_print(
+            f"Headings from the slide notes JSON should be a list, but is a {type(slide_headings)}, so we can't use it."
+        )
+        slide_headings = []
+
+    slide_exp_formatting = json_metadata.get("experimental_formatting", [])
+    if not isinstance(slide_exp_formatting, list):
+        debug_print(
+            f"Experimental_formatting from the slide notes JSON should be a list, but is a {type(slide_exp_formatting)}, so we can't use it."
+        )
+        slide_exp_formatting = []
+
+    # Populate the slide_notes object with each validated item
+    slide_notes.metadata = json_metadata
+    slide_notes.comments = slide_comments
+    slide_notes.headings = slide_headings
+    slide_notes.experimental_formatting = slide_exp_formatting
+
+    return slide_notes
+
+
+def safely_extract_comment_data(comment: dict) -> dict | None:
+    """
+    Extract comment data with validation. Returns None if invalid.
+    Returns dict with extracted fields if valid.
+    """
+
+    if not isinstance(comment, dict):
+        debug_print(f"Comment should be a dict, but is: {type(comment)}.")
+        return None
+
+    # Validate the individual comment has the fields we need
+    if "original" not in comment:
+        debug_print(f"Comment missing 'original' field: {comment}.")
+        return None
+
+    original = comment.get("original", {})
+    if not isinstance(original, dict):
+        debug_print(f"Comment 'original' is not a dict, but is {type(original)}.")
+        return None
+
+    # Extract bits from original now that we've validated it
+    text = original.get("text")
+    author = original.get("author")
+    initials = original.get("initials")
+
+    if not text:
+        debug_print("Comment has no text content.")
+        return None
+
+    if "reference_text" not in comment:
+        debug_print(f"Comment is missing 'reference_text' field: {comment} Skipping.")
+        return None
+
+    if "id" not in comment:
+        debug_print(f"Comment is missing 'id' field: {comment} Skipping.")
+        return None
+
+    return {
+        "reference_text": comment["reference_text"],
+        "id": comment["id"],
+        "text": text,
+        "author": author,
+        "initials": initials,
+    }
+
+
+# TODO: write similar to safely_extract_comments...
+def safely_extract_heading_data(heading: dict) -> dict | None:
+    """Extract heading data with validation."""
+    if not isinstance(heading, dict):
+        debug_print(f"Each stored heading should be a dict, got {type(heading)}")
+        return None
+
+    if "text" not in heading:
+        debug_print(f"Heading missing required field 'text': {heading}")
+        return None
+
+    if "name" not in heading:
+        debug_print(f"Heading missing required field 'name': {heading}")
+        return None
+
+    return {
+        "text": heading["text"],
+        "name": heading["name"],
+        "style_id": heading.get(
+            "style_id"
+        ),  # Optional: if this field is available, add it. Otherwise its value is None.
+    }
+
+
+def safely_extract_experimental_formatting_data(exp_fmt: dict) -> dict | None:
+    """Extract experimental formatting data with validation."""
+    if not isinstance(exp_fmt, dict):
+        debug_print(f"Experimental formatting should be a dict, got {type(exp_fmt)}")
+        return None
+
+    if "ref_text" not in exp_fmt:
+        debug_print(
+            f"Experimental formatting missing required field: 'ref_text': {exp_fmt}"
+        )
+        return None
+
+    if "formatting_type" not in exp_fmt:
+        debug_print(
+            f"Experimental formatting missing required field: 'formatting_type': {exp_fmt}"
+        )
+        return None
+
+    return {
+        "ref_text": exp_fmt["ref_text"],
+        "formatting_type": exp_fmt["formatting_type"],
+        "highlight_color_enum": exp_fmt.get(
+            "highlight_color_enum"
+        ),  # Optional field; will be set to None if not found
+    }
+
+
 def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
     """
     Extract user notes, JSON metadata, and discard copied annotations.
@@ -479,7 +625,6 @@ def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
         json_text = json_text.strip().lstrip("=").rstrip("=").strip()
         try:
             json_content = json.loads(json_text)
-            # TODO: add deeper JSON parsing. See `2025-09-24b JSON Validation TODO.md`
         except json.JSONDecodeError:
             json_content = None
             debug_print(
@@ -503,17 +648,12 @@ def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
     # Extract user notes by removing the marked sections
     user_notes = remove_ranges_from_text(speaker_notes_text, ranges_to_remove)
 
-    # Create and populate the chunk
+    # Create and populate the slide_notes object
     slide_notes = SlideNotes()
     slide_notes.user_notes = user_notes.strip()
 
     if json_content:
-        slide_notes.metadata = json_content
-        slide_notes.comments = json_content.get("comments", [])
-        slide_notes.headings = json_content.get("headings", [])
-        slide_notes.experimental_formatting = json_content.get(
-            "experimental_formatting", []
-        )
+        slide_notes = extract_slide_metadata(json_content, slide_notes)
 
     return slide_notes
 
@@ -638,21 +778,30 @@ def process_slide_paragraphs(
             if slide_notes.comments:
                 # Check to see if the run text matches any comments' ref text
                 for comment in slide_notes.comments:
-                    # if there is a match, create a new comment based on the original, attached to this run.
+                    comment_data = safely_extract_comment_data(comment)
+
+                    if comment_data is None:
+                        debug_print(f"Skipping invalid comment: {comment}")
+                        continue
+
                     if (
-                        comment["reference_text"] in run.text
-                        and comment["id"] not in matched_comment_ids
+                        comment_data["reference_text"] in run.text
+                        and comment_data["id"] not in matched_comment_ids
                     ):
-                        original = comment["original"]
-                        text = original["text"]
-                        author = original["author"]
-                        initials = original["initials"]
-                        new_doc.add_comment(new_docx_run, text, author, initials)
-                        matched_comment_ids.add(comment["id"])
+                        new_doc.add_comment(
+                            new_docx_run,
+                            comment_data["text"],
+                            comment_data["author"],
+                            comment_data["initials"],
+                        )
+                        matched_comment_ids.add(comment_data["id"])
                     # don't break because there can be multiple comments added to a single run
 
             if EXPERIMENTAL_FORMATTING_ON and slide_notes.experimental_formatting:
                 for exp_fmt in slide_notes.experimental_formatting:
+                    fmt_info = safely_extract_experimental_formatting_data(exp_fmt)
+                    if fmt_info is None:
+                        continue
                     if exp_fmt["ref_text"] in run.text:
                         _apply_experimental_formatting_from_metadata(
                             new_docx_run, exp_fmt
@@ -693,10 +842,12 @@ def process_slide_paragraphs(
         if comment_text.strip():
             new_doc.add_comment(last_run, comment_text)
 
+
 def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
     """Construct error message string per experimental formatting type."""
     message = f"We found a {formatting_type} in the experimental formatting JSON from a previous docx2pptx run, but we couldn't apply it. \n Run text: {run_text[:50]}... \n Error: {e}"
     return message
+
 
 # TODO: test try/except and catch exceptions
 def _apply_experimental_formatting_from_metadata(
@@ -714,58 +865,44 @@ def _apply_experimental_formatting_from_metadata(
                 color_index = getattr(WD_COLOR_INDEX, highlight_enum, None)
                 tfont.highlight_color = color_index
             except Exception as e:
-                debug_print(
-                    _exp_fmt_issue(formatting_type, target_run.text, e)
-            )
+                debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "strike":
         try:
             tfont.strike = True
         except Exception as e:
-            debug_print(
-                _exp_fmt_issue(formatting_type, target_run.text, e)
-        )
+            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "double_strike":
         try:
             tfont.double_strike = True
         except Exception as e:
-            debug_print(
-                _exp_fmt_issue(formatting_type, target_run.text, e)
-        )
-        
+            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "subscript":
         try:
             tfont.subscript = True
         except Exception as e:
-            debug_print(
-                _exp_fmt_issue(formatting_type, target_run.text, e)
-        )
+            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "superscript":
         try:
             tfont.superscript = True
         except Exception as e:
-            debug_print(
-                _exp_fmt_issue(formatting_type, target_run.text, e)
-        )
+            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "all_caps":
         try:
             tfont.all_caps = True
         except Exception as e:
-            debug_print(
-                _exp_fmt_issue(formatting_type, target_run.text, e)
-        )
+            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "small_caps":
         try:
             tfont.small_caps = True
         except Exception as e:
-            debug_print(
-                _exp_fmt_issue(formatting_type, target_run.text, e)
-        )
+            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+
 
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document
@@ -1041,7 +1178,7 @@ def _copy_experimental_formatting_docx2pptx(
             rPr.append(hl)  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
-            
+
             debug_print(
                 f"We found a highlight in a docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
             )
@@ -1239,11 +1376,11 @@ def slides_from_chunks(
         # (for the purposes of restoring during reverse pipeline runs).
         slide_metadata = {}
         headings = []
-        experimental_formatting: list[dict] = []
+        experimental_formatting = []
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
-            
+
             # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
             # So if we're at the start of our list, use that existing empty paragraph.
             if (
@@ -1285,7 +1422,9 @@ def slides_from_chunks(
         notes_text_frame = new_slide.notes_slide.notes_text_frame
 
         if notes_text_frame is None:
-            raise ValueError("This slide doesn't seem to have a notes text frame. This should never happen, but it's possible for the notes_slide or notes_text_frame properties to return None if the notes placeholder has been removed from the notes master or the notes slide itself.")
+            raise ValueError(
+                "This slide doesn't seem to have a notes text frame. This should never happen, but it's possible for the notes_slide or notes_text_frame properties to return None if the notes placeholder has been removed from the notes master or the notes slide itself."
+            )
 
         if DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES:
             annotate_slide(chunk, notes_text_frame)
@@ -2383,10 +2522,10 @@ OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentatio
 
 
 # TODO, leafy: I'd really like this to validate we're not about to save 100MB+ files. But that's not easy to
-# estimate from the runtime object. 
+# estimate from the runtime object.
 # For now we'll check for absolutely insane slide or paragraph counts, and just report it to the
 # debug/logger.
-# TODO, polish: Around here is where we ought to add an option to split the output into multiple files, 
+# TODO, polish: Around here is where we ought to add an option to split the output into multiple files,
 # by X-number of slides or pages. There probably needs to be a default for each output type and a way for the
 # user to specify an override for the default.
 def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
