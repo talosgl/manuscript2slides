@@ -94,12 +94,18 @@ COLOR_MAP_HEX = {
     WD_COLOR_INDEX.TURQUOISE: "00FFFF",
     WD_COLOR_INDEX.VIOLET: "800080",
 }
+
+COLOR_MAP_FROM_HEX = {v: k for k, v in COLOR_MAP_HEX.items()}
+BASELINE_SUBSCRIPT_SMALL_FONT = "-50000"
+BASELINE_SUBSCRIPT_LARGE_FONT = "-25000"
+BASELINE_SUPERSCRIPT_SMALL_FONT = "60000"  # For fonts < 24pt
+BASELINE_SUPERSCRIPT_LARGE_FONT = "30000"  # For fonts >= 24pt
 #
 
 # region Overarching TODOs
 """
 Must-Implement v0 Features:
-- Reverse flow: export slide text frame content to docx paragraphs with the annotations kept as comments, inline
+- Reverse flow: export slide text frame content to docx paragraphs with the user_notes kept as comments, inline
     - This could allow a flow where you can iterate back and forth (and remove the need to "update" an existing deck with manuscript updates)
 - Change consts configuration to use a class or something
 - Rearchitect to be multi-file
@@ -283,7 +289,7 @@ class Footnote_docx:
 
     footnote_id: str
     text_body: str
-    hyperlinks: list[str] = field(default_factory=list[str])
+    hyperlinks: list[str] = field(default_factory=list)
     reference_text: str | None = None
 
     @property
@@ -304,7 +310,7 @@ class Endnote_docx:
 
     endnote_id: str
     text_body: str
-    hyperlinks: list[str] = field(default_factory=list[str])
+    hyperlinks: list[str] = field(default_factory=list)
     reference_text: str | None = None
 
     @property
@@ -353,6 +359,7 @@ class Chunk_docx:
         """Add a endnote to this Chunk object's endnote list."""
         self.endnotes.append(endnote)
 
+
 @dataclass
 class SlideNotes:
     """User notes and metadata extracted from a slide's speaker notes."""
@@ -371,10 +378,11 @@ class SlideNotes:
     @property
     def has_user_notes(self) -> bool:
         """
-        Returns a bool to indicate whether we did or did not find/store unique user notes (not JSON metadata, and not 
+        Returns a bool to indicate whether we did or did not find/store unique user notes (not JSON metadata, and not
         copied annotations from earlier docx2pptx pipeline runs) from these SlideNotes.
         """
         return bool(self.user_notes.strip())
+
 
 # endregion
 
@@ -386,9 +394,11 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    run_docx2pptx_pipeline(INPUT_DOCX_FILE)
+    # run_docx2pptx_pipeline(INPUT_DOCX_FILE)
 
-    #run_pptx2docx_pipeline(INPUT_PPTX_FILE)
+    run_pptx2docx_pipeline(INPUT_PPTX_FILE)
+
+
 # endregion
 
 
@@ -434,6 +444,7 @@ NOTES_MARKER_HEADER: str = "START OF COPIED NOTES FROM SOURCE DOCX"
 NOTES_MARKER_FOOTER: str = "END OF COPIED NOTES FROM SOURCE DOCX"
 
 # endregion
+
 
 # region pptx2docx-text helpers
 def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
@@ -536,6 +547,7 @@ def merge_overlapping_ranges(ranges: list) -> list:
 
     return merged
 
+
 def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_docx:
     """
     Custom function to add Hyperlink objects to docx paragraphs using XML manipulation.
@@ -554,8 +566,8 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
     # Create the hyperlink structure
     part = paragraph.part
     r_id = part.relate_to(url, constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
-    hyperlink = OxmlElement_docx('w:hyperlink')
-    hyperlink.set(qn('r:id'), r_id)
+    hyperlink = OxmlElement_docx("w:hyperlink")
+    hyperlink.set(qn("r:id"), r_id)
 
     # Move the run from within the paragraph to within the Hyperlink
     run_element = run._element
@@ -567,10 +579,10 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
 
 
 def process_slide_paragraphs(
-    slide: Slide,  slide_notes: SlideNotes, new_doc: document.Document
+    slide: Slide, slide_notes: SlideNotes, new_doc: document.Document
 ) -> None:
     """
-    Process a slide's body content, using any metadata stored in the speaker notes to restore formatting and annotation 
+    Process a slide's body content, using any metadata stored in the speaker notes to restore formatting and annotation
     anchors from an earlier docx2pptx pipeline run. If we find metadata but aren't able to attach it to text content from
     the body paragraphs/runs, attach that as a new comment to the very last copied paragraph/run from that slide.
 
@@ -597,21 +609,20 @@ def process_slide_paragraphs(
                     new_para.style = heading["name"]
                     break  # we should only ever apply one style to a paragraph
 
-        
         for run in pptx_para.runs:
-            
-            # Handle adding hyperlinks versus regular runs
+
+            # Handle adding hyperlinks versus regular runs, and the runs' basic formatting.
             if run.hyperlink.address:
                 debug_print("Hyperlink address found.")
-                run_from_hyperlink = add_hyperlink_to_docx_paragraph(new_para, run.hyperlink.address)
+                run_from_hyperlink = add_hyperlink_to_docx_paragraph(
+                    new_para, run.hyperlink.address
+                )
                 last_run = run_from_hyperlink
-                copy_run_formatting_pptx2docx(run, run_from_hyperlink, slide_notes.experimental_formatting)
+                copy_run_formatting_pptx2docx(run, run_from_hyperlink)
             else:
                 new_docx_run = new_para.add_run()
                 last_run = new_docx_run
-                copy_run_formatting_pptx2docx(
-                    run, new_docx_run, slide_notes.experimental_formatting
-                )
+                copy_run_formatting_pptx2docx(run, new_docx_run)
 
             # Check if this run contains matching text for comments from the speaker notes' stored JSON
             # metadata, from previous docx2pptx pipeline processing
@@ -619,7 +630,10 @@ def process_slide_paragraphs(
                 # Check to see if the run text matches any comments' ref text
                 for comment in slide_notes.comments:
                     # if there is a match, create a new comment based on the original, attached to this run.
-                    if comment["reference_text"] in run.text and comment["id"] not in matched_comment_ids:
+                    if (
+                        comment["reference_text"] in run.text
+                        and comment["id"] not in matched_comment_ids
+                    ):
                         original = comment["original"]
                         text = original["text"]
                         author = original["author"]
@@ -628,7 +642,14 @@ def process_slide_paragraphs(
                         matched_comment_ids.add(comment["id"])
                     # don't break because there can be multiple comments added to a single run
 
-    # Find all the unmatched annotations by getting the complement set to each of the matched_comments/footnotes/endnotes sets
+            if slide_notes.experimental_formatting:
+                for exp_fmt in slide_notes.experimental_formatting:
+                    if exp_fmt["ref_text"] in run.text:
+                        _apply_experimental_formatting_from_metadata(
+                            new_docx_run, exp_fmt
+                        )
+
+    # Find all the unmatched annotations by getting the complement set to each of the matched_comments set
     unmatched_comments = [
         c for c in slide_notes.comments if c["id"] not in matched_comment_ids
     ]
@@ -663,6 +684,42 @@ def process_slide_paragraphs(
         if comment_text.strip():
             new_doc.add_comment(last_run, comment_text)
 
+
+# TODO: add try/except and catch exceptions
+def _apply_experimental_formatting_from_metadata(
+    target_run: Run_docx, format_info: dict
+) -> None:
+    """Using JSON metadata from an earlier docx2pptx-text run, try to restore experimental formatting metadata to a run during the reverse pipeline."""
+
+    tfont = target_run.font
+
+    formatting_type = format_info.get("formatting_type")
+
+    if formatting_type == "highlight":
+        highlight_enum = format_info.get("highlight_color_enum")
+        if highlight_enum:
+            color_index = getattr(WD_COLOR_INDEX, highlight_enum, None)
+            tfont.highlight_color = color_index
+
+    elif formatting_type == "strike":
+        tfont.strike = True
+
+    elif formatting_type == "double_strike":
+        tfont.double_strike = True
+
+    elif formatting_type == "subscript":
+        tfont.subscript = True
+
+    elif formatting_type == "superscript":
+        tfont.superscript = True
+
+    elif formatting_type == "all_caps":
+        tfont.all_caps = True
+
+    elif formatting_type == "small_caps":
+        tfont.small_caps = True
+
+
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document
 ) -> None:
@@ -687,9 +744,7 @@ def copy_slides_to_docx_body(
         process_slide_paragraphs(slide, slide_notes, new_doc)
 
 
-def copy_run_formatting_pptx2docx(
-    source_run: Run_pptx, target_run: Run_docx, experimental_formatting: list
-) -> None:
+def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) -> None:
     """Mutates a docx Run object to apply text and formatting from a pptx _Run object."""
     sfont = source_run.font
     tfont = target_run.font
@@ -700,11 +755,74 @@ def copy_run_formatting_pptx2docx(
 
     _copy_run_color_formatting(sfont, tfont)
 
-    # TODO REVERSE ALL THE EXPERIMENTAL FORMATTING STUFF
-    if experimental_formatting:
-        # TODO do it
-        pass
-        # raise NotImplementedError
+    if source_run.text and source_run.text.strip() and EXPERIMENTAL_FORMATTING_ON:
+        _copy_experimental_formatting_pptx2docx(source_run, target_run)
+
+
+def _copy_experimental_formatting_pptx2docx(
+    source_run: Run_pptx, target_run: Run_docx
+) -> None:
+    """
+    Extract experimental formatting from the pptx _Run and attempt to apply it to the docx Run.
+    (Unlike in the docx2pptx pipeline, we don't additionally store this as metadata anywhere.)
+    """
+    sfont = source_run.font
+    tfont = target_run.font
+
+    try:
+        sfont_xml = sfont._element.xml
+
+        # Quick string checks before parsing
+        if (
+            "strike=" not in sfont_xml
+            and "baseline=" not in sfont_xml
+            and "cap=" not in sfont_xml
+            and "a:highlight" not in sfont_xml
+        ):
+            return  # No experimental formatting to apply
+
+        root = ET.fromstring(sfont_xml)
+        ns = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
+
+        # Check for highlight nested element
+        highlight = root.find(".//a:highlight/a:srgbClr", ns)
+        if highlight is not None:
+            debug_print("found a highlight")
+            # Extract the color HEX out of the XML
+            hex_color = highlight.get("val")
+            if hex_color:
+                # Convert the hex using the map map
+                color_index = COLOR_MAP_FROM_HEX.get(hex_color)
+                if color_index:
+                    target_run.font.highlight_color = color_index
+
+        # Check for strike/double-strike attribute
+        strike = root.get("strike")
+        if strike:
+            if strike == "sngStrike":
+                tfont.strike = True
+            elif strike == "dblStrike":
+                tfont.double_strike = True
+
+        # Check for super/subscript
+        baseline = root.get("baseline")
+        if baseline:
+            baseline_val = int(baseline)
+            if baseline_val < 0:
+                tfont.subscript = True
+            elif baseline_val > 0:
+                tfont.superscript = True
+
+        # Check for all/small caps
+        cap = root.get("cap")
+        if cap:
+            if cap == "all":
+                tfont.all_caps = True
+            elif cap == "small":
+                tfont.small_caps = True
+
+    except Exception as e:
+        debug_print(f"Failed to parse pptx formatting from XML: {e}")
 
 
 def open_and_load_pptx(pptx_path: Path | str) -> presentation.Presentation:
@@ -841,7 +959,7 @@ def _copy_basic_run_formatting(
     if source_font.underline is not None:
         target_font.underline = bool(source_font.underline)
 
-    # TODO: Test size
+    # TODO: THIS IS UNTESTED; TEST IT.
     if source_font.size is not None:
         target_font.size = Pt(source_font.size.pt)
         """
@@ -867,7 +985,6 @@ def _copy_run_color_formatting(
 def copy_run_formatting_docx2pptx(
     source_run: Run_docx,
     target_run: Run_pptx,
-    source_paragraph: Paragraph_docx,
     experimental_formatting_metadata: list,
 ) -> None:
     """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
@@ -886,15 +1003,18 @@ def copy_run_formatting_docx2pptx(
                 source_run, target_run, experimental_formatting_metadata
             )
 
-    # TODO: can we use the run object's "dirty" XML attribute to force-auto-resize slide text?
 
-
-# TODO: Extracting all the experimental formatting for the purpose of restoring during the reverse pipeline.
 def _copy_experimental_formatting_docx2pptx(
     source_run: Run_docx,
     target_run: Run_pptx,
     experimental_formatting_metadata: list,
 ) -> None:
+    """
+    Extract experimental formatting from the docx Run and attempt to apply it to the pptx run. Additionally,
+    store the formatting information in a metadata list (for the purpose of saving to JSON and enabling restoration
+    during the reverse pipeline).
+    """
+
     sfont = source_run.font
     tfont = target_run.font
 
@@ -904,11 +1024,10 @@ def _copy_experimental_formatting_docx2pptx(
     # Author: Martin Packer
     # License: MIT
     if sfont.highlight_color is not None:
-        # TODO: ADD TO THE experimental_formatting_metadata list
         experimental_formatting_metadata.append(
             {
                 "ref_text": source_run.text,
-                "highlight_color": COLOR_MAP_HEX.get(sfont.highlight_color),
+                "highlight_color_enum": sfont.highlight_color.name,
                 "formatting_type": "highlight",
             }
         )
@@ -1004,13 +1123,10 @@ def _copy_experimental_formatting_docx2pptx(
             {"ref_text": source_run.text, "formatting_type": "subscript"}
         )
         try:
-            if tfont.size is None:
-                tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
-
-            if tfont.size is not None and tfont.size < Pt(24):
-                tfont._element.set("baseline", "-50000")  # type: ignore[reportPrivateUsage]
+            if tfont.size is None or tfont.size < Pt(24):
+                tfont._element.set("baseline", BASELINE_SUBSCRIPT_SMALL_FONT)  # type: ignore[reportPrivateUsage]
             else:
-                tfont._element.set("baseline", "-25000")  # type: ignore[reportPrivateUsage]
+                tfont._element.set("baseline", BASELINE_SUBSCRIPT_LARGE_FONT)  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
             debug_print(
@@ -1032,13 +1148,10 @@ def _copy_experimental_formatting_docx2pptx(
             {"ref_text": source_run.text, "formatting_type": "superscript"}
         )
         try:
-            if tfont.size is None:
-                tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
-
-            if tfont.size is not None and tfont.size < Pt(24):
-                tfont._element.set("baseline", "60000")  # type: ignore[reportPrivateUsage]
+            if tfont.size is None or tfont.size < Pt(24):
+                tfont._element.set("baseline", BASELINE_SUPERSCRIPT_SMALL_FONT)  # type: ignore[reportPrivateUsage]
             else:
-                tfont._element.set("baseline", "30000")  # type: ignore[reportPrivateUsage]
+                tfont._element.set("baseline", BASELINE_SUPERSCRIPT_LARGE_FONT)  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
             debug_print(
@@ -1146,11 +1259,11 @@ def slides_from_chunks(
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
-            
+
             # TODO: can we use this logic in the reverse pipeline flow for para 0 so it's not always empty?
             # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
             # So if we're at the start of our list, use that existing empty paragraph.
-            if (  
+            if (
                 i == 0
                 and len(text_frame.paragraphs) > 0
                 and not text_frame.paragraphs[0].text
@@ -1168,12 +1281,16 @@ def slides_from_chunks(
             if para_experimental_formatting:
                 experimental_formatting.extend(para_experimental_formatting)
 
-            if paragraph.style and paragraph.style.name and is_standard_heading(paragraph.style.name):
+            if (
+                paragraph.style
+                and paragraph.style.name
+                and is_standard_heading(paragraph.style.name)
+            ):
                 headings.append(
                     {
                         "text": paragraph.text.strip(),
                         "style_id": paragraph.style.style_id,
-                        "name": paragraph.style.name
+                        "name": paragraph.style.name,
                     }
                 )
 
@@ -1231,7 +1348,7 @@ def add_metadata_to_slide_notes(
 
         combined_metadata = {**slide_body_metadata}
 
-        if comments: # only add if the list has content
+        if comments:  # only add if the list has content
             combined_metadata["comments"] = comments
 
         json_run.text = json.dumps(combined_metadata, indent=2)
@@ -1259,14 +1376,12 @@ def process_chunk_paragraph_inner_contents(
 
             # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
             # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
-            # when it happens and report it to the user.            
+            # when it happens and report it to the user.
             field_code_URL = detect_field_code_hyperlinks(item)
             if field_code_URL:
-                item.text = f"[Link: {field_code_URL}]"
+                item.text = f" [Link: {field_code_URL}] "
 
-            process_run(
-                item, paragraph, pptx_paragraph, experimental_formatting_metadata
-            )
+            process_run(item, pptx_paragraph, experimental_formatting_metadata)
 
         # Run and Hyperlink objects are peers in docx, but Hyperlinks can contain lists of Runs.
         # We check the item.url field because that seems the most reliable way to see if this is a
@@ -1277,7 +1392,6 @@ def process_chunk_paragraph_inner_contents(
             for run in item.runs:
                 process_run(
                     run,
-                    paragraph,
                     pptx_paragraph,
                     experimental_formatting_metadata,
                     item.url,
@@ -1309,8 +1423,8 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
     If so, report it to the user, because we do not handle adding these to the pptx output.
     """
     try:
-        run_xml: str = run.element.xml  # type: ignore
-        if "instrText" not in run_xml or  "HYPERLINK" not in run_xml:
+        run_xml: str = run.element.xml
+        if "instrText" not in run_xml or "HYPERLINK" not in run_xml:
             return None
         root = ET.fromstring(run_xml)
 
@@ -1320,7 +1434,7 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
             {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"},
         )
         for instr in instr_texts:
-            if instr.text and instr.text.startswith("HYPERLINK"):                
+            if instr.text and instr.text.startswith("HYPERLINK"):
                 match = re.search(r'HYPERLINK\s+"([^"]+)"', instr.text)
                 if match and match.group(1):
                     return match.group(1)
@@ -1335,7 +1449,6 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
 
 def process_run(
     run: Run_docx,
-    docx_paragraph: Paragraph_docx,
     pptx_paragraph: Paragraph_pptx,
     experimental_formatting_metadata: list,
     hyperlink: str | None = None,
@@ -1344,9 +1457,7 @@ def process_run(
     # Handle formatting
 
     pptx_run = pptx_paragraph.add_run()
-    copy_run_formatting_docx2pptx(
-        run, pptx_run, docx_paragraph, experimental_formatting_metadata
-    )
+    copy_run_formatting_docx2pptx(run, pptx_run, experimental_formatting_metadata)
 
     if hyperlink:
         pptx_run_url = pptx_run.hyperlink
@@ -1417,7 +1528,7 @@ def process_run_annotations(
     """Get the annotations from a run object and adding them into its (grand)parent chunk object."""
     try:
         # Get XML from the run using public API
-        run_xml = run.element.xml  # type: ignore
+        run_xml = run.element.xml
 
         # Parse it safely with ElementTree
         root = ET.fromstring(run_xml)
@@ -1729,6 +1840,7 @@ def add_comments_to_notes(
                             comment_header.text = "\n"
                         process_chunk_paragraph_inner_contents(para, notes_para)
 
+
 def add_notes_to_speaker_notes(
     notes_list: list[NOTE_TYPE],
     notes_text_frame: TextFrame,
@@ -1762,6 +1874,7 @@ def add_notes_to_speaker_notes(
                     note_text += f"\n{hyperlink}"
 
             note_run.text = note_text
+
 
 # endregion
 
@@ -1864,7 +1977,7 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
 
 
 def is_standard_heading(style_name: str) -> bool:
-    """Check if paragraph.style.name is a standard Word Heading (Heading 1, Heading 2, ..., Heading 6)"""    
+    """Check if paragraph.style.name is a standard Word Heading (Heading 1, Heading 2, ..., Heading 6)"""
     return style_name.startswith("Heading") and style_name[8:].isdigit()
 
 
@@ -1942,7 +2055,6 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
         if not current_chunk.paragraphs:
             current_chunk.add_paragraph(para)
             if is_standard_heading(style_name):
-                # TODO: store this heading information somewhere
                 current_heading_style_name = style_name
             continue
 
@@ -1957,13 +2069,11 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
 
             # Update heading depth if this paragraph is a heading
             if is_standard_heading(style_name):
-                # TODO: store this heading information somewhere
                 current_heading_style_name = style_name
             continue
 
         # Handle headings
         if is_standard_heading(style_name):
-            # TODO: store this heading information somewhere
             # Check if this heading is at same level or higher (less deep) than current. Smaller numbers are higher up in the hierarchy.
             if get_heading_level(style_name) <= get_heading_level(
                 current_heading_style_name
@@ -2062,7 +2172,6 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
 
         # If this paragraph is a heading, start a new chunk
         if is_standard_heading(style_name):
-            # TODO: store this heading information somewhere
             # If we already have content in current_chunk, save it and start fresh
             if current_chunk:
                 all_chunks.append(current_chunk)
