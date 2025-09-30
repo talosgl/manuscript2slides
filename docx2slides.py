@@ -105,31 +105,36 @@ BASELINE_SUPERSCRIPT_LARGE_FONT = "30000"  # For fonts >= 24pt
 # region Overarching TODOs
 """
 Must-Implement v0 Features:
-- Reverse flow: export slide text frame content to docx paragraphs with the user_notes kept as comments, inline
-    - This could allow a flow where you can iterate back and forth (and remove the need to "update" an existing deck with manuscript updates)
-- Change consts configuration to use a class or something
+- Change consts configuration to use a class or similar
 - Rearchitect to be multi-file
 
 v1 features I'd like:
+- Add a feature to split the output pptx or docx into multiple files based on slide or page count. Add default counts and allow user overrides for the default.
+- Investigate if we can insert pptx sections safely enough (to allow for docx headings -> pptx sections, or other section-chunking)
+    - If not, investigate if/when we want to mimic the same type of behavior with "segue slides"
 - Create Documents/docx2pptx/input/output/resources structure
     - Copies sample files from app resources to user folders
-    - Cleanup mode for debug runs
-    - Have the output do a rotating 5 files or so
-- Build a simple UI + Package this so that any writer can use it without needing to know WTF python is
-    - + Consider reworking into C# for this; good practice for me
-
+    - Cleanup mode for debug runs    
+- Add an actual logger
+- Investigate how impossible non-local file input/output (OneDrive/SharePoint) would be; add to known limitations if not supportable.
 
 Public v1
-- Polish up enough to make repo public
-- What does is "done enough for public github repo mean"? "ready when I'm comfortable having strangers use it without asking me questions." 
-    - Error messages that tell users what went wrong and how to fix it
+- What does is "done enough for public github repo mean"? 
+    - "When I'm comfortable having strangers use it without asking me questions."
+    - Engineer-audience documentation
+    - Log & error messages that tell users what went wrong and how to fix it
     - Code that doesn't crash on common edge cases.
 
+Public v2: UI
+    - Build a simple UI with good enough UX that any non-tech-savvy writer can use it without friction
+
+Public v3: Package/Distribution
+    - Figure out how to package it into an installer for each non-mobile platform (Win 11, MacOS, Linux)
+
 Stretch Wishlist Features:
--   Add support for importing .md and .txt; split by whitespaces or character like \n\n.
+-   Investigate linking slides or sections-of-slides or file chunks back to their source "place" in the original docx (og file if possible, or a copy where we insert the anchor)
+-   Add support for importing .md and .txt; split by whitespaces or newline characters.
 -   Add support to break chunks (of any type) at a word count threshold.
--   Add support to deconstruct standard technical marketing docx demo scripts 
-    (table parsing; consistent row structure (Column A = slides, Column B = notes)).
 
 """
 
@@ -688,41 +693,79 @@ def process_slide_paragraphs(
         if comment_text.strip():
             new_doc.add_comment(last_run, comment_text)
 
+def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
+    """Construct error message string per experimental formatting type."""
+    message = f"We found a {formatting_type} in the experimental formatting JSON from a previous docx2pptx run, but we couldn't apply it. \n Run text: {run_text[:50]}... \n Error: {e}"
+    return message
 
-# TODO: add try/except and catch exceptions
+# TODO: test try/except and catch exceptions
 def _apply_experimental_formatting_from_metadata(
     target_run: Run_docx, format_info: dict
 ) -> None:
     """Using JSON metadata from an earlier docx2pptx-text run, try to restore experimental formatting metadata to a run during the reverse pipeline."""
 
     tfont = target_run.font
-
     formatting_type = format_info.get("formatting_type")
 
     if formatting_type == "highlight":
         highlight_enum = format_info.get("highlight_color_enum")
         if highlight_enum:
-            color_index = getattr(WD_COLOR_INDEX, highlight_enum, None)
-            tfont.highlight_color = color_index
+            try:
+                color_index = getattr(WD_COLOR_INDEX, highlight_enum, None)
+                tfont.highlight_color = color_index
+            except Exception as e:
+                debug_print(
+                    _exp_fmt_issue(formatting_type, target_run.text, e)
+            )
 
     elif formatting_type == "strike":
-        tfont.strike = True
+        try:
+            tfont.strike = True
+        except Exception as e:
+            debug_print(
+                _exp_fmt_issue(formatting_type, target_run.text, e)
+        )
 
     elif formatting_type == "double_strike":
-        tfont.double_strike = True
+        try:
+            tfont.double_strike = True
+        except Exception as e:
+            debug_print(
+                _exp_fmt_issue(formatting_type, target_run.text, e)
+        )
+        
 
     elif formatting_type == "subscript":
-        tfont.subscript = True
+        try:
+            tfont.subscript = True
+        except Exception as e:
+            debug_print(
+                _exp_fmt_issue(formatting_type, target_run.text, e)
+        )
 
     elif formatting_type == "superscript":
-        tfont.superscript = True
+        try:
+            tfont.superscript = True
+        except Exception as e:
+            debug_print(
+                _exp_fmt_issue(formatting_type, target_run.text, e)
+        )
 
     elif formatting_type == "all_caps":
-        tfont.all_caps = True
+        try:
+            tfont.all_caps = True
+        except Exception as e:
+            debug_print(
+                _exp_fmt_issue(formatting_type, target_run.text, e)
+        )
 
     elif formatting_type == "small_caps":
-        tfont.small_caps = True
-
+        try:
+            tfont.small_caps = True
+        except Exception as e:
+            debug_print(
+                _exp_fmt_issue(formatting_type, target_run.text, e)
+        )
 
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document
@@ -998,13 +1041,10 @@ def _copy_experimental_formatting_docx2pptx(
             rPr.append(hl)  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
+            
             debug_print(
-                f"We found a highlight in the docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
+                f"We found a highlight in a docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
             )
-            debug_print(
-                "In order to attempt to preserve the visual difference of the highlighted text, we'll apply a basic gradient effect instead."
-            )
-            tfont.fill.gradient()
         """
         Reference pptx XML for highlighting:
         <a:r>
@@ -1025,7 +1065,7 @@ def _copy_experimental_formatting_docx2pptx(
             tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
         except Exception as e:
             debug_print(
-                f"Failed to apply strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
+                f"Failed to apply single-strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
             )
 
         """
@@ -1203,8 +1243,7 @@ def slides_from_chunks(
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
-
-            # TODO: can we use this logic in the reverse pipeline flow for para 0 so it's not always empty?
+            
             # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
             # So if we're at the start of our list, use that existing empty paragraph.
             if (
@@ -1243,7 +1282,10 @@ def slides_from_chunks(
         if experimental_formatting:
             slide_metadata["experimental_formatting"] = experimental_formatting
 
-        notes_text_frame: TextFrame = new_slide.notes_slide.notes_text_frame  # type: ignore # TODO, POLISH: is there a reasonable way to fix this type hint?
+        notes_text_frame = new_slide.notes_slide.notes_text_frame
+
+        if notes_text_frame is None:
+            raise ValueError("This slide doesn't seem to have a notes text frame. This should never happen, but it's possible for the notes_slide or notes_text_frame properties to return None if the notes placeholder has been removed from the notes master or the notes slide itself.")
 
         if DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES:
             annotate_slide(chunk, notes_text_frame)
@@ -1640,7 +1682,7 @@ def parse_xml_blob(xml_blob: bytes | str) -> ET.Element:
     return root
 
 
-# TypeVar definition; TODO: move to the top of whatever file this function ends up living in
+# TODO, multi-file split: move to the top of whatever file this function ends up living in
 # This allows for a generic type parameter - when you pass Footnote_docx into the extract_notes_from_xml(...) function, you will get dict[str, Footnote_docx] back
 NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)
 
@@ -2340,9 +2382,13 @@ def create_empty_slide_deck() -> presentation.Presentation:
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
 
-# TODO, VALIDATION: I want this to be validation that verifies we're not about to save 100MB+ files. But that's not easy to
-# estimate from the runtime object. For now we'll base on absolutely insane slide or paragraph counts, and just report it to the
+# TODO, leafy: I'd really like this to validate we're not about to save 100MB+ files. But that's not easy to
+# estimate from the runtime object. 
+# For now we'll check for absolutely insane slide or paragraph counts, and just report it to the
 # debug/logger.
+# TODO, polish: Around here is where we ought to add an option to split the output into multiple files, 
+# by X-number of slides or pages. There probably needs to be a default for each output type and a way for the
+# user to specify an override for the default.
 def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
     """Report if the output content we're about to save is excessively large."""
     if isinstance(save_object, document.Document):
