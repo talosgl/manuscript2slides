@@ -421,7 +421,7 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
 
     # Load the pptx at that validated filepath
     try:
-        user_prs: presentation.Presentation = open_and_load_pptx(validated_pptx_path)
+        user_prs: presentation.Presentation = load_and_validate_pptx(validated_pptx_path)
     except Exception as e:
         print(
             f"Content of powerpoint file invalid for pptx2docxtext pipeline run. Error: {e}."
@@ -825,66 +825,6 @@ def _copy_experimental_formatting_pptx2docx(
         debug_print(f"Failed to parse pptx formatting from XML: {e}")
 
 
-def open_and_load_pptx(pptx_path: Path | str) -> presentation.Presentation:
-    """Use python-pptx to read in the pptx file contents, validate minimum content is present, and store to a runtime object."""
-    prs = pptx.Presentation(str(pptx_path))
-
-    # Count and report slides to validate we can see the content within this file.
-    slide_count = len(prs.slides)
-    if slide_count > 0:
-        debug_print(f"The pptx file {pptx_path} has {slide_count} slide(s) in it.")
-
-        slide_list = list(prs.slides)
-        # Observations:
-        # 1)    Sequential iteration order matters: slide_ids will iterate here in the order that they appear in the visual slide deck.
-        # 2)    slide_id does NOT imply its place in the slide order: slide_ids appear to be n+1 generated,
-        #       but a person can easily move slides around in the sequence of slides as desired. The only meaning that you can gain
-        #       by sorting by slide_id is (maybe) the order in which the slide items were added to the deck, not the order that the
-        #       user wants them to be viewed/read.
-
-        first_slide = find_first_slide_with_text(slide_list)
-        if first_slide is None:
-            raise RuntimeError(
-                f"No slides in {pptx_path} contain text content, so there's nothing for the pipeline to do."
-            )
-
-        first_slide_paragraphs = get_slide_paragraphs(first_slide)
-        debug_print(
-            f"The first slide detected with text content is slide_id: {first_slide.slide_id}. The text content is: \n"
-        )
-        for p in first_slide_paragraphs:
-            debug_print(p.text)
-
-    # Return the runtime object
-    return prs
-
-
-def find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
-    """Find the first slide that contains any paragraphs with text content."""
-    for slide in slides:
-        if get_slide_paragraphs(slide):
-            return slide
-    return None
-
-
-def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx]:
-    """Extract all paragraphs from all text placeholders in a slide."""
-    paragraphs: list[Paragraph_pptx] = []
-
-    for placeholder in slide.placeholders:
-        if (
-            isinstance(placeholder, SlidePlaceholder)
-            and hasattr(placeholder, "text_frame")
-            and placeholder.text_frame
-        ):
-            textf: TextFrame = placeholder.text_frame
-            for para in textf.paragraphs:
-                if para.runs or para.text:
-                    paragraphs.append(para)
-
-    return paragraphs
-
-
 # endregion
 
 # region ===========
@@ -916,7 +856,7 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
         sys.exit(1)
 
     # Load the docx file at that path.
-    user_docx = open_and_load_docx(user_path_validated)
+    user_docx = load_and_validate_docx(user_path_validated)
 
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, CHUNK_TYPE)
@@ -1697,7 +1637,7 @@ def parse_xml_blob(xml_blob: bytes | str) -> ET.Element:
 
 
 # TypeVar definition; TODO: move to the top of whatever file this function ends up living in
-# Generic type parameter - when you pass Footnote_docx into the below function, you will get dict[str, Footnote_docx] back
+# This allows for a generic type parameter - when you pass Footnote_docx into the extract_notes_from_xml(...) function, you will get dict[str, Footnote_docx] back
 NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)
 
 
@@ -2192,12 +2132,13 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
 
 # endregion
 
-
+import inspect
 # region Utils - Basic
 def debug_print(msg: str | list[str]) -> None:
     """Basic debug printing function"""
     if DEBUG_MODE:
-        print(f"DEBUG: {msg}")
+        caller = inspect.stack()[1].function
+        print(f"DEBUG [{caller}]: {msg}")
 
 
 def setup_console_encoding() -> None:
@@ -2209,7 +2150,7 @@ def setup_console_encoding() -> None:
 # endregion
 
 
-# region Utils - I/O
+# region Utils - I/O (./io.py)
 def validate_path(user_path: str | Path) -> Path:
     """Ensure filepath exists and is a file."""
     path = Path(user_path)
@@ -2219,28 +2160,60 @@ def validate_path(user_path: str | Path) -> Path:
         raise ValueError("That's not a file.")
     return path
 
+# endregion
 
+# region docx load and validate
 def validate_docx_path(user_path: str | Path) -> Path:
     """Validates the user-provided filepath exists and is actually a docx file."""
     path = validate_path(user_path)
+
     # Verify it's the right extension:
     if path.suffix.lower() == ".doc":
         raise ValueError(
             "This tool only supports .docx files right now. Please convert your .doc file to .docx format first."
         )
-    elif path.suffix.lower() != ".docx":
-        raise ValueError(f"Expected a .docx file, but got: {path.suffix}")
+    if path.suffix.lower() != ".docx":
+        raise ValueError(f"Expected a .docx file, but got: {path.suffix}")    
+    return path
 
-    # Add document structure validation
+# eventual destination: ./src/docx2pptx/io.py (?)
+def load_and_validate_docx(input_filepath: Path) -> document.Document:
+    """Use python-docx to read in the docx file contents and store to a runtime variable."""
+
+    # Try to load the docx
     try:
-        doc = docx.Document(path)  # type: ignore
-        if not doc.paragraphs:
-            raise ValueError("Document appears to be empty")
-        return path
+        doc = docx.Document(input_filepath)  # type: ignore
     except Exception as e:
         raise ValueError(f"Document appears to be corrupted: {e}")
+    
+    # Validate it contains content
+    if not doc.paragraphs:
+        raise ValueError("Document contains no paragraphs.")    
+    
+    first_para_w_text = find_first_docx_paragraph_with_text(doc.paragraphs)
+    if first_para_w_text is None:
+        raise ValueError("Document contains no text content.")
+    
+    # Report content information to the user
+    paragraph_count = len(doc.paragraphs)
+    debug_print(f"This document has {paragraph_count} paragraphs in it.")
 
+    text = first_para_w_text.text
+    preview = text[:20] + ("..." if len(text) > 20 else "")
+    debug_print(f"The first paragraph containing text begins with: {preview}")
 
+    return doc
+
+def find_first_docx_paragraph_with_text(paragraphs: list[Paragraph_docx]) -> Paragraph_docx | None:
+    """Find the first paragarph that contains any text content in a docx."""
+    for paragraph in paragraphs:
+        if paragraph.text and paragraph.text.strip():
+            return paragraph
+    return None
+
+# endregion
+
+# region pptx load and validate
 def validate_pptx_path(user_path: str | Path) -> Path:
     """Validates the pptx template filepath exists and is actually a pptx file."""
     path = validate_path(user_path)
@@ -2249,76 +2222,159 @@ def validate_pptx_path(user_path: str | Path) -> Path:
         raise ValueError(f"Expected a .pptx file, but got: {path.suffix}")
     return path
 
+ # Observations about slides and slide_ids:
+    # 1)    Sequential iteration order matters: slide_ids will iterate here in the order that they appear in the visual slide deck.
+    # 2)    slide_id does NOT imply its place in the slide order: slide_ids appear to be n+1 generated,
+    #       but a person can easily move slides around in the sequence of slides as desired. The only meaning that you can gain
+    #       by sorting by slide_id is (maybe) the order in which the slide items were added to the deck, not the order that the
+    #       user wants them to be viewed/read.
 
-# region io.py
-# TODO, BASIC VALIDATION: Add basic validation for docx contents (copy the validation we did in CSharp)
-# TODO 1_ validate the document body is not null
-# TODO 2_ validate that there is at least 1 paragraph with text in it
-# eventual destination: ./src/docx2pptx/io.py (?)
-def open_and_load_docx(input_filepath: Path) -> document.Document:
-    """Use python-docx to read in the docx file contents and store to a runtime variable."""
-    doc = docx.Document(input_filepath)  # type: ignore
+def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
+    """
+    Read in pptx file contents, validate minimum content is present, and store to a runtime object. (pptx2docx-text pipeline)
+    """
 
-    # Count and report paragraphs to validate that we can see content in the file.
-    paragraph_count = len(doc.paragraphs)
-    print(f"This document has {paragraph_count} paragraphs in it.")
-    if paragraph_count > 0:
-        text = doc.paragraphs[0].text
-        preview = text[:20] + ("..." if len(text) > 20 else "")
-        print(f"The first paragraph's text is: {preview}")
-    return doc
+    # Try to load the pptx
+    try:
+        prs = pptx.Presentation(str(pptx_path))
+    except Exception as e:
+        raise ValueError(f"Presentation appears to be corrupted: {e}")
+    
+    # Validate the pptx contains slides, and at least one contains content.
+    if not prs.slides:
+        raise ValueError("Presentation contains no slides.")
+    
+    first_slide = find_first_slide_with_text(list(prs.slides))
+    if first_slide is None:
+        raise ValueError(
+            f"No slides in {pptx_path} contain text content, so there's nothing for the pipeline to do."
+        )
+
+    # Report content information to the user
+    slide_count = len(prs.slides)
+    debug_print(f"The pptx file {pptx_path} has {slide_count} slide(s) in it.")
+
+    first_slide_paragraphs = get_slide_paragraphs(first_slide)
+    debug_print(
+        f"The first slide detected with text content is slide_id: {first_slide.slide_id}. The text content is: \n"
+    )
+
+    for p in first_slide_paragraphs:
+        if p.text.strip():
+            text = p.text.strip()
+            preview = text[:20] + ("..." if len(text) > 20 else "")
+            debug_print(f"The first paragraph containing text begins with: {preview}")
+            break
+    # An else on a for-loop runs if we never hit break. This is here because I'm maybe-overly defensive in programming style.
+    else:
+        debug_print("(Could not extract preview text)")
+
+    # Return the runtime object
+    return prs
 
 
-# TODO, BASIC VALIDATION: Add validation to ensure the template is in good shape
-# Like make sure it has all the pieces we're going to rely on; slide masters and slide layout, etc.,
-# and make sure whatever the slide layout name the user provided and wishes to use exists.
+def find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
+    """Find the first slide that contains any paragraphs with text content."""
+    for slide in slides:
+        if get_slide_paragraphs(slide):
+            return slide
+    return None
+
+
+def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx]:
+    """Extract all paragraphs from all text placeholders in a slide."""
+    paragraphs: list[Paragraph_pptx] = []
+
+    for placeholder in slide.placeholders:
+        if (
+            isinstance(placeholder, SlidePlaceholder)
+            and hasattr(placeholder, "text_frame")
+            and placeholder.text_frame
+        ):
+            textf: TextFrame = placeholder.text_frame
+            for para in textf.paragraphs:
+                if para.runs or para.text:
+                    paragraphs.append(para)
+
+    return paragraphs
+
+
 def create_empty_slide_deck() -> presentation.Presentation:
-    """Load the PowerPoint template and create a new presentation object."""
+    """Load the PowerPoint template, create a new presentation object, and validate it contains the custom layout. (docx2pptx-text pipeline)"""
 
+    # Try to load the pptx
     try:
         template_path = validate_pptx_path(Path(TEMPLATE_PPTX))
         prs = pptx.Presentation(str(template_path))
-        return prs
     except Exception as e:
         raise ValueError(f"Could not load template file (may be corrupted): {e}")
 
-    # === testing
-    # slide_layout = prs.slide_layouts[SLD_LAYOUT_CUSTOM]
-    # slide = prs.slides.add_slide(slide_layout)
-    # content = slide.placeholders[1]
-    # content.text = "Test Slide!" # type:ignore
+    # Validate it has the required slide layout for the pipeline
+    layout_names = [layout.name for layout in prs.slide_layouts]
+    if SLD_LAYOUT_CUSTOM_NAME not in layout_names:
+        raise ValueError(f"Template is missing the required layout: '{SLD_LAYOUT_CUSTOM_NAME}'. "
+                         f"Available layouts: {', '.join(layout_names)}")
 
+    return prs
 
-# TODO, BASIC VALIDATION:: Add some kind of validation that we're not saving something that's like over 100 MB. Maybe set a const
-# TODO, UX: Probably add some kind of file rotation so the last 5 or so outputs are preserved
+# TODO, multi-file split: Another TypeVar to move to the top of whatever file these funcs live in later
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
+# TODO, VALIDATION: I want this to be validation that verifies we're not about to save 100MB+ files. But that's not easy to
+# estimate from the runtime object. For now we'll base on absolutely insane slide or paragraph counts, and just report it to the
+# debug/logger.
+def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
+    """Report if the output content we're about to save is excessively large."""
+    if isinstance(save_object, document.Document):
+        max_p_count = 10000
+        if len(save_object.paragraphs) > max_p_count:
+            debug_print(f"This is about to save a docx file with over {max_p_count} paragraphs ... that seems a bit long!")
+    elif isinstance(save_object, presentation.Presentation):
+        max_s_count = 1000
+        if len(list(save_object.slides)) > max_s_count:
+            debug_print(f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!")
 
-def save_output(save_object: OUTPUT_TYPE) -> None:
-    """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
+def _determine_output_path(save_object: OUTPUT_TYPE) -> tuple[Path, str]:
+    """Construct output folder and filename in memory based on output type."""
     if isinstance(save_object, document.Document):
         save_folder = OUTPUT_DOCX_FOLDER
         save_filename = OUTPUT_DOCX_FILENAME
+        return save_folder, save_filename
     elif isinstance(save_object, presentation.Presentation):
         save_folder = OUTPUT_PPTX_FOLDER
         save_filename = OUTPUT_PPTX_FILENAME
+        return save_folder, save_filename
     else:
         raise RuntimeError(f"Unexpected output object type: {save_object}")
 
+def save_output(save_object: OUTPUT_TYPE) -> None:
+    """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
+
+    # Build the output path components based on filetype.
+    save_folder, save_filename = _determine_output_path(save_object)
+    
+    # Report if the content we're about to save is excessively huge
+    _validate_content_size(save_object)
+
+    # Create the output folder if we need to
+    save_folder.mkdir(parents=True, exist_ok=True)
+
+    # Add a timestamp to the filename
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    name, ext = save_filename.rsplit(".", 1) # The 1 is telling rsplit() to split from the right side and do a maximum of 1 split.
+    timestamped_filename = f"{name}_{timestamp}.{ext}"
+    output_filepath = save_folder / timestamped_filename
+
+    # Attempt to save
     try:
-        # Construct output path
-        if save_folder:
-            folder = Path(save_folder)
-            folder.mkdir(parents=True, exist_ok=True)
-            output_filepath = folder / save_filename
-        else:
-            output_filepath = Path(save_filename)
         save_object.save(str(output_filepath))
         print(f"Successfully saved to {output_filepath}")
     except PermissionError:
         raise PermissionError("Save failed: File may be open in another program")
+    except OSError as e:
+         raise OSError(f"Save failed (disk space or IO issue): {e}")
     except Exception as e:
-        raise RuntimeError(f"Save failed with error: {e}")
+        raise RuntimeError(f"Save failed with unexpected error: {e}")
 
 
 def sanitize_xml_text(text: str) -> str:
