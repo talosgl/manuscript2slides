@@ -423,7 +423,9 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
 
     # Load the pptx at that validated filepath
     try:
-        user_prs: presentation.Presentation = load_and_validate_pptx(validated_pptx_path)
+        user_prs: presentation.Presentation = load_and_validate_pptx(
+            validated_pptx_path
+        )
     except Exception as e:
         print(
             f"Content of powerpoint file invalid for pptx2docxtext pipeline run. Error: {e}."
@@ -644,7 +646,7 @@ def process_slide_paragraphs(
                         matched_comment_ids.add(comment["id"])
                     # don't break because there can be multiple comments added to a single run
 
-            if slide_notes.experimental_formatting:
+            if EXPERIMENTAL_FORMATTING_ON and slide_notes.experimental_formatting:
                 for exp_fmt in slide_notes.experimental_formatting:
                     if exp_fmt["ref_text"] in run.text:
                         _apply_experimental_formatting_from_metadata(
@@ -939,7 +941,7 @@ def copy_run_formatting_docx2pptx(
 
     _copy_run_color_formatting(sfont, tfont)
 
-    if isinstance(source_run, Run_docx) and EXPERIMENTAL_FORMATTING_ON:
+    if EXPERIMENTAL_FORMATTING_ON:
         if source_run.text and source_run.text.strip():
             _copy_experimental_formatting_docx2pptx(
                 source_run, target_run, experimental_formatting_metadata
@@ -2135,6 +2137,8 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
 # endregion
 
 import inspect
+
+
 # region Utils - Basic
 def debug_print(msg: str | list[str]) -> None:
     """Basic debug printing function"""
@@ -2162,7 +2166,9 @@ def validate_path(user_path: str | Path) -> Path:
         raise ValueError("That's not a file.")
     return path
 
+
 # endregion
+
 
 # region docx load and validate
 def validate_docx_path(user_path: str | Path) -> Path:
@@ -2175,8 +2181,9 @@ def validate_docx_path(user_path: str | Path) -> Path:
             "This tool only supports .docx files right now. Please convert your .doc file to .docx format first."
         )
     if path.suffix.lower() != ".docx":
-        raise ValueError(f"Expected a .docx file, but got: {path.suffix}")    
+        raise ValueError(f"Expected a .docx file, but got: {path.suffix}")
     return path
+
 
 # eventual destination: ./src/docx2pptx/io.py (?)
 def load_and_validate_docx(input_filepath: Path) -> document.Document:
@@ -2187,15 +2194,15 @@ def load_and_validate_docx(input_filepath: Path) -> document.Document:
         doc = docx.Document(input_filepath)  # type: ignore
     except Exception as e:
         raise ValueError(f"Document appears to be corrupted: {e}")
-    
+
     # Validate it contains content
     if not doc.paragraphs:
-        raise ValueError("Document contains no paragraphs.")    
-    
+        raise ValueError("Document contains no paragraphs.")
+
     first_para_w_text = find_first_docx_paragraph_with_text(doc.paragraphs)
     if first_para_w_text is None:
         raise ValueError("Document contains no text content.")
-    
+
     # Report content information to the user
     paragraph_count = len(doc.paragraphs)
     debug_print(f"This document has {paragraph_count} paragraphs in it.")
@@ -2206,14 +2213,19 @@ def load_and_validate_docx(input_filepath: Path) -> document.Document:
 
     return doc
 
-def find_first_docx_paragraph_with_text(paragraphs: list[Paragraph_docx]) -> Paragraph_docx | None:
+
+def find_first_docx_paragraph_with_text(
+    paragraphs: list[Paragraph_docx],
+) -> Paragraph_docx | None:
     """Find the first paragarph that contains any text content in a docx."""
     for paragraph in paragraphs:
         if paragraph.text and paragraph.text.strip():
             return paragraph
     return None
 
+
 # endregion
+
 
 # region pptx load and validate
 def validate_pptx_path(user_path: str | Path) -> Path:
@@ -2224,12 +2236,14 @@ def validate_pptx_path(user_path: str | Path) -> Path:
         raise ValueError(f"Expected a .pptx file, but got: {path.suffix}")
     return path
 
- # Observations about slides and slide_ids:
-    # 1)    Sequential iteration order matters: slide_ids will iterate here in the order that they appear in the visual slide deck.
-    # 2)    slide_id does NOT imply its place in the slide order: slide_ids appear to be n+1 generated,
-    #       but a person can easily move slides around in the sequence of slides as desired. The only meaning that you can gain
-    #       by sorting by slide_id is (maybe) the order in which the slide items were added to the deck, not the order that the
-    #       user wants them to be viewed/read.
+
+# Observations about slides and slide_ids:
+# 1)    Sequential iteration order matters: slide_ids will iterate here in the order that they appear in the visual slide deck.
+# 2)    slide_id does NOT imply its place in the slide order: slide_ids appear to be n+1 generated,
+#       but a person can easily move slides around in the sequence of slides as desired. The only meaning that you can gain
+#       by sorting by slide_id is (maybe) the order in which the slide items were added to the deck, not the order that the
+#       user wants them to be viewed/read.
+
 
 def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
     """
@@ -2241,11 +2255,11 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
         prs = pptx.Presentation(str(pptx_path))
     except Exception as e:
         raise ValueError(f"Presentation appears to be corrupted: {e}")
-    
+
     # Validate the pptx contains slides, and at least one contains content.
     if not prs.slides:
         raise ValueError("Presentation contains no slides.")
-    
+
     first_slide = find_first_slide_with_text(list(prs.slides))
     if first_slide is None:
         raise ValueError(
@@ -2314,13 +2328,17 @@ def create_empty_slide_deck() -> presentation.Presentation:
     # Validate it has the required slide layout for the pipeline
     layout_names = [layout.name for layout in prs.slide_layouts]
     if SLD_LAYOUT_CUSTOM_NAME not in layout_names:
-        raise ValueError(f"Template is missing the required layout: '{SLD_LAYOUT_CUSTOM_NAME}'. "
-                         f"Available layouts: {', '.join(layout_names)}")
+        raise ValueError(
+            f"Template is missing the required layout: '{SLD_LAYOUT_CUSTOM_NAME}'. "
+            f"Available layouts: {', '.join(layout_names)}"
+        )
 
     return prs
 
+
 # TODO, multi-file split: Another TypeVar to move to the top of whatever file these funcs live in later
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
+
 
 # TODO, VALIDATION: I want this to be validation that verifies we're not about to save 100MB+ files. But that's not easy to
 # estimate from the runtime object. For now we'll base on absolutely insane slide or paragraph counts, and just report it to the
@@ -2330,11 +2348,16 @@ def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
     if isinstance(save_object, document.Document):
         max_p_count = 10000
         if len(save_object.paragraphs) > max_p_count:
-            debug_print(f"This is about to save a docx file with over {max_p_count} paragraphs ... that seems a bit long!")
+            debug_print(
+                f"This is about to save a docx file with over {max_p_count} paragraphs ... that seems a bit long!"
+            )
     elif isinstance(save_object, presentation.Presentation):
         max_s_count = 1000
         if len(list(save_object.slides)) > max_s_count:
-            debug_print(f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!")
+            debug_print(
+                f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!"
+            )
+
 
 def _determine_output_path(save_object: OUTPUT_TYPE) -> tuple[Path, str]:
     """Construct output folder and filename in memory based on output type."""
@@ -2349,12 +2372,13 @@ def _determine_output_path(save_object: OUTPUT_TYPE) -> tuple[Path, str]:
     else:
         raise RuntimeError(f"Unexpected output object type: {save_object}")
 
+
 def save_output(save_object: OUTPUT_TYPE) -> None:
     """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
 
     # Build the output path components based on filetype.
     save_folder, save_filename = _determine_output_path(save_object)
-    
+
     # Report if the content we're about to save is excessively huge
     _validate_content_size(save_object)
 
@@ -2363,7 +2387,9 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
 
     # Add a timestamp to the filename
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    name, ext = save_filename.rsplit(".", 1) # The 1 is telling rsplit() to split from the right side and do a maximum of 1 split.
+    name, ext = save_filename.rsplit(
+        ".", 1
+    )  # The 1 is telling rsplit() to split from the right side and do a maximum of 1 split.
     timestamped_filename = f"{name}_{timestamp}.{ext}"
     output_filepath = save_folder / timestamped_filename
 
@@ -2374,11 +2400,13 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
     except PermissionError:
         raise PermissionError("Save failed: File may be open in another program")
     except OSError as e:
-         raise OSError(f"Save failed (disk space or IO issue): {e}")
+        raise OSError(f"Save failed (disk space or IO issue): {e}")
     except Exception as e:
         raise RuntimeError(f"Save failed with unexpected error: {e}")
-    
+
+
 # endregion
+
 
 # region sanitize xml
 def sanitize_xml_text(text: str) -> str:
