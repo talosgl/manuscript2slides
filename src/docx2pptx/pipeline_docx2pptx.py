@@ -1,0 +1,48 @@
+"""main orchestrator"""
+from src.docx2pptx.chunking import create_docx_chunks
+from src.docx2pptx.annotations.extract import process_chunk_annotations
+from src.docx2pptx.create_slides import slides_from_chunks
+import sys
+from pathlib import Path
+from src.docx2pptx import io
+from src.docx2pptx import config
+
+
+def run_docx2pptx_pipeline(docx_path: Path) -> None:
+    """Orchestrates the docx2pptx pipeline."""
+    user_path = docx_path
+
+    # Validate it's a real path of the correct type. If it's not, return the error.
+    try:
+        user_path_validated = io.validate_docx_path(user_path)
+    except FileNotFoundError:
+        print(f"Error: File not found: {user_path}")
+        sys.exit(1)
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+    except PermissionError:
+        print(f"I don't have permission to read that file ({user_path})!")
+        sys.exit(1)
+
+    # Load the docx file at that path.
+    user_docx = io.load_and_validate_docx(user_path_validated)
+
+    # Chunk the docx by ___
+    chunks = create_docx_chunks(user_docx, config.CHUNK_TYPE)
+
+    if config.PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
+        chunks = process_chunk_annotations(chunks, user_docx)
+
+    # Create the presentation object from template
+    try:
+        output_prs = io.create_empty_slide_deck()
+    except Exception as e:
+        print(f"Could not load template file (may be corrupted): {e}")
+        sys.exit(1)
+
+    # Mutate the presentation object by adding slides
+    slides_from_chunks(user_docx, output_prs, chunks)
+
+    # Save the presentation to an actual pptx on disk
+    io.save_output(output_prs)
