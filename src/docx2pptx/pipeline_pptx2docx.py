@@ -1,0 +1,47 @@
+"""TODO"""
+
+from src.docx2pptx.utils import debug_print, setup_console_encoding
+import docx
+import sys
+from src.docx2pptx import io
+from pptx import presentation
+from pathlib import Path
+from src.docx2pptx.populate_docx import copy_slides_to_docx_body
+from src.docx2pptx import config
+
+def run_pptx2docx_pipeline(pptx_path: Path) -> None:
+    """Orchestrates the pptx2docxtext pipeline."""
+
+    # Validate the user's pptx filepath
+    try:
+        validated_pptx_path = io.validate_pptx_path(pptx_path)
+    except FileNotFoundError:
+        print(f"Error: File not found: {pptx_path}")
+        sys.exit(1)
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+    except PermissionError:
+        print(f"I don't have permission to read that file ({pptx_path})!")
+        sys.exit(1)
+
+    # Load the pptx at that validated filepath
+    try:
+        user_prs: presentation.Presentation = io.load_and_validate_pptx(
+            validated_pptx_path
+        )
+    except Exception as e:
+        print(
+            f"Content of powerpoint file invalid for pptx2docxtext pipeline run. Error: {e}."
+        )
+        sys.exit(1)
+
+    # Create an empty docx
+    new_doc = docx.Document(str(config.TEMPLATE_DOCX))
+
+    copy_slides_to_docx_body(user_prs, new_doc)
+
+    debug_print("Attempting to save new docx file.")
+
+    io.save_output(new_doc)
+
