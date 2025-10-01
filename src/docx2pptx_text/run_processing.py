@@ -2,8 +2,8 @@
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 from pptx.text.text import _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
-from src.docx2pptx.utils import debug_print, detect_field_code_hyperlinks
-from src.docx2pptx.formatting import copy_run_formatting_docx2pptx
+from src.docx2pptx_text.utils import debug_print, detect_field_code_hyperlinks
+from src.docx2pptx_text.formatting import copy_run_formatting_docx2pptx
 
 
 def process_chunk_paragraph_inner_contents(

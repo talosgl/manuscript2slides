@@ -10,9 +10,9 @@ from docx import document
 from typing import Union
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
-from src.docx2pptx import config
+from src.docx2pptx_text import config
 from docx.text.paragraph import Paragraph as Paragraph_docx
-from src.docx2pptx.utils import debug_print
+from src.docx2pptx_text.utils import debug_print
 from datetime import datetime
 
 # TODO, multi-file split: Another TypeVar to move to the top of whatever file these funcs live in later

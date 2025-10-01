@@ -1,12 +1,12 @@
 """TODO"""
 from pptx.slide import Slide
-from src.docx2pptx.models import SlideNotes
-from src.docx2pptx import utils
-from src.docx2pptx import io
-from src.docx2pptx import config
-from src.docx2pptx.utils import debug_print
-from src.docx2pptx.formatting import copy_run_formatting_pptx2docx, _apply_experimental_formatting_from_metadata
-from src.docx2pptx.annotations.restore_from_slides import split_speaker_notes, safely_extract_comment_data, safely_extract_experimental_formatting_data
+from src.docx2pptx_text.models import SlideNotes
+from src.docx2pptx_text import utils
+from src.docx2pptx_text import io
+from src.docx2pptx_text import config
+from src.docx2pptx_text.utils import debug_print
+from src.docx2pptx_text.formatting import copy_run_formatting_pptx2docx, _apply_experimental_formatting_from_metadata
+from src.docx2pptx_text.annotations.restore_from_slides import split_speaker_notes, safely_extract_comment_data, safely_extract_experimental_formatting_data
 from docx import document
 from docx.opc import constants
 from docx.oxml.ns import qn

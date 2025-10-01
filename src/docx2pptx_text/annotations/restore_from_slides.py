@@ -1,9 +1,9 @@
 """TODO"""
 
-from src.docx2pptx.models import SlideNotes
-from src.docx2pptx.config import METADATA_MARKER_HEADER, METADATA_MARKER_FOOTER, NOTES_MARKER_FOOTER, NOTES_MARKER_HEADER
+from src.docx2pptx_text.models import SlideNotes
+from src.docx2pptx_text.config import METADATA_MARKER_HEADER, METADATA_MARKER_FOOTER, NOTES_MARKER_FOOTER, NOTES_MARKER_HEADER
 import json
-from src.docx2pptx.utils import debug_print
+from src.docx2pptx_text.utils import debug_print
 
 # region split_speaker_notes
 def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:

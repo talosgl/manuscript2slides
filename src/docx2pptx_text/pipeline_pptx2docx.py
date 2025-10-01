@@ -1,13 +1,13 @@
 """TODO"""
 
-from src.docx2pptx.utils import debug_print, setup_console_encoding
+from src.docx2pptx_text.utils import debug_print, setup_console_encoding
 import docx
 import sys
-from src.docx2pptx import io
+from src.docx2pptx_text import io
 from pptx import presentation
 from pathlib import Path
-from src.docx2pptx.populate_docx import copy_slides_to_docx_body
-from src.docx2pptx import config
+from src.docx2pptx_text.populate_docx import copy_slides_to_docx_body
+from src.docx2pptx_text import config
 
 def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     """Orchestrates the pptx2docxtext pipeline."""

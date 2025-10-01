@@ -2,12 +2,12 @@
 
 from docx.comments import Comment as Comment_docx
 from docx import document
-from src.docx2pptx.models import Chunk_docx, Footnote_docx, Endnote_docx, Comment_docx_custom
+from src.docx2pptx_text.models import Chunk_docx, Footnote_docx, Endnote_docx, Comment_docx_custom
 from docx.text.run import Run as Run_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
-from src.docx2pptx import utils
-from src.docx2pptx.utils import debug_print
-from src.docx2pptx import config
+from src.docx2pptx_text import utils
+from src.docx2pptx_text.utils import debug_print
+from src.docx2pptx_text import config
 import xml.etree.ElementTree as ET
 
 

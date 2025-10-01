@@ -10,8 +10,8 @@ from pptx.util import Pt
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.text.text import _Run as Run_pptx  # type: ignore
-from src.docx2pptx.utils import debug_print
-from src.docx2pptx import config
+from src.docx2pptx_text.utils import debug_print
+from src.docx2pptx_text import config
 from docx.enum.text import WD_COLOR_INDEX
 
 # region colormap

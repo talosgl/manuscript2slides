@@ -1,9 +1,9 @@
 """TODO"""
 from __future__ import annotations
-from src.docx2pptx import config
-from src.docx2pptx.utils import debug_print, setup_console_encoding
-from src.docx2pptx import pipeline_docx2pptx
-from src.docx2pptx import pipeline_pptx2docx
+from src.docx2pptx_text import config
+from src.docx2pptx_text.utils import debug_print, setup_console_encoding
+from src.docx2pptx_text import pipeline_docx2pptx
+from src.docx2pptx_text import pipeline_pptx2docx
 
 def main() -> None:
     """Entry point for program flow."""
