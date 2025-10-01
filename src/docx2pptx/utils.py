@@ -14,6 +14,7 @@ from src.docx2pptx.models import Footnote_docx, Endnote_docx
 from docx.opc.part import Part
 import xml.etree.ElementTree as ET
 from docx import document
+from docx.text.run import Run as Run_docx
 
 # TODO, multi-file split: move to the top of whatever file this function ends up living in
 # This allows for a generic type parameter - when you pass Footnote_docx into the extract_notes_from_xml(...) function, you will get dict[str, Footnote_docx] back
@@ -130,5 +131,33 @@ def extract_hyperlinks_from_note(element: ET.Element) -> list[str]:
 
     return hyperlinks
 
+def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
+    """
+    Detect if this Run has a field code for instrText and it begins with HYPERLINK.
+    If so, report it to the user, because we do not handle adding these to the pptx output.
+    """
+    try:
+        run_xml: str = run.element.xml
+        if "instrText" not in run_xml or "HYPERLINK" not in run_xml:
+            return None
+        root = ET.fromstring(run_xml)
+
+        # Find instrText elements
+        instr_texts = root.findall(
+            ".//w:instrText",
+            {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"},
+        )
+        for instr in instr_texts:
+            if instr.text and instr.text.startswith("HYPERLINK"):
+                match = re.search(r'HYPERLINK\s+"([^"]+)"', instr.text)
+                if match and match.group(1):
+                    return match.group(1)
+
+    except (AttributeError, ET.ParseError) as e:
+        debug_print(
+            f"WARNING: Could not parse run XML for field codes: {e} while seeking instrText"
+        )
+
+    return None
 
 # endregion

@@ -1,0 +1,178 @@
+"""TODO Docstring"""
+
+from src.docx2pptx.models import Chunk_docx, Footnote_docx, Endnote_docx, Comment_docx_custom
+from src.docx2pptx import config
+from pptx.text.text import TextFrame
+from datetime import datetime
+import json
+
+# TODO: this will move fix the import later
+# from src.docx2pptx import create_slides
+from src.docx2pptx.run_processing import process_chunk_paragraph_inner_contents
+from src.docx2pptx.config import METADATA_MARKER_HEADER, METADATA_MARKER_FOOTER, NOTES_MARKER_HEADER, NOTES_MARKER_FOOTER
+
+# region annotate_slides - copied notes + metadata
+def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
+    """
+    Pull a chunk's preserved annotations and copy them into the slide's speaker notes text frame.
+
+    NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
+    comments' selected text ranges, nor do we preserve footnote or endnote numbering.
+    """
+    notes_text_frame.add_paragraph()  # add a blank first line for actual annotations by the user
+
+    header_para = notes_text_frame.add_paragraph()
+    header_run = header_para.add_run()
+    header_run.text = f"\n\n\n\n\n\n\n{NOTES_MARKER_HEADER}\n" + "=" * 40 + "\n"
+
+    if config.DISPLAY_COMMENTS and chunk.comments:
+        add_comments_to_speaker_notes(chunk.comments, notes_text_frame)
+
+    if config.DISPLAY_FOOTNOTES and chunk.footnotes:
+        add_notes_to_speaker_notes(chunk.footnotes, notes_text_frame, Footnote_docx)
+
+    if config.DISPLAY_ENDNOTES and chunk.endnotes:
+        add_notes_to_speaker_notes(chunk.endnotes, notes_text_frame, Endnote_docx)
+
+    footer_para = notes_text_frame.add_paragraph()
+    footer_run = footer_para.add_run()
+    footer_run.text = "=" * 40 + f"\n{NOTES_MARKER_FOOTER}"
+
+
+def add_comments_to_speaker_notes(
+    comments_list: list[Comment_docx_custom], notes_text_frame: TextFrame
+) -> None:
+    """Copy logic for appending the comments portion of the speaker notes."""
+
+    if comments_list:
+        if config.COMMENTS_SORT_BY_DATE:
+            # Sort comments by date (newest first, or change reverse=False for oldest first)
+            sorted_comments = sorted(
+                comments_list,
+                key=lambda c: getattr(c.comment_obj, "timestamp", None) or datetime.min,
+                reverse=False,
+            )
+        else:
+            sorted_comments = comments_list
+
+        comment_para = notes_text_frame.add_paragraph()
+        comment_run = comment_para.add_run()
+        comment_run.text = "COMMENTS FROM SOURCE DOCUMENT:\n" + "=" * 40
+
+        for i, comment in enumerate(sorted_comments, 1):
+            # Check if comment has paragraphs attribute
+            if hasattr(comment.comment_obj, "paragraphs"):
+                # Get paragraphs safely, default to empty list if not present
+                this_comment_paragraphs = getattr(comment.comment_obj, "paragraphs", [])
+                for para in this_comment_paragraphs:
+                    if hasattr(para, "text") and para.text.rstrip():
+                        notes_para = notes_text_frame.add_paragraph()
+                        comment_header = notes_para.add_run()
+
+                        if config.COMMENTS_KEEP_AUTHOR_AND_DATE:
+                            author = getattr(
+                                comment.comment_obj, "author", "Unknown Author"
+                            )
+                            timestamp = getattr(comment.comment_obj, "timestamp", None)
+
+                            if timestamp and hasattr(timestamp, "strftime"):
+                                timestamp_str = timestamp.strftime(
+                                    "%A, %B %d, %Y at %I:%M %p"
+                                )
+                            else:
+                                timestamp_str = "Unknown Date"
+
+                            comment_header.text = (
+                                f"\n {i}. {author} ({timestamp_str}):\n"
+                            )
+
+                        else:
+                            comment_header.text = "\n"
+                        process_chunk_paragraph_inner_contents(para, notes_para)
+
+from src.docx2pptx.utils import NOTE_TYPE
+def add_notes_to_speaker_notes(
+    notes_list: list[NOTE_TYPE],
+    notes_text_frame: TextFrame,
+    note_class: type[NOTE_TYPE],
+) -> None:
+    """Generic function for adding footnotes or endnotes to speaker notes."""
+
+    if note_class is Footnote_docx:
+        header_text = "FOOTNOTES FROM SOURCE DOCUMENT"
+    elif note_class is Endnote_docx:
+        header_text = "ENDNOTES FROM SOURCE DOCUMENT"
+    else:
+        header_text = "Unknown Note Type from Source Document:"
+
+    if notes_list:
+        note_para = notes_text_frame.add_paragraph()
+        note_run = note_para.add_run()
+        note_run.text = f"\n{header_text}:\n" + "=" * 40
+
+        for note_obj in notes_list:
+            notes_para = notes_text_frame.add_paragraph()
+            note_run = notes_para.add_run()
+
+            # Start with the main note text
+            note_text = f"\n{note_obj.note_id}. {note_obj.text_body}\n"
+
+            # Add hyperlinks if they exist
+            if note_obj.hyperlinks:
+                note_text += "\nHyperlinks:"
+                for hyperlink in note_obj.hyperlinks:
+                    note_text += f"\n{hyperlink}"
+
+            note_run.text = note_text
+
+
+
+def add_metadata_to_slide_notes(
+    notes_text_frame: TextFrame, chunk: Chunk_docx, slide_body_metadata: dict
+) -> None:
+    """
+    Populate the slide notes text frame with docx metadata so that we may restore it during a round-trip pptx2docx pipeline.
+    """
+    comments = []
+
+    if chunk.comments:
+        comments = [
+            {
+                "original": {
+                    "text": c.comment_obj.text,
+                    "author": c.comment_obj.author,
+                    "comment_id": c.comment_obj.comment_id,
+                    "initials": c.comment_obj.initials,
+                    "timestamp": (
+                        str(c.comment_obj.timestamp)
+                        if c.comment_obj.timestamp
+                        else None
+                    ),
+                },
+                "reference_text": c.reference_text,
+                "id": c.note_id,
+            }
+            for c in chunk.comments
+        ]
+
+    if slide_body_metadata or comments:
+        header_para = notes_text_frame.add_paragraph()
+        header_run = header_para.add_run()
+        header_run.text = f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
+
+        notes_text_frame.add_paragraph()  # blank paragraph to ensure separation for JSON block
+
+        json_para = notes_text_frame.add_paragraph()
+        json_run = json_para.add_run()
+
+        combined_metadata = {**slide_body_metadata}
+
+        if comments:  # only add if the list has content
+            combined_metadata["comments"] = comments
+
+        json_run.text = json.dumps(combined_metadata, indent=2)
+
+        footer_para = notes_text_frame.add_paragraph()
+        footer_run = footer_para.add_run()
+        footer_run.text = "=" * 40 + f"\n{METADATA_MARKER_FOOTER}"
+# endregion
