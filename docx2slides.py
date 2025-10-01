@@ -38,8 +38,6 @@ from dataclasses import dataclass, field
 from typing import TypeVar
 import json
 
-# import warnings
-
 # Third-party libraries
 import docx
 import pptx
@@ -137,13 +135,15 @@ Stretch Wishlist Features:
 -   Add support to break chunks (of any type) at a word count threshold.
 
 """
+# endregion
 
+# region Known Issues & Limitations
 """
 Known Issues & Limitations:
     -   We only support text content. No images, tables, etc., are copied between the formats, and we do not have plans 
         to support these in future.
     
-    - "Sections" in both docx and pptx are not supported. TODO: investigate
+    - "Sections" in both docx and pptx are not supported. TODO, leafy: investigate
 
     -   We do not support .doc or .ppt, only .docx. If you have a .doc file, convert it to .docx using Word, Google Docs, 
         or LibreOffice before processing.
@@ -154,7 +154,7 @@ Known Issues & Limitations:
         You can get around this manually with these steps:
             1. Open up the output presentation in PowerPoint Desktop > View > Slide Master
             2. Select the text frame object, right-click > Format Shape
-            3. Click the Size & Properties icon {TODO ADD IMAGES}
+            3. Click the Size & Properties icon {TODO, doc: ADD SCREENCAPS}
             4. Click Text Box to see the options
             5. Toggle "Do not Autofit" and then back to "Shrink Text on overflow"
             6. Close Master View
@@ -188,12 +188,16 @@ Known Issues & Limitations:
 
 """
 # endregion
+
+
 # TODO: rename to docx2pptx-text / pptx2docx-text
+
+
+
 
 # region CONSTANTS / config.py
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
 SCRIPT_DIR = Path(__file__).parent
-
 
 # === docx2pptx Consts for script user to alter per-run ===
 
@@ -235,7 +239,7 @@ CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
 
 
 # Toggle on/off whether to print debug_prints() to the console
-DEBUG_MODE = True  # TODO, v1 POLISH: set to false before publishing; update: TODO, UX: please god replace all these consts with a config class or something for v1
+DEBUG_MODE = True 
 
 
 DISPLAY_COMMENTS: bool = True
@@ -2519,10 +2523,11 @@ def create_empty_slide_deck() -> presentation.Presentation:
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
 
-# TODO, leafy: I'd really like this to validate we're not about to save 100MB+ files. But that's not easy to
+# TODO, leafy: I'd really like `_validate_content_size()` to validate we're not about to save 100MB+ files. But that's not easy to
 # estimate from the runtime object.
 # For now we'll check for absolutely insane slide or paragraph counts, and just report it to the
 # debug/logger.
+
 # TODO, polish: Around here is where we ought to add an option to split the output into multiple files,
 # by X-number of slides or pages. There probably needs to be a default for each output type and a way for the
 # user to specify an override for the default.
