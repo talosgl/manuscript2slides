@@ -1,6 +1,6 @@
 """TODO"""
 from pptx.slide import Slide
-from docx2pptx.models import SlideNotes
+from src.docx2pptx.models import SlideNotes
 from src.docx2pptx import utils
 from src.docx2pptx import io
 from src.docx2pptx import config
