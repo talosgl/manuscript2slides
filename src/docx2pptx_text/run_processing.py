@@ -4,9 +4,17 @@ from docx.text.run import Run as Run_docx
 from pptx.text.text import _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from src.docx2pptx_text.utils import debug_print, detect_field_code_hyperlinks
 from src.docx2pptx_text.formatting import copy_run_formatting_docx2pptx
+from docx import document
+from src.docx2pptx_text.models import SlideNotes
+from docx.opc import constants
+from docx.oxml.ns import qn
+from docx.oxml.parser import OxmlElement as OxmlElement_docx
+from src.docx2pptx_text.formatting import copy_run_formatting_pptx2docx, _apply_experimental_formatting_from_metadata
+from src.docx2pptx_text.annotations.restore_from_slides import safely_extract_comment_data, safely_extract_experimental_formatting_data
+from src.docx2pptx_text import config
 
-
-def process_chunk_paragraph_inner_contents(
+# region docx2pptx
+def process_docx_paragraph_inner_contents(
     paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx
 ) -> list[dict]:
     """

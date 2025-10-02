@@ -2,7 +2,7 @@
 
 from src.docx2pptx_text.chunking import is_standard_heading
 from src.docx2pptx_text.annotations.apply_to_slides import annotate_slide, add_metadata_to_slide_notes
-from src.docx2pptx_text.run_processing import process_chunk_paragraph_inner_contents
+from src.docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
 from src.docx2pptx_text.models import Chunk_docx
 from src.docx2pptx_text.utils import debug_print # well that's concerning that this is unused; TODO: add some logging!
 from src.docx2pptx_text import config
@@ -54,7 +54,7 @@ def slides_from_chunks(
                 pptx_paragraph = text_frame.add_paragraph()
 
             # Process the docx's paragraph contents, including both runs & hyperlinks
-            para_experimental_formatting = process_chunk_paragraph_inner_contents(
+            para_experimental_formatting = process_docx_paragraph_inner_contents(
                 paragraph, pptx_paragraph
             )
 

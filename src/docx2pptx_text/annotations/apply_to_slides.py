@@ -8,7 +8,7 @@ import json
 
 # TODO: this will move fix the import later
 # from src.docx2pptx import create_slides
-from src.docx2pptx_text.run_processing import process_chunk_paragraph_inner_contents
+from src.docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
 from src.docx2pptx_text.config import METADATA_MARKER_HEADER, METADATA_MARKER_FOOTER, NOTES_MARKER_HEADER, NOTES_MARKER_FOOTER
 
 # region annotate_slides - copied notes + metadata
@@ -88,7 +88,7 @@ def add_comments_to_speaker_notes(
 
                         else:
                             comment_header.text = "\n"
-                        process_chunk_paragraph_inner_contents(para, notes_para)
+                        process_docx_paragraph_inner_contents(para, notes_para)
 
 from src.docx2pptx_text.utils import NOTE_TYPE
 def add_notes_to_speaker_notes(
