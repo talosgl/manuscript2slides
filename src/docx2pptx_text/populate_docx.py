@@ -13,11 +13,12 @@ from src.docx2pptx_text.utils import debug_print
 from src.docx2pptx_text.annotations.restore_from_slides import split_speaker_notes
 from src.docx2pptx_text.run_processing import process_pptx_run
 from docx import document
-from pptx.text.text import _Paragraph as Paragraph_pptx # type: ignore
+from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
 from pptx.slide import Slide
 from pptx import presentation
 from docx.text.run import Run as Run_docx
 from docx.comments import Comment as Comment_docx
+
 
 # region copy slides to docx body orchestrator
 def copy_slides_to_docx_body(
@@ -42,7 +43,10 @@ def copy_slides_to_docx_body(
             slide_notes = SlideNotes()
 
         process_slide_paragraphs(slide, slide_notes, new_doc)
+
+
 # endregion
+
 
 # region process_slide_paragraphs
 def process_slide_paragraphs(
@@ -76,17 +80,22 @@ def process_slide_paragraphs(
                     new_para.style = heading["name"]
                     break  # we should only ever apply one style to a paragraph
 
-
         for run in pptx_para.runs:
-            last_run = process_pptx_run(run, new_para, new_doc, slide_notes, matched_comment_ids)
+            last_run = process_pptx_run(
+                run, new_para, new_doc, slide_notes, matched_comment_ids
+            )
 
     # Put the slide's user notes into a new comment attached to the last run
     if slide_notes and slide_notes.has_user_notes is True and last_run is not None:
-        user_notes_comment = copy_user_notes_to_new_comment(slide_notes, last_run, new_doc)
+        user_notes_comment = copy_user_notes_to_new_comment(
+            slide_notes, last_run, new_doc
+        )
         if user_notes_comment:
-            debug_print(f"Added a new comment with this slide's user notes: {user_notes_comment}")
+            debug_print(
+                f"Added a new comment with this slide's user notes: {user_notes_comment}"
+            )
 
-    # Find all the unmatched annotations for this slide by getting the complement set(s) 
+    # Find all the unmatched annotations for this slide by getting the complement set(s)
     # (Only comments are supported, for now, but if we ever add footnote/endnote support,
     # we'll need 3 sets2lists here.)
     unmatched_comments = [
@@ -97,16 +106,24 @@ def process_slide_paragraphs(
 
     # If we have any unmatched annotations from the slide_notes.metadata, attach them as a new comment to the last run
     if unmatched_annotations and last_run is not None:
-        unmatched_comment = copy_unmatched_comments_to_new_comment(last_run, unmatched_annotations, new_doc)
+        unmatched_comment = copy_unmatched_comments_to_new_comment(
+            last_run, unmatched_annotations, new_doc
+        )
         if unmatched_comment:
-            debug_print(f"Added comment for {len(unmatched_annotations)} unmatched annotations")
+            debug_print(
+                f"Added comment for {len(unmatched_annotations)} unmatched annotations"
+            )
+
 
 # endregion
 
+
 # region copy speaker notes items into new docx comments
-def copy_user_notes_to_new_comment(slide_notes: SlideNotes, last_run: Run_docx, new_doc: document.Document) -> Comment_docx | None:
+def copy_user_notes_to_new_comment(
+    slide_notes: SlideNotes, last_run: Run_docx, new_doc: document.Document
+) -> Comment_docx | None:
     """Append this slide's user notes a comment to the last-copied-in run to the docx."""
-    
+
     # Verify there's actually text present to copy in; return None if not
     raw_comment_text = slide_notes.user_notes
     if not raw_comment_text.strip():
@@ -115,21 +132,24 @@ def copy_user_notes_to_new_comment(slide_notes: SlideNotes, last_run: Run_docx, 
     # Prepare the header + body text for the comment
     comment_header = "Copied from the PPTX Speaker Notes: \n\n"
     comment_text = comment_header + utils.sanitize_xml_text(raw_comment_text)
-    
+
     # Add the comment to the doc & run
     new_comment = new_doc.add_comment(last_run, comment_text)
-    
+
     # Return the new comment for testing/logging purposes
     return new_comment
 
-def copy_unmatched_comments_to_new_comment(last_run: Run_docx, unmatched_annotations: list, new_doc: document.Document) -> Comment_docx | None:
+
+def copy_unmatched_comments_to_new_comment(
+    last_run: Run_docx, unmatched_annotations: list, new_doc: document.Document
+) -> Comment_docx | None:
     """Compile any unmatched annotations into a combined string and attach it as a comment to the final run of its parent slide."""
     unmatched_parts = []
-    
+
     for annotation in unmatched_annotations:
-        if "original" in annotation:   # Detect comments
+        if "original" in annotation:  # Detect comments
             # Verify there's actually text present to copy in
-            raw_original_text = annotation['original']['text']
+            raw_original_text = annotation["original"]["text"]
             if not raw_original_text.strip():
                 continue
             # Add the comment to unmatched list
@@ -144,13 +164,13 @@ def copy_unmatched_comments_to_new_comment(last_run: Run_docx, unmatched_annotat
     # Verify there's actually text present to copy into a comment; return None if not
     if not combined.strip():
         return None
-    
+
     # Prepare the header + body text for the comment
     raw_comment_text = combined
     comment_header = "We found metadata for these annotations (comments, footnotes, or endnotes), but weren't able to match them to specific text in this paragraph: \n\n"
     comment_text = comment_header + utils.sanitize_xml_text(raw_comment_text)
-   
+
     # Add the comment to the doc & run
     new_comment = new_doc.add_comment(last_run, comment_text)
 
-    return new_comment    
+    return new_comment

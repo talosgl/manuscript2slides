@@ -1,9 +1,15 @@
 """TODO"""
 
 from src.docx2pptx_text.models import SlideNotes
-from src.docx2pptx_text.config import METADATA_MARKER_HEADER, METADATA_MARKER_FOOTER, NOTES_MARKER_FOOTER, NOTES_MARKER_HEADER
+from src.docx2pptx_text.config import (
+    METADATA_MARKER_HEADER,
+    METADATA_MARKER_FOOTER,
+    NOTES_MARKER_FOOTER,
+    NOTES_MARKER_HEADER,
+)
 import json
 from src.docx2pptx_text.utils import debug_print
+
 
 # region split_speaker_notes
 def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
@@ -99,7 +105,10 @@ def merge_overlapping_ranges(ranges: list) -> list:
             merged.append(current)
 
     return merged
+
+
 # endregion
+
 
 # region extract metadata from slide notes
 def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> SlideNotes:
@@ -243,5 +252,6 @@ def safely_extract_experimental_formatting_data(exp_fmt: dict) -> dict | None:
             "highlight_color_enum"
         ),  # Optional field; will be set to None if not found
     }
-# endregion
 
+
+# endregion

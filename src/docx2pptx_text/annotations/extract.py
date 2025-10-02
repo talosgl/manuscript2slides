@@ -2,7 +2,12 @@
 
 from docx.comments import Comment as Comment_docx
 from docx import document
-from src.docx2pptx_text.models import Chunk_docx, Footnote_docx, Endnote_docx, Comment_docx_custom
+from src.docx2pptx_text.models import (
+    Chunk_docx,
+    Footnote_docx,
+    Endnote_docx,
+    Comment_docx_custom,
+)
 from docx.text.run import Run as Run_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from src.docx2pptx_text import utils
@@ -189,5 +194,6 @@ def get_all_docx_endnotes(doc: document.Document) -> dict[str, Endnote_docx]:
     except Exception as e:
         debug_print(f"Warning: Could not extract endnotes: {e}")
         return {}
+
 
 # endregion

@@ -10,9 +10,16 @@ from src.docx2pptx_text.models import SlideNotes
 from docx.opc import constants
 from docx.oxml.ns import qn
 from docx.oxml.parser import OxmlElement as OxmlElement_docx
-from src.docx2pptx_text.formatting import copy_run_formatting_pptx2docx, _apply_experimental_formatting_from_metadata
-from src.docx2pptx_text.annotations.restore_from_slides import safely_extract_comment_data, safely_extract_experimental_formatting_data
+from src.docx2pptx_text.formatting import (
+    copy_run_formatting_pptx2docx,
+    _apply_experimental_formatting_from_metadata,
+)
+from src.docx2pptx_text.annotations.restore_from_slides import (
+    safely_extract_comment_data,
+    safely_extract_experimental_formatting_data,
+)
 from src.docx2pptx_text import config
+
 
 # region docx2pptx
 def process_docx_paragraph_inner_contents(
@@ -74,7 +81,6 @@ def process_docx_paragraph_inner_contents(
     return experimental_formatting_metadata
 
 
-
 def process_docx_run(
     run: Run_docx,
     pptx_paragraph: Paragraph_pptx,
@@ -92,10 +98,19 @@ def process_docx_run(
         pptx_run_url.address = hyperlink
 
     return pptx_run
+
+
 # endregion
 
+
 # region pptx2docx
-def process_pptx_run(run: Run_pptx, new_para: Paragraph_docx, new_doc: document.Document, slide_notes: SlideNotes, matched_comment_ids: set) -> Run_docx:
+def process_pptx_run(
+    run: Run_pptx,
+    new_para: Paragraph_docx,
+    new_doc: document.Document,
+    slide_notes: SlideNotes,
+    matched_comment_ids: set,
+) -> Run_docx:
     """
     Process a single run from a pptx slide paragraph by copying its basic formatting into a new docx run, and detecting if its text content
     matches experimental formatting metadata, and/or comment metadata from the speaker notes JSON.
@@ -110,7 +125,7 @@ def process_pptx_run(run: Run_pptx, new_para: Paragraph_docx, new_doc: document.
         last_run = run_from_hyperlink
         copy_run_formatting_pptx2docx(run, run_from_hyperlink)
     else:
-        last_run = new_para.add_run()        
+        last_run = new_para.add_run()
         copy_run_formatting_pptx2docx(run, last_run)
 
     # Check if this run contains matching text for comments from the this slide's speaker notes' stored JSON
@@ -143,10 +158,8 @@ def process_pptx_run(run: Run_pptx, new_para: Paragraph_docx, new_doc: document.
             if fmt_info is None:
                 continue
             if exp_fmt["ref_text"] in run.text:
-                _apply_experimental_formatting_from_metadata(
-                    last_run, exp_fmt
-                )
-    
+                _apply_experimental_formatting_from_metadata(last_run, exp_fmt)
+
     return last_run
 
 
@@ -178,5 +191,6 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
     paragraph._p.append(hyperlink)  # Add hyperlink to paragraph
 
     return run
-# endregion
 
+
+# endregion

@@ -1,4 +1,5 @@
 """TODO: docstring"""
+
 import pptx
 import docx
 from pathlib import Path
@@ -38,6 +39,7 @@ def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx
 
     return paragraphs
 
+
 # TODO: I think the problem with this one is the name, not the location
 def create_empty_slide_deck() -> presentation.Presentation:
     """Load the PowerPoint template, create a new presentation object, and validate it contains the custom layout. (docx2pptx-text pipeline)"""
@@ -58,7 +60,10 @@ def create_empty_slide_deck() -> presentation.Presentation:
         )
 
     return prs
+
+
 # endregion
+
 
 # region Path Helpers
 def validate_path(user_path: str | Path) -> Path:
@@ -70,6 +75,7 @@ def validate_path(user_path: str | Path) -> Path:
         raise ValueError("That's not a file.")
     return path
 
+
 def validate_pptx_path(user_path: str | Path) -> Path:
     """Validates the pptx template filepath exists and is actually a pptx file."""
     path = validate_path(user_path)
@@ -77,6 +83,7 @@ def validate_pptx_path(user_path: str | Path) -> Path:
     if path.suffix.lower() != ".pptx":
         raise ValueError(f"Expected a .pptx file, but got: {path.suffix}")
     return path
+
 
 def validate_docx_path(user_path: str | Path) -> Path:
     """Validates the user-provided filepath exists and is actually a docx file."""
@@ -91,6 +98,7 @@ def validate_docx_path(user_path: str | Path) -> Path:
         raise ValueError(f"Expected a .docx file, but got: {path.suffix}")
     return path
 
+
 def _determine_output_path(save_object: OUTPUT_TYPE) -> tuple[Path, str]:
     """Construct output folder and filename in memory based on output type."""
     if isinstance(save_object, document.Document):
@@ -104,7 +112,9 @@ def _determine_output_path(save_object: OUTPUT_TYPE) -> tuple[Path, str]:
     else:
         raise RuntimeError(f"Unexpected output object type: {save_object}")
 
+
 # end region
+
 
 # region Disk I/O - Write
 def save_output(save_object: OUTPUT_TYPE) -> None:
@@ -139,11 +149,11 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
         raise RuntimeError(f"Save failed with unexpected error: {e}")
 
 
-
 # TODO, leafy: I'd really like `_validate_content_size()` to validate we're not about to save 100MB+ files. But that's not easy to
 # estimate from the runtime object.
 # For now we'll check for absolutely insane slide or paragraph counts, and just report it to the
 # debug/logger.
+
 
 # TODO, polish: Around here is where we ought to add an option to split the output into multiple files,
 # by X-number of slides or pages. There probably needs to be a default for each output type and a way for the
@@ -162,6 +172,7 @@ def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
             debug_print(
                 f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!"
             )
+
 
 # endregion
 
@@ -193,6 +204,7 @@ def load_and_validate_docx(input_filepath: Path) -> document.Document:
     debug_print(f"The first paragraph containing text begins with: {preview}")
 
     return doc
+
 
 def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
     """
@@ -237,8 +249,8 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
     # Return the runtime object
     return prs
 
-# endregion
 
+# endregion
 
 
 # region load & validate helpers
@@ -251,10 +263,13 @@ def _find_first_docx_paragraph_with_text(
             return paragraph
     return None
 
+
 def _find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
     """Find the first slide that contains any paragraphs with text content."""
     for slide in slides:
         if get_slide_paragraphs(slide):
             return slide
     return None
+
+
 # endregion

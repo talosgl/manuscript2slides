@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from docx.comments import Comment as Comment_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 
+
 @dataclass
 class Comment_docx_custom:
     """A custom wrapper for the python-docx Comment class, allowing us to capture reference text."""

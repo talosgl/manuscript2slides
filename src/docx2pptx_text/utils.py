@@ -1,6 +1,5 @@
 """TODO docstring"""
 
-
 import re
 import io
 import platform
@@ -20,12 +19,14 @@ from docx.text.run import Run as Run_docx
 # This allows for a generic type parameter - when you pass Footnote_docx into the extract_notes_from_xml(...) function, you will get dict[str, Footnote_docx] back
 NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)
 
+
 # region Basic Utils
 def debug_print(msg: str | list[str]) -> None:
     """Basic debug printing function"""
     if config.DEBUG_MODE:
         caller = inspect.stack()[1].function
         print(f"DEBUG [{caller}]: {msg}")
+
 
 def setup_console_encoding() -> None:
     """Configure UTF-8 encoding for Windows console to prevent UnicodeEncodeError when printing non-ASCII characters (like emojis)."""
@@ -34,6 +35,7 @@ def setup_console_encoding() -> None:
 
 
 # endregion
+
 
 # region XML Utils
 def sanitize_xml_text(text: str) -> str:
@@ -46,6 +48,7 @@ def sanitize_xml_text(text: str) -> str:
 
     # Ensure it's a proper string
     return str(sanitized)
+
 
 def find_xml_parts(doc: document.Document, part_name: str) -> list[Part]:
     """Find XML parts matching the given name (e.g., 'footnotes.xml')"""
@@ -79,6 +82,8 @@ def parse_xml_blob(xml_blob: bytes | str) -> ET.Element:
     root: ET.Element = ET.fromstring(xml_string)
 
     return root
+
+
 def extract_notes_from_xml(
     root: ET.Element, note_class: type[NOTE_TYPE]
 ) -> dict[str, NOTE_TYPE]:
@@ -131,6 +136,7 @@ def extract_hyperlinks_from_note(element: ET.Element) -> list[str]:
 
     return hyperlinks
 
+
 def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
     """
     Detect if this Run has a field code for instrText and it begins with HYPERLINK.
@@ -159,5 +165,6 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
         )
 
     return None
+
 
 # endregion

@@ -1,6 +1,11 @@
 """TODO Docstring"""
 
-from src.docx2pptx_text.models import Chunk_docx, Footnote_docx, Endnote_docx, Comment_docx_custom
+from src.docx2pptx_text.models import (
+    Chunk_docx,
+    Footnote_docx,
+    Endnote_docx,
+    Comment_docx_custom,
+)
 from src.docx2pptx_text import config
 from pptx.text.text import TextFrame
 from datetime import datetime
@@ -9,7 +14,13 @@ import json
 # TODO: this will move fix the import later
 # from src.docx2pptx import create_slides
 from src.docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
-from src.docx2pptx_text.config import METADATA_MARKER_HEADER, METADATA_MARKER_FOOTER, NOTES_MARKER_HEADER, NOTES_MARKER_FOOTER
+from src.docx2pptx_text.config import (
+    METADATA_MARKER_HEADER,
+    METADATA_MARKER_FOOTER,
+    NOTES_MARKER_HEADER,
+    NOTES_MARKER_FOOTER,
+)
+
 
 # region annotate_slides - copied notes + metadata
 def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
@@ -90,7 +101,10 @@ def add_comments_to_speaker_notes(
                             comment_header.text = "\n"
                         process_docx_paragraph_inner_contents(para, notes_para)
 
+
 from src.docx2pptx_text.utils import NOTE_TYPE
+
+
 def add_notes_to_speaker_notes(
     notes_list: list[NOTE_TYPE],
     notes_text_frame: TextFrame,
@@ -124,7 +138,6 @@ def add_notes_to_speaker_notes(
                     note_text += f"\n{hyperlink}"
 
             note_run.text = note_text
-
 
 
 def add_metadata_to_slide_notes(
@@ -175,4 +188,6 @@ def add_metadata_to_slide_notes(
         footer_para = notes_text_frame.add_paragraph()
         footer_run = footer_para.add_run()
         footer_run.text = "=" * 40 + f"\n{METADATA_MARKER_FOOTER}"
+
+
 # endregion

@@ -81,6 +81,7 @@ def _copy_run_color_formatting(
         elif isinstance(target_font, Font_docx):
             target_font.color.rgb = RGBColor_docx(*src_rgb)
 
+
 # region formatting docx2pptx specific
 def copy_run_formatting_docx2pptx(
     source_run: Run_docx,
@@ -308,7 +309,10 @@ def _copy_experimental_formatting_docx2pptx(
             <a:t>Put this text in small caps.</a:t>
         </a:r>
         """
+
+
 # endregion
+
 
 # region copy run formatting pptx2docx
 def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) -> None:
@@ -322,7 +326,11 @@ def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) ->
 
     _copy_run_color_formatting(sfont, tfont)
 
-    if source_run.text and source_run.text.strip() and config.EXPERIMENTAL_FORMATTING_ON:
+    if (
+        source_run.text
+        and source_run.text.strip()
+        and config.EXPERIMENTAL_FORMATTING_ON
+    ):
         _copy_experimental_formatting_pptx2docx(source_run, target_run)
 
 
@@ -390,8 +398,9 @@ def _copy_experimental_formatting_pptx2docx(
 
     except Exception as e:
         debug_print(f"Failed to parse pptx formatting from XML: {e}")
-# endregion
 
+
+# endregion
 
 
 # region pptx2docx apply experimental formatting from metadata
@@ -453,4 +462,6 @@ def _apply_experimental_formatting_from_metadata(
             tfont.small_caps = True
         except Exception as e:
             debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+
+
 # endregion

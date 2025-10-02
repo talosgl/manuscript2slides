@@ -1,10 +1,12 @@
 """TODO docstring"""
+
 from src.docx2pptx_text.models import Chunk_docx
 from src.docx2pptx_text import config
 from src.docx2pptx_text.utils import debug_print
 from docx import document
 
 # TODO, ponder: If we add other chunking methods: by section, by multi-file output, will we call it "chunking"? Will it live here?
+
 
 # region Orchestrator
 def create_docx_chunks(
@@ -95,7 +97,6 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
 
 
 # endregion
-
 
 
 # region by Heading (nested)
@@ -293,11 +294,12 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     print(f"This document has {len(all_chunks)} flat heading chunks.")
     return all_chunks
 
+
 # endregion
 
 
-
 # region heading helpers
+
 
 def is_standard_heading(style_name: str) -> bool:
     """Check if paragraph.style.name is a standard Word Heading (Heading 1, Heading 2, ..., Heading 6)"""

@@ -1,17 +1,24 @@
 """TODO"""
 
 from src.docx2pptx_text.chunking import is_standard_heading
-from src.docx2pptx_text.annotations.apply_to_slides import annotate_slide, add_metadata_to_slide_notes
+from src.docx2pptx_text.annotations.apply_to_slides import (
+    annotate_slide,
+    add_metadata_to_slide_notes,
+)
 from src.docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
 from src.docx2pptx_text.models import Chunk_docx
-from src.docx2pptx_text.utils import debug_print # well that's concerning that this is unused; TODO: add some logging!
+from src.docx2pptx_text.utils import (
+    debug_print,
+)  # well that's concerning that this is unused; TODO: add some logging!
 from src.docx2pptx_text import config
 from pptx import presentation
 from docx import document
 from pptx.shapes.placeholder import SlidePlaceholder
 from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame
+
 # region create slides from chunks
+
 
 def slides_from_chunks(
     doc: document.Document,
@@ -91,6 +98,7 @@ def slides_from_chunks(
 
         if config.PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
             add_metadata_to_slide_notes(notes_text_frame, chunk, slide_metadata)
+
 
 def create_blank_slide_for_chunk(
     prs: presentation.Presentation, slide_layout: SlideLayout

@@ -9,6 +9,7 @@ from pathlib import Path
 from src.docx2pptx_text.populate_docx import copy_slides_to_docx_body
 from src.docx2pptx_text import config
 
+
 def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     """Orchestrates the pptx2docxtext pipeline."""
 
@@ -44,4 +45,3 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
     debug_print("Attempting to save new docx file.")
 
     io.save_output(new_doc)
-
