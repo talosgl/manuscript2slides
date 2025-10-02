@@ -110,9 +110,8 @@ def process_pptx_run(run: Run_pptx, new_para: Paragraph_docx, new_doc: document.
         last_run = run_from_hyperlink
         copy_run_formatting_pptx2docx(run, run_from_hyperlink)
     else:
-        new_docx_run = new_para.add_run()
-        last_run = new_docx_run
-        copy_run_formatting_pptx2docx(run, new_docx_run)
+        last_run = new_para.add_run()        
+        copy_run_formatting_pptx2docx(run, last_run)
 
     # Check if this run contains matching text for comments from the this slide's speaker notes' stored JSON
     # metadata, from previous docx2pptx pipeline processing
@@ -130,7 +129,7 @@ def process_pptx_run(run: Run_pptx, new_para: Paragraph_docx, new_doc: document.
                 and comment_data["id"] not in matched_comment_ids
             ):
                 new_doc.add_comment(
-                    new_docx_run,
+                    last_run,
                     comment_data["text"],
                     comment_data["author"],
                     comment_data["initials"],
@@ -145,7 +144,7 @@ def process_pptx_run(run: Run_pptx, new_para: Paragraph_docx, new_doc: document.
                 continue
             if exp_fmt["ref_text"] in run.text:
                 _apply_experimental_formatting_from_metadata(
-                    new_docx_run, exp_fmt
+                    last_run, exp_fmt
                 )
     
     return last_run
