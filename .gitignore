@@ -55,3 +55,5 @@ resources/sample_doc/
 resources/sample_ppt/
 resources/sample_doc_old/
 homework.md
+export_code.py
+exports/
