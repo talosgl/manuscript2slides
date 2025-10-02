@@ -1,4 +1,4 @@
-## What is doc2slides-py?
+## What is doc2pptx_text?
 A Python script that converts a Microsoft Word .docx manuscript file into a set of basic PowerPoint .pptx text-frame slides.
 
 The script requires a bit of setup, but is designed to be easy-to-use for non-devs; all the setup needed is covered below.
@@ -71,3 +71,81 @@ Small bug fixes and feature additions are welcome as PRs, but architectural chan
 ## Acknowledgments
 Advanced text formatting features adapted from techniques used in 
 [md2pptx](https://github.com/MartinPacker/md2pptx) by Martin Packer (MIT License).
+
+
+
+====
+
+## Previous docstring atop single-file program version
+Convert Microsoft Word documents to PowerPoint presentations.
+
+This tool processes .docx files and converts them into .pptx slide decks by chunking
+the document content based on various strategies (paragraphs, headings, or page breaks).
+Text formatting like bold, italics, and colors can optionally be preserved.
+
+The main workflow:
+1. Load a .docx file using python-docx
+2. Chunk the content based on the selected strategy
+3. Create slides from chunks using a PowerPoint template
+4. Save the resulting .pptx file
+
+Supported chunking methods:
+- paragraph: Each paragraph becomes a slide
+- page: New slide for each page break
+- heading_flat: New slide for each heading (any level)
+- heading_nested: New slide based on heading hierarchy
+
+Example:
+    python docx2pptx-text.py
+
+    (Configure INPUT_DOCX_FILE and other constants before running)
+
+
+====
+
+## Known Issues & Limitations
+-   We only support text content. No images, tables, etc., are copied between the formats, and we do not have plans 
+    to support these in future.
+
+- "Sections" in both docx and pptx are not supported. TODO, leafy: investigate
+
+-   We do not support .doc or .ppt, only .docx. If you have a .doc file, convert it to .docx using Word, Google Docs, 
+    or LibreOffice before processing.
+
+-   We do not support .ppt, only .pptx.
+
+-   Auto-fit text resizing in slides doesn't work. PowerPoint only applies auto-fit sizing when opened in the UI. 
+    You can get around this manually with these steps:
+        1. Open up the output presentation in PowerPoint Desktop > View > Slide Master
+        2. Select the text frame object, right-click > Format Shape
+        3. Click the Size & Properties icon {TODO, doc: ADD SCREENCAPS}
+        4. Click Text Box to see the options
+        5. Toggle "Do not Autofit" and then back to "Shrink Text on overflow"
+        6. Close Master View
+        7. Now all the slides should have their text properly resized.
+
+-   Field code hyperlinks not supported - Some hyperlinks (like the sample_doc.docx's first "Where are Data?" link) 
+    are stored using Word's field code format and display as plain text instead of clickable links. The exact 
+    conditions that cause this format are unclear, but it may occur with hyperlinks in headings or certain copy/paste 
+    scenarios. We think most normal hyperlinks will work fine. We try to report when we detect these are present but cannot
+    reliably copy them as text into the body.
+
+-   ANNOTATIONS LIMITATIONS
+    -   We collapse all comments, footnotes, and endnotes into a slide's speaker notes. PowerPoint itself doesn't 
+        support real footnotes or endnotes at all. It does have a comments functionality, but the library used here 
+        (python-pptx) doesn't support adding comments to slides yet. 
+
+    -   Note that inline reference numbers (1, 2, 3, etc.) from the docx body are not preserved in the slide text - 
+        only the annotation content appears in speaker notes.
+
+    -   You can choose to preserve some comment metadata (author, timestamps) in plain text, but not threading.
+
+-   REVERSE FLOW LIMITATIONS
+    -   The reverse flow (pptx2docx-text) is significantly less robust. Your original input document to the docx2pptx-text flow, and 
+        the output document from a follow-up pptx2docx-text flow will not look the same. Expect to lose images, tables, footnotes, 
+        endnotes, and fancy formatting. We attempt to preserve headings (text-matching based). Comments should be restored, but their 
+        anchor positioning may be altered slightly.
+
+    -   There will always be a blank line at the start of the reverse-pipeline document. When creating a new document with python-docx 
+        using Document(), it inherently includes a single empty paragraph at the start. This behavior is mandated by the Open XML 
+        .docx standard, which requires at least one paragraph within the w:body element in the document's XML structure.
