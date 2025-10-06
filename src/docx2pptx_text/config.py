@@ -8,22 +8,41 @@ SCRIPT_DIR = Path(__file__).parent.parent.parent
 
 # === docx2pptx Consts for script user to alter per-run ===
 
+# Desired slide layout. All slides use the same layout.
+SLD_LAYOUT_CUSTOM_NAME = "docx2pptx"
+
+# region actual CONSTs
+METADATA_MARKER_HEADER: str = "START OF JSON METADATA FROM SOURCE DOCUMENT"
+METADATA_MARKER_FOOTER: str = "END OF JSON METADATA FROM SOURCE DOCUMENT"
+NOTES_MARKER_HEADER: str = "START OF COPIED NOTES FROM SOURCE DOCX"
+NOTES_MARKER_FOOTER: str = "END OF COPIED NOTES FROM SOURCE DOCX"
+# endregion
+
+
+# Desired output filename; Note that this will clobber an existing file of the same name!
+OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
+
+OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
+# endregion
+
+
+
+# ========== copied to config & TODO: delete/redirect references
+
 # The pptx file to use as the template for the slide deck
 #TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_template.pptx"
 # You can make your own template with the master slide and master notes page
 # to determine how the output will look. You can customize things like font, paragraph style,
 # slide size, slide layout...
 
-# Desired slide layout. All slides use the same layout.
-SLD_LAYOUT_CUSTOM_NAME = "docx2pptx"
 
 # Desired output directory/folder to save the pptx in
 OUTPUT_PPTX_FOLDER = SCRIPT_DIR / "output"
 # e.g., r"c:\my_presentations"
 # If you leave it blank it'll save in the root of where you run the script from the command line
 
-# Desired output filename; Note that this will clobber an existing file of the same name!
-OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
+OUTPUT_DOCX_FOLDER = SCRIPT_DIR / "output"
+# e.g., r"c:\my_manuscripts"
 
 
 # Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
@@ -73,16 +92,3 @@ INPUT_PPTX_FILE = (
 )  # "sample_slides.pptx"
 
 TEMPLATE_DOCX = SCRIPT_DIR / "resources" / "docx_template.docx"
-
-OUTPUT_DOCX_FOLDER = SCRIPT_DIR / "output"
-# e.g., r"c:\my_manuscripts"
-
-OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
-# endregion
-
-# region actual CONSTs
-METADATA_MARKER_HEADER: str = "START OF JSON METADATA FROM SOURCE DOCUMENT"
-METADATA_MARKER_FOOTER: str = "END OF JSON METADATA FROM SOURCE DOCUMENT"
-NOTES_MARKER_HEADER: str = "START OF COPIED NOTES FROM SOURCE DOCX"
-NOTES_MARKER_FOOTER: str = "END OF COPIED NOTES FROM SOURCE DOCX"
-# endregion
