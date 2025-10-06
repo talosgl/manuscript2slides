@@ -33,7 +33,10 @@ def run_docx2pptx_pipeline(docx_path: Path, cfg: UserConfig) -> None:
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, config.CHUNK_TYPE)
 
-    if config.DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES or config.PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
+    if (
+        config.DISPLAY_COMMENTS or config.DISPLAY_FOOTNOTES or config.DISPLAY_ENDNOTES
+        #config.display_comments or config.display_footnotes or config.display_endnotes
+    ) or config.PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
         chunks = process_chunk_annotations(chunks, user_docx)
 
     # Create the presentation object from template

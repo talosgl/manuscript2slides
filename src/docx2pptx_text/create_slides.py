@@ -93,7 +93,7 @@ def slides_from_chunks(
                 "This slide doesn't seem to have a notes text frame. This should never happen, but it's possible for the notes_slide or notes_text_frame properties to return None if the notes placeholder has been removed from the notes master or the notes slide itself."
             )
 
-        if config.DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES:
+        if config.DISPLAY_COMMENTS or config.DISPLAY_FOOTNOTES or config.DISPLAY_ENDNOTES: #config.display_comments or config.display_footnotes or config.display_endnotes:
             annotate_slide(chunk, notes_text_frame)
 
         if config.PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:

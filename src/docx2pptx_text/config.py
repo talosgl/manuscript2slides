@@ -72,9 +72,6 @@ DISPLAY_COMMENTS: bool = True
 DISPLAY_FOOTNOTES: bool = True
 DISPLAY_ENDNOTES: bool = True
 
-DISPLAY_DOCX_ANNOTATIONS_IN_SLIDE_SPEAKER_NOTES: bool = (
-    DISPLAY_COMMENTS or DISPLAY_FOOTNOTES or DISPLAY_ENDNOTES
-)
 
 # We ought to support some way to leave speaker notes completely empty if the user really wants that, it's a valid use case.
 # Documentation and tooltips should make it clear that this means metadata loss for round-trip pipeline data.
