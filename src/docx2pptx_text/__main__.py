@@ -13,7 +13,19 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    pipeline_docx2pptx.run_docx2pptx_pipeline(config.INPUT_DOCX_FILE)
+     # Create config with defaults
+    cfg = UserConfig()
+    
+    # TODO: Later you'll load from YAML, merge CLI args, etc.
+    # For now, just use defaults
+    # Right now UserConfig() with no arguments will use all defaults, 
+    # which should work for your existing sample workflow. Later when
+    # you add YAML loading (Layer 3), you'll replace that with 
+    # cfg = load_from_yaml_and_merge(...).
+
+    # TODO remove config.INPUT_DOCX_FILE after we move it
+    pipeline_docx2pptx.run_docx2pptx_pipeline(config.INPUT_DOCX_FILE, cfg)
+
 
     # pipeline_pptx2docx.run_pptx2docx_pipeline(INPUT_PPTX_FILE)
 

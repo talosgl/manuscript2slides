@@ -9,8 +9,8 @@ from docx2pptx_text import io
 from docx2pptx_text import config
 from docx2pptx_text.internals.config.define_config import UserConfig
 
-
-def run_docx2pptx_pipeline(docx_path: Path) -> None:
+# TODO: replace docx_path throughout with cfg... and remove from signature
+def run_docx2pptx_pipeline(docx_path: Path, cfg: UserConfig) -> None:
     """Orchestrates the docx2pptx pipeline."""
     user_path = docx_path
 
@@ -38,7 +38,7 @@ def run_docx2pptx_pipeline(docx_path: Path) -> None:
 
     # Create the presentation object from template
     try:
-        output_prs = io.create_empty_slide_deck()
+        output_prs = io.create_empty_slide_deck(cfg)
     except Exception as e:
         print(f"Could not load template file (may be corrupted): {e}")
         sys.exit(1)

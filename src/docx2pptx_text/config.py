@@ -9,7 +9,7 @@ SCRIPT_DIR = Path(__file__).parent.parent.parent
 # === docx2pptx Consts for script user to alter per-run ===
 
 # The pptx file to use as the template for the slide deck
-TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_template.pptx"
+#TEMPLATE_PPTX = SCRIPT_DIR / "resources" / "blank_template.pptx"
 # You can make your own template with the master slide and master notes page
 # to determine how the output will look. You can customize things like font, paragraph style,
 # slide size, slide layout...
