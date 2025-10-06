@@ -1,5 +1,5 @@
 [project]
-name = "docx2slides-py"
+name = "docx2pptx_text"
 version = "0.0.0"
 requires-python = ">=3.10"
 description = "Convert Word documents to PowerPoint slides"
@@ -15,6 +15,3 @@ lint.select = ["D100", "D101", "D102", "D103", "ANN"]
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-py-modules = ["docx2slides"]
