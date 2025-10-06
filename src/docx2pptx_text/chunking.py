@@ -1,8 +1,8 @@
 """TODO docstring"""
 
-from src.docx2pptx_text.models import Chunk_docx
-from src.docx2pptx_text import config
-from src.docx2pptx_text.utils import debug_print
+from docx2pptx_text.models import Chunk_docx
+from docx2pptx_text import config
+from docx2pptx_text.utils import debug_print
 from docx import document
 
 # TODO, ponder: If we add other chunking methods: by section, by multi-file output, will we call it "chunking"? Will it live here?

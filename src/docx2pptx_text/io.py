@@ -11,10 +11,11 @@ from docx import document
 from typing import Union
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
-from src.docx2pptx_text import config
+from docx2pptx_text import config
 from docx.text.paragraph import Paragraph as Paragraph_docx
-from src.docx2pptx_text.utils import debug_print
+from docx2pptx_text.utils import debug_print
 from datetime import datetime
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 # TODO, multi-file split: Another TypeVar to move to the top of whatever file these funcs live in later
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
@@ -40,14 +41,14 @@ def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx
     return paragraphs
 
 
-# TODO: I think the problem with this one is the name, not the location
-def create_empty_slide_deck() -> presentation.Presentation:
+def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
     """Load the PowerPoint template, create a new presentation object, and validate it contains the custom layout. (docx2pptx-text pipeline)"""
 
     # Try to load the pptx
     try:
-        template_path = validate_pptx_path(Path(config.TEMPLATE_PPTX))
-        prs = pptx.Presentation(str(template_path))
+        template_path = cfg.get_template_pptx_path()
+        validated_template = validate_pptx_path(Path(template_path))
+        prs = pptx.Presentation(str(validated_template))
     except Exception as e:
         raise ValueError(f"Could not load template file (may be corrupted): {e}")
 

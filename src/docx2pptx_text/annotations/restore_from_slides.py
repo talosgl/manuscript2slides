@@ -1,14 +1,14 @@
 """TODO"""
 
-from src.docx2pptx_text.models import SlideNotes
-from src.docx2pptx_text.config import (
+from docx2pptx_text.models import SlideNotes
+from docx2pptx_text.config import (
     METADATA_MARKER_HEADER,
     METADATA_MARKER_FOOTER,
     NOTES_MARKER_FOOTER,
     NOTES_MARKER_HEADER,
 )
 import json
-from src.docx2pptx_text.utils import debug_print
+from docx2pptx_text.utils import debug_print
 
 
 # region split_speaker_notes

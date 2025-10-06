@@ -1,12 +1,13 @@
 """main orchestrator"""
 
-from src.docx2pptx_text.chunking import create_docx_chunks
-from src.docx2pptx_text.annotations.extract import process_chunk_annotations
-from src.docx2pptx_text.create_slides import slides_from_chunks
+from docx2pptx_text.chunking import create_docx_chunks
+from docx2pptx_text.annotations.extract import process_chunk_annotations
+from docx2pptx_text.create_slides import slides_from_chunks
 import sys
 from pathlib import Path
-from src.docx2pptx_text import io
-from src.docx2pptx_text import config
+from docx2pptx_text import io
+from docx2pptx_text import config
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 
 def run_docx2pptx_pipeline(docx_path: Path) -> None:

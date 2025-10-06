@@ -1,10 +1,11 @@
 """TODO"""
 
 from __future__ import annotations
-from src.docx2pptx_text import config
-from src.docx2pptx_text.utils import debug_print, setup_console_encoding
-from src.docx2pptx_text import pipeline_docx2pptx
-from src.docx2pptx_text import pipeline_pptx2docx
+from docx2pptx_text import config
+from docx2pptx_text.utils import debug_print, setup_console_encoding
+from docx2pptx_text import pipeline_docx2pptx
+from docx2pptx_text import pipeline_pptx2docx
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 
 def main() -> None:

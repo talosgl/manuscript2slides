@@ -2,7 +2,7 @@
 
 from docx.comments import Comment as Comment_docx
 from docx import document
-from src.docx2pptx_text.models import (
+from docx2pptx_text.models import (
     Chunk_docx,
     Footnote_docx,
     Endnote_docx,
@@ -10,9 +10,9 @@ from src.docx2pptx_text.models import (
 )
 from docx.text.run import Run as Run_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
-from src.docx2pptx_text import utils
-from src.docx2pptx_text.utils import debug_print
-from src.docx2pptx_text import config
+from docx2pptx_text import utils
+from docx2pptx_text.utils import debug_print
+from docx2pptx_text import config
 import xml.etree.ElementTree as ET
 
 

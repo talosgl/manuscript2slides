@@ -3,13 +3,13 @@
 import re
 import io
 import platform
-from src.docx2pptx_text import config
+from docx2pptx_text import config
 import sys
 import inspect
 
 # XML specific
 from typing import TypeVar
-from src.docx2pptx_text.models import Footnote_docx, Endnote_docx
+from docx2pptx_text.models import Footnote_docx, Endnote_docx
 from docx.opc.part import Part
 import xml.etree.ElementTree as ET
 from docx import document

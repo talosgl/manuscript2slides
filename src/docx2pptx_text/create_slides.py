@@ -1,16 +1,16 @@
 """TODO"""
 
-from src.docx2pptx_text.chunking import is_standard_heading
-from src.docx2pptx_text.annotations.apply_to_slides import (
+from docx2pptx_text.chunking import is_standard_heading
+from docx2pptx_text.annotations.apply_to_slides import (
     annotate_slide,
     add_metadata_to_slide_notes,
 )
-from src.docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
-from src.docx2pptx_text.models import Chunk_docx
-from src.docx2pptx_text.utils import (
+from docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
+from docx2pptx_text.models import Chunk_docx
+from docx2pptx_text.utils import (
     debug_print,
 )  # well that's concerning that this is unused; TODO: add some logging!
-from src.docx2pptx_text import config
+from docx2pptx_text import config
 from pptx import presentation
 from docx import document
 from pptx.shapes.placeholder import SlidePlaceholder
