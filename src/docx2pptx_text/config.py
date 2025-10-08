@@ -67,7 +67,7 @@ DEBUG_MODE = True
 
 
 
-DISPLAY_COMMENTS: bool = True
+# DISPLAY_COMMENTS: bool = True
 DISPLAY_FOOTNOTES: bool = True
 DISPLAY_ENDNOTES: bool = True
 
