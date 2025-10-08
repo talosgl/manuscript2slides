@@ -1,28 +1,27 @@
 """TODO: write docstring to please ruff"""
+# TODO: rename file to consts.py & consider moving to internals
 
 from enum import Enum
 from pathlib import Path
 
+# region Actual CONSTs
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
 ROOT_DIR = Path(__file__).parent.parent.parent
 
-# === docx2pptx Consts for script user to alter per-run ===
-
-# Desired slide layout. All slides use the same layout.
+# Slide layout used by docx2pptx pipeline when creating new slides from chunks. 
+# All slides use the same layout.
 SLD_LAYOUT_CUSTOM_NAME = "docx2pptx"
 
-# region actual CONSTs
+# Metadata headers/footers used in both pipelines when writing to/reading from slide speaker notes
 METADATA_MARKER_HEADER: str = "START OF JSON METADATA FROM SOURCE DOCUMENT"
 METADATA_MARKER_FOOTER: str = "END OF JSON METADATA FROM SOURCE DOCUMENT"
 NOTES_MARKER_HEADER: str = "START OF COPIED NOTES FROM SOURCE DOCX"
 NOTES_MARKER_FOOTER: str = "END OF COPIED NOTES FROM SOURCE DOCX"
-# endregion
 
+# Output filename base which is combined with a unique timestamps on save to prevent clobbering
+OUTPUT_PPTX_FILENAME = r"docx2pptx-text_output.pptx"
 
-# Desired output filename; Note that this will clobber an existing file of the same name!
-OUTPUT_PPTX_FILENAME = r"sample_slides_output.pptx"
-
-OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
+OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 # endregion
 
 
@@ -37,11 +36,11 @@ OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
 
 
 # Desired output directory/folder to save the pptx in
-OUTPUT_PPTX_FOLDER = ROOT_DIR / "output"
+#OUTPUT_PPTX_FOLDER = ROOT_DIR / "output"
 # e.g., r"c:\my_presentations"
 # If you leave it blank it'll save in the root of where you run the script from the command line
 
-OUTPUT_DOCX_FOLDER = ROOT_DIR / "output"
+#OUTPUT_DOCX_FOLDER = ROOT_DIR / "output"
 # e.g., r"c:\my_manuscripts"
 
 

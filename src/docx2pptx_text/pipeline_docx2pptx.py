@@ -50,4 +50,4 @@ def run_docx2pptx_pipeline(docx_path: Path, cfg: UserConfig) -> None:
     slides_from_chunks(user_docx, output_prs, chunks)
 
     # Save the presentation to an actual pptx on disk
-    io.save_output(output_prs)
+    io.save_output(output_prs, cfg)

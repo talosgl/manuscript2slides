@@ -10,7 +10,7 @@ from enum import Enum
 import os
 
 # TODO: remove later
-from docx2pptx_text.config import ROOT_DIR
+from docx2pptx_text import config
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
 class ChunkType(Enum):
@@ -66,7 +66,7 @@ class UserConfig:
         
         # For relative paths, resolve from repo root
         # TODO: (Later you'll use a proper base_dir from config)        
-        base = ROOT_DIR
+        base = config.ROOT_DIR
         return (base / p).resolve()
     
     def get_template_pptx_path(self) -> Path:
@@ -75,5 +75,14 @@ class UserConfig:
             return self._resolve_path(self.template_pptx)
         
         # Default
-        base = ROOT_DIR # TODO: replace with a proper base_dir
+        base = config.ROOT_DIR # TODO: replace with a proper base_dir
         return base / "resources" / "blank_template.pptx"
+
+    def get_output_folder(self) -> Path:
+        """Get the docx2pptx pipeline output pptx path, with fallback to default."""
+        if self.output_folder:
+            return self._resolve_path(self.output_folder)
+        
+        # Default
+        base = config.ROOT_DIR
+        return base / "output"

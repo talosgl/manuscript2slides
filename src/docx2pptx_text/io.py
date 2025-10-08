@@ -100,35 +100,16 @@ def validate_docx_path(user_path: str | Path) -> Path:
     return path
 
 
-def _determine_output_path(save_object: OUTPUT_TYPE) -> tuple[Path, str]:
-    """Construct output folder and filename in memory based on output type."""
+
+def _build_timestamped_output_filename(save_object: OUTPUT_TYPE):
+    """Apply a per-run timestamp to the output's base filename."""
+    # Get the base filename string
     if isinstance(save_object, document.Document):
-        save_folder = config.OUTPUT_DOCX_FOLDER
         save_filename = config.OUTPUT_DOCX_FILENAME
-        return save_folder, save_filename
     elif isinstance(save_object, presentation.Presentation):
-        save_folder = config.OUTPUT_PPTX_FOLDER
         save_filename = config.OUTPUT_PPTX_FILENAME
-        return save_folder, save_filename
     else:
         raise RuntimeError(f"Unexpected output object type: {save_object}")
-
-
-# end region
-
-
-# region Disk I/O - Write
-def save_output(save_object: OUTPUT_TYPE) -> None:
-    """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
-
-    # Build the output path components based on filetype.
-    save_folder, save_filename = _determine_output_path(save_object)
-
-    # Report if the content we're about to save is excessively huge
-    _validate_content_size(save_object)
-
-    # Create the output folder if we need to
-    save_folder.mkdir(parents=True, exist_ok=True)
 
     # Add a timestamp to the filename
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -136,6 +117,27 @@ def save_output(save_object: OUTPUT_TYPE) -> None:
         ".", 1
     )  # The 1 is telling rsplit() to split from the right side and do a maximum of 1 split.
     timestamped_filename = f"{name}_{timestamp}.{ext}"
+
+    return timestamped_filename
+# endregion
+
+
+# region Disk I/O - Write
+def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> None:
+    """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
+    
+    # Get the output folder from the config object
+    save_folder = cfg.get_output_folder()
+
+    # Apply a timestamp to the base filename
+    timestamped_filename = _build_timestamped_output_filename(save_object)
+
+    # Report if the content we're about to save is excessively huge
+    _validate_content_size(save_object)
+
+    # Create the output folder if we need to
+    save_folder.mkdir(parents=True, exist_ok=True)
+    
     output_filepath = save_folder / timestamped_filename
 
     # Attempt to save

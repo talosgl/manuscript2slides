@@ -8,9 +8,10 @@ from pptx import presentation
 from pathlib import Path
 from docx2pptx_text.populate_docx import copy_slides_to_docx_body
 from docx2pptx_text import config
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 
-def run_pptx2docx_pipeline(pptx_path: Path) -> None:
+def run_pptx2docx_pipeline(pptx_path: Path, cfg: UserConfig) -> None:
     """Orchestrates the pptx2docxtext pipeline."""
 
     # Validate the user's pptx filepath
@@ -44,4 +45,4 @@ def run_pptx2docx_pipeline(pptx_path: Path) -> None:
 
     debug_print("Attempting to save new docx file.")
 
-    io.save_output(new_doc)
+    io.save_output(new_doc, cfg)
