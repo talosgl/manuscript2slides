@@ -14,17 +14,17 @@ from docx2pptx_text import utils
 from docx2pptx_text.utils import debug_print
 from docx2pptx_text import config
 import xml.etree.ElementTree as ET
-
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 def process_chunk_annotations(
-    chunks: list[Chunk_docx], doc: document.Document
+    chunks: list[Chunk_docx], doc: document.Document, cfg: UserConfig
 ) -> list[Chunk_docx]:
     """For a list of Chunk_docx objects, populate the annotation dicts for each one."""
 
     # Gather all the doc annotations
     all_raw_comments = get_all_docx_comments(doc)
-    all_footnotes = get_all_docx_footnotes(doc)
-    all_endnotes = get_all_docx_endnotes(doc)
+    all_footnotes = get_all_docx_footnotes(doc, cfg)
+    all_endnotes = get_all_docx_endnotes(doc, cfg)
 
     for chunk in chunks:
         for paragraph in chunk.paragraphs:
@@ -150,13 +150,13 @@ def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
     return all_comments_dict
 
 
-def get_all_docx_footnotes(doc: document.Document) -> dict[str, Footnote_docx]:
+def get_all_docx_footnotes(doc: document.Document, cfg: UserConfig) -> dict[str, Footnote_docx]:
     """
     Extract all footnotes from a docx document.
     Returns {id: {footnote_id: str, text_body: str, hyperlinks: list of str} }.
     """
 
-    if not config.DISPLAY_FOOTNOTES:
+    if not cfg.display_footnotes:
         return {}
 
     try:
@@ -174,12 +174,12 @@ def get_all_docx_footnotes(doc: document.Document) -> dict[str, Footnote_docx]:
         return {}
 
 
-def get_all_docx_endnotes(doc: document.Document) -> dict[str, Endnote_docx]:
+def get_all_docx_endnotes(doc: document.Document, cfg: UserConfig) -> dict[str, Endnote_docx]:
     """
     Extract all endnotes from a docx document.
     Returns {id: {footnote_id: str, text_body: str, hyperlinks: list of str} }.
     """
-    if not config.DISPLAY_ENDNOTES:
+    if not cfg.display_endnotes:
         return {}
 
     try:

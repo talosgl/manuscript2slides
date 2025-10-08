@@ -38,12 +38,12 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConf
     header_run.text = f"\n\n\n\n\n\n\n{NOTES_MARKER_HEADER}\n" + "=" * 40 + "\n"
     
     if cfg.display_comments and chunk.comments:
-        add_comments_to_speaker_notes(chunk.comments, notes_text_frame)
+        add_comments_to_speaker_notes(chunk.comments, notes_text_frame, cfg)
 
-    if config.DISPLAY_FOOTNOTES and chunk.footnotes:
+    if cfg.display_footnotes and chunk.footnotes:
         add_notes_to_speaker_notes(chunk.footnotes, notes_text_frame, Footnote_docx)
 
-    if config.DISPLAY_ENDNOTES and chunk.endnotes:
+    if cfg.display_endnotes and chunk.endnotes:
         add_notes_to_speaker_notes(chunk.endnotes, notes_text_frame, Endnote_docx)
 
     footer_para = notes_text_frame.add_paragraph()

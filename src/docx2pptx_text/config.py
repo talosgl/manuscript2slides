@@ -68,8 +68,8 @@ DEBUG_MODE = True
 
 
 # DISPLAY_COMMENTS: bool = True
-DISPLAY_FOOTNOTES: bool = True
-DISPLAY_ENDNOTES: bool = True
+# DISPLAY_FOOTNOTES: bool = True
+# DISPLAY_ENDNOTES: bool = True
 
 
 # We ought to support some way to leave speaker notes completely empty if the user really wants that, it's a valid use case.
