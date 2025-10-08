@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
-SCRIPT_DIR = Path(__file__).parent.parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent
 
 # === docx2pptx Consts for script user to alter per-run ===
 
@@ -37,17 +37,17 @@ OUTPUT_DOCX_FILENAME = r"sample_pptx2docxtext_output.docx"
 
 
 # Desired output directory/folder to save the pptx in
-OUTPUT_PPTX_FOLDER = SCRIPT_DIR / "output"
+OUTPUT_PPTX_FOLDER = ROOT_DIR / "output"
 # e.g., r"c:\my_presentations"
 # If you leave it blank it'll save in the root of where you run the script from the command line
 
-OUTPUT_DOCX_FOLDER = SCRIPT_DIR / "output"
+OUTPUT_DOCX_FOLDER = ROOT_DIR / "output"
 # e.g., r"c:\my_manuscripts"
 
 
 # Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
-INPUT_DOCX_FILE = SCRIPT_DIR / "resources" / "sample_doc.docx"
+INPUT_DOCX_FILE = ROOT_DIR / "resources" / "sample_doc.docx"
 
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
@@ -85,7 +85,7 @@ EXPERIMENTAL_FORMATTING_ON: bool = True
 # ========== pptx2docxtext pipeline consts
 
 INPUT_PPTX_FILE = (
-    SCRIPT_DIR / "resources" / "sample_slides_output.pptx"
+    ROOT_DIR / "resources" / "sample_slides_output.pptx"
 )  # "sample_slides.pptx"
 
-TEMPLATE_DOCX = SCRIPT_DIR / "resources" / "docx_template.docx"
+TEMPLATE_DOCX = ROOT_DIR / "resources" / "docx_template.docx"

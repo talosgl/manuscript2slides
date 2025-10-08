@@ -1,4 +1,4 @@
-
+"""TODO: add docstring"""
 # ==DOCSTART==
 # Purpose: Defines the UserConfig dataclass-- the single source of truth for user-overridable options.
 # ==DOCEND==
@@ -10,7 +10,7 @@ from enum import Enum
 import os
 
 # TODO: remove later
-from docx2pptx_text.config import SCRIPT_DIR
+from docx2pptx_text.config import ROOT_DIR
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
 class ChunkType(Enum):
@@ -66,7 +66,7 @@ class UserConfig:
         
         # For relative paths, resolve from repo root
         # TODO: (Later you'll use a proper base_dir from config)        
-        base = SCRIPT_DIR
+        base = ROOT_DIR
         return (base / p).resolve()
     
     def get_template_pptx_path(self) -> Path:
@@ -75,5 +75,5 @@ class UserConfig:
             return self._resolve_path(self.template_pptx)
         
         # Default
-        base = SCRIPT_DIR # TODO: replace with a proper base_dir
+        base = ROOT_DIR # TODO: replace with a proper base_dir
         return base / "resources" / "blank_template.pptx"
