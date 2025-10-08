@@ -48,7 +48,7 @@ class UserConfig:
 
     # Processing
     chunk_type: ChunkType = (
-        ChunkType.HEADING_FLAT
+        ChunkType.PARAGRAPH
     )  # Which chunking method to use to divide the docx into slides.
 
     experimental_formatting_on: bool = True

@@ -10,7 +10,7 @@ from docx import document
 
 # region Orchestrator
 def create_docx_chunks(
-    doc: document.Document, chunk_type: ChunkType = ChunkType.PARAGRAPH
+    doc: document.Document, chunk_type: ChunkType
 ) -> list[Chunk_docx]:
     """
     Orchestrator function to create chunks (that will become slides) from the document
