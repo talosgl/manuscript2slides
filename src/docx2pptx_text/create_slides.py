@@ -63,7 +63,7 @@ def slides_from_chunks(
 
             # Process the docx's paragraph contents, including both runs & hyperlinks
             para_experimental_formatting = process_docx_paragraph_inner_contents(
-                paragraph, pptx_paragraph
+                paragraph, pptx_paragraph, cfg
             )
 
             if para_experimental_formatting:

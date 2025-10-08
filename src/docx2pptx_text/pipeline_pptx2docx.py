@@ -44,7 +44,7 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
     docx_template = cfg.get_input_docx_file()
     new_doc = docx.Document(str(docx_template))
 
-    copy_slides_to_docx_body(user_prs, new_doc)
+    copy_slides_to_docx_body(user_prs, new_doc, cfg)
 
     debug_print("Attempting to save new docx file.")
 

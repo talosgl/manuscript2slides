@@ -6,7 +6,6 @@ from docx2pptx_text.models import (
     Endnote_docx,
     Comment_docx_custom,
 )
-from docx2pptx_text import config
 from docx2pptx_text.internals.config.define_config import UserConfig
 from pptx.text.text import TextFrame
 from datetime import datetime
@@ -100,7 +99,7 @@ def add_comments_to_speaker_notes(
 
                         else:
                             comment_header.text = "\n"
-                        process_docx_paragraph_inner_contents(para, notes_para)
+                        process_docx_paragraph_inner_contents(para, notes_para, cfg)
 
 
 from docx2pptx_text.utils import NOTE_TYPE

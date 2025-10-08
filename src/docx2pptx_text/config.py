@@ -79,7 +79,7 @@ DEBUG_MODE = True
 # COMMENTS_SORT_BY_DATE: bool = True
 # COMMENTS_KEEP_AUTHOR_AND_DATE: bool = True
 
-EXPERIMENTAL_FORMATTING_ON: bool = True
+# EXPERIMENTAL_FORMATTING_ON: bool = True
 
 # ========== pptx2docxtext pipeline consts
 

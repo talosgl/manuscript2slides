@@ -19,11 +19,11 @@ from docx2pptx_text.annotations.restore_from_slides import (
     safely_extract_experimental_formatting_data,
 )
 from docx2pptx_text import config
-
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 # region docx2pptx
 def process_docx_paragraph_inner_contents(
-    paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx
+    paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx, cfg: UserConfig
 ) -> list[dict]:
     """
     Iterate through a paragraph's runs and hyperlinks, in document order, and:
@@ -45,7 +45,7 @@ def process_docx_paragraph_inner_contents(
             if field_code_URL:
                 item.text = f" [Link: {field_code_URL}] "
 
-            process_docx_run(item, pptx_paragraph, experimental_formatting_metadata)
+            process_docx_run(item, pptx_paragraph, experimental_formatting_metadata, cfg)
 
         # Run and Hyperlink objects are peers in docx, but Hyperlinks can contain lists of Runs.
         # We check the item.url field because that seems the most reliable way to see if this is a
@@ -58,6 +58,7 @@ def process_docx_paragraph_inner_contents(
                     run,
                     pptx_paragraph,
                     experimental_formatting_metadata,
+                    cfg,
                     item.url,
                 )
         # elif hasattr(item, "fragment"):
@@ -85,13 +86,14 @@ def process_docx_run(
     run: Run_docx,
     pptx_paragraph: Paragraph_pptx,
     experimental_formatting_metadata: list,
-    hyperlink: str | None = None,
+    cfg: UserConfig,
+    hyperlink: str | None = None,    
 ) -> Run_pptx:
     """Copy a run from the docx parent to the pptx paragraph, including copying its formatting."""
     # Handle formatting
 
     pptx_run = pptx_paragraph.add_run()
-    copy_run_formatting_docx2pptx(run, pptx_run, experimental_formatting_metadata)
+    copy_run_formatting_docx2pptx(run, pptx_run, experimental_formatting_metadata, cfg)
 
     if hyperlink:
         pptx_run_url = pptx_run.hyperlink
@@ -110,6 +112,7 @@ def process_pptx_run(
     new_doc: document.Document,
     slide_notes: SlideNotes,
     matched_comment_ids: set,
+    cfg: UserConfig
 ) -> Run_docx:
     """
     Process a single run from a pptx slide paragraph by copying its basic formatting into a new docx run, and detecting if its text content
@@ -123,10 +126,10 @@ def process_pptx_run(
             new_para, run.hyperlink.address
         )
         last_run = run_from_hyperlink
-        copy_run_formatting_pptx2docx(run, run_from_hyperlink)
+        copy_run_formatting_pptx2docx(run, run_from_hyperlink, cfg)
     else:
         last_run = new_para.add_run()
-        copy_run_formatting_pptx2docx(run, last_run)
+        copy_run_formatting_pptx2docx(run, last_run, cfg)
 
     # Check if this run contains matching text for comments from the this slide's speaker notes' stored JSON
     # metadata, from previous docx2pptx pipeline processing
@@ -152,7 +155,7 @@ def process_pptx_run(
                 matched_comment_ids.add(comment_data["id"])
             # don't break; there can be multiple comments added to a single run
 
-    if config.EXPERIMENTAL_FORMATTING_ON and slide_notes.experimental_formatting:
+    if cfg.experimental_formatting_on and slide_notes.experimental_formatting:
         for exp_fmt in slide_notes.experimental_formatting:
             fmt_info = safely_extract_experimental_formatting_data(exp_fmt)
             if fmt_info is None:

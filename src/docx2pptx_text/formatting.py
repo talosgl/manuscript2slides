@@ -13,6 +13,7 @@ from pptx.text.text import _Run as Run_pptx  # type: ignore
 from docx2pptx_text.utils import debug_print
 from docx2pptx_text import config
 from docx.enum.text import WD_COLOR_INDEX
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 # region colormap
 
@@ -87,6 +88,7 @@ def copy_run_formatting_docx2pptx(
     source_run: Run_docx,
     target_run: Run_pptx,
     experimental_formatting_metadata: list,
+    cfg: UserConfig
 ) -> None:
     """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
     sfont = source_run.font
@@ -98,7 +100,7 @@ def copy_run_formatting_docx2pptx(
 
     _copy_run_color_formatting(sfont, tfont)
 
-    if config.EXPERIMENTAL_FORMATTING_ON:
+    if cfg.experimental_formatting_on:
         if source_run.text and source_run.text.strip():
             _copy_experimental_formatting_docx2pptx(
                 source_run, target_run, experimental_formatting_metadata
@@ -315,7 +317,7 @@ def _copy_experimental_formatting_docx2pptx(
 
 
 # region copy run formatting pptx2docx
-def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) -> None:
+def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx, cfg: UserConfig) -> None:
     """Mutates a docx Run object to apply text and formatting from a pptx _Run object."""
     sfont = source_run.font
     tfont = target_run.font
@@ -329,7 +331,7 @@ def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx) ->
     if (
         source_run.text
         and source_run.text.strip()
-        and config.EXPERIMENTAL_FORMATTING_ON
+        and cfg.experimental_formatting_on
     ):
         _copy_experimental_formatting_pptx2docx(source_run, target_run)
 

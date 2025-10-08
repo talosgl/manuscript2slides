@@ -19,10 +19,11 @@ from pptx import presentation
 from docx.text.run import Run as Run_docx
 from docx.comments import Comment as Comment_docx
 
+from docx2pptx_text.internals.config.define_config import UserConfig
 
 # region copy slides to docx body orchestrator
 def copy_slides_to_docx_body(
-    prs: presentation.Presentation, new_doc: document.Document
+    prs: presentation.Presentation, new_doc: document.Document, cfg: UserConfig
 ) -> None:
     """
     Sequentially process each slide in the deck by copying the paragraphs from the slide body into the docx's body. Analyze
@@ -42,7 +43,7 @@ def copy_slides_to_docx_body(
         else:
             slide_notes = SlideNotes()
 
-        process_slide_paragraphs(slide, slide_notes, new_doc)
+        process_slide_paragraphs(slide, slide_notes, new_doc, cfg)
 
 
 # endregion
@@ -50,7 +51,7 @@ def copy_slides_to_docx_body(
 
 # region process_slide_paragraphs
 def process_slide_paragraphs(
-    slide: Slide, slide_notes: SlideNotes, new_doc: document.Document
+    slide: Slide, slide_notes: SlideNotes, new_doc: document.Document, cfg: UserConfig
 ) -> None:
     """
     Process a slide's body content, using any metadata stored in the speaker notes to restore formatting and annotation
@@ -82,7 +83,7 @@ def process_slide_paragraphs(
 
         for run in pptx_para.runs:
             last_run = process_pptx_run(
-                run, new_para, new_doc, slide_notes, matched_comment_ids
+                run, new_para, new_doc, slide_notes, matched_comment_ids, cfg
             )
 
     # Put the slide's user notes into a new comment attached to the last run
