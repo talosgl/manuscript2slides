@@ -6,12 +6,24 @@ from docx2pptx_text.utils import debug_print, setup_console_encoding
 from docx2pptx_text import pipeline_docx2pptx
 from docx2pptx_text import pipeline_pptx2docx
 from docx2pptx_text.internals.config.define_config import UserConfig
+from docx2pptx_text.internals.config import config_utils
+from docx2pptx_text.internals.constants import ROOT_DIR
 
 
 def main() -> None:
     """Entry point for program flow."""
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
+
+    # === YAML config early testing
+    # TODO: remove
+    yaml_dir = ROOT_DIR / "resources" / "my_config.yaml"
+    yaml_data = config_utils.load_yaml_config(yaml_dir)
+    yaml_data = config_utils.normalize_yaml_for_dataclass(yaml_data)
+    config = UserConfig(**yaml_data)  # Unpack dict into dataclass
+    config.validate()
+    print(config)
+    # ===
 
     # Create config with defaults
     cfg = UserConfig()

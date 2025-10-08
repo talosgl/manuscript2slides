@@ -6,6 +6,7 @@ description = "Convert Word documents to PowerPoint slides"
 dependencies = [
     "python-docx",
     "python-pptx",
+    "PyYAML"
 ]
 authors = [{name = "talosgl"}]
 
