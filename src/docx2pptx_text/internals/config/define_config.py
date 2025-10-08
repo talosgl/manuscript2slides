@@ -69,14 +69,25 @@ class UserConfig:
         base = config.ROOT_DIR
         return (base / p).resolve()
     
+    # TODO: Consider: should templates even *be allowed* to be configureable by the user??
     def get_template_pptx_path(self) -> Path:
-        """Get the template pptx path, with fallback to default."""
+        """Get the docx2pptx template pptx path, with fallback to default."""
         if self.template_pptx:
             return self._resolve_path(self.template_pptx)
         
         # Default
         base = config.ROOT_DIR # TODO: replace with a proper base_dir
         return base / "resources" / "blank_template.pptx"
+    
+    
+    def get_template_docx_path(self) -> Path:
+        """Get the pptx2docx template docx path with fallback to a default."""
+        if self.template_docx:
+            return self._resolve_path(self.template_docx)
+        
+        # Default
+        base = config.ROOT_DIR
+        return base / "resources" / "docx_template.docx"
 
 
     # TODO: Consider collapsing these two input_file methods to match get_output_folder, rather than having different properties and methods per filetype.

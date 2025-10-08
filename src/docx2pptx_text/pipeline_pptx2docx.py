@@ -39,7 +39,8 @@ def run_pptx2docx_pipeline(pptx_path: Path, cfg: UserConfig) -> None:
         sys.exit(1)
 
     # Create an empty docx
-    new_doc = docx.Document(str(config.TEMPLATE_DOCX))
+    docx_template = cfg.get_input_docx_file()
+    new_doc = docx.Document(str(docx_template))
 
     copy_slides_to_docx_body(user_prs, new_doc)
 
