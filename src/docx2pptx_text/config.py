@@ -83,8 +83,8 @@ EXPERIMENTAL_FORMATTING_ON: bool = True
 
 # ========== pptx2docxtext pipeline consts
 
-INPUT_PPTX_FILE = (
-    ROOT_DIR / "resources" / "sample_slides_output.pptx"
-)  # "sample_slides.pptx"
+# INPUT_PPTX_FILE = (
+#     ROOT_DIR / "resources" / "sample_slides_output.pptx"
+# )  # "sample_slides.pptx"
 
 #TEMPLATE_DOCX = ROOT_DIR / "resources" / "docx_template.docx"

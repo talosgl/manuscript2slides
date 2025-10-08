@@ -27,7 +27,7 @@ def main() -> None:
     pipeline_docx2pptx.run_docx2pptx_pipeline(cfg)
 
 
-    pipeline_pptx2docx.run_pptx2docx_pipeline(config.INPUT_PPTX_FILE, cfg)
+    pipeline_pptx2docx.run_pptx2docx_pipeline(cfg)
 
 
 # region call main

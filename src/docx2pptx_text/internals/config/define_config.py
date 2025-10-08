@@ -109,3 +109,14 @@ class UserConfig:
         # Default
         base = config.ROOT_DIR
         return base / "output"
+
+    
+    def get_input_pptx_file(self) -> Path:
+        """Get the pptx2docx input pptx file or fall back to a dry run example pptx."""
+        if self.input_pptx:
+            return self._resolve_path(self.input_pptx)
+        
+        # Default/Dry Run
+        base = config.ROOT_DIR
+        return base / "resources" / "sample_slides_output.pptx"
+        
