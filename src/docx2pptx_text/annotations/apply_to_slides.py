@@ -7,6 +7,7 @@ from docx2pptx_text.models import (
     Comment_docx_custom,
 )
 from docx2pptx_text import config
+from docx2pptx_text.internals.config.define_config import UserConfig
 from pptx.text.text import TextFrame
 from datetime import datetime
 import json
@@ -23,7 +24,7 @@ from docx2pptx_text.config import (
 
 
 # region annotate_slides - copied notes + metadata
-def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
+def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConfig) -> None:
     """
     Pull a chunk's preserved annotations and copy them into the slide's speaker notes text frame.
 
@@ -35,8 +36,8 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame) -> None:
     header_para = notes_text_frame.add_paragraph()
     header_run = header_para.add_run()
     header_run.text = f"\n\n\n\n\n\n\n{NOTES_MARKER_HEADER}\n" + "=" * 40 + "\n"
-
-    if config.DISPLAY_COMMENTS and chunk.comments:
+    
+    if cfg.display_comments and chunk.comments:
         add_comments_to_speaker_notes(chunk.comments, notes_text_frame)
 
     if config.DISPLAY_FOOTNOTES and chunk.footnotes:
