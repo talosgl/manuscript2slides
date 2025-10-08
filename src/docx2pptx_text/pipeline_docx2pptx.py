@@ -47,7 +47,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
         sys.exit(1)
 
     # Mutate the presentation object by adding slides
-    slides_from_chunks(user_docx, output_prs, chunks)
+    slides_from_chunks(output_prs, chunks, cfg)
 
     # Save the presentation to an actual pptx on disk
     io.save_output(output_prs, cfg)

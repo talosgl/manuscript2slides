@@ -21,8 +21,7 @@ from docx2pptx_text.internals.config.define_config import UserConfig
 # region create slides from chunks
 
 
-def slides_from_chunks(
-    doc: document.Document,
+def slides_from_chunks(    
     prs: presentation.Presentation,
     chunks: list[Chunk_docx],
     cfg: UserConfig
