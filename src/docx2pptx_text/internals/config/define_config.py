@@ -78,6 +78,18 @@ class UserConfig:
         base = config.ROOT_DIR # TODO: replace with a proper base_dir
         return base / "resources" / "blank_template.pptx"
 
+
+    # TODO: Consider collapsing these two input_file methods to match get_output_folder, rather than having different properties and methods per filetype.
+    def get_input_docx_file(self) -> Path:
+        """Get the docx2pptx input docx file or fall back to a dry run example file."""
+        if self.input_docx:
+            return self._resolve_path(self.input_docx)
+        
+        # Default/Dry Run
+        base = config.ROOT_DIR
+        return base / "resources" / "sample_doc.docx"
+
+
     def get_output_folder(self) -> Path:
         """Get the docx2pptx pipeline output pptx path, with fallback to default."""
         if self.output_folder:

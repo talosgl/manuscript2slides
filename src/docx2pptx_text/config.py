@@ -46,7 +46,7 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 
 # Input file to process. First, copy your docx file into the docx2slides-py/resources folder,
 # then update the name at the end of the next line from "sample_doc.docx" to the real name.
-INPUT_DOCX_FILE = ROOT_DIR / "resources" / "sample_doc.docx"
+# INPUT_DOCX_FILE = ROOT_DIR / "resources" / "sample_doc.docx"
 
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:

@@ -10,9 +10,9 @@ from docx2pptx_text import config
 from docx2pptx_text.internals.config.define_config import UserConfig
 
 # TODO: replace docx_path throughout with cfg... and remove from signature
-def run_docx2pptx_pipeline(docx_path: Path, cfg: UserConfig) -> None:
+def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     """Orchestrates the docx2pptx pipeline."""
-    user_path = docx_path
+    user_path = cfg.get_input_docx_file()
 
     # Validate it's a real path of the correct type. If it's not, return the error.
     try:

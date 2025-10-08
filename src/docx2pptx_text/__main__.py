@@ -24,7 +24,7 @@ def main() -> None:
     # cfg = load_from_yaml_and_merge(...).
 
     # TODO remove config.INPUT_DOCX_FILE after we move it
-    pipeline_docx2pptx.run_docx2pptx_pipeline(config.INPUT_DOCX_FILE, cfg)
+    pipeline_docx2pptx.run_docx2pptx_pipeline(cfg)
 
 
     pipeline_pptx2docx.run_pptx2docx_pipeline(config.INPUT_PPTX_FILE, cfg)
