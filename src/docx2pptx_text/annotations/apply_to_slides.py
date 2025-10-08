@@ -52,12 +52,12 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConf
 
 
 def add_comments_to_speaker_notes(
-    comments_list: list[Comment_docx_custom], notes_text_frame: TextFrame
+    comments_list: list[Comment_docx_custom], notes_text_frame: TextFrame, cfg: UserConfig
 ) -> None:
     """Copy logic for appending the comments portion of the speaker notes."""
 
     if comments_list:
-        if config.COMMENTS_SORT_BY_DATE:
+        if cfg.comments_sort_by_date:
             # Sort comments by date (newest first, or change reverse=False for oldest first)
             sorted_comments = sorted(
                 comments_list,
@@ -81,7 +81,7 @@ def add_comments_to_speaker_notes(
                         notes_para = notes_text_frame.add_paragraph()
                         comment_header = notes_para.add_run()
 
-                        if config.COMMENTS_KEEP_AUTHOR_AND_DATE:
+                        if cfg.comments_keep_author_and_date:
                             author = getattr(
                                 comment.comment_obj, "author", "Unknown Author"
                             )
