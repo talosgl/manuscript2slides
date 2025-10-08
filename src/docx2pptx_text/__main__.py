@@ -16,6 +16,9 @@ def main() -> None:
     # Create config with defaults
     cfg = UserConfig()
 
+    # Validate config shape
+    cfg.validate()
+
     # TODO: Later you'll load from YAML, merge CLI args, etc.
     # For now, just use defaults
     # Right now UserConfig() with no arguments will use all defaults,

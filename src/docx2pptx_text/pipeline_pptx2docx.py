@@ -13,6 +13,9 @@ from docx2pptx_text.internals.config.define_config import UserConfig
 def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
     """Orchestrates the pptx2docxtext pipeline."""
 
+    # Validate we have what we need to run this pipeline.
+    cfg.validate_pptx2docx_pipeline_requirements()
+
     pptx_path = cfg.get_input_pptx_file()
 
     # Validate the user's pptx filepath

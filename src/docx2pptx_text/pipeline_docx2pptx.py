@@ -12,23 +12,27 @@ from docx2pptx_text.internals.config.define_config import UserConfig
 # TODO: replace docx_path throughout with cfg... and remove from signature
 def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     """Orchestrates the docx2pptx pipeline."""
-    user_path = cfg.get_input_docx_file()
+
+    # Validate we have what we need to run
+    cfg.validate_docx2pptx_pipeline_requirements()
+
+    user_docx = cfg.get_input_docx_file()
 
     # Validate it's a real path of the correct type. If it's not, return the error.
     try:
-        user_path_validated = io.validate_docx_path(user_path)
+        user_docx_validated = io.validate_docx_path(user_docx)
     except FileNotFoundError:
-        print(f"Error: File not found: {user_path}")
+        print(f"Error: File not found: {user_docx}")
         sys.exit(1)
     except ValueError as e:
         print(f"Error: {e}")
         sys.exit(1)
     except PermissionError:
-        print(f"I don't have permission to read that file ({user_path})!")
+        print(f"I don't have permission to read that file ({user_docx})!")
         sys.exit(1)
 
     # Load the docx file at that path.
-    user_docx = io.load_and_validate_docx(user_path_validated)
+    user_docx = io.load_and_validate_docx(user_docx_validated)
 
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, cfg.chunk_type)
