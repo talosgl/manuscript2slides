@@ -8,6 +8,7 @@ from pathlib import Path
 from docx2pptx_text import io
 from docx2pptx_text.internals.config.define_config import UserConfig
 
+
 # TODO: replace docx_path throughout with cfg... and remove from signature
 def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     """Orchestrates the docx2pptx pipeline."""

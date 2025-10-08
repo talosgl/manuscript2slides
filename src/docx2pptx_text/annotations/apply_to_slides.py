@@ -23,7 +23,9 @@ from docx2pptx_text.internals.constants import (
 
 
 # region annotate_slides - copied notes + metadata
-def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConfig) -> None:
+def annotate_slide(
+    chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConfig
+) -> None:
     """
     Pull a chunk's preserved annotations and copy them into the slide's speaker notes text frame.
 
@@ -35,7 +37,7 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConf
     header_para = notes_text_frame.add_paragraph()
     header_run = header_para.add_run()
     header_run.text = f"\n\n\n\n\n\n\n{NOTES_MARKER_HEADER}\n" + "=" * 40 + "\n"
-    
+
     if cfg.display_comments and chunk.comments:
         add_comments_to_speaker_notes(chunk.comments, notes_text_frame, cfg)
 
@@ -51,7 +53,9 @@ def annotate_slide(chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConf
 
 
 def add_comments_to_speaker_notes(
-    comments_list: list[Comment_docx_custom], notes_text_frame: TextFrame, cfg: UserConfig
+    comments_list: list[Comment_docx_custom],
+    notes_text_frame: TextFrame,
+    cfg: UserConfig,
 ) -> None:
     """Copy logic for appending the comments portion of the speaker notes."""
 

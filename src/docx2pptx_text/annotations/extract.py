@@ -15,6 +15,7 @@ from docx2pptx_text.utils import debug_print
 import xml.etree.ElementTree as ET
 from docx2pptx_text.internals.config.define_config import UserConfig
 
+
 def process_chunk_annotations(
     chunks: list[Chunk_docx], doc: document.Document, cfg: UserConfig
 ) -> list[Chunk_docx]:
@@ -149,7 +150,9 @@ def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
     return all_comments_dict
 
 
-def get_all_docx_footnotes(doc: document.Document, cfg: UserConfig) -> dict[str, Footnote_docx]:
+def get_all_docx_footnotes(
+    doc: document.Document, cfg: UserConfig
+) -> dict[str, Footnote_docx]:
     """
     Extract all footnotes from a docx document.
     Returns {id: {footnote_id: str, text_body: str, hyperlinks: list of str} }.
@@ -173,7 +176,9 @@ def get_all_docx_footnotes(doc: document.Document, cfg: UserConfig) -> dict[str,
         return {}
 
 
-def get_all_docx_endnotes(doc: document.Document, cfg: UserConfig) -> dict[str, Endnote_docx]:
+def get_all_docx_endnotes(
+    doc: document.Document, cfg: UserConfig
+) -> dict[str, Endnote_docx]:
     """
     Extract all endnotes from a docx document.
     Returns {id: {footnote_id: str, text_body: str, hyperlinks: list of str} }.

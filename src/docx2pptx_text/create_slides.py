@@ -17,13 +17,12 @@ from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame
 
 from docx2pptx_text.internals.config.define_config import UserConfig
+
 # region create slides from chunks
 
 
-def slides_from_chunks(    
-    prs: presentation.Presentation,
-    chunks: list[Chunk_docx],
-    cfg: UserConfig
+def slides_from_chunks(
+    prs: presentation.Presentation, chunks: list[Chunk_docx], cfg: UserConfig
 ) -> None:
     """Generate slide objects, one for each chunk created by earlier pipeline steps."""
 
@@ -93,7 +92,9 @@ def slides_from_chunks(
                 "This slide doesn't seem to have a notes text frame. This should never happen, but it's possible for the notes_slide or notes_text_frame properties to return None if the notes placeholder has been removed from the notes master or the notes slide itself."
             )
 
-        if cfg.display_comments or cfg.display_footnotes or cfg.display_endnotes: #config.display_comments or config.display_footnotes or config.display_endnotes:
+        if (
+            cfg.display_comments or cfg.display_footnotes or cfg.display_endnotes
+        ):  # config.display_comments or config.display_footnotes or config.display_endnotes:
             annotate_slide(chunk, notes_text_frame, cfg)
 
         if cfg.preserve_docx_metadata_in_speaker_notes:

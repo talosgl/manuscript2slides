@@ -20,6 +20,7 @@ from docx2pptx_text.annotations.restore_from_slides import (
 )
 from docx2pptx_text.internals.config.define_config import UserConfig
 
+
 # region docx2pptx
 def process_docx_paragraph_inner_contents(
     paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx, cfg: UserConfig
@@ -44,7 +45,9 @@ def process_docx_paragraph_inner_contents(
             if field_code_URL:
                 item.text = f" [Link: {field_code_URL}] "
 
-            process_docx_run(item, pptx_paragraph, experimental_formatting_metadata, cfg)
+            process_docx_run(
+                item, pptx_paragraph, experimental_formatting_metadata, cfg
+            )
 
         # Run and Hyperlink objects are peers in docx, but Hyperlinks can contain lists of Runs.
         # We check the item.url field because that seems the most reliable way to see if this is a
@@ -86,7 +89,7 @@ def process_docx_run(
     pptx_paragraph: Paragraph_pptx,
     experimental_formatting_metadata: list,
     cfg: UserConfig,
-    hyperlink: str | None = None,    
+    hyperlink: str | None = None,
 ) -> Run_pptx:
     """Copy a run from the docx parent to the pptx paragraph, including copying its formatting."""
     # Handle formatting
@@ -111,7 +114,7 @@ def process_pptx_run(
     new_doc: document.Document,
     slide_notes: SlideNotes,
     matched_comment_ids: set,
-    cfg: UserConfig
+    cfg: UserConfig,
 ) -> Run_docx:
     """
     Process a single run from a pptx slide paragraph by copying its basic formatting into a new docx run, and detecting if its text content

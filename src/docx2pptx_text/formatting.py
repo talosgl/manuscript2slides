@@ -87,7 +87,7 @@ def copy_run_formatting_docx2pptx(
     source_run: Run_docx,
     target_run: Run_pptx,
     experimental_formatting_metadata: list,
-    cfg: UserConfig
+    cfg: UserConfig,
 ) -> None:
     """Mutates a pptx _Run object to apply text and formatting from a docx Run object."""
     sfont = source_run.font
@@ -316,7 +316,9 @@ def _copy_experimental_formatting_docx2pptx(
 
 
 # region copy run formatting pptx2docx
-def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx, cfg: UserConfig) -> None:
+def copy_run_formatting_pptx2docx(
+    source_run: Run_pptx, target_run: Run_docx, cfg: UserConfig
+) -> None:
     """Mutates a docx Run object to apply text and formatting from a pptx _Run object."""
     sfont = source_run.font
     tfont = target_run.font
@@ -327,11 +329,7 @@ def copy_run_formatting_pptx2docx(source_run: Run_pptx, target_run: Run_docx, cf
 
     _copy_run_color_formatting(sfont, tfont)
 
-    if (
-        source_run.text
-        and source_run.text.strip()
-        and cfg.experimental_formatting_on
-    ):
+    if source_run.text and source_run.text.strip() and cfg.experimental_formatting_on:
         _copy_experimental_formatting_pptx2docx(source_run, target_run)
 
 

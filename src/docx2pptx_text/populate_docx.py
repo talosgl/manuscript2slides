@@ -21,6 +21,7 @@ from docx.comments import Comment as Comment_docx
 
 from docx2pptx_text.internals.config.define_config import UserConfig
 
+
 # region copy slides to docx body orchestrator
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document, cfg: UserConfig

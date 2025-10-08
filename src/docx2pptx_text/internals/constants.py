@@ -1,4 +1,5 @@
 """TODO: write docstring to please ruff"""
+
 # TODO: rename file to consts.py & consider moving to internals
 
 from pathlib import Path
@@ -7,7 +8,7 @@ from pathlib import Path
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
 ROOT_DIR = Path(__file__).parent.parent.parent.parent
 
-# Slide layout used by docx2pptx pipeline when creating new slides from chunks. 
+# Slide layout used by docx2pptx pipeline when creating new slides from chunks.
 # All slides use the same layout.
 SLD_LAYOUT_CUSTOM_NAME = "docx2pptx"
 

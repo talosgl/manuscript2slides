@@ -14,7 +14,7 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
     """Orchestrates the pptx2docxtext pipeline."""
 
     pptx_path = cfg.get_input_pptx_file()
-    
+
     # Validate the user's pptx filepath
     try:
         validated_pptx_path = io.validate_pptx_path(pptx_path)

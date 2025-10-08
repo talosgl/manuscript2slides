@@ -100,7 +100,6 @@ def validate_docx_path(user_path: str | Path) -> Path:
     return path
 
 
-
 def _build_timestamped_output_filename(save_object: OUTPUT_TYPE) -> str:
     """Apply a per-run timestamp to the output's base filename."""
     # Get the base filename string
@@ -119,13 +118,15 @@ def _build_timestamped_output_filename(save_object: OUTPUT_TYPE) -> str:
     timestamped_filename = f"{name}_{timestamp}.{ext}"
 
     return timestamped_filename
+
+
 # endregion
 
 
 # region Disk I/O - Write
 def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> None:
     """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
-    
+
     # Get the output folder from the config object
     save_folder = cfg.get_output_folder()
 
@@ -137,7 +138,7 @@ def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> None:
 
     # Create the output folder if we need to
     save_folder.mkdir(parents=True, exist_ok=True)
-    
+
     output_filepath = save_folder / timestamped_filename
 
     # Attempt to save
