@@ -51,10 +51,6 @@ class UserConfig:
     
     preserve_docx_metadata_in_speaker_notes: bool = True
 
-
-    # Behavior
-    debug_mode: bool = True
-
     # Class methods
     def _resolve_path(self, raw: str) -> Path:
         """Expand ~ and ${VARS}; resolve relative to config_base_dir if present."""

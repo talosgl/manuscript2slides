@@ -26,6 +26,9 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 
 
 
+# Toggle on/off whether to print debug_prints() to the console
+DEBUG_MODE = True
+
 # ========== copied to config & TODO: delete/redirect references
 
 # The pptx file to use as the template for the slide deck
@@ -62,9 +65,6 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 # And this is where to set what will be used in this run
 # CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
 
-
-# Toggle on/off whether to print debug_prints() to the console
-DEBUG_MODE = True
 
 
 DISPLAY_COMMENTS: bool = True
