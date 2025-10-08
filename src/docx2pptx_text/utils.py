@@ -3,7 +3,6 @@
 import re
 import io
 import platform
-from docx2pptx_text import config
 import sys
 import inspect
 
@@ -14,6 +13,7 @@ from docx.opc.part import Part
 import xml.etree.ElementTree as ET
 from docx import document
 from docx.text.run import Run as Run_docx
+from docx2pptx_text.internals.constants import DEBUG_MODE
 
 # TODO, multi-file split: move to the top of whatever file this function ends up living in
 # This allows for a generic type parameter - when you pass Footnote_docx into the extract_notes_from_xml(...) function, you will get dict[str, Footnote_docx] back
@@ -23,7 +23,7 @@ NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)
 # region Basic Utils
 def debug_print(msg: str | list[str]) -> None:
     """Basic debug printing function"""
-    if config.DEBUG_MODE:
+    if DEBUG_MODE:
         caller = inspect.stack()[1].function
         print(f"DEBUG [{caller}]: {msg}")
 

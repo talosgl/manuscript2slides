@@ -11,7 +11,7 @@ from docx import document
 from typing import Union
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
-from docx2pptx_text import config
+from docx2pptx_text.internals import constants
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx2pptx_text.utils import debug_print
 from datetime import datetime
@@ -54,9 +54,9 @@ def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
 
     # Validate it has the required slide layout for the pipeline
     layout_names = [layout.name for layout in prs.slide_layouts]
-    if config.SLD_LAYOUT_CUSTOM_NAME not in layout_names:
+    if constants.SLD_LAYOUT_CUSTOM_NAME not in layout_names:
         raise ValueError(
-            f"Template is missing the required layout: '{config.SLD_LAYOUT_CUSTOM_NAME}'. "
+            f"Template is missing the required layout: '{constants.SLD_LAYOUT_CUSTOM_NAME}'. "
             f"Available layouts: {', '.join(layout_names)}"
         )
 
@@ -101,13 +101,13 @@ def validate_docx_path(user_path: str | Path) -> Path:
 
 
 
-def _build_timestamped_output_filename(save_object: OUTPUT_TYPE):
+def _build_timestamped_output_filename(save_object: OUTPUT_TYPE) -> str:
     """Apply a per-run timestamp to the output's base filename."""
     # Get the base filename string
     if isinstance(save_object, document.Document):
-        save_filename = config.OUTPUT_DOCX_FILENAME
+        save_filename = constants.OUTPUT_DOCX_FILENAME
     elif isinstance(save_object, presentation.Presentation):
-        save_filename = config.OUTPUT_PPTX_FILENAME
+        save_filename = constants.OUTPUT_PPTX_FILENAME
     else:
         raise RuntimeError(f"Unexpected output object type: {save_object}")
 

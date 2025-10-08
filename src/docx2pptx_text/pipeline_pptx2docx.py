@@ -7,7 +7,6 @@ from docx2pptx_text import io
 from pptx import presentation
 from pathlib import Path
 from docx2pptx_text.populate_docx import copy_slides_to_docx_body
-from docx2pptx_text import config
 from docx2pptx_text.internals.config.define_config import UserConfig
 
 

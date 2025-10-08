@@ -5,7 +5,7 @@ from pathlib import Path
 
 # region Actual CONSTs
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
-ROOT_DIR = Path(__file__).parent.parent.parent
+ROOT_DIR = Path(__file__).parent.parent.parent.parent
 
 # Slide layout used by docx2pptx pipeline when creating new slides from chunks. 
 # All slides use the same layout.

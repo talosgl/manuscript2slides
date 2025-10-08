@@ -10,7 +10,7 @@ from enum import Enum
 import os
 
 # TODO: remove later
-from docx2pptx_text import config
+from docx2pptx_text.internals.constants import ROOT_DIR
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
 class ChunkType(Enum):
@@ -66,7 +66,7 @@ class UserConfig:
         
         # For relative paths, resolve from repo root
         # TODO: (Later you'll use a proper base_dir from config)        
-        base = config.ROOT_DIR
+        base = ROOT_DIR
         return (base / p).resolve()
     
     # TODO: Consider: should templates even *be allowed* to be configureable by the user??
@@ -76,7 +76,7 @@ class UserConfig:
             return self._resolve_path(self.template_pptx)
         
         # Default
-        base = config.ROOT_DIR # TODO: replace with a proper base_dir
+        base = ROOT_DIR # TODO: replace with a proper base_dir
         return base / "resources" / "blank_template.pptx"
     
     
@@ -86,7 +86,7 @@ class UserConfig:
             return self._resolve_path(self.template_docx)
         
         # Default
-        base = config.ROOT_DIR
+        base = ROOT_DIR
         return base / "resources" / "docx_template.docx"
 
 
@@ -97,7 +97,7 @@ class UserConfig:
             return self._resolve_path(self.input_docx)
         
         # Default/Dry Run
-        base = config.ROOT_DIR
+        base = ROOT_DIR
         return base / "resources" / "sample_doc.docx"
 
 
@@ -107,7 +107,7 @@ class UserConfig:
             return self._resolve_path(self.output_folder)
         
         # Default
-        base = config.ROOT_DIR
+        base = ROOT_DIR
         return base / "output"
 
     
@@ -117,6 +117,6 @@ class UserConfig:
             return self._resolve_path(self.input_pptx)
         
         # Default/Dry Run
-        base = config.ROOT_DIR
+        base = ROOT_DIR
         return base / "resources" / "sample_slides_output.pptx"
         

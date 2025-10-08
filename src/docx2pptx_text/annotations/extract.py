@@ -12,7 +12,6 @@ from docx.text.run import Run as Run_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx2pptx_text import utils
 from docx2pptx_text.utils import debug_print
-from docx2pptx_text import config
 import xml.etree.ElementTree as ET
 from docx2pptx_text.internals.config.define_config import UserConfig
 

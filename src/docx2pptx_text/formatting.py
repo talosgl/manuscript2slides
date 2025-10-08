@@ -11,7 +11,6 @@ from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.text.text import _Run as Run_pptx  # type: ignore
 from docx2pptx_text.utils import debug_print
-from docx2pptx_text import config
 from docx.enum.text import WD_COLOR_INDEX
 from docx2pptx_text.internals.config.define_config import UserConfig
 

@@ -6,7 +6,6 @@ from docx2pptx_text.create_slides import slides_from_chunks
 import sys
 from pathlib import Path
 from docx2pptx_text import io
-from docx2pptx_text import config
 from docx2pptx_text.internals.config.define_config import UserConfig
 
 # TODO: replace docx_path throughout with cfg... and remove from signature

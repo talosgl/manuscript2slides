@@ -14,7 +14,7 @@ import json
 # TODO: this will move fix the import later
 # from src.docx2pptx import create_slides
 from docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
-from docx2pptx_text.config import (
+from docx2pptx_text.internals.constants import (
     METADATA_MARKER_HEADER,
     METADATA_MARKER_FOOTER,
     NOTES_MARKER_HEADER,

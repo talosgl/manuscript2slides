@@ -18,7 +18,6 @@ from docx2pptx_text.annotations.restore_from_slides import (
     safely_extract_comment_data,
     safely_extract_experimental_formatting_data,
 )
-from docx2pptx_text import config
 from docx2pptx_text.internals.config.define_config import UserConfig
 
 # region docx2pptx

@@ -1,7 +1,7 @@
 """TODO"""
 
 from __future__ import annotations
-from docx2pptx_text import config
+
 from docx2pptx_text.utils import debug_print, setup_console_encoding
 from docx2pptx_text import pipeline_docx2pptx
 from docx2pptx_text import pipeline_pptx2docx

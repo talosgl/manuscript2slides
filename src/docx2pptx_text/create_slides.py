@@ -10,9 +10,8 @@ from docx2pptx_text.models import Chunk_docx
 from docx2pptx_text.utils import (
     debug_print,
 )  # well that's concerning that this is unused; TODO: add some logging!
-from docx2pptx_text import config
+from docx2pptx_text.internals import constants
 from pptx import presentation
-from docx import document
 from pptx.shapes.placeholder import SlidePlaceholder
 from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame
@@ -29,11 +28,11 @@ def slides_from_chunks(
     """Generate slide objects, one for each chunk created by earlier pipeline steps."""
 
     # Specify which slide layout to use
-    slide_layout = prs.slide_layouts.get_by_name(config.SLD_LAYOUT_CUSTOM_NAME)
+    slide_layout = prs.slide_layouts.get_by_name(constants.SLD_LAYOUT_CUSTOM_NAME)
 
     if slide_layout is None:
         raise KeyError(
-            f"No slide layout found to match provided custom name, {config.SLD_LAYOUT_CUSTOM_NAME}"
+            f"No slide layout found to match provided custom name, {constants.SLD_LAYOUT_CUSTOM_NAME}"
         )
 
     for chunk in chunks:
