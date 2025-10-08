@@ -27,18 +27,20 @@ class UserConfig:
     """All user-configurable settings for docx2pptx-text."""
 
     # Input/Output
-    input_docx: Optional[str] = None # Use strings in the dataclass, convert to Path when you need to use them.
-    input_pptx: Optional[str] = None
 
-    output_folder: Optional[str] = None
+    # Input file to process
+    input_docx: Optional[str] = None # Use strings in the dataclass, convert to Path when you need to use them.
+    input_pptx: Optional[str] = None 
+
+    output_folder: Optional[str] = None # Desired output directory/folder to save in
 
     # ==> Templates I/O
-    template_pptx: Optional[str] = None
-    template_docx: Optional[str] = None
+    template_pptx: Optional[str] = None # The pptx file to use as the template for the slide deck
+    template_docx: Optional[str] = None # The docx file to use as the template for the new docx
 
 
     # Processing
-    chunk_type: ChunkType = ChunkType.HEADING_FLAT
+    chunk_type: ChunkType = ChunkType.HEADING_FLAT # Which chunking method to use to divide the docx into slides.
 
     experimental_formatting_on: bool = True
     
@@ -49,6 +51,8 @@ class UserConfig:
     display_footnotes: bool = True
     display_endnotes: bool = True
     
+    # We this way to leave speaker notes completely empty if the user really wants that, it's a valid use case.
+    # Documentation and tooltips should make it clear that this means metadata loss for round-trip pipeline data.
     preserve_docx_metadata_in_speaker_notes: bool = True
 
     # Class methods
