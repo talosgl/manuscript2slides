@@ -35,7 +35,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
 
     if (
         cfg.display_comments or cfg.display_footnotes or cfg.display_endnotes
-    ) or config.PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
+    ) or cfg.preserve_docx_metadata_in_speaker_notes:
         chunks = process_chunk_annotations(chunks, user_docx, cfg)
 
     # Create the presentation object from template

@@ -97,7 +97,7 @@ def slides_from_chunks(
         if cfg.display_comments or cfg.display_footnotes or cfg.display_endnotes: #config.display_comments or config.display_footnotes or config.display_endnotes:
             annotate_slide(chunk, notes_text_frame, cfg)
 
-        if config.PRESERVE_DOCX_METADATA_IN_SPEAKER_NOTES:
+        if cfg.preserve_docx_metadata_in_speaker_notes:
             add_metadata_to_slide_notes(notes_text_frame, chunk, slide_metadata)
 
 
