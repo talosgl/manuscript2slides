@@ -50,17 +50,17 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
-class ChunkType(Enum):
-    """Chunk Type Choices"""
+# class ChunkType(Enum):
+#     """Chunk Type Choices"""
 
-    HEADING_NESTED = "heading_nested"
-    HEADING_FLAT = "heading_flat"
-    PARAGRAPH = "paragraph"
-    PAGE = "page"
+#     HEADING_NESTED = "heading_nested"
+#     HEADING_FLAT = "heading_flat"
+#     PARAGRAPH = "paragraph"
+#     PAGE = "page"
 
 
 # And this is where to set what will be used in this run
-CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
+# CHUNK_TYPE: ChunkType = ChunkType.HEADING_FLAT
 
 
 # Toggle on/off whether to print debug_prints() to the console

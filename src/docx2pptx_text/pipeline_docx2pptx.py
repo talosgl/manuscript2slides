@@ -31,7 +31,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     user_docx = io.load_and_validate_docx(user_path_validated)
 
     # Chunk the docx by ___
-    chunks = create_docx_chunks(user_docx, config.CHUNK_TYPE)
+    chunks = create_docx_chunks(user_docx, cfg.chunk_type)
 
     if (
         config.DISPLAY_COMMENTS or config.DISPLAY_FOOTNOTES or config.DISPLAY_ENDNOTES

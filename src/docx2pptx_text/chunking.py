@@ -1,27 +1,26 @@
 """TODO docstring"""
 
 from docx2pptx_text.models import Chunk_docx
-from docx2pptx_text import config
+from docx2pptx_text.internals.config.define_config import ChunkType
 from docx2pptx_text.utils import debug_print
 from docx import document
-
 # TODO, ponder: If we add other chunking methods: by section, by multi-file output, will we call it "chunking"? Will it live here?
 
 
 # region Orchestrator
 def create_docx_chunks(
-    doc: document.Document, chunk_type: config.ChunkType = config.ChunkType.PARAGRAPH
+    doc: document.Document, chunk_type: ChunkType = ChunkType.PARAGRAPH
 ) -> list[Chunk_docx]:
     """
     Orchestrator function to create chunks (that will become slides) from the document
     contents, either from paragraph, heading (heading_nested or heading_flat),
     or page. Defaults to paragraph.
     """
-    if chunk_type == config.ChunkType.HEADING_FLAT:
+    if chunk_type == ChunkType.HEADING_FLAT:
         chunks = chunk_by_heading_flat(doc)
-    elif chunk_type == config.ChunkType.HEADING_NESTED:
+    elif chunk_type == ChunkType.HEADING_NESTED:
         chunks = chunk_by_heading_nested(doc)
-    elif chunk_type == config.ChunkType.PAGE:
+    elif chunk_type == ChunkType.PAGE:
         chunks = chunk_by_page(doc)
     else:
         chunks = chunk_by_paragraph(doc)
