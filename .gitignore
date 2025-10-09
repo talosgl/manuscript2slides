@@ -46,14 +46,6 @@ output/*.pptx
 output/
 
 # Resources - ignore user files but keep samples
-resources/*.docx
-resources/*.pptx
-!resources/blank_pptx.pptx
-!resources/blank_template.pptx
-!resources/sample_doc.docx
-resources/sample_doc/
-resources/sample_ppt/
-resources/sample_doc_old/
 homework.md
 export_code.py
 print_outline.py

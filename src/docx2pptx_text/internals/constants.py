@@ -6,11 +6,13 @@ from pathlib import Path
 
 # region Actual CONSTs
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
-ROOT_DIR = Path(__file__).parent.parent.parent.parent
+PACKAGE_DIR = Path(__file__).parent.parent
+RESOURCES_DIR = PACKAGE_DIR / "resources"
 
 # Slide layout used by docx2pptx pipeline when creating new slides from chunks.
 # All slides use the same layout.
-SLD_LAYOUT_CUSTOM_NAME = "docx2pptx"
+# TODO: Allow the user to specify the name?
+SLD_LAYOUT_CUSTOM_NAME = "docx2pptx_text"
 
 # Metadata headers/footers used in both pipelines when writing to/reading from slide speaker notes
 METADATA_MARKER_HEADER: str = "START OF JSON METADATA FROM SOURCE DOCUMENT"
@@ -25,4 +27,5 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 # endregion
 
 # Toggle on/off whether to print debug_prints() to the console
+# TODO: allow this to be set from the UI?
 DEBUG_MODE = True

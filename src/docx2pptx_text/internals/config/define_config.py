@@ -11,7 +11,12 @@ from enum import Enum
 import os
 
 # TODO: remove later
-from docx2pptx_text.internals.constants import ROOT_DIR
+from docx2pptx_text.internals.paths import (
+    user_input_dir,
+    user_templates_dir,
+    user_output_dir,
+    user_base_dir,
+)
 
 
 # Which chunking method to use to divide the docx into slides. This enum lists the available choices:
@@ -75,7 +80,7 @@ class UserConfig:
 
         # For relative paths, resolve from repo root
         # TODO: (Later you'll use a proper base_dir from config)
-        base = ROOT_DIR
+        base = user_base_dir()
         return (base / p).resolve()
 
     # TODO: Consider: should templates even *be allowed* to be configureable by the user??
@@ -85,8 +90,8 @@ class UserConfig:
             return self._resolve_path(self.template_pptx)
 
         # Default
-        base = ROOT_DIR  # TODO: replace with a proper base_dir
-        return base / "resources" / "blank_template.pptx"
+        base = user_templates_dir()  # TODO: replace with a proper base_dir
+        return base / "blank_template.pptx"
 
     def get_template_docx_path(self) -> Path:
         """Get the pptx2docx template docx path with fallback to a default."""
@@ -94,8 +99,8 @@ class UserConfig:
             return self._resolve_path(self.template_docx)
 
         # Default
-        base = ROOT_DIR
-        return base / "resources" / "docx_template.docx"
+        base = user_templates_dir()
+        return base / "docx_template.docx"
 
     # TODO: Consider collapsing these two input_file methods to match get_output_folder, rather than having different properties and methods per filetype.
     def get_input_docx_file(self) -> Path:
@@ -103,9 +108,9 @@ class UserConfig:
         if self.input_docx:
             return self._resolve_path(self.input_docx)
 
-        # Default/Dry Run
-        base = ROOT_DIR
-        return base / "resources" / "sample_doc.docx"
+        # Default/Dry Run from user's input folder (copied there from scaffold.py)
+        base = user_input_dir()
+        return base / "sample_doc.docx"
 
     def get_output_folder(self) -> Path:
         """Get the docx2pptx pipeline output pptx path, with fallback to default."""
@@ -113,8 +118,7 @@ class UserConfig:
             return self._resolve_path(self.output_folder)
 
         # Default
-        base = ROOT_DIR
-        return base / "output"
+        return user_output_dir()
 
     def get_input_pptx_file(self) -> Path:
         """Get the pptx2docx input pptx file or fall back to a dry run example pptx."""
@@ -122,8 +126,8 @@ class UserConfig:
             return self._resolve_path(self.input_pptx)
 
         # Default/Dry Run
-        base = ROOT_DIR
-        return base / "resources" / "sample_slides_output.pptx"
+        base = user_input_dir()
+        return base / "sample_slides_output.pptx"
 
     # Validation
     def validate(self) -> None:
