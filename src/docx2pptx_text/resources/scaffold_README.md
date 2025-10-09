@@ -8,6 +8,7 @@ This folder was created automatically by docx2pptx_text.
 Optional staging area for your Word documents.
 - You can put `.docx` files here, or point the program to files anywhere on your computer
 - Not required to use this - just a convenient place if you want it
+- Includes `sample_doc.docx` and `sample_slides_output.pptx` for testing
 - If you don't specify any input document, docx2pptx will pull the sample_doc.docx from here to do a dry run
 
 ### 📁 output/

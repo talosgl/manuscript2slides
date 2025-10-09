@@ -65,11 +65,27 @@ def ensure_user_scaffold() -> None:
     log.debug(f"User scaffold ready at {base}")
 
 
+# from importlib.resources import files # TODO: uncomment when packaging
+def _get_resource_path(filename: str) -> Path:
+    """
+    Get path to a packaged resource file used as the source for copying into scaffolded destination subfolders.
+
+    Currently uses direct filesystem access for development (./src/docx2pptx_text/resources)
+    When installed will to site-packages/docx2pptx_text/resources/
+    """
+    return RESOURCES_DIR / filename
+
+    # TODO: When packaging, switch to the below:
+
+    # Convert Traversable to Path
+    # resource = files("docx2pptx_text").joinpath("resources", filename)
+    # return Path(str(resource))
+
+
 def _create_readme(path: Path) -> None:
     """Write a friendly README explaining the folder structure."""
 
-    # TODO: When packaging, use importlib.resources instead of ROOT_DIR
-    source = RESOURCES_DIR / "scaffold_README.md"
+    source = _get_resource_path("scaffold_README.md")
 
     if source.exists():
         readme_text = source.read_text(encoding="utf-8")
@@ -85,11 +101,6 @@ def _create_readme(path: Path) -> None:
 
 def _copy_templates_if_missing(templates_dir: Path) -> None:
     """Copy template files from resources/ to user templates folder."""
-    # TODO: When packaging, use importlib.resources instead of ROOT_DIR
-    # See: https://docs.python.org/3/library/importlib.resources.html
-
-    # Source: your project's resources folder
-    source_dir = RESOURCES_DIR
 
     templates_to_copy = [
         "blank_template.pptx",
@@ -97,7 +108,7 @@ def _copy_templates_if_missing(templates_dir: Path) -> None:
     ]
 
     for template_name in templates_to_copy:
-        source = source_dir / template_name
+        source = _get_resource_path(template_name)
         target = templates_dir / template_name
 
         # Only copy if destination doesn't exist (don't overwrite user customizations)
@@ -122,31 +133,15 @@ def _copy_samples_if_missing(input_dir: Path) -> None:
     ]
 
     for sample_name in samples_to_copy:
-        # TODO: When packaging, use importlib.resources instead of RESOURCES_DIR
-        source = RESOURCES_DIR / sample_name
-        dest = input_dir / sample_name
+        source = _get_resource_path(sample_name)
+        target = input_dir / sample_name
 
         # Only copy if destination doesn't exist
-        if not dest.exists():
+        if not target.exists():
             if source.exists():
-                shutil.copy2(source, dest)
+                shutil.copy2(source, target)
                 log.info(f"Copied sample: {sample_name}")
             else:
                 log.warning(f"Sample not found in resources: {sample_name}")
         else:
             log.debug(f"Sample already exists (not overwriting): {sample_name}")
-
-
-# =====================
-
-# TODO: When packaging, use importlib.resources instead of RESOURCES_DIR
-from importlib.resources import files  # Python 3.9+
-
-
-def _get_resource_path(filename: str) -> Path:
-    """Get path to a packaged resource file."""
-    # In development: points to your resources/ folder
-    # When installed: points to site-packages/docx2pptx_text/resources/
-    return files("docx2pptx_text").joinpath(
-        "resources", filename
-    )  # pyright: ignore # this gets mad about traversal object can't be path or something
