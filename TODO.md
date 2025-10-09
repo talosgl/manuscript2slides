@@ -13,6 +13,7 @@ Epic: Package/Distribution
 Epic: Document the program thoroughly 
     - for non-tech-savvy users
     - for future contributors
+    - Don't forget to put the actual docstrings at the top of all the module files!
 
 ## Public v1 Guidelines
 - What does is "done enough for public github repo mean"? 
