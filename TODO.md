@@ -6,6 +6,14 @@
 Epic: Investigate UI options, select one, implement it
     - Build a simple UI with good enough UX that any non-tech-savvy writer can use it without friction
 
+Epic: Add tests & pytest
+    - Test config validation
+    - Test path resolution across platforms
+    - Test scaffolding (does it create folders? not overwrite files?)
+    - Test the actual pipelines (docx->pptx, pptx->docx)
+    - Test edge cases (empty docs, huge docs, corrupted files)
+    - Maybe set up CI/CD? (GitHub Actions is free for public repos)
+
 Epic: Package/Distribution
     - Figure out how to package it into an installer for each non-mobile platform (Win 11, MacOS, Linux)
     - Make sure to update the resources/.. source inside of scaffold.py to use the packaged version
