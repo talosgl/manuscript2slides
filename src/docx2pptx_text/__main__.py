@@ -6,8 +6,8 @@ from docx2pptx_text.utils import debug_print, setup_console_encoding
 from docx2pptx_text import pipeline_docx2pptx
 from docx2pptx_text import pipeline_pptx2docx
 from docx2pptx_text.internals.config.define_config import UserConfig
-from docx2pptx_text.internals.config import config_utils
-from docx2pptx_text.internals.constants import ROOT_DIR
+from docx2pptx_text.internals.logger import setup_logger
+from docx2pptx_text.internals.constants import DEBUG_MODE
 
 
 def main() -> None:
@@ -15,33 +15,23 @@ def main() -> None:
     setup_console_encoding()
     debug_print("Hello, manuscript parser!")
 
-    # === YAML config early testing
-    # TODO: remove
-    yaml_dir = ROOT_DIR / "resources" / "my_config.yaml"
-    yaml_data = config_utils.load_yaml_config(yaml_dir)
-    yaml_data = config_utils.normalize_yaml_for_dataclass(yaml_data)
-    config = UserConfig(**yaml_data)  # Unpack dict into dataclass
-    config.validate()
-    print(config)
-    # ===
+    # Start up logging
+    log = setup_logger(enable_trace=DEBUG_MODE)
+    log.info("Starting docx2pptx_text Log.")
 
     # Create config with defaults
+    # TODO: I think, later, add some kind of config propogation from interface: UI, YAML, CLI, etc.
     cfg = UserConfig()
 
     # Validate config shape
     cfg.validate()
 
-    # TODO: Later you'll load from YAML, merge CLI args, etc.
-    # For now, just use defaults
-    # Right now UserConfig() with no arguments will use all defaults,
-    # which should work for your existing sample workflow. Later when
-    # you add YAML loading (Layer 3), you'll replace that with
-    # cfg = load_from_yaml_and_merge(...).
-
-    # TODO remove config.INPUT_DOCX_FILE after we move it
+    # === Pipeline testing
+    # TODO: I think, later, replace with some kind of router/orchestrator that goes to the right pipeline based on UI selections/config info
     pipeline_docx2pptx.run_docx2pptx_pipeline(cfg)
 
     pipeline_pptx2docx.run_pptx2docx_pipeline(cfg)
+    # ===
 
 
 # region call main
