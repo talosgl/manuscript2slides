@@ -28,9 +28,7 @@ from docx2pptx_text.internals.paths import (
 )
 from docx2pptx_text.internals.constants import RESOURCES_DIR
 
-log = logging.getLogger(
-    "docx2pptx_text"
-)  # TODO/Q: we can do this outside a function?!?!
+log = logging.getLogger("docx2pptx_text")
 
 
 def ensure_user_scaffold() -> None:
@@ -149,4 +147,6 @@ def _get_resource_path(filename: str) -> Path:
     """Get path to a packaged resource file."""
     # In development: points to your resources/ folder
     # When installed: points to site-packages/docx2pptx_text/resources/
-    return files("docx2pptx_text").joinpath("resources", filename)  # pyright: ignore
+    return files("docx2pptx_text").joinpath(
+        "resources", filename
+    )  # pyright: ignore # this gets mad about traversal object can't be path or something

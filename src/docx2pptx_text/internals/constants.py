@@ -1,6 +1,4 @@
-"""TODO: write docstring to please ruff"""
-
-# TODO: rename file to consts.py & consider moving to internals
+"""Constants used throughout docx2pptx_text."""
 
 from pathlib import Path
 
