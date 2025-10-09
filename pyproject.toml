@@ -11,6 +11,16 @@ dependencies = [
 ]
 authors = [{name = "talosgl"}]
 
+# Convention is: [project] -> [tool.*] sections -> [build-system] last.
+
+[tool.setuptools.package-data]
+docx2pptx_text = [
+    "resources/*.pptx",
+    "resources/*.docx",
+    "resources/*.md",
+    "resources/*.yaml"
+]
+
 [tool.ruff]
 lint.select = ["D100", "D101", "D102", "D103", "ANN"]
 

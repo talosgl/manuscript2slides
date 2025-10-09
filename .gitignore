@@ -41,11 +41,9 @@ Thumbs.db
 
 # Project specific
 # Output
-output/*.pptx
-!output/.gitkeep
 output/
 
-# Resources - ignore user files but keep samples
+# Jo stuff
 homework.md
 export_code.py
 print_outline.py
