@@ -2,8 +2,10 @@
 
 from manuscript2slides.models import Chunk_docx
 from manuscript2slides.internals.config.define_config import ChunkType
-from manuscript2slides.utils import debug_print
 from docx import document
+import logging
+
+log = logging.getLogger("manuscript2slides")
 
 # TODO, ponder: If we add other chunking methods: by section, by multi-file output, will we call it "chunking"? Will it live here?
 
@@ -37,6 +39,9 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
     Creates chunks (which will become slides) based on paragraph, which are blocks of content
     separated by whitespace.
     """
+
+    log.info("Running the chunk by paragraph strategy.")
+
     paragraph_chunks: list[Chunk_docx] = []
 
     for para in doc.paragraphs:
@@ -45,8 +50,12 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
         if para.text == "":
             continue
 
+        log.debug(f"Paragraph begins: {para.text[:30]}...")
+
         new_chunk = Chunk_docx.create_with_paragraph(para)
         paragraph_chunks.append(new_chunk)
+
+    log.info(f"This document has {len(paragraph_chunks)} page chunks.")
 
     return paragraph_chunks
 
@@ -58,6 +67,8 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
 def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     """Creates chunks based on page breaks"""
 
+    log.info("Running the chunk by page strategy.")
+
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
 
@@ -68,6 +79,8 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
         # Skip empty paragraphs (keep intentional whitespace newlines)
         if para.text == "":
             continue
+
+        log.debug(f"Paragraph begins: {para.text[:30]}...")
 
         # If the current_page_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_page_chunk.paragraphs:
@@ -92,7 +105,7 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     if current_page_chunk:
         all_chunks.append(current_page_chunk)
 
-    print(f"This document has {len(all_chunks)} page chunks.")
+    log.info(f"This document has {len(all_chunks)} page chunks.")
     return all_chunks
 
 
@@ -138,6 +151,8 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     Normal Paragraph
 
     """
+    log.info("Running the chunk by heading (nested) strategy.")
+
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
     current_chunk: Chunk_docx = Chunk_docx()
@@ -154,7 +169,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
         # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.style_name later)
         style_name = para.style.name if para.style and para.style.name else "Normal"
 
-        debug_print(f"Paragraph begins: {para.text[:30]}... and is index: {i}")
+        log.debug(f"Paragraph begins: {para.text[:30]}... and is index: {i}")
 
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_chunk.paragraphs:
@@ -199,7 +214,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     if current_chunk:
         all_chunks.append(current_chunk)
 
-    print(f"This document has {len(all_chunks)} nested heading chunks.")
+    log.info(f"This document has {len(all_chunks)} nested heading chunks.")
     return all_chunks
 
 
@@ -246,6 +261,8 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     Normal Paragraph
     """
 
+    log.info("Running the chunk by heading (flat) strategy.")
+
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
     current_chunk: Chunk_docx = Chunk_docx()
@@ -258,7 +275,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
         # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.name later)
         style_name = para.style.name if para.style and para.style.name else "Normal"
 
-        debug_print(f"Paragraph begins: {para.text[:30]}...")
+        log.debug(f"Paragraph begins: {para.text[:30]}...")
 
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_chunk.paragraphs:
@@ -291,7 +308,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     if current_chunk:
         all_chunks.append(current_chunk)
 
-    print(f"This document has {len(all_chunks)} flat heading chunks.")
+    log.info(f"This document has {len(all_chunks)} flat heading chunks.")
     return all_chunks
 
 
