@@ -1,4 +1,7 @@
-"""TODO docstring"""
+"""
+Module containing functions to create docx2pptx chunks including by paragraph, page, heading (flat), and heading (nested).
+All strategies break a new chunk on a docx page break to prevent slide text overflow.
+"""
 
 from manuscript2slides.models import Chunk_docx
 from manuscript2slides.internals.config.define_config import ChunkType

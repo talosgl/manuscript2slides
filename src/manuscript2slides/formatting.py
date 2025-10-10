@@ -1,4 +1,4 @@
-"""TODO!"""
+"""Formatting functions for both pipelines."""
 
 import logging
 from docx.shared import RGBColor as RGBColor_docx

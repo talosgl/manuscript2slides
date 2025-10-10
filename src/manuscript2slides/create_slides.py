@@ -1,4 +1,4 @@
-"""TODO"""
+"""Module serving docx2pptx pipeline flow, taking chunks we built from the docx and turning them into slide body content."""
 
 import logging
 

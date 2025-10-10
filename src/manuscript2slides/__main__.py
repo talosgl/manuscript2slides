@@ -1,4 +1,4 @@
-"""TODO"""
+"""Main entry point for program flow."""
 
 from __future__ import annotations
 
