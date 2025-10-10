@@ -22,7 +22,7 @@ from manuscript2slides.formatting import (
 )
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
-from manuscript2slides.utils import detect_field_code_hyperlinks
+from manuscript2slides.annotations.docx_xml import detect_field_code_hyperlinks
 
 log = logging.getLogger("manuscript2slides")
 

@@ -8,7 +8,7 @@ from docx.comments import Comment as Comment_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 
-from manuscript2slides import utils
+from manuscript2slides.annotations import docx_xml
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import (
     Chunk_docx,
@@ -166,14 +166,14 @@ def get_all_docx_footnotes(
         return {}
 
     try:
-        footnotes_parts = utils.find_xml_parts(doc, "footnotes.xml")
+        footnotes_parts = docx_xml.find_xml_parts(doc, "footnotes.xml")
 
         if not footnotes_parts:
             return {}
 
         # We think this will always be a list of one item, so assign that item to a variable.
-        root = utils.parse_xml_blob(footnotes_parts[0].blob)
-        return utils.extract_notes_from_xml(root, Footnote_docx)
+        root = docx_xml.parse_xml_blob(footnotes_parts[0].blob)
+        return docx_xml.extract_notes_from_xml(root, Footnote_docx)
 
     except Exception as e:
         log.warning(f"Could not extract footnotes: {e}")
@@ -191,13 +191,13 @@ def get_all_docx_endnotes(
         return {}
 
     try:
-        endnotes_parts = utils.find_xml_parts(doc, "endnotes.xml")
+        endnotes_parts = docx_xml.find_xml_parts(doc, "endnotes.xml")
 
         if not endnotes_parts:
             return {}
 
-        root = utils.parse_xml_blob(endnotes_parts[0].blob)
-        return utils.extract_notes_from_xml(root, Endnote_docx)
+        root = docx_xml.parse_xml_blob(endnotes_parts[0].blob)
+        return docx_xml.extract_notes_from_xml(root, Endnote_docx)
 
     except Exception as e:
         log.warning(f"Could not extract endnotes: {e}")

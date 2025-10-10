@@ -1,25 +1,26 @@
 """TODO Docstring"""
 
+import json
+from datetime import datetime
+
+from pptx.text.text import TextFrame
+
+from manuscript2slides.annotations.docx_xml import NOTE_TYPE
+from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.constants import (
+    METADATA_MARKER_FOOTER,
+    METADATA_MARKER_HEADER,
+    NOTES_MARKER_FOOTER,
+    NOTES_MARKER_HEADER,
+)
 from manuscript2slides.models import (
     Chunk_docx,
-    Footnote_docx,
-    Endnote_docx,
     Comment_docx_custom,
+    Endnote_docx,
+    Footnote_docx,
 )
-from manuscript2slides.internals.config.define_config import UserConfig
-from pptx.text.text import TextFrame
-from datetime import datetime
-import json
 
-# TODO: this will move fix the import later
-# from src.docx2pptx import create_slides
 from manuscript2slides.run_processing import process_docx_paragraph_inner_contents
-from manuscript2slides.internals.constants import (
-    METADATA_MARKER_HEADER,
-    METADATA_MARKER_FOOTER,
-    NOTES_MARKER_HEADER,
-    NOTES_MARKER_FOOTER,
-)
 
 
 # region annotate_slides - copied notes + metadata
@@ -32,6 +33,8 @@ def annotate_slide(
     NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
     comments' selected text ranges, nor do we preserve footnote or endnote numbering.
     """
+    # Check if there's anything to annotate
+
     notes_text_frame.add_paragraph()  # add a blank first line for actual annotations by the user
 
     header_para = notes_text_frame.add_paragraph()
@@ -104,9 +107,6 @@ def add_comments_to_speaker_notes(
                         else:
                             comment_header.text = "\n"
                         process_docx_paragraph_inner_contents(para, notes_para, cfg)
-
-
-from manuscript2slides.utils import NOTE_TYPE
 
 
 def add_notes_to_speaker_notes(

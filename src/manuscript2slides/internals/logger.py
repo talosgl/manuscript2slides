@@ -8,7 +8,6 @@ Creates console and file handlers with run_id in every log line.
 # ==DOCEND==
 
 import logging
-from pathlib import Path
 
 from manuscript2slides.internals.paths import user_log_dir_path
 from manuscript2slides.internals.run_context import get_run_id

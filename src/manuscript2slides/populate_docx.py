@@ -17,7 +17,7 @@ from pptx.slide import NotesSlide, Slide
 from pptx.text.text import TextFrame
 from pptx.text.text import _Paragraph as Paragraph_pptx
 
-from manuscript2slides import io, utils
+from manuscript2slides import utils
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
@@ -137,7 +137,7 @@ def copy_user_notes_to_new_comment(
 
     # Prepare the header + body text for the comment
     comment_header = "Copied from the PPTX Speaker Notes: \n\n"
-    comment_text = comment_header + utils.sanitize_xml_text(raw_comment_text)
+    comment_text = comment_header + _sanitize_xml_text(raw_comment_text)
 
     # Add the comment to the doc & run
     new_comment = new_doc.add_comment(last_run, comment_text)
@@ -174,12 +174,27 @@ def copy_unmatched_comments_to_new_comment(
     # Prepare the header + body text for the comment
     raw_comment_text = combined
     comment_header = "We found metadata for these annotations (comments, footnotes, or endnotes), but weren't able to match them to specific text in this paragraph: \n\n"
-    comment_text = comment_header + utils.sanitize_xml_text(raw_comment_text)
+    comment_text = comment_header + _sanitize_xml_text(raw_comment_text)
 
     # Add the comment to the doc & run
     new_comment = new_doc.add_comment(last_run, comment_text)
 
     return new_comment
+
+
+import re
+
+
+def _sanitize_xml_text(text: str) -> str:
+    """Remove characters that aren't valid in XML."""
+    if not text:
+        return ""
+
+    # Remove NULL bytes and control characters (except tab, newline, carriage return)
+    sanitized = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", text)
+
+    # Ensure it's a proper string
+    return str(sanitized)
 
 
 # region get_slide_paragraphs
