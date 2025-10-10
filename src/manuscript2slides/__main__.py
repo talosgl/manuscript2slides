@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from manuscript2slides.utils import debug_print, setup_console_encoding
+from manuscript2slides.utils import setup_console_encoding
 from manuscript2slides import pipeline_docx2pptx
 from manuscript2slides import pipeline_pptx2docx
 from manuscript2slides.internals.config.define_config import UserConfig
@@ -15,7 +15,7 @@ def main() -> None:
     """Entry point for program flow."""
     setup_console_encoding()
 
-    debug_print("Hello, manuscript parser!")  # TODO: still need to replace all these :|
+    print("Hello, manuscript parser!")  # TODO: Remove? I'm sentimentally attached...
 
     # Start up logging
     log = setup_logger(enable_trace=DEBUG_MODE)
