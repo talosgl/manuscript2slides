@@ -1,19 +1,23 @@
 """TODO docstring"""
 
-from docx.comments import Comment as Comment_docx
+import logging
+import xml.etree.ElementTree as ET
+
 from docx import document
+from docx.comments import Comment as Comment_docx
+from docx.text.paragraph import Paragraph as Paragraph_docx
+from docx.text.run import Run as Run_docx
+
+from manuscript2slides import utils
+from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import (
     Chunk_docx,
-    Footnote_docx,
-    Endnote_docx,
     Comment_docx_custom,
+    Endnote_docx,
+    Footnote_docx,
 )
-from docx.text.run import Run as Run_docx
-from docx.text.paragraph import Paragraph as Paragraph_docx
-from manuscript2slides import utils
-from manuscript2slides.utils import debug_print
-import xml.etree.ElementTree as ET
-from manuscript2slides.internals.config.define_config import UserConfig
+
+log = logging.getLogger("manuscript2slides")
 
 
 def process_chunk_annotations(
@@ -54,7 +58,7 @@ def process_chunk_annotations(
                             all_endnotes=all_endnotes,
                         )
                 else:
-                    debug_print(f"Unknown content type in paragraph: {type(item)}")
+                    log.warning(f"Unknown content type in paragraph: {type(item)}")
 
     return chunks
 
@@ -112,7 +116,7 @@ def process_run_annotations(
                 chunk.add_endnote(endnote_obj)
 
     except (AttributeError, ET.ParseError) as e:
-        debug_print(f"WARNING: Could not parse run XML for references: {e}")
+        log.warning(f"Could not parse run XML for references: {e}")
 
 
 def get_ref_text(run: Run_docx, paragraph: Paragraph_docx) -> str | None:
@@ -172,7 +176,7 @@ def get_all_docx_footnotes(
         return utils.extract_notes_from_xml(root, Footnote_docx)
 
     except Exception as e:
-        debug_print(f"Warning: Could not extract footnotes: {e}")
+        log.warning(f"Could not extract footnotes: {e}")
         return {}
 
 
@@ -196,7 +200,7 @@ def get_all_docx_endnotes(
         return utils.extract_notes_from_xml(root, Endnote_docx)
 
     except Exception as e:
-        debug_print(f"Warning: Could not extract endnotes: {e}")
+        log.warning(f"Could not extract endnotes: {e}")
         return {}
 
 
