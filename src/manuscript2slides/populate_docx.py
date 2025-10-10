@@ -12,7 +12,7 @@ from docx.comments import Comment as Comment_docx
 from docx.text.run import Run as Run_docx
 from pptx import presentation
 from pptx.slide import Slide
-from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
+from pptx.text.text import _Paragraph as Paragraph_pptx
 
 from manuscript2slides import io, utils
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes

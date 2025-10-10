@@ -8,7 +8,7 @@ from docx.oxml.ns import qn
 from docx.oxml.parser import OxmlElement as OxmlElement_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
-from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
+from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 
 from manuscript2slides.annotations.restore_from_slides import (
