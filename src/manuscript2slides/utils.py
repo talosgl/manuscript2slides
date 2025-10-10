@@ -14,6 +14,10 @@ import xml.etree.ElementTree as ET
 from docx import document
 from docx.text.run import Run as Run_docx
 from manuscript2slides.internals.constants import DEBUG_MODE
+import logging
+
+log = logging.getLogger("manuscript2slides")
+
 
 # TODO, multi-file split: move to the top of whatever file this function ends up living in
 # This allows for a generic type parameter - when you pass Footnote_docx into the extract_notes_from_xml(...) function, you will get dict[str, Footnote_docx] back
@@ -57,13 +61,13 @@ def find_xml_parts(doc: document.Document, part_name: str) -> list[Part]:
     zip_package = doc.part.package
 
     if zip_package is None:
-        debug_print("WARNING: Could not access docx package.")
+        log.warning("Could not access docx package.")
         return []
 
     part_name_parts: list[Part] = []
     for part in zip_package.parts:
         if part_name in str(part.partname):
-            debug_print(f"We found a {part_name} part!")
+            log.debug(f"We found a {part_name} part!")
             part_name_parts.append(part)
 
     return part_name_parts
@@ -160,8 +164,8 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
                     return match.group(1)
 
     except (AttributeError, ET.ParseError) as e:
-        debug_print(
-            f"WARNING: Could not parse run XML for field codes: {e} while seeking instrText"
+        log.warning(
+            f"Could not parse run XML for field codes: {e} while seeking instrText"
         )
 
     return None
