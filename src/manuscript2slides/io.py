@@ -10,14 +10,11 @@ import pptx
 from docx import document
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from pptx import presentation
-from pptx.shapes.placeholder import SlidePlaceholder
-from pptx.slide import NotesSlide, Slide
-from pptx.text.text import TextFrame  # type: ignore
-from pptx.text.text import _Paragraph as Paragraph_pptx
-from pptx.text.text import _Run as Run_pptx
+from pptx.slide import Slide
 
 from manuscript2slides.internals import constants
 from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.populate_docx import get_slide_paragraphs
 
 log = logging.getLogger("manuscript2slides")
 
@@ -25,25 +22,7 @@ OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentatio
 
 
 # region not sure these belong in io
-# TODO: figure out where this live after we move the rest of the monolith
-def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx]:
-    """Extract all paragraphs from all text placeholders in a slide."""
-    paragraphs: list[Paragraph_pptx] = []
-
-    for placeholder in slide.placeholders:
-        if (
-            isinstance(placeholder, SlidePlaceholder)
-            and hasattr(placeholder, "text_frame")
-            and placeholder.text_frame
-        ):
-            textf: TextFrame = placeholder.text_frame
-            for para in textf.paragraphs:
-                if para.runs or para.text:
-                    paragraphs.append(para)
-
-    return paragraphs
-
-
+# TODO: Move to pipeline file?
 def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
     """Load the PowerPoint template, create a new presentation object, and validate it contains the custom layout. (manuscript2slides pipeline)"""
 

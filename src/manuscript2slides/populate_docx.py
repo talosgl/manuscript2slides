@@ -6,12 +6,15 @@ and creating comments for user notes and unmatched annotations.
 """
 
 import logging
+from typing import Union
 
 from docx import document
 from docx.comments import Comment as Comment_docx
 from docx.text.run import Run as Run_docx
 from pptx import presentation
-from pptx.slide import Slide
+from pptx.shapes.placeholder import SlidePlaceholder
+from pptx.slide import NotesSlide, Slide
+from pptx.text.text import TextFrame
 from pptx.text.text import _Paragraph as Paragraph_pptx
 
 from manuscript2slides import io, utils
@@ -63,7 +66,7 @@ def process_slide_paragraphs(
     Additionally, store non-metadata speaker notes content as a new comment, too.
     """
 
-    slide_paragraphs: list[Paragraph_pptx] = io.get_slide_paragraphs(slide)
+    slide_paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
 
     unmatched_annotations = []
     matched_comment_ids = set()
@@ -177,3 +180,25 @@ def copy_unmatched_comments_to_new_comment(
     new_comment = new_doc.add_comment(last_run, comment_text)
 
     return new_comment
+
+
+# region get_slide_paragraphs
+def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx]:
+    """Extract all paragraphs from all text placeholders in a slide."""
+    paragraphs: list[Paragraph_pptx] = []
+
+    for placeholder in slide.placeholders:
+        if (
+            isinstance(placeholder, SlidePlaceholder)
+            and hasattr(placeholder, "text_frame")
+            and placeholder.text_frame
+        ):
+            textf: TextFrame = placeholder.text_frame
+            for para in textf.paragraphs:
+                if para.runs or para.text:
+                    paragraphs.append(para)
+
+    return paragraphs
+
+
+#
