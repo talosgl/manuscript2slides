@@ -5,21 +5,22 @@ from slide paragraphs, restoring formatting and annotations from speaker notes m
 and creating comments for user notes and unmatched annotations.
 """
 
-from pptx.slide import Slide
-from manuscript2slides.models import SlideNotes
-from manuscript2slides import utils
-from manuscript2slides import io
-from manuscript2slides.utils import debug_print
-from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
-from manuscript2slides.run_processing import process_pptx_run
-from docx import document
-from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
-from pptx.slide import Slide
-from pptx import presentation
-from docx.text.run import Run as Run_docx
-from docx.comments import Comment as Comment_docx
+import logging
 
+from docx import document
+from docx.comments import Comment as Comment_docx
+from docx.text.run import Run as Run_docx
+from pptx import presentation
+from pptx.slide import Slide
+from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
+
+from manuscript2slides import io, utils
+from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
 from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.models import SlideNotes
+from manuscript2slides.run_processing import process_pptx_run
+
+log = logging.getLogger("manuscript2slides")
 
 
 # region copy slides to docx body orchestrator
@@ -93,7 +94,7 @@ def process_slide_paragraphs(
             slide_notes, last_run, new_doc
         )
         if user_notes_comment:
-            debug_print(
+            log.debug(
                 f"Added a new comment with this slide's user notes: {user_notes_comment}"
             )
 
@@ -112,7 +113,7 @@ def process_slide_paragraphs(
             last_run, unmatched_annotations, new_doc
         )
         if unmatched_comment:
-            debug_print(
+            log.debug(
                 f"Added comment for {len(unmatched_annotations)} unmatched annotations"
             )
 
