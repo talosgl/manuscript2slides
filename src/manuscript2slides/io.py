@@ -21,8 +21,6 @@ log = logging.getLogger("manuscript2slides")
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
 
-
-
 # region Path Helpers
 def validate_path(user_path: str | Path) -> Path:
     """Ensure filepath exists and is a file."""
@@ -193,8 +191,9 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
     log.info(f"The pptx file {pptx_path} has {slide_count} slide(s) in it.")
 
     first_slide_paragraphs = get_slide_paragraphs(first_slide)
+
     log.info(
-        f"The first slide detected with text content is slide_id: {first_slide.slide_id}. The text content is: \n"
+        f"The first slide detected with text content is slide_id: {first_slide.slide_id} (inside presentation.xml)."
     )
 
     for p in first_slide_paragraphs:

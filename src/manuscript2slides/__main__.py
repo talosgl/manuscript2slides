@@ -15,11 +15,12 @@ def main() -> None:
     """Entry point for program flow."""
     setup_console_encoding()
 
-    print("Hello, manuscript parser!")  # TODO: Remove? I'm sentimentally attached...
-
     # Start up logging
     log = setup_logger(enable_trace=DEBUG_MODE)
     log.info("Starting manuscript2slides Log.")
+
+    # A hello-world to probably remove someday, but I am sentimental. :)
+    log.info("Hello, manuscript parser!")
 
     # Ensure user folders exist and templates are copied
     ensure_user_scaffold()
