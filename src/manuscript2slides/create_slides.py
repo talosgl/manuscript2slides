@@ -1,22 +1,23 @@
 """TODO"""
 
-from manuscript2slides.chunking import is_standard_heading
-from manuscript2slides.annotations.apply_to_slides import (
-    annotate_slide,
-    add_metadata_to_slide_notes,
-)
-from manuscript2slides.run_processing import process_docx_paragraph_inner_contents
-from manuscript2slides.models import Chunk_docx
-from manuscript2slides.utils import (
-    debug_print,
-)  # well that's concerning that this is unused; TODO: add some logging!
-from manuscript2slides.internals import constants
+import logging
+
 from pptx import presentation
 from pptx.shapes.placeholder import SlidePlaceholder
 from pptx.slide import Slide, SlideLayout
 from pptx.text.text import TextFrame
 
+from manuscript2slides.annotations.apply_to_slides import (
+    add_metadata_to_slide_notes,
+    annotate_slide,
+)
+from manuscript2slides.chunking import is_standard_heading
+from manuscript2slides.internals import constants
 from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.models import Chunk_docx
+from manuscript2slides.run_processing import process_docx_paragraph_inner_contents
+
+log = logging.getLogger("manuscript2slides")
 
 # region create slides from chunks
 
@@ -25,6 +26,8 @@ def slides_from_chunks(
     prs: presentation.Presentation, chunks: list[Chunk_docx], cfg: UserConfig
 ) -> None:
     """Generate slide objects, one for each chunk created by earlier pipeline steps."""
+
+    log.info("Creating new slides from chunks.")
 
     # Specify which slide layout to use
     slide_layout = prs.slide_layouts.get_by_name(constants.SLD_LAYOUT_CUSTOM_NAME)
