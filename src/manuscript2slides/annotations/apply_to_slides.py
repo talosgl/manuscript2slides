@@ -33,7 +33,15 @@ def annotate_slide(
     NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
     comments' selected text ranges, nor do we preserve footnote or endnote numbering.
     """
-    # Check if there's anything to annotate
+    # Check if there's anything to annotate first
+    has_content = (
+        (cfg.display_comments and chunk.comments)
+        or (cfg.display_footnotes and chunk.footnotes)
+        or (cfg.display_endnotes and chunk.endnotes)
+    )
+
+    if not has_content:
+        return  # Nothing to add, exit early
 
     notes_text_frame.add_paragraph()  # add a blank first line for actual annotations by the user
 
