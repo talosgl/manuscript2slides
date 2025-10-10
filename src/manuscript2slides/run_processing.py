@@ -3,22 +3,22 @@
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 from pptx.text.text import _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
-from docx2pptx_text.utils import debug_print, detect_field_code_hyperlinks
-from docx2pptx_text.formatting import copy_run_formatting_docx2pptx
+from manuscript2slides.utils import debug_print, detect_field_code_hyperlinks
+from manuscript2slides.formatting import copy_run_formatting_docx2pptx
 from docx import document
-from docx2pptx_text.models import SlideNotes
+from manuscript2slides.models import SlideNotes
 from docx.opc import constants
 from docx.oxml.ns import qn
 from docx.oxml.parser import OxmlElement as OxmlElement_docx
-from docx2pptx_text.formatting import (
+from manuscript2slides.formatting import (
     copy_run_formatting_pptx2docx,
     _apply_experimental_formatting_from_metadata,
 )
-from docx2pptx_text.annotations.restore_from_slides import (
+from manuscript2slides.annotations.restore_from_slides import (
     safely_extract_comment_data,
     safely_extract_experimental_formatting_data,
 )
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides.internals.config.define_config import UserConfig
 
 
 # region docx2pptx

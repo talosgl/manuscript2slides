@@ -8,12 +8,12 @@ import inspect
 
 # XML specific
 from typing import TypeVar
-from docx2pptx_text.models import Footnote_docx, Endnote_docx
+from manuscript2slides.models import Footnote_docx, Endnote_docx
 from docx.opc.part import Part
 import xml.etree.ElementTree as ET
 from docx import document
 from docx.text.run import Run as Run_docx
-from docx2pptx_text.internals.constants import DEBUG_MODE
+from manuscript2slides.internals.constants import DEBUG_MODE
 
 # TODO, multi-file split: move to the top of whatever file this function ends up living in
 # This allows for a generic type parameter - when you pass Footnote_docx into the extract_notes_from_xml(...) function, you will get dict[str, Footnote_docx] back

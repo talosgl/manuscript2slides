@@ -11,7 +11,7 @@ from enum import Enum
 import os
 
 # TODO: remove later
-from docx2pptx_text.internals.paths import (
+from manuscript2slides.internals.paths import (
     user_input_dir,
     user_templates_dir,
     user_output_dir,
@@ -31,7 +31,7 @@ class ChunkType(Enum):
 
 @dataclass
 class UserConfig:
-    """All user-configurable settings for docx2pptx-text."""
+    """All user-configurable settings for manuscript2slides."""
 
     # Input/Output
 

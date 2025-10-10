@@ -11,11 +11,11 @@ from docx import document
 from typing import Union
 from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
 from pptx.shapes.placeholder import SlidePlaceholder
-from docx2pptx_text.internals import constants
+from manuscript2slides.internals import constants
 from docx.text.paragraph import Paragraph as Paragraph_docx
-from docx2pptx_text.utils import debug_print
+from manuscript2slides.utils import debug_print
 from datetime import datetime
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides.internals.config.define_config import UserConfig
 
 # TODO, multi-file split: Another TypeVar to move to the top of whatever file these funcs live in later
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
@@ -42,7 +42,7 @@ def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx
 
 
 def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
-    """Load the PowerPoint template, create a new presentation object, and validate it contains the custom layout. (docx2pptx-text pipeline)"""
+    """Load the PowerPoint template, create a new presentation object, and validate it contains the custom layout. (manuscript2slides pipeline)"""
 
     # Try to load the pptx
     try:
@@ -58,6 +58,7 @@ def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
         raise ValueError(
             f"Template is missing the required layout: '{constants.SLD_LAYOUT_CUSTOM_NAME}'. "
             f"Available layouts: {', '.join(layout_names)}"
+            f"If error persists, try renaming the Documents/manuscript2slides/templates/ folder to templates_old/ or deleting it."
         )
 
     return prs

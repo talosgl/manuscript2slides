@@ -2,7 +2,7 @@
 
 from docx.comments import Comment as Comment_docx
 from docx import document
-from docx2pptx_text.models import (
+from manuscript2slides.models import (
     Chunk_docx,
     Footnote_docx,
     Endnote_docx,
@@ -10,10 +10,10 @@ from docx2pptx_text.models import (
 )
 from docx.text.run import Run as Run_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
-from docx2pptx_text import utils
-from docx2pptx_text.utils import debug_print
+from manuscript2slides import utils
+from manuscript2slides.utils import debug_print
 import xml.etree.ElementTree as ET
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides.internals.config.define_config import UserConfig
 
 
 def process_chunk_annotations(

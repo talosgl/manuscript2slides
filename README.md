@@ -96,7 +96,7 @@ Supported chunking methods:
 - heading_nested: New slide based on heading hierarchy
 
 Example:
-    python docx2pptx-text.py
+    python manuscript2slides.py
 
     (Configure INPUT_DOCX_FILE and other constants before running)
 
@@ -141,7 +141,7 @@ Example:
     -   You can choose to preserve some comment metadata (author, timestamps) in plain text, but not threading.
 
 -   REVERSE FLOW LIMITATIONS
-    -   The reverse flow (pptx2docx-text) is significantly less robust. Your original input document to the docx2pptx-text flow, and 
+    -   The reverse flow (pptx2docx-text) is significantly less robust. Your original input document to the manuscript2slides flow, and 
         the output document from a follow-up pptx2docx-text flow will not look the same. Expect to lose images, tables, footnotes, 
         endnotes, and fancy formatting. We attempt to preserve headings (text-matching based). Comments should be restored, but their 
         anchor positioning may be altered slightly.

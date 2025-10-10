@@ -1,20 +1,20 @@
 """TODO Docstring"""
 
-from docx2pptx_text.models import (
+from manuscript2slides.models import (
     Chunk_docx,
     Footnote_docx,
     Endnote_docx,
     Comment_docx_custom,
 )
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides.internals.config.define_config import UserConfig
 from pptx.text.text import TextFrame
 from datetime import datetime
 import json
 
 # TODO: this will move fix the import later
 # from src.docx2pptx import create_slides
-from docx2pptx_text.run_processing import process_docx_paragraph_inner_contents
-from docx2pptx_text.internals.constants import (
+from manuscript2slides.run_processing import process_docx_paragraph_inner_contents
+from manuscript2slides.internals.constants import (
     METADATA_MARKER_HEADER,
     METADATA_MARKER_FOOTER,
     NOTES_MARKER_HEADER,
@@ -106,7 +106,7 @@ def add_comments_to_speaker_notes(
                         process_docx_paragraph_inner_contents(para, notes_para, cfg)
 
 
-from docx2pptx_text.utils import NOTE_TYPE
+from manuscript2slides.utils import NOTE_TYPE
 
 
 def add_notes_to_speaker_notes(

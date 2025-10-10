@@ -2,7 +2,7 @@
 
 import yaml
 from pathlib import Path
-from docx2pptx_text.utils import debug_print
+from manuscript2slides.utils import debug_print
 
 
 def load_yaml_config(path: Path) -> dict:
@@ -29,7 +29,7 @@ def load_yaml_config(path: Path) -> dict:
     return data
 
 
-from docx2pptx_text.internals.config.define_config import ChunkType
+from manuscript2slides.internals.config.define_config import ChunkType
 
 
 # region Temporary Functions

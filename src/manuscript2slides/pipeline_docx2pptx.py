@@ -1,12 +1,12 @@
 """main orchestrator"""
 
-from docx2pptx_text.chunking import create_docx_chunks
-from docx2pptx_text.annotations.extract import process_chunk_annotations
-from docx2pptx_text.create_slides import slides_from_chunks
+from manuscript2slides.chunking import create_docx_chunks
+from manuscript2slides.annotations.extract import process_chunk_annotations
+from manuscript2slides.create_slides import slides_from_chunks
 import sys
 from pathlib import Path
-from docx2pptx_text import io
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides import io
+from manuscript2slides.internals.config.define_config import UserConfig
 
 
 # TODO: replace docx_path throughout with cfg... and remove from signature

@@ -1,7 +1,7 @@
 """
 Stable run ID utilities.
 
-docx2pptx_text uses a single run ID per process to tag logs and output files.
+manuscript2slides uses a single run ID per process to tag logs and output files.
 - By default, `get_run_id()` lazily generates an 8-character hex string on first use.
 - The run ID never changes for the lifetime of the process.
 - Thread-safe: protected by a lock to avoid races.
@@ -51,7 +51,7 @@ def get_run_id() -> str:
 
     Resolution order:
     1. Already-seeded value (via `seed_run_id()`).
-    2. Environment variable `DOCX2PPTX_TEXT_RUN_ID`.
+    2. Environment variable `manuscript2slides_RUN_ID`.
     3. Fresh random 8-character hex string.
 
     Returns:
@@ -66,7 +66,7 @@ def get_run_id() -> str:
             if _run_id is None:
                 # Check environment variable first; if that's empty, perform the right-side of the `or` and generate random UUID
                 _run_id = (
-                    os.environ.get("DOCX2PPTX_TEXT_RUN_ID")
+                    os.environ.get("manuscript2slides_RUN_ID")
                     or uuid.uuid4().hex[:8]  # Reduce to 8 char for brevity/readability
                 )
     return _run_id

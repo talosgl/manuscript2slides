@@ -1,13 +1,13 @@
 """TODO"""
 
-from docx2pptx_text.utils import debug_print, setup_console_encoding
+from manuscript2slides.utils import debug_print, setup_console_encoding
 import docx
 import sys
-from docx2pptx_text import io
+from manuscript2slides import io
 from pptx import presentation
 from pathlib import Path
-from docx2pptx_text.populate_docx import copy_slides_to_docx_body
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides.populate_docx import copy_slides_to_docx_body
+from manuscript2slides.internals.config.define_config import UserConfig
 
 
 def run_pptx2docx_pipeline(cfg: UserConfig) -> None:

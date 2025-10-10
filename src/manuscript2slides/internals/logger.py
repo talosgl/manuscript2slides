@@ -1,21 +1,23 @@
-"""Basic logging setup for docx2pptx_text.
+"""Basic logging setup for manuscript2slides.
 
 Creates console and file handlers with run_id in every log line.
 """
 
 # ==DOCSTART==
-# Purpose: Initializes the docx2pptx_text logger with console and file handlers.
+# Purpose: Initializes the manuscript2slides logger with console and file handlers.
 # ==DOCEND==
 
 import logging
 from pathlib import Path
 
-from docx2pptx_text.internals.paths import user_log_dir_path
-from docx2pptx_text.internals.run_context import get_run_id
+from manuscript2slides.internals.paths import user_log_dir_path
+from manuscript2slides.internals.run_context import get_run_id
 
 
 def setup_logger(
-    name: str = "docx2pptx_text", level: int = logging.DEBUG, enable_trace: bool = False
+    name: str = "manuscript2slides",
+    level: int = logging.DEBUG,
+    enable_trace: bool = False,
 ) -> logging.Logger:
     """
     Setup logging with console and file output.
@@ -24,7 +26,7 @@ def setup_logger(
     Safe to call multiple times (won't create duplicate handlers).
 
     Args:
-        name: Logger name (default: "docx2pptx_text")
+        name: Logger name (default: "manuscript2slides")
         level: Minimum log level (default: DEBUG)
 
     Returns:
@@ -45,7 +47,7 @@ def setup_logger(
     logger.setLevel(level)
 
     # Don't pass logs up to parent loggers, like Python's root logger.
-    # Why: If you have other libraries that log, you don't want their logs mixed with yours. This keeps "docx2pptx_text" logs separate.
+    # Why: If you have other libraries that log, you don't want their logs mixed with yours. This keeps "manuscript2slides" logs separate.
     logger.propagate = False
 
     # Get the run_id once for this logger setup
@@ -61,8 +63,8 @@ def setup_logger(
     console_handler.setLevel(logging.INFO)  # Filter to less verbose for console
     logger.addHandler(console_handler)
 
-    # File handler (writes to ~/Documents/docx2pptx_text/logs/docx2pptx_text.log)
-    log_file = user_log_dir_path() / "docx2pptx_text.log"
+    # File handler (writes to ~/Documents/manuscript2slides/logs/manuscript2slides.log)
+    log_file = user_log_dir_path() / "manuscript2slides.log"
     file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.DEBUG)  # Everything goes to file
@@ -75,7 +77,7 @@ def setup_logger(
         trace_log_formatter = logging.Formatter(
             trace_log_format, datefmt="%Y-%m-%d %H:%M:%S"
         )
-        trace_log_file = user_log_dir_path() / "trace_docx2pptx_text.log"
+        trace_log_file = user_log_dir_path() / "trace_manuscript2slides.log"
         trace_file_handler = logging.FileHandler(trace_log_file, encoding="utf-8")
         trace_file_handler.setFormatter(trace_log_formatter)
         trace_file_handler.setLevel(logging.DEBUG)

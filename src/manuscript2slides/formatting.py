@@ -10,9 +10,9 @@ from pptx.util import Pt
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.text.text import _Run as Run_pptx  # type: ignore
-from docx2pptx_text.utils import debug_print
+from manuscript2slides.utils import debug_print
 from docx.enum.text import WD_COLOR_INDEX
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides.internals.config.define_config import UserConfig
 
 # region colormap
 
@@ -412,7 +412,7 @@ def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
 def _apply_experimental_formatting_from_metadata(
     target_run: Run_docx, format_info: dict
 ) -> None:
-    """Using JSON metadata from an earlier docx2pptx-text run, try to restore experimental formatting metadata to a run during the reverse pipeline."""
+    """Using JSON metadata from an earlier manuscript2slides run, try to restore experimental formatting metadata to a run during the reverse pipeline."""
 
     tfont = target_run.font
     formatting_type = format_info.get("formatting_type")

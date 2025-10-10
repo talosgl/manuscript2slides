@@ -1,34 +1,34 @@
 """Auto-create user directory structure with templates and documentation.
 
 On first run, this creates:
-- ~/Documents/docx2pptx_text/
+- ~/Documents/manuscript2slides/
   ├── README.md           (explains what each folder is for)
   ├── input/              (optional staging for source files)
   ├── output/             (converted files land here)
-  ├── logs/               (docx2pptx_text.log lives here)
+  ├── logs/               (manuscript2slides.log lives here)
   └── templates/          (blank_template.pptx, docx_template.docx)
 
 Safe to call repeatedly - won't overwrite existing user files.
 """
 
 # ==DOCSTART==
-# Purpose: Auto-create ~/Documents/docx2pptx_text/ structure with templates and README
+# Purpose: Auto-create ~/Documents/manuscript2slides/ structure with templates and README
 # ==DOCEND==
 
 import logging
 import shutil
 from pathlib import Path
 
-from docx2pptx_text.internals.paths import (
+from manuscript2slides.internals.paths import (
     user_base_dir,
     user_input_dir,
     user_output_dir,
     user_log_dir_path,
     user_templates_dir,
 )
-from docx2pptx_text.internals.constants import RESOURCES_DIR
+from manuscript2slides.internals.constants import RESOURCES_DIR
 
-log = logging.getLogger("docx2pptx_text")
+log = logging.getLogger("manuscript2slides")
 
 
 def ensure_user_scaffold() -> None:
@@ -37,9 +37,9 @@ def ensure_user_scaffold() -> None:
 
     Safe to call every time - won't overwrite existing user files.
     Creates:
-        - ~/Documents/docx2pptx_text/README.md
-        - ~/Documents/docx2pptx_text/templates/*.pptx
-        - ~/Documents/docx2pptx_text/templates/*.docx
+        - ~/Documents/manuscript2slides/README.md
+        - ~/Documents/manuscript2slides/templates/*.pptx
+        - ~/Documents/manuscript2slides/templates/*.docx
         - Empty input/output/logs folders
     """
 
@@ -70,15 +70,15 @@ def _get_resource_path(filename: str) -> Path:
     """
     Get path to a packaged resource file used as the source for copying into scaffolded destination subfolders.
 
-    Currently uses direct filesystem access for development (./src/docx2pptx_text/resources)
-    When installed will to site-packages/docx2pptx_text/resources/
+    Currently uses direct filesystem access for development (./src/manuscript2slides/resources)
+    When installed will to site-packages/manuscript2slides/resources/
     """
     return RESOURCES_DIR / filename
 
     # TODO: When packaging, switch to the below:
 
     # Convert Traversable to Path
-    # resource = files("docx2pptx_text").joinpath("resources", filename)
+    # resource = files("manuscript2slides").joinpath("resources", filename)
     # return Path(str(resource))
 
 
@@ -95,7 +95,8 @@ def _create_readme(path: Path) -> None:
 
         # Fallback: create a minimal README
         path.write_text(
-            "# docx2pptx_text\n\nUser folder created automatically.\n", encoding="utf-8"
+            "# manuscript2slides\n\nUser folder created automatically.\n",
+            encoding="utf-8",
         )
 
 

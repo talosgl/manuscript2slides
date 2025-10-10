@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from docx2pptx_text.utils import debug_print, setup_console_encoding
-from docx2pptx_text import pipeline_docx2pptx
-from docx2pptx_text import pipeline_pptx2docx
-from docx2pptx_text.internals.config.define_config import UserConfig
-from docx2pptx_text.internals.logger import setup_logger
-from docx2pptx_text.internals.constants import DEBUG_MODE
-from docx2pptx_text.internals.scaffold import ensure_user_scaffold
+from manuscript2slides.utils import debug_print, setup_console_encoding
+from manuscript2slides import pipeline_docx2pptx
+from manuscript2slides import pipeline_pptx2docx
+from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.logger import setup_logger
+from manuscript2slides.internals.constants import DEBUG_MODE
+from manuscript2slides.internals.scaffold import ensure_user_scaffold
 
 
 def main() -> None:
@@ -19,7 +19,7 @@ def main() -> None:
 
     # Start up logging
     log = setup_logger(enable_trace=DEBUG_MODE)
-    log.info("Starting docx2pptx_text Log.")
+    log.info("Starting manuscript2slides Log.")
 
     # Ensure user folders exist and templates are copied
     ensure_user_scaffold()

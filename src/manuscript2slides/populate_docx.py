@@ -6,12 +6,12 @@ and creating comments for user notes and unmatched annotations.
 """
 
 from pptx.slide import Slide
-from docx2pptx_text.models import SlideNotes
-from docx2pptx_text import utils
-from docx2pptx_text import io
-from docx2pptx_text.utils import debug_print
-from docx2pptx_text.annotations.restore_from_slides import split_speaker_notes
-from docx2pptx_text.run_processing import process_pptx_run
+from manuscript2slides.models import SlideNotes
+from manuscript2slides import utils
+from manuscript2slides import io
+from manuscript2slides.utils import debug_print
+from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
+from manuscript2slides.run_processing import process_pptx_run
 from docx import document
 from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
 from pptx.slide import Slide
@@ -19,7 +19,7 @@ from pptx import presentation
 from docx.text.run import Run as Run_docx
 from docx.comments import Comment as Comment_docx
 
-from docx2pptx_text.internals.config.define_config import UserConfig
+from manuscript2slides.internals.config.define_config import UserConfig
 
 
 # region copy slides to docx body orchestrator
