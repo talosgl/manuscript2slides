@@ -2,7 +2,6 @@
 
 import yaml
 from pathlib import Path
-from manuscript2slides.utils import debug_print
 
 
 def load_yaml_config(path: Path) -> dict:
