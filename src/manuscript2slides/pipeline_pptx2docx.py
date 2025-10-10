@@ -1,13 +1,16 @@
 """TODO"""
 
-from manuscript2slides.utils import debug_print, setup_console_encoding
-import docx
+import logging
 import sys
-from manuscript2slides import io
+
+import docx
 from pptx import presentation
-from pathlib import Path
-from manuscript2slides.populate_docx import copy_slides_to_docx_body
+
+from manuscript2slides import io
 from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.populate_docx import copy_slides_to_docx_body
+
+log = logging.getLogger("manuscript2slides")
 
 
 def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
@@ -43,11 +46,12 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
         sys.exit(1)
 
     # Create an empty docx
+    # TODO: add validation to this and move to be next to create_empty_slide_deck. That's in io right now but not sure where it belongs.
     docx_template = cfg.get_input_docx_file()
     new_doc = docx.Document(str(docx_template))
 
     copy_slides_to_docx_body(user_prs, new_doc, cfg)
 
-    debug_print("Attempting to save new docx file.")
+    log.debug("Attempting to save new docx file.")
 
     io.save_output(new_doc, cfg)
