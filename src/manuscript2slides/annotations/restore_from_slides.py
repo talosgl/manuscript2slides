@@ -1,14 +1,17 @@
 """TODO"""
 
-from manuscript2slides.models import SlideNotes
+import json
+import logging
+
 from manuscript2slides.internals.constants import (
-    METADATA_MARKER_HEADER,
     METADATA_MARKER_FOOTER,
+    METADATA_MARKER_HEADER,
     NOTES_MARKER_FOOTER,
     NOTES_MARKER_HEADER,
 )
-import json
-from manuscript2slides.utils import debug_print
+from manuscript2slides.models import SlideNotes
+
+log = logging.getLogger("manuscript2slides")
 
 
 # region split_speaker_notes
@@ -37,7 +40,7 @@ def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
             json_content = json.loads(json_text)
         except json.JSONDecodeError:
             json_content = None
-            debug_print(
+            log.warning(
                 "We found what looked like a JSON section but then failed to load it."
             )
 
@@ -121,7 +124,7 @@ def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> Slid
         # So someone could pass a string or list to this function at runtime and our code would still try
         # to use it without this check.
 
-        debug_print(
+        log.warning(
             f"JSON metadata from this slide should be a dict, but is a {type(json_metadata)}, so we can't use it."
         )
         # return unmutated
@@ -130,21 +133,21 @@ def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> Slid
     # Validate each of the items inside the JSON dict are the expected type (list)
     slide_comments = json_metadata.get("comments", [])
     if not isinstance(slide_comments, list):
-        debug_print(
+        log.warning(
             f"Comments from the slide notes JSON should be a list, but is a {type(slide_comments)}, so we can't use it."
         )
         slide_comments = []
 
     slide_headings = json_metadata.get("headings", [])
     if not isinstance(slide_headings, list):
-        debug_print(
+        log.warning(
             f"Headings from the slide notes JSON should be a list, but is a {type(slide_headings)}, so we can't use it."
         )
         slide_headings = []
 
     slide_exp_formatting = json_metadata.get("experimental_formatting", [])
     if not isinstance(slide_exp_formatting, list):
-        debug_print(
+        log.warning(
             f"Experimental_formatting from the slide notes JSON should be a list, but is a {type(slide_exp_formatting)}, so we can't use it."
         )
         slide_exp_formatting = []
@@ -165,17 +168,17 @@ def safely_extract_comment_data(comment: dict) -> dict | None:
     """
 
     if not isinstance(comment, dict):
-        debug_print(f"Comment should be a dict, but is: {type(comment)}.")
+        log.warning(f"Comment should be a dict, but is: {type(comment)}.")
         return None
 
     # Validate the individual comment has the fields we need
     if "original" not in comment:
-        debug_print(f"Comment missing 'original' field: {comment}.")
+        log.warning(f"Comment missing 'original' field: {comment}.")
         return None
 
     original = comment.get("original", {})
     if not isinstance(original, dict):
-        debug_print(f"Comment 'original' is not a dict, but is {type(original)}.")
+        log.warning(f"Comment 'original' is not a dict, but is {type(original)}.")
         return None
 
     # Extract bits from original now that we've validated it
@@ -184,15 +187,15 @@ def safely_extract_comment_data(comment: dict) -> dict | None:
     initials = original.get("initials")
 
     if not text:
-        debug_print("Comment has no text content.")
+        log.debug("Comment has no text content.")
         return None
 
     if "reference_text" not in comment:
-        debug_print(f"Comment is missing 'reference_text' field: {comment} Skipping.")
+        log.debug(f"Comment is missing 'reference_text' field: {comment} Skipping.")
         return None
 
     if "id" not in comment:
-        debug_print(f"Comment is missing 'id' field: {comment} Skipping.")
+        log.debug(f"Comment is missing 'id' field: {comment} Skipping.")
         return None
 
     return {
@@ -207,15 +210,15 @@ def safely_extract_comment_data(comment: dict) -> dict | None:
 def safely_extract_heading_data(heading: dict) -> dict | None:
     """Extract heading data with validation."""
     if not isinstance(heading, dict):
-        debug_print(f"Each stored heading should be a dict, got {type(heading)}")
+        log.warning(f"Each stored heading should be a dict, got {type(heading)}")
         return None
 
     if "text" not in heading:
-        debug_print(f"Heading missing required field 'text': {heading}")
+        log.debug(f"Heading missing required field 'text': {heading}")
         return None
 
     if "name" not in heading:
-        debug_print(f"Heading missing required field 'name': {heading}")
+        log.debug(f"Heading missing required field 'name': {heading}")
         return None
 
     return {
@@ -230,17 +233,17 @@ def safely_extract_heading_data(heading: dict) -> dict | None:
 def safely_extract_experimental_formatting_data(exp_fmt: dict) -> dict | None:
     """Extract experimental formatting data with validation."""
     if not isinstance(exp_fmt, dict):
-        debug_print(f"Experimental formatting should be a dict, got {type(exp_fmt)}")
+        log.warning(f"Experimental formatting should be a dict, got {type(exp_fmt)}")
         return None
 
     if "ref_text" not in exp_fmt:
-        debug_print(
+        log.debug(
             f"Experimental formatting missing required field: 'ref_text': {exp_fmt}"
         )
         return None
 
     if "formatting_type" not in exp_fmt:
-        debug_print(
+        log.debug(
             f"Experimental formatting missing required field: 'formatting_type': {exp_fmt}"
         )
         return None
