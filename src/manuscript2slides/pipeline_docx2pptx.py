@@ -48,7 +48,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     try:
         output_prs = io.create_empty_slide_deck(cfg)
     except Exception as e:
-        log.warning(f"Could not load template file (may be corrupted): {e}")
+        log.error(f"Could not load template file (may be corrupted): {e}")
         sys.exit(1)
 
     # Mutate the presentation object by adding slides

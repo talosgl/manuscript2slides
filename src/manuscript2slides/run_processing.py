@@ -147,7 +147,7 @@ def process_pptx_run(
             comment_data = safely_extract_comment_data(comment)
 
             if comment_data is None:
-                log.info(f"Skipping invalid comment: {comment}")
+                log.debug(f"Skipping invalid comment: {comment}")
                 continue
 
             if (

@@ -124,7 +124,7 @@ def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> Slid
         # So someone could pass a string or list to this function at runtime and our code would still try
         # to use it without this check.
 
-        log.warning(
+        log.debug(
             f"JSON metadata from this slide should be a dict, but is a {type(json_metadata)}, so we can't use it."
         )
         # return unmutated
@@ -133,21 +133,21 @@ def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> Slid
     # Validate each of the items inside the JSON dict are the expected type (list)
     slide_comments = json_metadata.get("comments", [])
     if not isinstance(slide_comments, list):
-        log.warning(
+        log.debug(
             f"Comments from the slide notes JSON should be a list, but is a {type(slide_comments)}, so we can't use it."
         )
         slide_comments = []
 
     slide_headings = json_metadata.get("headings", [])
     if not isinstance(slide_headings, list):
-        log.warning(
+        log.debug(
             f"Headings from the slide notes JSON should be a list, but is a {type(slide_headings)}, so we can't use it."
         )
         slide_headings = []
 
     slide_exp_formatting = json_metadata.get("experimental_formatting", [])
     if not isinstance(slide_exp_formatting, list):
-        log.warning(
+        log.debug(
             f"Experimental_formatting from the slide notes JSON should be a list, but is a {type(slide_exp_formatting)}, so we can't use it."
         )
         slide_exp_formatting = []
@@ -168,17 +168,17 @@ def safely_extract_comment_data(comment: dict) -> dict | None:
     """
 
     if not isinstance(comment, dict):
-        log.warning(f"Comment should be a dict, but is: {type(comment)}.")
+        log.debug(f"Comment should be a dict, but is: {type(comment)}.")
         return None
 
     # Validate the individual comment has the fields we need
     if "original" not in comment:
-        log.warning(f"Comment missing 'original' field: {comment}.")
+        log.debug(f"Comment missing 'original' field: {comment}.")
         return None
 
     original = comment.get("original", {})
     if not isinstance(original, dict):
-        log.warning(f"Comment 'original' is not a dict, but is {type(original)}.")
+        log.debug(f"Comment 'original' is not a dict, but is {type(original)}.")
         return None
 
     # Extract bits from original now that we've validated it
@@ -210,7 +210,7 @@ def safely_extract_comment_data(comment: dict) -> dict | None:
 def safely_extract_heading_data(heading: dict) -> dict | None:
     """Extract heading data with validation."""
     if not isinstance(heading, dict):
-        log.warning(f"Each stored heading should be a dict, got {type(heading)}")
+        log.debug(f"Each stored heading should be a dict, got {type(heading)}")
         return None
 
     if "text" not in heading:
@@ -233,7 +233,7 @@ def safely_extract_heading_data(heading: dict) -> dict | None:
 def safely_extract_experimental_formatting_data(exp_fmt: dict) -> dict | None:
     """Extract experimental formatting data with validation."""
     if not isinstance(exp_fmt, dict):
-        log.warning(f"Experimental formatting should be a dict, got {type(exp_fmt)}")
+        log.debug(f"Experimental formatting should be a dict, got {type(exp_fmt)}")
         return None
 
     if "ref_text" not in exp_fmt:

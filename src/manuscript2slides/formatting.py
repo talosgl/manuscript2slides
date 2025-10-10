@@ -363,7 +363,7 @@ def _copy_experimental_formatting_pptx2docx(
         # Check for highlight nested element
         highlight = root.find(".//a:highlight/a:srgbClr", ns)
         if highlight is not None:
-            log.debug("Found a highlight in this pptx slide.")
+            log.debug(f"Found highlight in pptx run: {source_run.text[:30]}...")
             # Extract the color HEX out of the XML
             hex_color = highlight.get("val")
             if hex_color:
