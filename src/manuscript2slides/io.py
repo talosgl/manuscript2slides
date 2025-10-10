@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import TypeVar, Union
+from typing import TypeVar
 
 import docx
 import pptx
@@ -21,32 +21,6 @@ log = logging.getLogger("manuscript2slides")
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
 
-# region not sure these belong in io
-# TODO: Move to pipeline file?
-def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
-    """Load the PowerPoint template, create a new presentation object, and validate it contains the custom layout. (manuscript2slides pipeline)"""
-
-    # Try to load the pptx
-    try:
-        template_path = cfg.get_template_pptx_path()
-        validated_template = validate_pptx_path(Path(template_path))
-        prs = pptx.Presentation(str(validated_template))
-    except Exception as e:
-        raise ValueError(f"Could not load template file (may be corrupted): {e}")
-
-    # Validate it has the required slide layout for the pipeline
-    layout_names = [layout.name for layout in prs.slide_layouts]
-    if constants.SLD_LAYOUT_CUSTOM_NAME not in layout_names:
-        raise ValueError(
-            f"Template is missing the required layout: '{constants.SLD_LAYOUT_CUSTOM_NAME}'. "
-            f"Available layouts: {', '.join(layout_names)}"
-            f"If error persists, try renaming the Documents/manuscript2slides/templates/ folder to templates_old/ or deleting it."
-        )
-
-    return prs
-
-
-# endregion
 
 
 # region Path Helpers

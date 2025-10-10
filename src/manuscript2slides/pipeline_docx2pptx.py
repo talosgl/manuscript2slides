@@ -2,12 +2,12 @@
 
 import logging
 import sys
-
 from manuscript2slides import io
 from manuscript2slides.annotations.extract import process_chunk_annotations
 from manuscript2slides.chunking import create_docx_chunks
 from manuscript2slides.create_slides import slides_from_chunks
 from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.templates import create_empty_slide_deck
 
 log = logging.getLogger("manuscript2slides")
 
@@ -46,7 +46,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
 
     # Create the presentation object from template
     try:
-        output_prs = io.create_empty_slide_deck(cfg)
+        output_prs = create_empty_slide_deck(cfg)
     except Exception as e:
         log.error(f"Could not load template file (may be corrupted): {e}")
         sys.exit(1)
@@ -56,3 +56,4 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
 
     # Save the presentation to an actual pptx on disk
     io.save_output(output_prs, cfg)
+

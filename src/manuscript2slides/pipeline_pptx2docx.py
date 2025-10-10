@@ -3,8 +3,8 @@
 import logging
 import sys
 
-import docx
 from pptx import presentation
+from manuscript2slides.templates import create_empty_document
 
 from manuscript2slides import io
 from manuscript2slides.internals.config.define_config import UserConfig
@@ -46,9 +46,7 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
         sys.exit(1)
 
     # Create an empty docx
-    # TODO: add validation to this and move to be next to create_empty_slide_deck. That's in io right now but not sure where it belongs.
-    docx_template = cfg.get_input_docx_file()
-    new_doc = docx.Document(str(docx_template))
+    new_doc = create_empty_document(cfg)
 
     copy_slides_to_docx_body(user_prs, new_doc, cfg)
 
