@@ -1,23 +1,26 @@
 """TODO: docstring"""
 
-import pptx
-import docx
-from pathlib import Path
-from pptx import presentation
-from typing import TypeVar
-from pptx.slide import NotesSlide
-from pptx.slide import Slide
-from docx import document
-from typing import Union
-from pptx.text.text import TextFrame, _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
-from pptx.shapes.placeholder import SlidePlaceholder
-from manuscript2slides.internals import constants
-from docx.text.paragraph import Paragraph as Paragraph_docx
-from manuscript2slides.utils import debug_print
+import logging
 from datetime import datetime
+from pathlib import Path
+from typing import TypeVar, Union
+
+import docx
+import pptx
+from docx import document
+from docx.text.paragraph import Paragraph as Paragraph_docx
+from pptx import presentation
+from pptx.shapes.placeholder import SlidePlaceholder
+from pptx.slide import NotesSlide, Slide
+from pptx.text.text import TextFrame  # type: ignore
+from pptx.text.text import _Paragraph as Paragraph_pptx
+from pptx.text.text import _Run as Run_pptx
+
+from manuscript2slides.internals import constants
 from manuscript2slides.internals.config.define_config import UserConfig
 
-# TODO, multi-file split: Another TypeVar to move to the top of whatever file these funcs live in later
+log = logging.getLogger("manuscript2slides")
+
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
 
@@ -168,13 +171,13 @@ def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
     if isinstance(save_object, document.Document):
         max_p_count = 10000
         if len(save_object.paragraphs) > max_p_count:
-            debug_print(
+            log.warning(
                 f"This is about to save a docx file with over {max_p_count} paragraphs ... that seems a bit long!"
             )
     elif isinstance(save_object, presentation.Presentation):
         max_s_count = 1000
         if len(list(save_object.slides)) > max_s_count:
-            debug_print(
+            log.warning(
                 f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!"
             )
 
@@ -202,11 +205,11 @@ def load_and_validate_docx(input_filepath: Path) -> document.Document:
 
     # Report content information to the user
     paragraph_count = len(doc.paragraphs)
-    debug_print(f"This document has {paragraph_count} paragraphs in it.")
+    log.info(f"This document has {paragraph_count} paragraphs in it.")
 
     text = first_para_w_text.text
     preview = text[:20] + ("..." if len(text) > 20 else "")
-    debug_print(f"The first paragraph containing text begins with: {preview}")
+    log.info(f"The first paragraph containing text begins with: {preview}")
 
     return doc
 
@@ -234,10 +237,10 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
 
     # Report content information to the user
     slide_count = len(prs.slides)
-    debug_print(f"The pptx file {pptx_path} has {slide_count} slide(s) in it.")
+    log.info(f"The pptx file {pptx_path} has {slide_count} slide(s) in it.")
 
     first_slide_paragraphs = get_slide_paragraphs(first_slide)
-    debug_print(
+    log.info(
         f"The first slide detected with text content is slide_id: {first_slide.slide_id}. The text content is: \n"
     )
 
@@ -245,11 +248,11 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
         if p.text.strip():
             text = p.text.strip()
             preview = text[:20] + ("..." if len(text) > 20 else "")
-            debug_print(f"The first paragraph containing text begins with: {preview}")
+            log.info(f"The first paragraph containing text begins with: {preview}")
             break
     # An else on a for-loop runs if we never hit break. This is here because I'm maybe-overly defensive in programming style.
     else:
-        debug_print("(Could not extract preview text)")
+        log.warning("(Could not extract preview text)")
 
     # Return the runtime object
     return prs
