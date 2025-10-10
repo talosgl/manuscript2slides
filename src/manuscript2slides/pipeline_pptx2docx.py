@@ -25,13 +25,13 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
     try:
         validated_pptx_path = io.validate_pptx_path(pptx_path)
     except FileNotFoundError:
-        print(f"Error: File not found: {pptx_path}")
+        log.error(f"Error: File not found: {pptx_path}")
         sys.exit(1)
     except ValueError as e:
-        print(f"Error: {e}")
+        log.error(f"Error: {e}")
         sys.exit(1)
     except PermissionError:
-        print(f"I don't have permission to read that file ({pptx_path})!")
+        log.error(f"I don't have permission to read that file ({pptx_path})!")
         sys.exit(1)
 
     # Load the pptx at that validated filepath
@@ -40,7 +40,7 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> None:
             validated_pptx_path
         )
     except Exception as e:
-        print(
+        log.error(
             f"Content of powerpoint file invalid for pptx2docxtext pipeline run. Error: {e}."
         )
         sys.exit(1)

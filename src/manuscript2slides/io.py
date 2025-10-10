@@ -148,7 +148,7 @@ def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> None:
     # Attempt to save
     try:
         save_object.save(str(output_filepath))
-        print(f"Successfully saved to {output_filepath}")
+        log.info(f"Successfully saved to {output_filepath}")
     except PermissionError:
         raise PermissionError("Save failed: File may be open in another program")
     except OSError as e:

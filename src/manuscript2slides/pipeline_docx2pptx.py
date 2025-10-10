@@ -1,15 +1,17 @@
 """main orchestrator"""
 
-from manuscript2slides.chunking import create_docx_chunks
-from manuscript2slides.annotations.extract import process_chunk_annotations
-from manuscript2slides.create_slides import slides_from_chunks
+import logging
 import sys
-from pathlib import Path
+
 from manuscript2slides import io
+from manuscript2slides.annotations.extract import process_chunk_annotations
+from manuscript2slides.chunking import create_docx_chunks
+from manuscript2slides.create_slides import slides_from_chunks
 from manuscript2slides.internals.config.define_config import UserConfig
 
+log = logging.getLogger("manuscript2slides")
 
-# TODO: replace docx_path throughout with cfg... and remove from signature
+
 def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     """Orchestrates the docx2pptx pipeline."""
 
@@ -22,13 +24,13 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     try:
         user_docx_validated = io.validate_docx_path(user_docx)
     except FileNotFoundError:
-        print(f"Error: File not found: {user_docx}")
+        log.error(f"Error: File not found: {user_docx}")
         sys.exit(1)
     except ValueError as e:
-        print(f"Error: {e}")
+        log.error(f"Error: {e}")
         sys.exit(1)
     except PermissionError:
-        print(f"I don't have permission to read that file ({user_docx})!")
+        log.error(f"I don't have permission to read that file ({user_docx})!")
         sys.exit(1)
 
     # Load the docx file at that path.
@@ -46,7 +48,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     try:
         output_prs = io.create_empty_slide_deck(cfg)
     except Exception as e:
-        print(f"Could not load template file (may be corrupted): {e}")
+        log.warning(f"Could not load template file (may be corrupted): {e}")
         sys.exit(1)
 
     # Mutate the presentation object by adding slides
