@@ -1,27 +1,33 @@
 """Processes inner-paragraph contents (runs, hyperlinks) for both pipeline directions."""
 
-from docx.text.paragraph import Paragraph as Paragraph_docx
-from docx.text.run import Run as Run_docx
-from pptx.text.text import _Paragraph as Paragraph_pptx, _Run as Run_pptx  # type: ignore
-from manuscript2slides.utils import debug_print, detect_field_code_hyperlinks
-from manuscript2slides.formatting import copy_run_formatting_docx2pptx
+import logging
+
 from docx import document
-from manuscript2slides.models import SlideNotes
 from docx.opc import constants
 from docx.oxml.ns import qn
 from docx.oxml.parser import OxmlElement as OxmlElement_docx
-from manuscript2slides.formatting import (
-    copy_run_formatting_pptx2docx,
-    _apply_experimental_formatting_from_metadata,
-)
+from docx.text.paragraph import Paragraph as Paragraph_docx
+from docx.text.run import Run as Run_docx
+from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
+from pptx.text.text import _Run as Run_pptx
+
 from manuscript2slides.annotations.restore_from_slides import (
     safely_extract_comment_data,
     safely_extract_experimental_formatting_data,
 )
+from manuscript2slides.formatting import (
+    apply_experimental_formatting_from_metadata,
+    copy_run_formatting_docx2pptx,
+    copy_run_formatting_pptx2docx,
+)
 from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.models import SlideNotes
+from manuscript2slides.utils import detect_field_code_hyperlinks
+
+log = logging.getLogger("manuscript2slides")
 
 
-# region docx2pptx
+# region docx2pptx pipeline
 def process_docx_paragraph_inner_contents(
     paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx, cfg: UserConfig
 ) -> list[dict]:
@@ -71,11 +77,11 @@ def process_docx_paragraph_inner_contents(
         #   https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.hyperlink.Hyperlink.fragment
 
         else:
-            debug_print(f"Unknown content type in paragraph: {type(item)}")
+            log.warning(f"Unknown content type in paragraph: {type(item)}")
 
     # Fallback: if no content was processed but paragraph has text
     if not items_processed and paragraph.text:
-        debug_print(
+        log.debug(
             f"Fallback: paragraph has text but no runs/hyperlinks: {paragraph.text[:50]}"
         )
         pptx_run = pptx_paragraph.add_run()
@@ -107,7 +113,7 @@ def process_docx_run(
 # endregion
 
 
-# region pptx2docx
+# region pptx2docx pipeline
 def process_pptx_run(
     run: Run_pptx,
     new_para: Paragraph_docx,
@@ -123,7 +129,7 @@ def process_pptx_run(
 
     # Handle adding hyperlinks versus regular runs, and the runs' basic formatting.
     if run.hyperlink.address:
-        debug_print("Hyperlink address found.")
+        log.debug(f"Hyperlink address found: {run.hyperlink.address}")
         run_from_hyperlink = add_hyperlink_to_docx_paragraph(
             new_para, run.hyperlink.address
         )
@@ -141,7 +147,7 @@ def process_pptx_run(
             comment_data = safely_extract_comment_data(comment)
 
             if comment_data is None:
-                debug_print(f"Skipping invalid comment: {comment}")
+                log.info(f"Skipping invalid comment: {comment}")
                 continue
 
             if (
@@ -163,7 +169,7 @@ def process_pptx_run(
             if fmt_info is None:
                 continue
             if exp_fmt["ref_text"] in run.text:
-                _apply_experimental_formatting_from_metadata(last_run, exp_fmt)
+                apply_experimental_formatting_from_metadata(last_run, exp_fmt)
 
     return last_run
 

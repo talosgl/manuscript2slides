@@ -1,5 +1,6 @@
 """TODO!"""
 
+import logging
 from docx.shared import RGBColor as RGBColor_docx
 from docx.text.run import Run as Run_docx
 from docx.text.font import Font as Font_docx
@@ -10,9 +11,10 @@ from pptx.util import Pt
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.text.text import _Run as Run_pptx  # type: ignore
-from manuscript2slides.utils import debug_print
 from docx.enum.text import WD_COLOR_INDEX
 from manuscript2slides.internals.config.define_config import UserConfig
+
+log = logging.getLogger("manuscript2slides")
 
 # region colormap
 
@@ -157,7 +159,7 @@ def _copy_experimental_formatting_docx2pptx(
 
         except Exception as e:
 
-            debug_print(
+            log.warning(
                 f"We found a highlight in a docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
             )
         """
@@ -179,7 +181,7 @@ def _copy_experimental_formatting_docx2pptx(
         try:
             tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
         except Exception as e:
-            debug_print(
+            log.warning(
                 f"Failed to apply single-strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
             )
 
@@ -200,7 +202,7 @@ def _copy_experimental_formatting_docx2pptx(
         try:
             tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
         except Exception as e:
-            debug_print(
+            log.warning(
                 f"""
                         Failed to apply double-strikthrough.
                         \nRun text: {source_run.text[:50]}... \n Error: {e}
@@ -228,7 +230,7 @@ def _copy_experimental_formatting_docx2pptx(
                 tfont._element.set("baseline", BASELINE_SUBSCRIPT_LARGE_FONT)  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
-            debug_print(
+            log.warning(
                 f"""
                         Failed to apply subscript. 
                         \nRun text: {source_run.text[:50]}... 
@@ -253,7 +255,7 @@ def _copy_experimental_formatting_docx2pptx(
                 tfont._element.set("baseline", BASELINE_SUPERSCRIPT_LARGE_FONT)  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
-            debug_print(
+            log.warning(
                 f"""
                         Failed to apply superscript. 
                         \nRun text: {source_run.text[:50]}... 
@@ -276,7 +278,7 @@ def _copy_experimental_formatting_docx2pptx(
         try:
             tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
         except Exception as e:
-            debug_print(
+            log.warning(
                 f"""
                         Failed to apply all caps. 
                         \nRun text: {source_run.text[:50]}... 
@@ -297,7 +299,7 @@ def _copy_experimental_formatting_docx2pptx(
         try:
             tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
         except Exception as e:
-            debug_print(
+            log.warning(
                 f"""
                         Failed to apply small caps on run with text body: 
                         \nRun text: {source_run.text[:50]}... 
@@ -361,7 +363,7 @@ def _copy_experimental_formatting_pptx2docx(
         # Check for highlight nested element
         highlight = root.find(".//a:highlight/a:srgbClr", ns)
         if highlight is not None:
-            debug_print("found a highlight")
+            log.debug("Found a highlight in this pptx slide.")
             # Extract the color HEX out of the XML
             hex_color = highlight.get("val")
             if hex_color:
@@ -396,7 +398,9 @@ def _copy_experimental_formatting_pptx2docx(
                 tfont.small_caps = True
 
     except Exception as e:
-        debug_print(f"Failed to parse pptx formatting from XML: {e}")
+        log.warning(
+            f"Failed to parse pptx _Run formatting from XML: {e}, _Run text begins with: {source_run.text[:30]}"
+        )
 
 
 # endregion
@@ -409,7 +413,7 @@ def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
     return message
 
 
-def _apply_experimental_formatting_from_metadata(
+def apply_experimental_formatting_from_metadata(
     target_run: Run_docx, format_info: dict
 ) -> None:
     """Using JSON metadata from an earlier manuscript2slides run, try to restore experimental formatting metadata to a run during the reverse pipeline."""
@@ -424,43 +428,43 @@ def _apply_experimental_formatting_from_metadata(
                 color_index = getattr(WD_COLOR_INDEX, highlight_enum, None)
                 tfont.highlight_color = color_index
             except Exception as e:
-                debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+                log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "strike":
         try:
             tfont.strike = True
         except Exception as e:
-            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+            log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "double_strike":
         try:
             tfont.double_strike = True
         except Exception as e:
-            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+            log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "subscript":
         try:
             tfont.subscript = True
         except Exception as e:
-            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+            log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "superscript":
         try:
             tfont.superscript = True
         except Exception as e:
-            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+            log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "all_caps":
         try:
             tfont.all_caps = True
         except Exception as e:
-            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+            log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
     elif formatting_type == "small_caps":
         try:
             tfont.small_caps = True
         except Exception as e:
-            debug_print(_exp_fmt_issue(formatting_type, target_run.text, e))
+            log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
 
 # endregion
