@@ -78,19 +78,17 @@ class UserConfig:
         if p.is_absolute():
             return p.resolve()
 
-        # For relative paths, resolve from repo root
-        # TODO: (Later you'll use a proper base_dir from config)
         base = user_base_dir()
         return (base / p).resolve()
 
-    # TODO: Consider: should templates even *be allowed* to be configureable by the user??
+    
     def get_template_pptx_path(self) -> Path:
         """Get the docx2pptx template pptx path, with fallback to default."""
         if self.template_pptx:
             return self._resolve_path(self.template_pptx)
 
         # Default
-        base = user_templates_dir()  # TODO: replace with a proper base_dir
+        base = user_templates_dir()
         return base / "blank_template.pptx"
 
     def get_template_docx_path(self) -> Path:
@@ -102,7 +100,6 @@ class UserConfig:
         base = user_templates_dir()
         return base / "docx_template.docx"
 
-    # TODO: Consider collapsing these two input_file methods to match get_output_folder, rather than having different properties and methods per filetype.
     def get_input_docx_file(self) -> Path:
         """Get the docx2pptx input docx file or fall back to a dry run example file."""
         if self.input_docx:

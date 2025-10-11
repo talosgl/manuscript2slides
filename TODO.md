@@ -1,6 +1,4 @@
 ## Minor TODOs (mostly independent)
-- Finish logging implementation by replacing all the debug_print()s with actual logger calls.
-- Rename the GH repo, finally! (Don't forget to nuke & redo the .venv/ and .vscode/ stuff, locally, probably...)
 
 ## Major TODOs Ordered by priority/dependency
 Epic: Investigate UI options, select one, implement it

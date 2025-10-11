@@ -114,9 +114,6 @@ def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> None:
 # debug/logger.
 
 
-# TODO, polish: Around here is where we ought to add an option to split the output into multiple files,
-# by X-number of slides or pages. There probably needs to be a default for each output type and a way for the
-# user to specify an override for the default.
 def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
     """Report if the output content we're about to save is excessively large."""
     if isinstance(save_object, document.Document):

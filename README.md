@@ -18,7 +18,6 @@ python docx2slides.py  # Uses sample files from resources/ and saves output to o
 ## How to set up doc2slides-py
 The idea with the sections below is that they build on one another. If you're already familiar with programming and open source workflows, you can skip the early sections and pick up where it makes sense. If you're completely new to all this, just start at the beginning to get fully set up.
 
-🛠️ TODO: Build out outline below
 ### Get VS Code (IDE), get the program source code, get comfortable in the UI
 *Audience: You're tech savvy, but new to programming, command-line, and/or git workflows*
 
