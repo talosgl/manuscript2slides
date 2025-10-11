@@ -1,4 +1,4 @@
-"""TODO Docstring"""
+"""Add annotations we pulled from the docx to PowerPoint slide notes."""
 
 import json
 from datetime import datetime

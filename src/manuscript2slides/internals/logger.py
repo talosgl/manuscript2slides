@@ -1,11 +1,6 @@
-"""Basic logging setup for manuscript2slides.
-
-Creates console and file handlers with run_id in every log line.
 """
-
-# ==DOCSTART==
-# Purpose: Initializes the manuscript2slides logger with console and file handlers.
-# ==DOCEND==
+Basic logging setup; creates console and file handlers with run_id in every log line.
+"""
 
 import logging
 

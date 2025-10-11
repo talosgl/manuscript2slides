@@ -1,4 +1,5 @@
-"""Auto-create user directory structure with templates and documentation.
+"""User directory structure creation and initialization.
+Auto-creates ~/Documents/manuscript2slides/ structure with templates and README
 
 On first run, this creates:
 - ~/Documents/manuscript2slides/
@@ -10,10 +11,6 @@ On first run, this creates:
 
 Safe to call repeatedly - won't overwrite existing user files.
 """
-
-# ==DOCSTART==
-# Purpose: Auto-create ~/Documents/manuscript2slides/ structure with templates and README
-# ==DOCEND==
 
 import logging
 import shutil

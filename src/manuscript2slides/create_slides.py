@@ -1,4 +1,5 @@
-"""Module serving docx2pptx pipeline flow, taking chunks we built from the docx and turning them into slide body content."""
+# create_slides.py
+"""Take chunks we built from the input docx file and turn them into slide body content."""
 
 import logging
 
@@ -95,9 +96,7 @@ def slides_from_chunks(
                 "This slide doesn't seem to have a notes text frame. This should never happen, but it's possible for the notes_slide or notes_text_frame properties to return None if the notes placeholder has been removed from the notes master or the notes slide itself."
             )
 
-        if (
-            cfg.display_comments or cfg.display_footnotes or cfg.display_endnotes
-        ):  
+        if cfg.display_comments or cfg.display_footnotes or cfg.display_endnotes:
             annotate_slide(chunk, notes_text_frame, cfg)
 
         if cfg.preserve_docx_metadata_in_speaker_notes:

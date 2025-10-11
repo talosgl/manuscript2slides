@@ -1,4 +1,4 @@
-"""TODO"""
+"""Restore annotations from slide metadata."""
 
 import json
 import logging

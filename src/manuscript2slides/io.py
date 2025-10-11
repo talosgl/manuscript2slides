@@ -1,4 +1,5 @@
-"""TODO: docstring"""
+# io.py
+"""File I/O operations for docx and pptx files."""
 
 import logging
 from datetime import datetime

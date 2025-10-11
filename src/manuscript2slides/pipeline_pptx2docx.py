@@ -1,4 +1,5 @@
-"""TODO"""
+# pipeline_pptx2docx.py
+"""PowerPoint to Word conversion pipeline."""
 
 import logging
 import sys

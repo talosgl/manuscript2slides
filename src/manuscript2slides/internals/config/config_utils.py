@@ -1,4 +1,5 @@
-"""TODO: add docstring"""
+# internals/config/config_utils.py
+"""YAML configuration file parsing utilities."""
 
 import yaml
 from pathlib import Path

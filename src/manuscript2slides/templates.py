@@ -1,5 +1,5 @@
-"""Functions to load docx and pptx templates from disk, validate shape, and create in-memory python objects from them."""
-
+# templates.py
+"""Load docx and pptx templates from disk, validate shape, and create in-memory python objects from them."""
 from pathlib import Path
 
 import pptx

@@ -7,10 +7,6 @@ Uses platformdirs to find OS-appropriate locations for:
 - Templates (custom pptx/docx templates)
 """
 
-# ==DOCSTART==
-# Purpose: Utilities for resolving environment-specific paths for logs, output, templates, and input staging.
-# ==DOCEND==
-
 from pathlib import Path
 from platformdirs import (
     user_documents_dir,

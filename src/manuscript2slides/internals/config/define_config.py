@@ -1,8 +1,5 @@
-"""TODO: add docstring"""
-
-# ==DOCSTART==
-# Purpose: Defines the UserConfig dataclass-- the single source of truth for user-overridable options.
-# ==DOCEND==
+# internals/config/define_config.py
+"""User configuration dataclass and validation."""
 
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -10,7 +7,6 @@ from typing import Optional
 from enum import Enum
 import os
 
-# TODO: remove later
 from manuscript2slides.internals.paths import (
     user_input_dir,
     user_templates_dir,
@@ -81,7 +77,6 @@ class UserConfig:
         base = user_base_dir()
         return (base / p).resolve()
 
-    
     def get_template_pptx_path(self) -> Path:
         """Get the docx2pptx template pptx path, with fallback to default."""
         if self.template_pptx:

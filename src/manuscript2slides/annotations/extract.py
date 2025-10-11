@@ -1,4 +1,4 @@
-"""TODO docstring"""
+"""Extract annotations from Word documents."""
 
 import logging
 import xml.etree.ElementTree as ET

@@ -1,9 +1,11 @@
+# populate_docx.py
 """Process slides from a presentation and copy their content into a Word document.
 
 This module handles the reverse pipeline (pptx -> docx), extracting text content
 from slide paragraphs, restoring formatting and annotations from speaker notes metadata,
 and creating comments for user notes and unmatched annotations.
 """
+
 
 import logging
 from typing import Union

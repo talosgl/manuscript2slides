@@ -1,4 +1,4 @@
-"""Constants used throughout manuscript2slides."""
+"""Application-wide constants and configuration values."""
 
 from pathlib import Path
 

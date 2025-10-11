@@ -1,4 +1,5 @@
-"""TODO: add docstring"""
+# models.py
+"""Data models for document chunks and annotations."""
 
 from dataclasses import dataclass, field
 from docx.comments import Comment as Comment_docx

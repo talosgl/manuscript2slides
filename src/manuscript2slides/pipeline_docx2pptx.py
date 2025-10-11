@@ -1,4 +1,5 @@
-"""main orchestrator"""
+# pipeline_docx2pptx.py
+"""Word to PowerPoint conversion pipeline."""
 
 import logging
 import sys
@@ -56,4 +57,3 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
 
     # Save the presentation to an actual pptx on disk
     io.save_output(output_prs, cfg)
-

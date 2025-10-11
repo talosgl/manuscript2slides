@@ -1,15 +1,10 @@
-"""
-Stable run ID utilities.
+"""Process-global run ID management.
 
 manuscript2slides uses a single run ID per process to tag logs and output files.
 - By default, `get_run_id()` lazily generates an 8-character hex string on first use.
 - The run ID never changes for the lifetime of the process.
 - Thread-safe: protected by a lock to avoid races.
 """
-
-# ==DOCSTART==
-# Purpose: Holds per-run metadata, especially the unique run_id used across logs and filenames.
-# ==DOCEND==
 
 from __future__ import annotations
 
