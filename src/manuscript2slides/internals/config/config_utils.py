@@ -3,6 +3,10 @@
 
 import yaml
 from pathlib import Path
+from manuscript2slides.internals.config.define_config import (
+    ChunkType,
+    PipelineDirection,
+)
 
 
 def load_yaml_config(path: Path) -> dict:
@@ -29,23 +33,31 @@ def load_yaml_config(path: Path) -> dict:
     return data
 
 
-from manuscript2slides.internals.config.define_config import ChunkType
-
-
 # region Temporary Functions
 def normalize_yaml_for_dataclass(yaml_data: dict) -> dict:
     """Convert YAML strings to proper types for UserConfig"""
     normalized = yaml_data.copy()
 
-    # Convert chunk_type to ChunkType neum
-
+    # Convert chunk_type to ChunkType enum
     if "chunk_type" in normalized and isinstance(normalized["chunk_type"], str):
         try:
             normalized["chunk_type"] = ChunkType(normalized["chunk_type"])
         except ValueError as e:
             raise ValueError(
+                f"{e}"
                 f"Invalid chunk_type: '{normalized['chunk_type']}'. "
-                f"Valid options: {[e.value for e in ChunkType]}"
+                f"Valid options: {[c.value for c in ChunkType]}"
+            )
+
+    # Convert chunk_type to ChunkType enum
+    if "direction" in normalized and isinstance(normalized["direction"], str):
+        try:
+            normalized["direction"] = PipelineDirection(normalized["direction"])
+        except ValueError as e:
+            raise ValueError(
+                f"{e}"
+                f"Invalid chunk_type: '{normalized['direction']}'. "
+                f"Valid options: {[d.value for d in PipelineDirection]}"
             )
 
     return normalized

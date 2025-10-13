@@ -25,6 +25,13 @@ class ChunkType(Enum):
     PAGE = "page"
 
 
+class PipelineDirection(Enum):
+    """Pipeline direction choices"""
+
+    DOCX_TO_PPTX = "docx2pptx"
+    PPTX_TO_DOCX = "pptx2docx"
+
+
 @dataclass
 class UserConfig:
     """All user-configurable settings for manuscript2slides."""
@@ -51,6 +58,8 @@ class UserConfig:
     chunk_type: ChunkType = (
         ChunkType.PARAGRAPH
     )  # Which chunking method to use to divide the docx into slides.
+
+    direction: PipelineDirection = PipelineDirection.DOCX_TO_PPTX
 
     experimental_formatting_on: bool = True
 
@@ -139,6 +148,13 @@ class UserConfig:
                 f"Valid values: {[e.value for e in ChunkType]}"
             )
 
+        # Validate direction is a valid PipelineDirection enum member
+        if not isinstance(self.direction, PipelineDirection):
+            raise ValueError(
+                f"direction must be a PipelineDirection enum, got {type(self.direction).__name__}. "
+                f"Valid values: {[e.value for e in PipelineDirection]}"
+            )
+
         # Validate boolean fields are actually booleans
         bool_fields = [
             "experimental_formatting_on",
@@ -163,6 +179,11 @@ class UserConfig:
                 f"input_docx must be a string, got {type(self.input_docx).__name__}"
             )
 
+        if self.input_pptx is not None and not isinstance(self.input_pptx, str):
+            raise ValueError(
+                f"input_pptx must be a string, got {type(self.input_pptx).__name__}"
+            )
+
         if self.output_folder is not None and not isinstance(self.output_folder, str):
             raise ValueError(
                 f"output_folder must be a string, got {type(self.output_folder).__name__}"
@@ -174,6 +195,7 @@ class UserConfig:
                 "output_folder cannot be empty string; use None for default"
             )
 
+    # =======
     # Methods below validate pipeline requirements, and check:
     #   - Output path that exists but isn't a directory
     #   - Missing input files before pipeline starts

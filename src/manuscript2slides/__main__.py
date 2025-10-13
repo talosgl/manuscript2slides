@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from manuscript2slides.utils import setup_console_encoding
-from manuscript2slides import pipeline_docx2pptx
-from manuscript2slides import pipeline_pptx2docx
-from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.config.define_config import (
+    UserConfig,
+    PipelineDirection,
+)
 from manuscript2slides.internals.logger import setup_logger
 from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.internals.scaffold import ensure_user_scaffold
+from manuscript2slides.orchestrator import run_pipeline
 
 
 def main() -> None:
@@ -33,11 +35,13 @@ def main() -> None:
     cfg.validate()
 
     # === Pipeline testing
-    # TODO: I think, later, replace with some kind of router/orchestrator that goes to the right pipeline based on UI selections/config info
-    pipeline_docx2pptx.run_docx2pptx_pipeline(cfg)
+    # Temporary: Run both for testing
+    cfg.direction = PipelineDirection.DOCX_TO_PPTX
+    run_pipeline(cfg)
 
-    pipeline_pptx2docx.run_pptx2docx_pipeline(cfg)
-    # ===
+    cfg.direction = PipelineDirection.PPTX_TO_DOCX
+    run_pipeline(cfg)
+    # TODO: Replace above with simple run_pipeline(cfg) once UI is ready
 
 
 # region call main
