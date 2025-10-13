@@ -43,6 +43,10 @@ Thumbs.db
 # Output
 output/
 
+# temp office files
+~$*.docx
+~$*.pptx
+
 # Jo stuff
 homework.md
 export_code.py
