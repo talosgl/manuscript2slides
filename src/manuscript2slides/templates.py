@@ -56,6 +56,6 @@ def create_empty_document(cfg: UserConfig) -> document.Document:
     except Exception as e:
         raise ValueError(f"Could not load docx template (may be corrupted): {e}")
 
-    # TODO: Add validation here if needed (e.g., check for required styles)
+    # TODO, v1 required: Add validation here if needed (e.g., check for required styles)
 
     return doc

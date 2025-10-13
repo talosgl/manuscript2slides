@@ -1,6 +1,6 @@
 ## Before-UI TODOs
-- [ ] Test the font size copying (formatting.py line 88)
-- [ ] Better error message for enum validation (config_utils.py line 38)
+- [x] Test the font size copying (formatting.py line 88)
+- [x] Better error message for enum validation (config_utils.py line 38)
 - [ ] Pipeline router/orchestrator (__main__.py line 38) via new field in UserConfig
 
 ## Major TODOs Ordered by priority/dependency

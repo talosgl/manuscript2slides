@@ -62,7 +62,6 @@ def _copy_basic_run_formatting(
     if source_font.underline is not None:
         target_font.underline = bool(source_font.underline)
 
-    # TODO: THIS IS UNTESTED; TEST IT.
     if source_font.size is not None:
         target_font.size = Pt(source_font.size.pt)
         """

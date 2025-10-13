@@ -9,8 +9,6 @@ import logging
 
 log = logging.getLogger("manuscript2slides")
 
-# TODO, ponder: If we add other chunking methods: by section, by multi-file output, will we call it "chunking"? Will it live here?
-
 
 # region Orchestrator
 def create_docx_chunks(

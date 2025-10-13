@@ -72,7 +72,7 @@ def _get_resource_path(filename: str) -> Path:
     """
     return RESOURCES_DIR / filename
 
-    # TODO: When packaging, switch to the below:
+    # TODO, v1 required: When packaging, switch to the below:
 
     # Convert Traversable to Path
     # resource = files("manuscript2slides").joinpath("resources", filename)

@@ -9,7 +9,7 @@ RESOURCES_DIR = PACKAGE_DIR / "resources"
 
 # Slide layout used by docx2pptx pipeline when creating new slides from chunks.
 # All slides use the same layout.
-# TODO: Allow the user to specify the name?
+# TODO, post-UI: Allow the user to specify the name?
 SLD_LAYOUT_CUSTOM_NAME = "manuscript2slides"
 
 # Metadata headers/footers used in both pipelines when writing to/reading from slide speaker notes
@@ -25,5 +25,5 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 # endregion
 
 # Toggle on/off whether to print debug_prints() to the console
-# TODO: allow this to be set from the UI?
+# TODO, post-UI: allow this to be set from the UI?
 DEBUG_MODE = True
