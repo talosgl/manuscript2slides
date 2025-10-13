@@ -43,8 +43,10 @@ def normalize_yaml_for_dataclass(yaml_data: dict) -> dict:
         try:
             normalized["chunk_type"] = ChunkType(normalized["chunk_type"])
         except ValueError as e:
-            # TODO Have validation catch this later with a better error message
-            raise ValueError(f"Bad enum type! {e}")
+            raise ValueError(
+                f"Invalid chunk_type: '{normalized['chunk_type']}'. "
+                f"Valid options: {[e.value for e in ChunkType]}"
+            )
 
     return normalized
 
