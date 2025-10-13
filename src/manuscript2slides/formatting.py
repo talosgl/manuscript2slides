@@ -39,10 +39,10 @@ COLOR_MAP_HEX = {
 }
 
 COLOR_MAP_FROM_HEX = {v: k for k, v in COLOR_MAP_HEX.items()}
-BASELINE_SUBSCRIPT_SMALL_FONT = "-50000"
-BASELINE_SUBSCRIPT_LARGE_FONT = "-25000"
-BASELINE_SUPERSCRIPT_SMALL_FONT = "60000"  # For fonts < 24pt
-BASELINE_SUPERSCRIPT_LARGE_FONT = "30000"  # For fonts >= 24pt
+BASELINE_SUBSCRIPT_SMALL_FONT = -25000
+BASELINE_SUBSCRIPT_LARGE_FONT = -50000
+BASELINE_SUPERSCRIPT_SMALL_FONT = 60000  # For fonts < 24pt
+BASELINE_SUPERSCRIPT_LARGE_FONT = 30000  # For fonts >= 24pt
 #
 
 
@@ -175,7 +175,7 @@ def _copy_experimental_formatting_docx2pptx(
         </a:r>
         """
 
-    if sfont.strike is not None:
+    if sfont.strike:
         experimental_formatting_metadata.append(
             {"ref_text": source_run.text, "formatting_type": "strike"}
         )
@@ -196,7 +196,7 @@ def _copy_experimental_formatting_docx2pptx(
         </a:p>        
         """
 
-    if sfont.double_strike is not None:
+    if sfont.double_strike:
         experimental_formatting_metadata.append(
             {"ref_text": source_run.text, "formatting_type": "double_strike"}
         )
@@ -220,15 +220,16 @@ def _copy_experimental_formatting_docx2pptx(
         </a:p>
         """
 
-    if sfont.subscript is not None:
+    if sfont.subscript:
         experimental_formatting_metadata.append(
             {"ref_text": source_run.text, "formatting_type": "subscript"}
         )
         try:
             if tfont.size is None or tfont.size < Pt(24):
-                tfont._element.set("baseline", BASELINE_SUBSCRIPT_SMALL_FONT)  # type: ignore[reportPrivateUsage]
+                # Cast to string on set; if we store the const as a string, the negative sign gets lost for some reason.
+                tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
             else:
-                tfont._element.set("baseline", BASELINE_SUBSCRIPT_LARGE_FONT)  # type: ignore[reportPrivateUsage]
+                tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
             log.warning(
@@ -245,15 +246,15 @@ def _copy_experimental_formatting_docx2pptx(
         </a:r>
         """
 
-    if sfont.superscript is not None:
+    if sfont.superscript:
         experimental_formatting_metadata.append(
             {"ref_text": source_run.text, "formatting_type": "superscript"}
         )
         try:
             if tfont.size is None or tfont.size < Pt(24):
-                tfont._element.set("baseline", BASELINE_SUPERSCRIPT_SMALL_FONT)  # type: ignore[reportPrivateUsage]
+                tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
             else:
-                tfont._element.set("baseline", BASELINE_SUPERSCRIPT_LARGE_FONT)  # type: ignore[reportPrivateUsage]
+                tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
 
         except Exception as e:
             log.warning(
@@ -272,7 +273,7 @@ def _copy_experimental_formatting_docx2pptx(
 
     # The below caps-handling code is not directly from md2pptx,
     # but is heavily influenced by it.
-    if sfont.all_caps is not None:
+    if sfont.all_caps:
         experimental_formatting_metadata.append(
             {"ref_text": source_run.text, "formatting_type": "all_caps"}
         )
@@ -293,7 +294,7 @@ def _copy_experimental_formatting_docx2pptx(
         </a:r>
         """
 
-    if sfont.small_caps is not None:
+    if sfont.small_caps:
         experimental_formatting_metadata.append(
             {"ref_text": source_run.text, "formatting_type": "small_caps"}
         )
