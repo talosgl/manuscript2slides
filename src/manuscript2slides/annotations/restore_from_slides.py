@@ -138,6 +138,20 @@ def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> Slid
         )
         slide_comments = []
 
+    slide_footnotes = json_metadata.get("footnotes", [])
+    if not isinstance(slide_footnotes, list):
+        log.debug(
+            f"Footnotes from the slide notes JSON should be a list, but is a {type(slide_footnotes)}, so we can't use it."
+        )
+        slide_footnotes = []
+
+    slide_endnotes = json_metadata.get("endnotes", [])
+    if not isinstance(slide_endnotes, list):
+        log.debug(
+            f"Endnotes from the slide notes JSON should be a list, but is a {type(slide_endnotes)}, so we can't use it."
+        )
+        slide_endnotes = []
+
     slide_headings = json_metadata.get("headings", [])
     if not isinstance(slide_headings, list):
         log.debug(
@@ -155,6 +169,8 @@ def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> Slid
     # Populate the slide_notes object with each validated item
     slide_notes.metadata = json_metadata
     slide_notes.comments = slide_comments
+    slide_notes.footnotes = slide_footnotes
+    slide_notes.endnotes = slide_endnotes
     slide_notes.headings = slide_headings
     slide_notes.experimental_formatting = slide_exp_formatting
 

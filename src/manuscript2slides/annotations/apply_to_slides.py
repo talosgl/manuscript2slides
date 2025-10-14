@@ -180,7 +180,33 @@ def add_metadata_to_slide_notes(
             for c in chunk.comments
         ]
 
-    if slide_body_metadata or comments:
+    footnotes = []
+    if chunk.footnotes:
+        footnotes = [
+            {
+                "id": f.note_id,
+                "text_body": f.text_body,
+                "hyperlinks": f.hyperlinks,
+                "reference_text": f.reference_text,
+                "note_type": "footnote",
+            }
+            for f in chunk.footnotes
+        ]
+
+    endnotes = []
+    if chunk.endnotes:
+        endnotes = [
+            {
+                "id": e.note_id,
+                "text_body": e.text_body,
+                "hyperlinks": e.hyperlinks,
+                "reference_text": e.reference_text,
+                "note_type": "endnote",
+            }
+            for e in chunk.endnotes
+        ]
+
+    if slide_body_metadata or comments or footnotes or endnotes:
         header_para = notes_text_frame.add_paragraph()
         header_run = header_para.add_run()
         header_run.text = f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
@@ -194,6 +220,12 @@ def add_metadata_to_slide_notes(
 
         if comments:  # only add if the list has content
             combined_metadata["comments"] = comments
+
+        if footnotes:
+            combined_metadata["footnotes"] = footnotes
+
+        if endnotes:
+            combined_metadata["endnotes"] = endnotes
 
         json_run.text = json.dumps(combined_metadata, indent=2)
 

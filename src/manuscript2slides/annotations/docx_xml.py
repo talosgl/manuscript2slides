@@ -77,6 +77,11 @@ def extract_notes_from_xml(
             continue
 
         note_full_text = "".join(note.itertext())
+
+        # Strip leading footnote/endnote number (e.g. "1. text" -> "text") or empty period
+        # ". text" if number is missing
+        note_full_text = re.sub(r"^\d*\.\s*", "", note_full_text)
+
         note_hyperlinks = extract_hyperlinks_from_note(note)
 
         note_obj = note_class(

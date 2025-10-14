@@ -109,6 +109,8 @@ class SlideNotes:
     metadata: dict = field(default_factory=dict)
     user_notes: str = ""
     comments: list = field(default_factory=list)
+    footnotes: list = field(default_factory=list)
+    endnotes: list = field(default_factory=list)
     headings: list = field(default_factory=list)
     experimental_formatting: list = field(default_factory=list)
 

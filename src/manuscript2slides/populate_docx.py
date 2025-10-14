@@ -8,6 +8,7 @@ and creating comments for user notes and unmatched annotations.
 
 
 import logging
+import re
 from typing import Union
 
 from docx import document
@@ -112,6 +113,12 @@ def process_slide_paragraphs(
 
     unmatched_annotations.extend(unmatched_comments)
 
+    # If python-docx ever provides support for adding footnotes/endnotes,
+    # we'll need to change the code to do matching above like we do with comments,
+    # and only add the unmatched items here.
+    unmatched_annotations.extend(slide_notes.footnotes)
+    unmatched_annotations.extend(slide_notes.endnotes)
+
     # If we have any unmatched annotations from the slide_notes.metadata, attach them as a new comment to the last run
     if unmatched_annotations and last_run is not None:
         unmatched_comment = copy_unmatched_comments_to_new_comment(
@@ -163,8 +170,12 @@ def copy_unmatched_comments_to_new_comment(
             # Add the comment to unmatched list
             unmatched_parts.append(f"Comment: {annotation['original']['text']}")
 
-        # elif "text_body" in annotation:  # footnotes/endnotes, cut feature for now
-        #     unmatched_parts.append(f"Note: {annotation['text_body']}")
+        elif "text_body" in annotation:
+            log.debug(f"Found footnote/endnote to add: {annotation.get('id')}")
+            kind: str = annotation["note_type"]
+            unmatched_parts.append(
+                f"{kind.capitalize()}: {annotation['id']}. {annotation['text_body']}"
+            )
 
     # combine all unmatched annotations into one string
     combined = "\n\n".join(unmatched_parts)
@@ -182,9 +193,6 @@ def copy_unmatched_comments_to_new_comment(
     new_comment = new_doc.add_comment(last_run, comment_text)
 
     return new_comment
-
-
-import re
 
 
 def _sanitize_xml_text(text: str) -> str:
