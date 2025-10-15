@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from manuscript2slides.utils import setup_console_encoding
-from manuscript2slides import startup
 from manuscript2slides.internals.config.define_config import (
     UserConfig,
     ChunkType,
@@ -12,15 +11,13 @@ from manuscript2slides.orchestrator import (
     run_pipeline,
 )  # we'll need this later to replace run_roundtrip_test
 
+import logging
 
-def main() -> None:
-    """CLI Entry point for program flow."""
+log = logging.getLogger("manuscript2slides")
 
-    # CLI-specific setup
-    setup_console_encoding()
 
-    # Set up logging and user folder scaffold.
-    startup.initialize_application()
+def run() -> None:
+    """Run CLI interface. Assumes startup.initialize_application() was already called."""
 
     # ==== Logic that will be in both CLI & GUI in some form
 

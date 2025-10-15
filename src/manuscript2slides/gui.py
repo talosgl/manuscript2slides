@@ -12,12 +12,13 @@ from manuscript2slides.orchestrator import (
     run_pipeline,
 )  # we'll need this later to replace run_roundtrip_test
 
+import logging
 
-def main() -> None:
-    """GUI entry point for program flow."""
+log = logging.getLogger("manuscript2slides")
 
-    # Set up logging and user folder scaffold.
-    startup.initialize_application()
+
+def run() -> None:
+    """Run GUI interface. Assumes startup.initialize_application() already called."""
 
     # Create config with defaults
     cfg = UserConfig()
