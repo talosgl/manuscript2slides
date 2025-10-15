@@ -1,4 +1,4 @@
-## What is doc2pptx_text?
+## What is manuscript2slides?
 A Python script that converts a Microsoft Word .docx manuscript file into a set of basic PowerPoint .pptx text-frame slides.
 
 The script requires a bit of setup, but is designed to be easy-to-use for non-devs; all the setup needed is covered below.
@@ -11,7 +11,8 @@ A blank pptx template is provided that's tested to work well with the script. Yo
 ## Quickstart
 If you're familiar with command line and Python already, you can see a dry run by cloning the repo locally and running:
 ```bash
-python docx2slides.py  # Uses sample files from resources/ and saves output to output/
+pip install -e .
+python -m manuscript2slides  # Uses sample files from resources/ and saves output to output/
 ```
 
 
@@ -33,14 +34,14 @@ The idea with the sections below is that they build on one another. If you're al
 - Install Python extension for VS Code
 - Learn/understand what Python virtual environments are
 
-### Run docx2slides demo
+### Run manuscript2slides demo
 *Audience: Ready to run/dev in Python and familiar with virtual environments*
 
 - Set up a venv for this project
 - pip install dependencies: `pip install -e .`
-- Run docx2slides demo with sample doc
+- Run manuscript2slides demo with sample doc
 
-### Customize and run docx2slides for your use case
+### Customize and run manuscript2slides for your use case
 *Audience: You've got the demo working and are ready to customize*
 
 - Customize the script for your use case using the constants at the top
