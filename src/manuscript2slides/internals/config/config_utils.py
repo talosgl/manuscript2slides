@@ -9,6 +9,7 @@ from manuscript2slides.internals.config.define_config import (
 )
 
 
+# TODO: If/when we get back to supporting on-disk config files, don't use yaml. Refactor to use toml, instead.
 def load_yaml_config(path: Path) -> dict:
     """Safe load and parse a YAML config file."""
 
