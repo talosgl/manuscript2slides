@@ -1,7 +1,8 @@
 ## Before-UI TODOs
 - [x] Test the font size copying (formatting.py line 88)
 - [x] Better error message for enum validation (config_utils.py line 38)
-- [ ] Pipeline router/orchestrator (__main__.py line 38) via new field in UserConfig
+- [x] Pipeline router/orchestrator (__main__.py line 38) via new field in UserConfig
+- [x] Refactor main & elsewhere further in prep for GUI
 
 ## Major TODOs Ordered by priority/dependency
 Epic: Investigate UI options, select one, implement it
