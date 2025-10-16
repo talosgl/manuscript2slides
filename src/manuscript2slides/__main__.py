@@ -1,17 +1,4 @@
-"""Entry point for manuscript2slides desktop application.
-
-We use C-style single entry point architecture because this is a desktop
-application, not a library. All initialization happens once in main()
-(console encoding, logging, user folder setup) before routing to CLI or GUI.
-
-This pattern ensures initialization always happens correctly and in the right
-order, unlike library-style patterns where each module (cli.main(), gui.main())
-would handle its own initialization independently.
-"""
-
-# TODO: I can't find a great resource to explain the two possible patterns above,
-# so I will plan to write one up for https://github.com/talosgl/jojos-tech-guides/tree/main
-# alongside the single-file/multi-file python anatomy article(s).
+"""Entry point for manuscript2slides desktop application."""
 
 from __future__ import annotations
 import sys
@@ -21,7 +8,15 @@ import logging
 
 
 def main() -> None:
-    """Application entry point - handles initialization and interface routing."""
+    """Application entry point - handles initialization and interface routing.
+
+    Call like:
+    ```
+    python -m manuscript2slides # GUI will launch if no args passed in
+    python -m manuscript2slides --help # CLI because an arg is passed in
+    ```
+
+    """
 
     # Set up logging and user folder scaffold.
     log: logging.Logger = startup.initialize_application()
@@ -30,11 +25,9 @@ def main() -> None:
     log.info("Hello, manuscript parser!")
 
     # Route to the appropriate interface (CLI vs GUI based on command-line args)
-    # NOTE: For testing CLI without any args, just pass in a dummy arg, like so:
-    # `python -m manuscript2slides --dummy-arg-so-that-CLI-will-run-in-dev`
-    if len(sys.argv) > 1:
-        # CLI mode
-        run_cli()
+    # NOTE: For testing CLI without any args, just pass in `--cli`
+    if "--cli" in sys.argv or any(arg.startswith("--") for arg in sys.argv[1:]):
+        run_cli()  # Any CLI flags = CLI mode
     else:
         # Only import the GUI stuff if we're going to use the GUI
         from manuscript2slides.gui import run as run_gui

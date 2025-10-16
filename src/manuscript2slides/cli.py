@@ -40,3 +40,15 @@ def run() -> None:
     from manuscript2slides.orchestrator import run_roundtrip_test
 
     run_roundtrip_test(cfg)
+
+
+def main() -> None:
+    """Development entry point - run CLI directly with `python -m manuscript2slides.gui`"""
+    from manuscript2slides import startup
+
+    startup.initialize_application()
+    run()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,50 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        // launches main() from ./src/manuscript2slides/cli.py        
+        {
+            "name": "CLI manuscript2slides Dev",
+            "type": "debugpy",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "module": "manuscript2slides.cli",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
+        },
+        // launches main() from ./src/manuscript2slides/gui.py
+        {
+            "name": "GUI manuscript2slides Dev",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "manuscript2slides.gui",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
+        },
+        // launches main() from ./src/manuscript2slides/__main__.py
+        {
+            "name": "manuscript2slides",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "manuscript2slides",
+            // Pass in an arg so that we launch into CLI. TODO: Remove this later to have it auto-launch into GUI.
+            "args": [
+                "--cli"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
+        },
+    ]
+}
