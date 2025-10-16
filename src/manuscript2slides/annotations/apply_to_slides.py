@@ -20,7 +20,7 @@ from manuscript2slides.models import (
     Footnote_docx,
 )
 
-from manuscript2slides.run_processing import process_docx_paragraph_inner_contents
+from manuscript2slides.processing.run_processing import process_docx_paragraph_inner_contents
 
 
 # region annotate_slides - copied notes + metadata

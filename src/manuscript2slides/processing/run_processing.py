@@ -16,7 +16,7 @@ from manuscript2slides.annotations.restore_from_slides import (
     safely_extract_comment_data,
     safely_extract_experimental_formatting_data,
 )
-from manuscript2slides.formatting import (
+from manuscript2slides.processing.formatting import (
     apply_experimental_formatting_from_metadata,
     copy_run_formatting_docx2pptx,
     copy_run_formatting_pptx2docx,

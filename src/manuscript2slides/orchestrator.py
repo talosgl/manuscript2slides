@@ -3,7 +3,7 @@
 import logging
 from pathlib import Path
 
-from manuscript2slides import pipeline_docx2pptx, pipeline_pptx2docx
+from manuscript2slides.pipelines import docx2pptx, pptx2docx
 from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
@@ -15,9 +15,9 @@ log = logging.getLogger("manuscript2slides")
 def run_pipeline(cfg: UserConfig) -> None:
     """Route to the appropriate pipeline based on config."""
     if cfg.direction == PipelineDirection.DOCX_TO_PPTX:
-        pipeline_docx2pptx.run_docx2pptx_pipeline(cfg)
+        docx2pptx.run_docx2pptx_pipeline(cfg)
     elif cfg.direction == PipelineDirection.PPTX_TO_DOCX:
-        pipeline_pptx2docx.run_pptx2docx_pipeline(cfg)
+        pptx2docx.run_pptx2docx_pipeline(cfg)
     else:
         raise ValueError(f"Unknown pipeline direction: {cfg.direction}")
 
@@ -64,7 +64,7 @@ def _find_most_recent_file(folder: Path, pattern: str) -> Path:
     files = list(folder.glob(pattern))
     if not files:
         raise FileNotFoundError(f"No files matching '{pattern}' in {folder}")
-    
+
     # Use st_mtime (modification time) which is reliable across platforms
     # and makes more sense for "most recent output file"
     return max(files, key=lambda p: p.stat().st_mtime)

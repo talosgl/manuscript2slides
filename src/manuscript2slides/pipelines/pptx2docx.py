@@ -1,4 +1,4 @@
-# pipeline_pptx2docx.py
+# pptx2docx.py
 """PowerPoint to Word conversion pipeline."""
 
 import logging
@@ -9,7 +9,7 @@ from manuscript2slides.templates import create_empty_document
 
 from manuscript2slides import io
 from manuscript2slides.internals.config.define_config import UserConfig
-from manuscript2slides.populate_docx import copy_slides_to_docx_body
+from manuscript2slides.processing.populate_docx import copy_slides_to_docx_body
 
 log = logging.getLogger("manuscript2slides")
 

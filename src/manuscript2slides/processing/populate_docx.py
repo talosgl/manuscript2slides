@@ -24,7 +24,7 @@ from manuscript2slides import utils
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
-from manuscript2slides.run_processing import process_pptx_run
+from manuscript2slides.processing.run_processing import process_pptx_run
 
 log = logging.getLogger("manuscript2slides")
 
