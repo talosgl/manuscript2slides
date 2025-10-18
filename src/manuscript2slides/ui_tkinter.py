@@ -3,6 +3,7 @@
 import tkinter as tk
 import logging
 from pathlib import Path
+import threading
 
 from tkinter import filedialog
 
@@ -39,7 +40,6 @@ class Manuscript2SlidesUI:
                 "We won't be able to run a sample dry run, but you should still be able to select your own file for input."
             )
 
-        # Store the actual enums (type-safe)
         # TODO: Add all the other fields from UserConfig, later, in a collapsible "Advanced" section. Later.
         """
         # Add a button to show/hide advanced options
@@ -53,14 +53,11 @@ class Manuscript2SlidesUI:
         self.advanced_frame = tk.Frame(self.root)
         # ... add checkboxes for all the bools ...
         """
-
-        # Create StringVars only for Tkinter (UI layer)
         # Create StringVars for widgets
         self.direction_var = tk.StringVar(value=cfg_defaults.direction.value)
-
         self.chunk_var = tk.StringVar(value=cfg_defaults.chunk_type.value)
 
-        # Set up the stuff we'll put into the window
+        # Set up window
         self.root.title("manuscript2slides")
         self.root.geometry("600x400")
         self.root.minsize(400, 300)
@@ -76,7 +73,7 @@ class Manuscript2SlidesUI:
         # File Select verb label
         file_label = tk.Label(
             self.root,
-            text="Select an input file, or use the default to do a dry run:",  # Q: how do I do tooltips? I guess I could have a 3rd column with tips?
+            text="Select an input file, or use the default to do a dry run:",
         )
         file_label.grid(
             row=0, column=0, sticky="w", padx=10, pady=10
@@ -155,49 +152,6 @@ class Manuscript2SlidesUI:
         """Get current chunk type from UI."""
         return ChunkType(self.chunk_var.get())
 
-    def on_convert_click(self) -> None:
-        """Handle convert button click."""
-        log.info("Convert button clicked!")
-
-        if not self.selected_file:
-            # TODO: show error dialog
-            log.error(
-                "No file was selected."
-            )  # Q: Well shouldn't the button be disabled then? Lol
-            return
-
-        self.status_label.config(
-            text="Converting...", fg="blue"
-        )  # TODO: instead, change the button?
-        self.convert_btn.config(state="disabled")
-        self.root.update()  # Force UI update
-
-        # Build config from UI
-        cfg = UserConfig()
-        cfg.direction = self.get_direction()
-
-        # set input file based on direction
-        if cfg.direction and cfg.direction == PipelineDirection.DOCX_TO_PPTX:
-            cfg.input_docx = str(self.selected_file)
-            cfg.chunk_type = self.get_chunk_type()
-        else:
-            cfg.input_pptx = str(self.selected_file)
-
-        try:
-            log.info(f"Starting conversion: {self.selected_file.name}")
-            cfg.validate()
-            run_pipeline(cfg)
-
-            # TODO: add log text box at the bottom of the UI
-            log.info("Conversion complete!")
-
-        except Exception as e:
-            self.status_label.config(text=f"ERROR: {str(e)}", fg="red")
-            log.error(f"Conversion failed: {e}", exc_info=True)
-
-        finally:
-            self.convert_btn.config(state="normal")
-
     def browse_file(self) -> None:
         """Open file browser dialog."""
 
@@ -222,6 +176,80 @@ class Manuscript2SlidesUI:
             self.chunk_dropdown.config(state="normal")  # enable / show
         else:
             self.chunk_dropdown.config(state="disabled")  # hide
+
+    # === Threading Methods === #
+    def on_convert_click(self) -> None:
+        """Handle convert button click; start conversion in background."""
+        log.info("Convert button clicked!")
+
+        if not self.selected_file:
+            # TODO: show error dialog
+            log.error(
+                "No file was selected."
+            )  # Q: Well shouldn't the button be disabled then? Lol
+            return
+
+        # Build config from UI
+        cfg = UserConfig()
+        cfg.direction = self.get_direction()
+
+        # set input file based on direction
+        if cfg.direction and cfg.direction == PipelineDirection.DOCX_TO_PPTX:
+            cfg.input_docx = str(self.selected_file)
+            cfg.chunk_type = self.get_chunk_type()
+        else:
+            cfg.input_pptx = str(self.selected_file)
+
+        # Update the UI to show we're working
+        self.status_label.config(text="Converting...", fg="blue")
+        # TODO: Also change the button
+        self.convert_btn.config(
+            state="disabled", bg="yellow", text="Converting in Process..."
+        )
+        self.root.update()  # Force UI update
+
+        # Start conversion thread in a background thread
+        thread = threading.Thread(
+            target=self.run_conversion_thread,
+            args=(cfg,),
+            daemon=True,  # Tells the thread to "die when the program exits"
+        )
+        thread.start()  # Starts the thread, then IMMEDIATELY returns out of this function so the UI isn't hung up
+
+    def run_conversion_thread(self, cfg: UserConfig) -> None:
+        """Run the convversion in a background thread."""  # this way, the UI thread is free to handle clicks, redraws, etc.
+        if self.selected_file:  # For pylance's sake.
+            log.info(f"Starting conversion: {self.selected_file.name}")
+        try:
+            cfg.validate()
+            run_pipeline(cfg)
+
+            # Notify UI of success
+            self.root.after(ms=0, func=self.on_conversion_success)
+            """
+            Why root.after()?
+            CRITICAL RULE: You cannot modify Tkinter widgets from a background thread. Tkinter is NOT thread-safe!
+            root.after(0, function) says:
+                "Schedule this function to run on the UI thread"
+                "As soon as possible (0 milliseconds)"
+            This is thread-safe - it's the ONLY safe way to communicate from background → UI in Tkinter.
+            """
+
+        except Exception as e:
+            # Notify UI of error
+            self.root.after(0, self.on_conversion_error, e)
+
+    def on_conversion_success(self) -> None:
+        """Called on UI thread when conversion succeeds."""
+        self.status_label.config(text="✓ Conversion complete!", fg="green")
+        self.convert_btn.config(state="normal", bg="green", text="Convert")
+        log.info("Conversion complete!")
+
+    def on_conversion_error(self, error: Exception) -> None:
+        """Called on UI thread when conversion fails."""
+        self.status_label.config(text=f"ERROR: {str(error)}", fg="red")
+        self.convert_btn.config(state="normal")
+        log.error(f"Conversion failed: {error}", exc_info=True)
 
 
 def main() -> None:
