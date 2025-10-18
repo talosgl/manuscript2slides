@@ -1,12 +1,18 @@
-## Before-UI TODOs
-- [x] Test the font size copying (formatting.py line 88)
-- [x] Better error message for enum validation (config_utils.py line 38)
-- [x] Pipeline router/orchestrator (__main__.py line 38) via new field in UserConfig
-- [x] Refactor main & elsewhere further in prep for GUI
+## TODOs found while doing UI Exploration
+- [ ] refactor run_id: we need separate things considering run_id per-pipeline-run vs. session_id for per-UI session
+- [ ] refactor UserConfig() and move dry run functionality into a config that can be loaded from a button in the UI / a class method from the CLI
+    - [ ] refactor to use toml instead of yaml for configs
+    - [ ] add save/load config functionality
+    - [ ] add with_defaults() class method for CLI to use
+    - [ ] update validation methods to not assume defaults (e.g., change input_docx to fail on no input file rather than auto-populate)
+- [ ] Whatever backend work is needed to support "preference persistence" (auto-save user UI config selections on close?)
 
 ## Major TODOs Ordered by priority/dependency
 Epic: Investigate UI options, select one, implement it
     - Build a simple UI with good enough UX that any non-tech-savvy writer can use it without friction
+    - [ ] finish Tkinter prototype/experiment
+    - [ ] try PyQt
+    - [ ] try Eel
 
 Epic: Add tests & pytest
     - Test config validation
