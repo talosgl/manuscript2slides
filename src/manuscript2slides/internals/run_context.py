@@ -12,6 +12,12 @@ import os
 import threading
 import uuid
 
+# TODO: Separate _run_id into: and _pipeline_run_id and _session_id
+# Now that I'm looking at the logs for the UI, I can see that the run_id is going to be the same for any UI session. It's not going to be
+# per-pipeline-run, it's going to be per-UI-run. When we were doing CLI, those were the same things, but not with UI. You could, presumably, leave
+# the UI open for days, and run it dozens of times, with the same run_id. Dangit!
+
+
 # Module-level state: one run ID for the entire program lifetime
 _run_id: str | None = None  # We start with value as None, to mean "not yet generated"
 _id_lock = threading.Lock()
