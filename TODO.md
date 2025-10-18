@@ -6,6 +6,7 @@
     - [ ] add with_defaults() class method for CLI to use
     - [ ] update validation methods to not assume defaults (e.g., change input_docx to fail on no input file rather than auto-populate)
 - [ ] Whatever backend work is needed to support "preference persistence" (auto-save user UI config selections on close?)
+- [ ] Should `__main__.py` have the log = setuplogger() thing at the top, like all the other files ... just in case?
 
 ## Major TODOs Ordered by priority/dependency
 Epic: Investigate UI options, select one, implement it
@@ -16,8 +17,8 @@ Epic: Investigate UI options, select one, implement it
         - [x] Event-driven programming
         - [x] UI state management
         - [x] Layout systems (grid)
-        - [ ] File dialogs
-        - [ ] Dynamic UI updates
+        - [x] File dialogs
+        - [x] Dynamic UI updates
         - [ ] Error handling in UI context
         - [ ] "Persistent state" pattern / aka(?) "preference persistence" - 1) auto-save on exit, or 2) Python's shelve module
         - [ ] Explicit actions > implicit "magic" when it comes to UI apps. (If we want to give users a dry run feature, we should have them click a button that makes it clear they're invoking that. Not just auto-call it, like we might with a cli command.)
@@ -35,7 +36,7 @@ Epic: Investigate UI options, select one, implement it
     - [ ] DESIGN BREAK
         - Take a break from UI coding
         - Design what you actually want:
-        - [ ] Sketch it on paper / Wireframe what you want
+        - [x] Sketch it on paper / Wireframe what you want
         - [ ] Plan/describe the structure
             - What are all the features?
             - What are all the states?
