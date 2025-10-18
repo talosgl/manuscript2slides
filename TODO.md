@@ -33,6 +33,10 @@ Epic: Document the program thoroughly
     - Code that doesn't crash on common edge cases.
 - OK, but I think I really want it to *start* with UI in its first public version.
 
+## Known Issues I'd like to investigate fixing:
+- [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
+
+
 ## Stretch Wishlist Features:
 - Split the output pptx or docx into multiple output files based on slide or page count. Add default counts and allow user overrides for the default.
 - Investigate if we can insert pptx sections safely enough (to allow for docx headings -> pptx sections, or other section-chunking); if not, investigate if/when we want to mimic the same type of behavior with "segue slides"

@@ -28,6 +28,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "manuscript2slides.gui",
+            "console": "integratedTerminal",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
             }
@@ -38,6 +39,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "manuscript2slides",
+"console": "integratedTerminal",
             // Pass in an arg so that we launch into CLI. TODO: Remove this later to have it auto-launch into GUI.
             "args": [
                 "--cli"

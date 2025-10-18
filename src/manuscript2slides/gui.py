@@ -37,11 +37,14 @@ def run() -> None:
 
     run_roundtrip_test(cfg)
 
+
 def main() -> None:
     """Development entry point - run GUI directly with `python -m manuscript2slides.gui`"""
     from manuscript2slides import startup
-    startup.initialize_application()
+
+    log = startup.initialize_application()
     run()
+
 
 if __name__ == "__main__":
     main()
