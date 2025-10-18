@@ -65,6 +65,10 @@ class Manuscript2SlidesUI:
         # Build the UI
         self.create_widgets()
 
+        # Setup log viewer and handler
+        self.setup_log_handler()
+
+    # region create_widgets()
     def create_widgets(self) -> None:
         """Create all UI widgets."""
 
@@ -141,8 +145,50 @@ class Manuscript2SlidesUI:
         self.status_label = tk.Label(self.root, text="", fg="blue")
         self.status_label.grid(row=4, column=0, pady=(0, 10))
 
-        # Configure grid weights (makes things resize properly)
+        # === Log Viewer === #
+        # Label for Log section
+        log_label = tk.Label(self.root, text="Log output:", font=("Arial", 10, "bold"))
+        log_label.grid(
+            row=5, column=0, sticky="w", padx=10, pady=(10, 0)
+        )  # Q: curious about the tuple for pady. I notice now we did that for the status label... and it is next to the button
+
+        # Create a frame to hold the text widget + scrollbar like a container
+        log_frame = tk.Frame(self.root)
+        log_frame.grid(row=6, column=0, columnspan=3, sticky="nsew", padx=10, pady=10)
+        # Q: i assume nsew makes it stretch all 4 ways | A: yes
+
+        # create scrollbar
+        scrollbar = tk.Scrollbar(log_frame)
+        scrollbar.pack(side="right", fill="y")
+
+        # create text widget
+        self.log_text = tk.Text(
+            log_frame,
+            height=10,  # Lines of text visible
+            width=70,  # Characters wide
+            state="disabled",  # read only; We'll enable it briefly when adding logs, then disable again.
+            yscrollcommand=scrollbar.set,  # Connect to scrollbar # Q: some kinda callback I think
+            wrap="word",  # enable wordwrap
+            bg="#f0f0f0",  # light-gray background
+            font=("Courier", 9),  # monospace font for the logs
+        )
+        self.log_text.pack(
+            side="left", fill="both", expand=True
+        )  # Q: I see we're using pack instead of grid here
+
+        # connect the scrollbar to the text widget
+        scrollbar.config(
+            command=self.log_text.yview
+        )  # Q: hmm also a callback here that makes me think we're doubling up the connecting? | A: this allows the scrollbar to control (?) text
+        # It's a two-way binding to keep the two things in sync; I don't know that I can fully articulate that well, though.
+
+        # Configure grid weights so the log-viewer expands if the window is resized
+        self.root.rowconfigure(6, weight=1)
         self.root.columnconfigure(0, weight=1)
+        self.root.columnconfigure(1, weight=1)
+        self.root.columnconfigure(2, weight=1)
+
+    # endregion
 
     def get_direction(self) -> PipelineDirection:
         """Get current direction from UI."""
@@ -152,6 +198,7 @@ class Manuscript2SlidesUI:
         """Get current chunk type from UI."""
         return ChunkType(self.chunk_var.get())
 
+    # region browse_file
     def browse_file(self) -> None:
         """Open file browser dialog."""
 
@@ -170,6 +217,8 @@ class Manuscript2SlidesUI:
             self.file_display.config(text=self.selected_file.name)
             log.info(f"File selected: {self.selected_file}")
 
+    # endregion
+
     def update_chunk_dropdown(self) -> None:
         """Enable/disable chunk dropdown based on direction."""
         if self.get_direction() == PipelineDirection.DOCX_TO_PPTX:
@@ -177,6 +226,7 @@ class Manuscript2SlidesUI:
         else:
             self.chunk_dropdown.config(state="disabled")  # hide
 
+    # region on_convert_click
     # === Threading Methods === #
     def on_convert_click(self) -> None:
         """Handle convert button click; start conversion in background."""
@@ -202,7 +252,7 @@ class Manuscript2SlidesUI:
 
         # Update the UI to show we're working
         self.status_label.config(text="Converting...", fg="blue")
-        # TODO: Also change the button
+        # also change the button
         self.convert_btn.config(
             state="disabled", bg="yellow", text="Converting in Process..."
         )
@@ -216,6 +266,9 @@ class Manuscript2SlidesUI:
         )
         thread.start()  # Starts the thread, then IMMEDIATELY returns out of this function so the UI isn't hung up
 
+    # endregion
+
+    # region run_conversion_thread
     def run_conversion_thread(self, cfg: UserConfig) -> None:
         """Run the convversion in a background thread."""  # this way, the UI thread is free to handle clicks, redraws, etc.
         if self.selected_file:  # For pylance's sake.
@@ -251,7 +304,83 @@ class Manuscript2SlidesUI:
         self.convert_btn.config(state="normal")
         log.error(f"Conversion failed: {error}", exc_info=True)
 
+    # endregion
 
+    # region setup_log_handler
+    def setup_log_handler(self) -> None:
+        """Connect the log viewer text widget to the logging system via our custom handler"""
+
+        # We already got the logger at the top of the file, with log = logging.getLogger("manuscript2slides") after our imports,
+        # but this is more readable for someone coming to the code later
+        logger = logging.getLogger("manuscript2slides")
+
+        text_handler = TextWidgetHandler(self.log_text, self.root)
+
+        # format log messages
+        formatter = logging.Formatter(
+            "%(asctime)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S"
+        )
+        text_handler.setFormatter(formatter)
+
+        # add our new handler to the logger
+        logger.addHandler(text_handler)
+
+        log.info("Log viewer initialized in tkinter UI")
+
+    # endregion
+
+
+# region Custom Log Handler
+class TextWidgetHandler(
+    logging.Handler
+):  # Q: the param is not named? does that mean that this inherits from the passed-in class?
+    """Custom logging handler that writes to a Tkinter Text widget"""
+
+    def __init__(self, text_widget: tk.Text, root: tk.Tk) -> None:
+        """
+        Initialize handler.
+
+        Args:
+            text_widget: The Text widget to write to
+            root: The root Tk instance (for thread-safe updates)
+        """
+        super().__init__()  # I think this means yes, we're inheriting from logging.Handler. This is calling that guy's constructor to start init
+        self.text_widget = text_widget
+        self.root = root
+
+    # This is called automatically by Python's logging system
+    # whenever a log message is generated, because we made a subclass.
+    # In fact it's required/expected that subclasses implement this method.
+    # "This version is intended to be implemented by subclasses and so raises a NotImplementedError."
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """Called by logging system when a log message is generated."""
+        # Format the message
+        msg = self.format(record=record)
+
+        # Schedule the UI to update on the main thread, using after to be thread-safe
+        # Critical: emit() might be called from a background thread; we use root.after() to safely update the UI.
+        self.root.after(0, self._append_log, msg)
+
+    def _append_log(self, message: str) -> None:
+        """Append message to text widget (must run on UI thread)."""
+        # Enable editing temporarily
+        self.text_widget.config(state="normal")
+
+        # Add the new message
+        self.text_widget.insert("end", message + "\n")
+
+        # Auto-scroll to bottom
+        self.text_widget.see("end")
+
+        # disable editing again to make it read-only
+        self.text_widget.config(state="disabled")
+
+
+# endregion
+
+
+# region main
 def main() -> None:
     """Tkinter UI entry point."""
     initialize_application()  # configure the log & other startup tasks
@@ -264,3 +393,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+# endregion
