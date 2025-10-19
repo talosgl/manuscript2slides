@@ -1,6 +1,7 @@
 """Tkinter desktop UI for manuscript2slides."""
 
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 import logging
 from pathlib import Path
@@ -62,8 +63,11 @@ class Manuscript2SlidesUI:
 
         # Set up window
         self.root.title("manuscript2slides")
-        self.root.geometry("600x400")
+        self.root.geometry("600x500")
         self.root.minsize(400, 300)
+
+        # Apply theme BEFORE creating widgets
+        self.apply_theme()
 
         # Build the UI
         self.create_widgets()
@@ -71,20 +75,76 @@ class Manuscript2SlidesUI:
         # Setup log viewer and handler
         self.setup_log_handler()
 
+    def apply_theme(self) -> None:
+        """Apply a modern theme to the UI."""
+        style = ttk.Style()
+
+        # Print available themes (for debugging)
+        available_themes = style.theme_names()
+        log.info(f"Available themes: {available_themes}")
+
+        # Try to use the best theme for the platform
+        if "clam" in available_themes:  # Cross-platform modern
+            style.theme_use("clam")
+            log.info("Using 'clam' theme")
+        else:
+            style.theme_use("default")
+            log.info("Using 'default' theme")
+
+        # Customize button appearance
+
+        style.configure("TButton", padding=10, relief="flat", background="#a7c6a8")
+        # Style when button is pressed
+        style.map("TButton", background=[("active", "#45a049")])
+
+        # Create a custom style for the Convert button
+        style.configure(
+            "Accent.TButton",
+            font=("Arial", 11, "bold"),
+            foreground="white",
+            background="#a7c6a8",
+            borderwidth=0,
+        )
+
+        style.configure("TLabelframe.Label", font=("Arial", 10, "bold"))
+
+        # TODO: Combobox highlighting looks backwards; it looks disabled when enabled and vice versa. Restyle.
+        # === FIX COMBOBOX STYLING === #
+        # Configure Combobox to look better in clam
+        style.configure(
+            "TCombobox",
+            fieldbackground="white",  # Background of the text field
+            background="white",  # Background of the dropdown
+            foreground="black",  # Text color
+            selectbackground="#0078d7",  # Selected item background
+            selectforeground="white",  # Selected item text
+        )
+
+        # Map states for better visual feedback
+        style.map(
+            "TCombobox",
+            fieldbackground=[
+                ("disabled", "#e0e0e0"),  # Gray when disabled
+                ("readonly", "white"),  # White when enabled but readonly
+            ],
+            foreground=[
+                ("disabled", "#808080"),  # Gray text when disabled
+                ("readonly", "black"),  # Black text when enabled
+            ],
+        )
+
     # region create_widgets()
     def create_widgets(self) -> None:
         """Create all UI widgets."""
 
         # === Input Frame === #
         # LabelFrame = Frame + built-in title + border. Perfect for sections
-        input_frame = tk.LabelFrame(
+        input_frame = ttk.LabelFrame(
             self.root,
             text="Input File",
-            padx=15,
-            pady=10,
-            relief="groove",  # Try: flat, raised, sunken, groove, ridge
+            padding=(15, 10),  # ttk uses 'padding' not 'padx/pady'
+            relief="ridge",  # Try: flat, raised, sunken, groove, ridge
             borderwidth=2,
-            font=("Arial", 10, "bold"),
         )
         input_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
@@ -95,23 +155,25 @@ class Manuscript2SlidesUI:
         else:
             file_text = "No file selected"
 
-        self.file_display = tk.Label(input_frame, text=file_text, fg="gray", bg="white")
-        self.file_display.grid(row=0, column=0, sticky="w", padx=5)
+        self.file_display = ttk.Label(
+            input_frame, text=file_text, foreground="gray", background="white"
+        )
+        self.file_display.grid(row=0, column=0, sticky="ew", padx=5)
 
         # browse button
-        browse_btn = tk.Button(input_frame, text="Browse...", command=self.browse_file)
-        browse_btn.grid(row=0, column=1, padx=5)
+        browse_btn = ttk.Button(input_frame, text="Browse...", command=self.browse_file)
+        browse_btn.grid(row=0, column=1, padx=5, sticky="e")
 
         # === Config Frame === #
-        config_frame = tk.LabelFrame(self.root, text="Configuration", padx=15, pady=10)
+        config_frame = ttk.LabelFrame(self.root, text="Configuration", padding=(15, 10))
         config_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=10)
 
         ### Config children
         # Direction
-        direction_label = tk.Label(config_frame, text="Direction:")
+        direction_label = ttk.Label(config_frame, text="Direction:")
         direction_label.grid(row=0, column=0, sticky="w", pady=5)
 
-        docx2pptx_radio = tk.Radiobutton(
+        docx2pptx_radio = ttk.Radiobutton(
             config_frame,
             text="Word → PowerPoint",
             variable=self.direction_var,
@@ -120,7 +182,7 @@ class Manuscript2SlidesUI:
         )
         docx2pptx_radio.grid(row=0, column=1, sticky="w", padx=(20, 0))
 
-        pptx2docx_radio = tk.Radiobutton(
+        pptx2docx_radio = ttk.Radiobutton(
             config_frame,
             text="PowerPoint → Word",
             variable=self.direction_var,
@@ -130,52 +192,52 @@ class Manuscript2SlidesUI:
         pptx2docx_radio.grid(row=0, column=2, sticky="w", padx=(10, 0))
 
         # Chunk type
-        chunk_label = tk.Label(config_frame, text="Split by:")
+        chunk_label = ttk.Label(config_frame, text="Split by:")
         chunk_label.grid(row=1, column=0, sticky="w", pady=5)
 
-        self.chunk_dropdown = tk.OptionMenu(
+        self.chunk_dropdown = ttk.Combobox(
             config_frame,
-            self.chunk_var,
-            *[chunk.value for chunk in ChunkType],
+            textvariable=self.chunk_var,
+            values=[chunk.value for chunk in ChunkType],
+            state="readonly",  # Can't type custom values
+            width=20,
         )
         self.chunk_dropdown.grid(row=1, column=1, sticky="w", padx=(20, 0))
 
         # === Action Frame === #
-        action_frame = tk.LabelFrame(self.root, text="Actions", padx=15, pady=10)
+        action_frame = ttk.LabelFrame(self.root, text="Actions", padding=(15, 10))
         action_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
 
         ### action children
         # TODO, polish: make it so this button is disabled until selected_file is populated.
         # Convert button
-        self.convert_btn = tk.Button(
+        self.convert_btn = ttk.Button(
             action_frame,
             text="Convert",
             command=self.on_convert_click,
-            bg="green",
-            fg="white",
-            font=("Arial", 12, "bold"),
             width=15,
+            style="Accent.TButton",
         )
         self.convert_btn.grid(row=0, column=0, padx=5)
 
         # Status label
-        self.status_label = tk.Label(action_frame, text="Ready", fg="blue")
+        self.status_label = ttk.Label(action_frame, text="Ready", foreground="blue")
         self.status_label.grid(row=0, column=1, padx=20)
 
         # === Log Frame === #
-        log_frame = tk.LabelFrame(self.root, text="Log Output", padx=10, pady=10)
+        log_frame = ttk.LabelFrame(self.root, text="Log Output", padding=(10, 10))
         log_frame.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
 
         # Text widget with scrollbar (inside log_frame)
-        text_frame = tk.Frame(log_frame)  # Sub-frame for text+scrollbar
+        text_frame = ttk.Frame(log_frame)  # Sub-frame for text+scrollbar
         text_frame.pack(fill="both", expand=True)
 
-        scrollbar = tk.Scrollbar(text_frame)
+        scrollbar = ttk.Scrollbar(text_frame)
         scrollbar.pack(side="right", fill="y")
 
         self.log_text = tk.Text(
             text_frame,
-            height=10,
+            height=30,
             state="disabled",
             yscrollcommand=scrollbar.set,
             wrap="word",
@@ -225,9 +287,9 @@ class Manuscript2SlidesUI:
     def update_chunk_dropdown(self) -> None:
         """Enable/disable chunk dropdown based on direction."""
         if self.get_direction() == PipelineDirection.DOCX_TO_PPTX:
-            self.chunk_dropdown.config(state="normal")  # enable / show
+            self.chunk_dropdown.config(state="readonly")  # Enable (but still readonly)
         else:
-            self.chunk_dropdown.config(state="disabled")  # hide
+            self.chunk_dropdown.config(state="disabled")  # Disable
 
     # region on_convert_click
     # === Threading Methods === #
@@ -252,7 +314,7 @@ class Manuscript2SlidesUI:
                 f"The selected file does not exist:\n\n{self.selected_file}",
             )
             log.error(f"File not found: {self.selected_file}")
-            self.status_label.config(text="ERROR: File not found", fg="red")
+            self.status_label.config(text="ERROR: File not found", foreground="red")
             return
 
         # Build config from UI
@@ -270,9 +332,9 @@ class Manuscript2SlidesUI:
             cfg.input_pptx = str(self.selected_file)
 
         # Update the UI to show we're working
-        self.status_label.config(text="Converting...", fg="blue")
+        self.status_label.config(text="Converting...", foreground="blue")
         # also change the button
-        self.convert_btn.config(state="disabled", bg="orange", text="Converting...")
+        self.convert_btn.config(state="disabled", text="Converting...")
         self.root.update()  # Force UI update
 
         # Start conversion thread in a background thread
@@ -311,8 +373,8 @@ class Manuscript2SlidesUI:
 
     def on_conversion_success(self) -> None:
         """Called on UI thread when conversion succeeds."""
-        self.status_label.config(text="✓ Conversion complete!", fg="green")
-        self.convert_btn.config(state="normal", bg="green", text="Convert")
+        self.status_label.config(text="✓ Conversion complete!", foreground="green")
+        self.convert_btn.config(state="normal", text="Convert")
         log.info("Conversion complete!")
 
         # Get the output location
@@ -342,8 +404,8 @@ class Manuscript2SlidesUI:
 
     def on_conversion_error(self, error: Exception) -> None:
         """Called on UI thread when conversion fails."""
-        self.status_label.config(text=f"ERROR: {str(error)}", fg="red")
-        self.convert_btn.config(state="normal", bg="green", text="Convert")
+        self.status_label.config(text=f"ERROR: {str(error)}", foreground="red")
+        self.convert_btn.config(state="normal", text="Convert")
         log.error(f"Conversion failed: {error}", exc_info=True)
 
         # prepare error for messagebox
