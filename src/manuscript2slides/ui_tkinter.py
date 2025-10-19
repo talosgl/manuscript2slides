@@ -1,9 +1,12 @@
 """Tkinter desktop UI for manuscript2slides."""
 
 import tkinter as tk
+from tkinter import messagebox
 import logging
 from pathlib import Path
 import threading
+import platform
+import subprocess
 
 from tkinter import filedialog
 
@@ -232,12 +235,22 @@ class Manuscript2SlidesUI:
         """Handle convert button click; start conversion in background."""
         log.info("Convert button clicked!")
 
+        # Validate file selection
         if not self.selected_file:
             # TODO: show error dialog
-            log.error("No file was selected.")
+            err_msg = "No file was selected"
+            messagebox.showerror(
+                err_msg, "Please select an input file before converting."
+            )
+            log.error(err_msg + ".")
             return
 
+        # Validate file exists
         if not self.selected_file.exists():
+            messagebox.showerror(
+                "File Not Found",
+                f"The selected file does not exist:\n\n{self.selected_file}",
+            )
             log.error(f"File not found: {self.selected_file}")
             self.status_label.config(text="ERROR: File not found", fg="red")
             return
@@ -245,6 +258,9 @@ class Manuscript2SlidesUI:
         # Build config from UI
         cfg = UserConfig()
         cfg.direction = self.get_direction()
+
+        # store the cfg as an instance var so we can reference it later
+        self.last_config = cfg
 
         # set input file based on direction
         if cfg.direction and cfg.direction == PipelineDirection.DOCX_TO_PPTX:
@@ -299,11 +315,81 @@ class Manuscript2SlidesUI:
         self.convert_btn.config(state="normal", bg="green", text="Convert")
         log.info("Conversion complete!")
 
+        # Get the output location
+        if self.last_config:
+            output_folder = self.last_config.get_output_folder()
+        else:
+            log.warning(
+                "Couldn't access the last config; cannot determine output folder."
+            )
+            return
+
+        # Show success dialog with output location
+        input_name = (
+            self.selected_file.name if self.selected_file else ""
+        )  # For pylance
+        message = (
+            f"Conversion completed successfully!\n\n"
+            f"Input: {input_name}\n"
+            f"Output location:\n{output_folder}"
+        )
+
+        result = messagebox.askokcancel("Success", message + "\n\nOpen output folder?")
+
+        # If user clicks OK, open the folder for them.
+        if result:
+            self.open_output_folder(output_folder)
+
     def on_conversion_error(self, error: Exception) -> None:
         """Called on UI thread when conversion fails."""
         self.status_label.config(text=f"ERROR: {str(error)}", fg="red")
         self.convert_btn.config(state="normal", bg="green", text="Convert")
         log.error(f"Conversion failed: {error}", exc_info=True)
+
+        # prepare error for messagebox
+        error_msg = str(error)
+        # truncate very long errors
+        if len(error_msg) > 300:
+            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
+
+        messagebox.showerror(
+            "Conversion Failed",
+            f"An error occurred during conversion:\n\n{error_msg}\n\n"
+            f"Check the log output below for more details.",
+        )
+
+    # endregion
+
+    # region open_output_folder
+    def open_output_folder(self, folder_path: Path) -> None:
+        """
+        Open the output folder in the system file explorer, platform-specific.
+
+        Args:
+            folder_path: Path to the folder to open
+        """
+        try:
+            system = platform.system()
+
+            if system == "Windows":
+                # Windows: use 'explorer'
+                subprocess.run(["explorer", str(folder_path)])
+            elif system == "Darwin":  # macOS
+                # macOS: use 'open'
+                subprocess.run(["open", str(folder_path)])
+            else:  # Linux and others
+                # Linux: use 'xdg-open'
+                subprocess.run(["xdg-open", str(folder_path)])
+
+            log.info(f"Opened output folder: {folder_path}")
+
+        except Exception as e:
+            log.error(f"Failed to open folder: {e}")
+            messagebox.showwarning(
+                "Cannot Open Folder",
+                f"Could not open the output folder automatically.\n\n"
+                f"Location: {folder_path}",
+            )
 
     # endregion
 
