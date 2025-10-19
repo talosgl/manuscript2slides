@@ -83,7 +83,6 @@ class Manuscript2SlidesUI:
             borderwidth=2,
             font=("Arial", 10, "bold"),
         )
-        # Q: Since we use grid here, we have to use that for everything we put inside, right? Or, no. All its siblings. Right? | A: Yes, right-- SIBLINGS must match each other. Not parent/child.
         input_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
         #### children of input_frame
@@ -143,6 +142,7 @@ class Manuscript2SlidesUI:
         action_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
 
         ### action children
+        # TODO, polish: make it so this button is disabled until selected_file is populated.
         # Convert button
         self.convert_btn = tk.Button(
             action_frame,
@@ -234,9 +234,12 @@ class Manuscript2SlidesUI:
 
         if not self.selected_file:
             # TODO: show error dialog
-            log.error(
-                "No file was selected."
-            )  # Q: Well shouldn't the button be disabled then? Lol
+            log.error("No file was selected.")
+            return
+
+        if not self.selected_file.exists():
+            log.error(f"File not found: {self.selected_file}")
+            self.status_label.config(text="ERROR: File not found", fg="red")
             return
 
         # Build config from UI
@@ -253,9 +256,7 @@ class Manuscript2SlidesUI:
         # Update the UI to show we're working
         self.status_label.config(text="Converting...", fg="blue")
         # also change the button
-        self.convert_btn.config(
-            state="disabled", bg="yellow", text="Converting in Process..."
-        )
+        self.convert_btn.config(state="disabled", bg="orange", text="Converting...")
         self.root.update()  # Force UI update
 
         # Start conversion thread in a background thread
@@ -301,7 +302,7 @@ class Manuscript2SlidesUI:
     def on_conversion_error(self, error: Exception) -> None:
         """Called on UI thread when conversion fails."""
         self.status_label.config(text=f"ERROR: {str(error)}", fg="red")
-        self.convert_btn.config(state="normal")
+        self.convert_btn.config(state="normal", bg="green", text="Convert")
         log.error(f"Conversion failed: {error}", exc_info=True)
 
     # endregion
@@ -331,9 +332,7 @@ class Manuscript2SlidesUI:
 
 
 # region Custom Log Handler
-class TextWidgetHandler(
-    logging.Handler
-):  # Q: the param is not named? does that mean that this inherits from the passed-in class?
+class TextWidgetHandler(logging.Handler):
     """Custom logging handler that writes to a Tkinter Text widget"""
 
     def __init__(self, text_widget: tk.Text, root: tk.Tk) -> None:
