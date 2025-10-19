@@ -72,121 +72,121 @@ class Manuscript2SlidesUI:
     def create_widgets(self) -> None:
         """Create all UI widgets."""
 
-        # === FILE SELECTION === #
-
-        # File Select verb label
-        file_label = tk.Label(
+        # === Input Frame === #
+        # LabelFrame = Frame + built-in title + border. Perfect for sections
+        input_frame = tk.LabelFrame(
             self.root,
-            text="Select an input file, or use the default to do a dry run:",
+            text="Input File",
+            padx=15,
+            pady=10,
+            relief="groove",  # Try: flat, raised, sunken, groove, ridge
+            borderwidth=2,
+            font=("Arial", 10, "bold"),
         )
-        file_label.grid(
-            row=0, column=0, sticky="w", padx=10, pady=10
-        )  # Sticky is "alignment" and uses NSEW
+        # Q: Since we use grid here, we have to use that for everything we put inside, right? Or, no. All its siblings. Right? | A: Yes, right-- SIBLINGS must match each other. Not parent/child.
+        input_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
-        # Selected file label
+        #### children of input_frame
+        # File dispay/selection
         if self.selected_file:
-            file_text = self.selected_file.name  # Show sample filename
+            file_text = self.selected_file.name
         else:
             file_text = "No file selected"
 
-        self.file_display = tk.Label(self.root, text=file_text, fg="gray")
-        self.file_display.grid(row=0, column=1, sticky="w", padx=10, pady=10)
+        self.file_display = tk.Label(input_frame, text=file_text, fg="gray", bg="white")
+        self.file_display.grid(row=0, column=0, sticky="w", padx=5)
 
-        # browse
-        browse_btn = tk.Button(self.root, text="Browse...", command=self.browse_file)
-        browse_btn.grid(row=0, column=2, padx=10, pady=10)
+        # browse button
+        browse_btn = tk.Button(input_frame, text="Browse...", command=self.browse_file)
+        browse_btn.grid(row=0, column=1, padx=5)
 
-        # === DIRECTION SELECTION === #
-        direction_label = tk.Label(self.root, text="Pipeline direction:")
-        direction_label.grid(row=1, column=0, sticky="w", padx=10, pady=10)
+        # === Config Frame === #
+        config_frame = tk.LabelFrame(self.root, text="Configuration", padx=15, pady=10)
+        config_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=10)
+
+        ### Config children
+        # Direction
+        direction_label = tk.Label(config_frame, text="Direction:")
+        direction_label.grid(row=0, column=0, sticky="w", pady=5)
 
         docx2pptx_radio = tk.Radiobutton(
-            self.root,
-            text="Word to PowerPoint",
+            config_frame,
+            text="Word → PowerPoint",
             variable=self.direction_var,
-            value=PipelineDirection.DOCX_TO_PPTX.value,
-            command=self.update_chunk_dropdown,  # add a callback so the rest of the UI updates when this radio changes
+            value=PipelineDirection.DOCX_TO_PPTX.value,  # Copying value
+            command=self.update_chunk_dropdown,
         )
-        docx2pptx_radio.grid(row=1, column=1, sticky="w", padx=10, pady=5)
+        docx2pptx_radio.grid(row=0, column=1, sticky="w", padx=(20, 0))
 
         pptx2docx_radio = tk.Radiobutton(
-            self.root,
-            text="PowerPoint to Word",
+            config_frame,
+            text="PowerPoint → Word",
             variable=self.direction_var,
             value=PipelineDirection.PPTX_TO_DOCX.value,
             command=self.update_chunk_dropdown,
         )
-        pptx2docx_radio.grid(row=2, column=1, sticky="w", padx=10, pady=0)
+        pptx2docx_radio.grid(row=0, column=2, sticky="w", padx=(10, 0))
 
-        # === CHUNK TYPE (only for docx2pptx) === #
-        chunk_label = tk.Label(self.root, text="Split by:")
-        chunk_label.grid(row=3, column=0, sticky="w", padx=10, pady=10)
+        # Chunk type
+        chunk_label = tk.Label(config_frame, text="Split by:")
+        chunk_label.grid(row=1, column=0, sticky="w", pady=5)
 
-        # Chunk dropdown
         self.chunk_dropdown = tk.OptionMenu(
-            self.root,
+            config_frame,
             self.chunk_var,
-            *[chunk.value for chunk in ChunkType],  # Generate list from enum
+            *[chunk.value for chunk in ChunkType],
         )
-        self.chunk_dropdown.grid(row=3, column=1, sticky="w", padx=10, pady=10)
+        self.chunk_dropdown.grid(row=1, column=1, sticky="w", padx=(20, 0))
 
-        # === CONVERT BUTTON === #
+        # === Action Frame === #
+        action_frame = tk.LabelFrame(self.root, text="Actions", padx=15, pady=10)
+        action_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=10)
+
+        ### action children
+        # Convert button
         self.convert_btn = tk.Button(
-            self.root,
+            action_frame,
             text="Convert",
             command=self.on_convert_click,
             bg="green",
             fg="white",
             font=("Arial", 12, "bold"),
+            width=15,
         )
-        self.convert_btn.grid(row=4, column=1, pady=20)
+        self.convert_btn.grid(row=0, column=0, padx=5)
 
         # Status label
-        self.status_label = tk.Label(self.root, text="", fg="blue")
-        self.status_label.grid(row=4, column=0, pady=(0, 10))
+        self.status_label = tk.Label(action_frame, text="Ready", fg="blue")
+        self.status_label.grid(row=0, column=1, padx=20)
 
-        # === Log Viewer === #
-        # Label for Log section
-        log_label = tk.Label(self.root, text="Log output:", font=("Arial", 10, "bold"))
-        log_label.grid(
-            row=5, column=0, sticky="w", padx=10, pady=(10, 0)
-        )  # Q: curious about the tuple for pady. I notice now we did that for the status label... and it is next to the button
+        # === Log Frame === #
+        log_frame = tk.LabelFrame(self.root, text="Log Output", padx=10, pady=10)
+        log_frame.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
 
-        # Create a frame to hold the text widget + scrollbar like a container
-        log_frame = tk.Frame(self.root)
-        log_frame.grid(row=6, column=0, columnspan=3, sticky="nsew", padx=10, pady=10)
-        # Q: i assume nsew makes it stretch all 4 ways | A: yes
+        # Text widget with scrollbar (inside log_frame)
+        text_frame = tk.Frame(log_frame)  # Sub-frame for text+scrollbar
+        text_frame.pack(fill="both", expand=True)
 
-        # create scrollbar
-        scrollbar = tk.Scrollbar(log_frame)
+        scrollbar = tk.Scrollbar(text_frame)
         scrollbar.pack(side="right", fill="y")
 
-        # create text widget
         self.log_text = tk.Text(
-            log_frame,
-            height=10,  # Lines of text visible
-            width=70,  # Characters wide
-            state="disabled",  # read only; We'll enable it briefly when adding logs, then disable again.
-            yscrollcommand=scrollbar.set,  # Connect to scrollbar # Q: some kinda callback I think
-            wrap="word",  # enable wordwrap
-            bg="#f0f0f0",  # light-gray background
-            font=("Courier", 9),  # monospace font for the logs
+            text_frame,
+            height=10,
+            state="disabled",
+            yscrollcommand=scrollbar.set,
+            wrap="word",
+            bg="#f0f0f0",
+            font=("Courier", 9),
         )
-        self.log_text.pack(
-            side="left", fill="both", expand=True
-        )  # Q: I see we're using pack instead of grid here
+        self.log_text.pack(side="left", fill="both", expand=True)
 
-        # connect the scrollbar to the text widget
-        scrollbar.config(
-            command=self.log_text.yview
-        )  # Q: hmm also a callback here that makes me think we're doubling up the connecting? | A: this allows the scrollbar to control (?) text
-        # It's a two-way binding to keep the two things in sync; I don't know that I can fully articulate that well, though.
+        scrollbar.config(command=self.log_text.yview)
 
-        # Configure grid weights so the log-viewer expands if the window is resized
-        self.root.rowconfigure(6, weight=1)
-        self.root.columnconfigure(0, weight=1)
-        self.root.columnconfigure(1, weight=1)
-        self.root.columnconfigure(2, weight=1)
+        # === CONFIGURE GRID WEIGHTS === #
+        # Make the window resizable properly
+        self.root.columnconfigure(0, weight=1)  # Main column expands
+        self.root.rowconfigure(3, weight=1)  # Log row expands
 
     # endregion
 
