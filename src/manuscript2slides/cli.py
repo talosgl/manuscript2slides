@@ -22,7 +22,7 @@ def run() -> None:
     # ==== Logic that will be in both CLI & GUI in some form
 
     # Create config with defaults
-    cfg = UserConfig()
+    cfg = UserConfig().with_defaults()
 
     # == TODOs for later, when I care to expand CLI interface:
     # TODO add capability to populate/override defaults with user-provided CLI Args

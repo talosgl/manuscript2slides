@@ -1,17 +1,18 @@
 # internals/config/define_config.py
 """User configuration dataclass and validation."""
+from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Optional
-from enum import Enum
-import os
 
 from manuscript2slides.internals.paths import (
-    user_input_dir,
-    user_templates_dir,
-    user_output_dir,
     user_base_dir,
+    user_input_dir,
+    user_output_dir,
+    user_templates_dir,
 )
 
 
@@ -104,14 +105,12 @@ class UserConfig:
         base = user_templates_dir()
         return base / "docx_template.docx"
 
-    def get_input_docx_file(self) -> Path:
-        """Get the docx2pptx input docx file or fall back to a dry run example file."""
+    def get_input_docx_file(self) -> Path | None:
+        """Get the docx2pptx input docx file path, or None if not specified."""
         if self.input_docx:
             return self._resolve_path(self.input_docx)
 
-        # Default/Dry Run from user's input folder (copied there from scaffold.py)
-        base = user_input_dir()
-        return base / "sample_doc.docx"
+        return None
 
     def get_output_folder(self) -> Path:
         """Get the docx2pptx pipeline output pptx path, with fallback to default."""
@@ -121,14 +120,33 @@ class UserConfig:
         # Default
         return user_output_dir()
 
-    def get_input_pptx_file(self) -> Path:
-        """Get the pptx2docx input pptx file or fall back to a dry run example pptx."""
+    def get_input_pptx_file(self) -> Path | None:
+        """Get the pptx2docx input pptx file path, or None if not specified."""
         if self.input_pptx:
             return self._resolve_path(self.input_pptx)
 
-        # Default/Dry Run
-        base = user_input_dir()
-        return base / "sample_slides_output.pptx"
+        return None  # No more fallback to sample
+
+    @classmethod
+    def with_defaults(cls) -> UserConfig:
+        """
+        Create a config object in memory with sample files for quick CLI demo.
+
+        Provides sensible defaults for everything so users can run
+        `python -m manuscript2slides` and see it work immediately.
+
+        Returns:
+            UserConfig: Fully populated config using sample files
+        """
+
+        cfg = cls()
+
+        # Point to sample files for demo
+        cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
+
+        # All other fields already have defaults from the dataclass
+        # (chunk_type, direction, bools, templates, output_folder)
+        return cfg
 
     # Validation
     def validate(self) -> None:
@@ -220,10 +238,17 @@ class UserConfig:
         - Only runs right before you actually need those resources
         """
 
-        # Always validate - either user file or default sample
         input_path = self.get_input_docx_file()
+
+        # Check: did user provide an input file at all?
+        if input_path is None:
+            raise ValueError(
+                "No input docx file specified. Please set input_docx before running the pipeline."
+            )
+        # Check: does the file exist on disk?
         if not input_path.exists():
             raise FileNotFoundError(f"Input docx file not found: {input_path}")
+        # Check: is it actually a file (not a directory)?
         if not input_path.is_file():
             raise ValueError(f"Input docx path is not a file: {input_path}")
 
@@ -237,10 +262,18 @@ class UserConfig:
     def validate_pptx2docx_pipeline_requirements(self) -> None:
         """Validate external dependencies required to run the pptx2docx pipeline."""
 
-        # Always validate - either user file or default sample
+        # Check: did user provide an input file at all?
         input_path = self.get_input_pptx_file()
+        if input_path is None:
+            raise ValueError(
+                "No input docx file specified. Please set input_pptx before running the pipeline."
+            )
+
+        # Check: does the file exist on disk?
         if not input_path.exists():
             raise FileNotFoundError(f"Input pptx not found: {input_path}")
+
+        # Check: is it actually a file (not a directory)?
         if not input_path.is_file():
             raise ValueError(f"Not a file: {input_path}")
 
