@@ -6,8 +6,14 @@ description = "Convert Word documents to PowerPoint slides"
 dependencies = [
     "python-docx",
     "python-pptx",
-    "PyYAML",
-    "platformdirs>=3.5"
+    "platformdirs>=3.5",
+    "tomli>=2.0.0; python_version < '3.11'",  # Only install if Python < 3.11
+    "tomli-w>=1.0.0",
+]
+[project.optional-dependencies]
+dev = [
+    "tomli>=2.0.0",  # Always install for dev, even on 3.11+
+    "tomli-w>=1.0.0",
 ]
 authors = [{name = "talosgl"}]
 
