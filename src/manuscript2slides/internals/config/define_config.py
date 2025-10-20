@@ -197,6 +197,34 @@ class UserConfig:
         return cfg
 
     @classmethod
+    def for_demo(cls, direction: PipelineDirection) -> UserConfig:
+        """
+        Create a config with sample files for GUI demo tab.
+
+        User picks the direction (docx2pptx or pptx2docx), we fill in
+        the appropriate sample files and sensible defaults.
+
+        Args:
+            direction: Which pipeline direction to demo
+
+        Returns:
+            UserConfig: Fully populated config using sample files
+        """
+        cfg = cls()
+        cfg.direction = direction
+
+        # Set the appropriate input file based on direction
+        if direction == PipelineDirection.DOCX_TO_PPTX:
+            cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
+        elif direction == PipelineDirection.PPTX_TO_DOCX:
+            cfg.input_pptx = str(user_input_dir() / "sample_slides_output.pptx")
+
+        # All other fields use their dataclass defaults
+        # (output_folder, templates, bools, etc.)
+
+        return cfg
+
+    @classmethod
     def from_toml(cls, path: Path) -> UserConfig:
         """
         Load configuration from a TOML file.
