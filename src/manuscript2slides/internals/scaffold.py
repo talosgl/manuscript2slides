@@ -7,6 +7,7 @@ On first run, this creates:
   ├── input/              (optional staging for source files)
   ├── output/             (converted files land here)
   ├── logs/               (manuscript2slides.log lives here)
+  ├── configs/            (saved configuration files)
   └── templates/          (blank_template.pptx, docx_template.docx)
 
 Safe to call repeatedly - won't overwrite existing user files.
@@ -22,6 +23,7 @@ from manuscript2slides.internals.paths import (
     user_output_dir,
     user_log_dir_path,
     user_templates_dir,
+    user_configs_dir,
 )
 from manuscript2slides.internals.constants import RESOURCES_DIR
 
@@ -37,6 +39,7 @@ def ensure_user_scaffold() -> None:
         - ~/Documents/manuscript2slides/README.md
         - ~/Documents/manuscript2slides/templates/*.pptx
         - ~/Documents/manuscript2slides/templates/*.docx
+        - ~/Documents/manuscript2slides/config/sample_config.toml
         - Empty input/output/logs folders
     """
 
@@ -47,6 +50,7 @@ def ensure_user_scaffold() -> None:
     user_output_dir()
     user_log_dir_path()
     templates = user_templates_dir()
+    configs_dir = user_configs_dir()
 
     readme_path = base / "README.md"
     if not readme_path.exists():
@@ -56,8 +60,11 @@ def ensure_user_scaffold() -> None:
     # Copy template files if missing
     _copy_templates_if_missing(templates)
 
-    # Copy sample files if missing
+    # Copy sample docx/pptx files if missing
     _copy_samples_if_missing(input_dir)
+
+    # Copy sample config if missing
+    _copy_sample_config_if_missing(configs_dir)
 
     log.debug(f"User scaffold ready at {base}")
 
@@ -143,3 +150,20 @@ def _copy_samples_if_missing(input_dir: Path) -> None:
                 log.warning(f"Sample not found in resources: {sample_name}")
         else:
             log.debug(f"Sample already exists (not overwriting): {sample_name}")
+
+
+def _copy_sample_config_if_missing(configs_dir: Path) -> None:
+    """Copy sample config from package resources to user configs folder."""
+
+    sample_name = "sample_config.toml"
+    source = _get_resource_path(sample_name)
+    target = configs_dir / sample_name
+
+    if not target.exists():
+        if source.exists():
+            shutil.copy2(source, target)
+            log.info(f"Copied sample config: {sample_name}")
+        else:
+            log.warning(f"Sample config not found in resources: {sample_name}")
+    else:
+        log.debug(f"Sample config already exists (not overwriting): {sample_name}")

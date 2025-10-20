@@ -78,3 +78,14 @@ def user_templates_dir() -> Path:
     templates_dir = user_base_dir() / "templates"
     templates_dir.mkdir(parents=True, exist_ok=True)
     return templates_dir
+
+def user_configs_dir() -> Path:
+    """
+    Directory for saved configuration files.
+
+    Returns:
+        Path to ~/Documents/manuscript2slides/configs/
+    """
+    configs_dir = user_base_dir() / "configs"
+    configs_dir.mkdir(parents=True, exist_ok=True)
+    return configs_dir

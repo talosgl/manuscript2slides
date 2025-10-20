@@ -34,6 +34,13 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
     # Save original input
     original_docx = cfg.get_input_docx_file()
 
+    # Safety check
+    if original_docx is None:
+        raise ValueError(
+            "Round-trip test requires input_docx to be set. "
+            "Use UserConfig.with_defaults() or UserConfig.for_demo() to create a test config."
+        )
+
     # Run docx -> pptx
     cfg.direction = PipelineDirection.DOCX_TO_PPTX
     run_pipeline(cfg)
