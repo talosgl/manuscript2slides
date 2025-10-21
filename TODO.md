@@ -1,12 +1,6 @@
 ## TODOs found while doing UI Exploration
-- [ ] refactor run_id: we need separate things considering run_id per-pipeline-run vs. session_id for per-UI session
-- [x] refactor UserConfig() and move dry run functionality into a config that can be loaded from a button in the UI / a class method from the CLI, rather than being "magically" populating as the default values
-    - [x] refactor to use toml instead of yaml for configs
-    - [x] add save/load config functionality
-    - [x] add with_defaults() class method for CLI to use
-    - [x] update validation methods to not assume defaults (e.g., change input_docx to fail on no input file rather than auto-populate)
-- [x] Whatever backend work is needed to support "preference persistence" (auto-save user UI config selections on close?)
-- [ ] Should `__main__.py` have the log = setuplogger() thing at the top, like all the other files ... just in case?
+- [x] refactor run_id: we need separate things considering run_id per-pipeline-run vs. session_id for per-UI session
+- [no] Should `__main__.py` have the log = setuplogger() thing at the top, like all the other files ... just in case?
 - [ ] Add logging to pipeline validation methods (validate_docx2pptx_pipeline_requirements, validate_pptx2docx_pipeline_requirements)
 - [ ] CLI: Add argparse support for --config flag
 - [ ] GUI: Wire up auto-save/load for preference persistence across sessions (simple, just call the save_toml/load_toml methods we built)

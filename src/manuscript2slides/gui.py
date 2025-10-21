@@ -43,7 +43,11 @@ def main() -> None:
     from manuscript2slides import startup
 
     log = startup.initialize_application()
-    run()
+    try:
+        run()
+    except Exception:
+        log.exception("Fatal error in GUI")
+        raise
 
 
 if __name__ == "__main__":

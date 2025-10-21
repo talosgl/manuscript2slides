@@ -9,6 +9,7 @@ from manuscript2slides.processing.chunking import create_docx_chunks
 from manuscript2slides.processing.create_slides import slides_from_chunks
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.templates import create_empty_slide_deck
+from manuscript2slides.internals.run_context import start_pipeline_run
 
 log = logging.getLogger("manuscript2slides")
 
@@ -19,19 +20,33 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     # Validate we have what we need to run
     cfg.validate_docx2pptx_pipeline_requirements()
 
+    # Start pipeline run and get a fresh ID
+    pipeline_id = start_pipeline_run()
+    log.info(f"Starting docx2pptx pipeline. [pipeline:{pipeline_id}]")
+
     user_docx = cfg.get_input_docx_file()
+
+    # Safety check
+    if user_docx is None:
+        raise ValueError(
+            "user_docx is None inside run_docx2pptx_pipeline(), somehow. This should never happen. "
+            "Our Validation failed to catch missing input file. "
+            "If you are trying to test something, use UserConfig.with_defaults() or UserConfig.for_demo() to create a test config."
+        )
 
     # Validate it's a real path of the correct type. If it's not, return the error.
     try:
         user_docx_validated = io.validate_docx_path(user_docx)
     except FileNotFoundError:
-        log.error(f"File not found: {user_docx}")
+        log.error(f"File not found: {user_docx}. [pipeline:{pipeline_id}]")
         sys.exit(1)
     except ValueError as e:
-        log.error(f"{e}")
+        log.error(f"{e} [pipeline:{pipeline_id}]")
         sys.exit(1)
     except PermissionError:
-        log.error(f"I don't have permission to read that file ({user_docx})!")
+        log.error(
+            f"I don't have permission to read that file ({user_docx})! [pipeline:{pipeline_id}]"
+        )
         sys.exit(1)
 
     # Load the docx file at that path.
@@ -49,7 +64,9 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     try:
         output_prs = create_empty_slide_deck(cfg)
     except Exception as e:
-        log.error(f"Could not load template file (may be corrupted): {e}")
+        log.error(
+            f"Could not load template file (may be corrupted): {e} [pipeline:{pipeline_id}]"
+        )
         sys.exit(1)
 
     # Mutate the presentation object by adding slides
@@ -57,3 +74,5 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
 
     # Save the presentation to an actual pptx on disk
     io.save_output(output_prs, cfg)
+
+    log.info(f"docx2pptx pipeline complete [pipeline:{pipeline_id}]")

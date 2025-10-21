@@ -4,6 +4,7 @@ All strategies break a new chunk on a docx page break to prevent slide text over
 
 from manuscript2slides.models import Chunk_docx
 from manuscript2slides.internals.config.define_config import ChunkType
+from manuscript2slides.internals.run_context import get_pipeline_run_id
 from docx import document
 import logging
 
@@ -39,8 +40,9 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
     Creates chunks (which will become slides) based on paragraph, which are blocks of content
     separated by whitespace.
     """
+    pipeline_id = get_pipeline_run_id()
 
-    log.info("Running the chunk by paragraph strategy.")
+    log.info(f"Running the chunk by paragraph strategy. [pipeline:{pipeline_id}]")
 
     paragraph_chunks: list[Chunk_docx] = []
 
@@ -50,12 +52,14 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
         if para.text == "":
             continue
 
-        log.debug(f"Paragraph begins: {para.text[:30]}...")
+        log.debug(f"Paragraph begins: {para.text[:30]}... [pipeline:{pipeline_id}]")
 
         new_chunk = Chunk_docx.create_with_paragraph(para)
         paragraph_chunks.append(new_chunk)
 
-    log.info(f"This document has {len(paragraph_chunks)} page chunks.")
+    log.info(
+        f"This document has {len(paragraph_chunks)} page chunks. [pipeline:{pipeline_id}]"
+    )
 
     return paragraph_chunks
 
@@ -66,8 +70,9 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
 # region by Page
 def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     """Creates chunks based on page breaks"""
+    pipeline_id = get_pipeline_run_id()
 
-    log.info("Running the chunk by page strategy.")
+    log.info(f"Running the chunk by page strategy. [pipeline:{pipeline_id}]")
 
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
@@ -80,7 +85,7 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
         if para.text == "":
             continue
 
-        log.debug(f"Paragraph begins: {para.text[:30]}...")
+        log.debug(f"Paragraph begins: {para.text[:30]}... [pipeline:{pipeline_id}]")
 
         # If the current_page_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_page_chunk.paragraphs:
@@ -105,7 +110,9 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     if current_page_chunk:
         all_chunks.append(current_page_chunk)
 
-    log.info(f"This document has {len(all_chunks)} page chunks.")
+    log.info(
+        f"This document has {len(all_chunks)} page chunks. [pipeline:{pipeline_id}]"
+    )
     return all_chunks
 
 
@@ -151,7 +158,10 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     Normal Paragraph
 
     """
-    log.info("Running the chunk by heading (nested) strategy.")
+    pipeline_id = get_pipeline_run_id()
+    log.info(
+        f"Running the chunk by heading (nested) strategy. [pipeline:{pipeline_id}]"
+    )
 
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
@@ -169,7 +179,9 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
         # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.style_name later)
         style_name = para.style.name if para.style and para.style.name else "Normal"
 
-        log.debug(f"Paragraph begins: {para.text[:30]}... and is index: {i}")
+        log.debug(
+            f"Paragraph begins: {para.text[:30]}... and is index: {i}. [pipeline:{pipeline_id}]"
+        )
 
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_chunk.paragraphs:
@@ -214,7 +226,9 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     if current_chunk:
         all_chunks.append(current_chunk)
 
-    log.info(f"This document has {len(all_chunks)} nested heading chunks.")
+    log.info(
+        f"This document has {len(all_chunks)} nested heading chunks. [pipeline:{pipeline_id}]"
+    )
     return all_chunks
 
 
@@ -260,8 +274,8 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     Normal Paragraph
     Normal Paragraph
     """
-
-    log.info("Running the chunk by heading (flat) strategy.")
+    pipeline_id = get_pipeline_run_id()
+    log.info(f"Running the chunk by heading (flat) strategy. [pipeline:{pipeline_id}]")
 
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
@@ -275,7 +289,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
         # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.name later)
         style_name = para.style.name if para.style and para.style.name else "Normal"
 
-        log.debug(f"Paragraph begins: {para.text[:30]}...")
+        log.debug(f"Paragraph begins: {para.text[:30]}... [pipeline:{pipeline_id}]")
 
         # If the current_chunk is empty, append the current para regardless of style & continue to next para.
         if not current_chunk.paragraphs:
@@ -308,7 +322,9 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     if current_chunk:
         all_chunks.append(current_chunk)
 
-    log.info(f"This document has {len(all_chunks)} flat heading chunks.")
+    log.info(
+        f"This document has {len(all_chunks)} flat heading chunks. [pipeline:{pipeline_id}]"
+    )
     return all_chunks
 
 

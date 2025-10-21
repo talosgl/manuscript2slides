@@ -23,6 +23,7 @@ from manuscript2slides.internals.paths import (
     user_output_dir,
     user_templates_dir,
 )
+from manuscript2slides.internals.run_context import get_pipeline_run_id
 import logging
 
 log = logging.getLogger("manuscript2slides")
@@ -305,7 +306,7 @@ class UserConfig:
 
         # Check if path is a directory
         if path.exists() and path.is_dir():
-            error_msg = f"Cannot save config: path is a directory, not a file: {path}"
+            error_msg = f"Cannot save config: path is a directory, not a file: {path}."
             log.error(error_msg)
             raise ValueError(error_msg)
 

@@ -16,7 +16,11 @@ from manuscript2slides.processing.chunking import is_standard_heading
 from manuscript2slides.internals import constants
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import Chunk_docx
-from manuscript2slides.processing.run_processing import process_docx_paragraph_inner_contents
+from manuscript2slides.processing.run_processing import (
+    process_docx_paragraph_inner_contents,
+)
+
+from manuscript2slides.internals.run_context import get_pipeline_run_id
 
 log = logging.getLogger("manuscript2slides")
 
@@ -27,13 +31,16 @@ def slides_from_chunks(
     prs: presentation.Presentation, chunks: list[Chunk_docx], cfg: UserConfig
 ) -> None:
     """Generate slide objects, one for each chunk created by earlier pipeline steps."""
-
-    log.info("Creating new slides from chunks.")
+    pipeline_id = get_pipeline_run_id()
+    log.info(f"Creating new slides from chunks. [pipeline:{pipeline_id}]")
 
     # Specify which slide layout to use
     slide_layout = prs.slide_layouts.get_by_name(constants.SLD_LAYOUT_CUSTOM_NAME)
 
     if slide_layout is None:
+        log.error(
+            f"No slide layout found to match provided custom name, {constants.SLD_LAYOUT_CUSTOM_NAME}. [pipeline:{pipeline_id}]"
+        )
         raise KeyError(
             f"No slide layout found to match provided custom name, {constants.SLD_LAYOUT_CUSTOM_NAME}"
         )
@@ -92,6 +99,9 @@ def slides_from_chunks(
         notes_text_frame = new_slide.notes_slide.notes_text_frame
 
         if notes_text_frame is None:
+            log.error(
+                f"No notes text frame found in slide {new_slide.slide_id}. [pipeline:{get_pipeline_run_id()}]"
+            )
             raise ValueError(
                 "This slide doesn't seem to have a notes text frame. This should never happen, but it's possible for the notes_slide or notes_text_frame properties to return None if the notes placeholder has been removed from the notes master or the notes slide itself."
             )
@@ -111,6 +121,9 @@ def create_blank_slide_for_chunk(
     content = new_slide.placeholders[1]
 
     if not isinstance(content, SlidePlaceholder):
+        log.error(
+            f"Expected SlidePlaceholder, got {type(content)} [pipeline:{get_pipeline_run_id()}]"
+        )
         raise TypeError(f"Expected SlidePlaceholder, got {type(content)}")
 
     text_frame: TextFrame = content.text_frame

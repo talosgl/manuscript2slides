@@ -1,11 +1,11 @@
 """
-Basic logging setup; creates console and file handlers with run_id in every log line.
+Basic logging setup; creates console and file handlers with session_id in every log line.
 """
 
 import logging
 
 from manuscript2slides.internals.paths import user_log_dir_path
-from manuscript2slides.internals.run_context import get_run_id
+from manuscript2slides.internals.run_context import get_session_id, get_pipeline_run_id
 
 
 def setup_logger(
@@ -16,7 +16,7 @@ def setup_logger(
     """
     Setup logging with console and file output.
 
-    The run_id is included in every log line for traceability.
+    The session_id is included in every log line for traceability.
     Safe to call multiple times (won't create duplicate handlers).
 
     Args:
@@ -44,11 +44,11 @@ def setup_logger(
     # Why: If you have other libraries that log, you don't want their logs mixed with yours. This keeps "manuscript2slides" logs separate.
     logger.propagate = False
 
-    # Get the run_id once for this logger setup
-    run_id = get_run_id()
+    # Get the session_id once for this logger setup
+    session_id = get_session_id()
 
     # Create formatters (same format for both console and file)
-    log_format = f"%(asctime)s [%(levelname)s] %(message)s [run:{run_id}]"
+    log_format = f"%(asctime)s [%(levelname)s] %(message)s [session:{session_id}]"
     formatter = logging.Formatter(log_format, datefmt="%Y-%m-%d %H:%M:%S")
 
     # Console handler (prints to terminal)
@@ -67,7 +67,7 @@ def setup_logger(
     # Trace log file handler
     if enable_trace:
         # Putting this here for later, maybe...
-        trace_log_format = f"%(filename)s: %(funcName)s(), Line: %(lineno)d: - [%(levelname)s] %(asctime)s - %(message)s -- [run_id={run_id}]"
+        trace_log_format = f"%(filename)s: %(funcName)s(), Line: %(lineno)d: - [%(levelname)s] %(asctime)s - %(message)s -- [session_id={session_id}]"
         trace_log_formatter = logging.Formatter(
             trace_log_format, datefmt="%Y-%m-%d %H:%M:%S"
         )

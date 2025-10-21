@@ -19,6 +19,12 @@ log = logging.getLogger("manuscript2slides")
 def run() -> None:
     """Run CLI interface. Assumes startup.initialize_application() was already called."""
 
+    # == test zone
+    # TEMP
+
+    # END TEMP
+    # ==
+
     # ==== Logic that will be in both CLI & GUI in some form
 
     # Create config with defaults
@@ -47,7 +53,11 @@ def main() -> None:
     from manuscript2slides import startup
 
     log = startup.initialize_application()
-    run()
+    try:
+        run()
+    except Exception:
+        log.exception("Fatal error in CLI")
+        raise
 
 
 if __name__ == "__main__":
