@@ -20,14 +20,14 @@ Epic: Investigate UI options, select one, implement it
     - [ ] Explicit actions > implicit "magic" when it comes to UI apps. (If we want to give users a dry run feature, we should have them click a button that makes it clear they're invoking that. Not just auto-call it, like we might with a cli command.)
 
 - [ ] finish Tkinter prototype/experiment - finish a complete, functional prototype.
-    - [ ] Log viewer
-    - [ ] Threading (so UI doesn't freeze)
-    - [ ] Success/error message boxes
+    - [x] Log viewer
+    - [x] Threading (so UI doesn't freeze)
+    - [x] Success/error message boxes
     - Stretch:
-    - [ ] Progress indicator (spinning wheel or progress bar)
-    - [ ] Show output location on success
+    - [-] Progress indicator (spinning wheel or progress bar)
+    - [x] Show output location on success
     - Stretch even more:
-    - [ ] Try some Tkinter templates to see if we can make it look modern (`from tkinter import ttk`) # ttk widgets look more modern
+    - [x] Try some Tkinter templates to see if we can make it look modern (`from tkinter import ttk`) # ttk widgets look more modern
 
 - [ ] DESIGN BREAK
     - Take a break from UI coding
