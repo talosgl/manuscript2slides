@@ -1,8 +1,7 @@
 ## TODOs found while doing UI Exploration
 - [x] refactor run_id: we need separate things considering run_id per-pipeline-run vs. session_id for per-UI session
-- [no] Should `__main__.py` have the log = setuplogger() thing at the top, like all the other files ... just in case?
-- [ ] Add logging to pipeline validation methods (validate_docx2pptx_pipeline_requirements, validate_pptx2docx_pipeline_requirements)
-- [ ] CLI: Add argparse support for --config flag
+- [x] Add logging to pipeline validation methods (validate_docx2pptx_pipeline_requirements, validate_pptx2docx_pipeline_requirements)
+- [x] CLI: Add argparse support for --config flag
 - [ ] GUI: Wire up auto-save/load for preference persistence across sessions (simple, just call the save_toml/load_toml methods we built)
 
 ## Major TODOs Ordered by priority/dependency
