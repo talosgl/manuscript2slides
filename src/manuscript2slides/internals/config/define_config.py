@@ -362,6 +362,7 @@ class UserConfig:
 
         # Validate chunk_type is a valid ChunkType enum member
         if not isinstance(self.chunk_type, ChunkType):
+            log.error("Invalid value in chunk_type; must be enum.")
             raise ValueError(
                 f"chunk_type must be a ChunkType enum, got {type(self.chunk_type).__name__}. "
                 f"Valid values: {[e.value for e in ChunkType]}"
@@ -369,6 +370,7 @@ class UserConfig:
 
         # Validate direction is a valid PipelineDirection enum member
         if not isinstance(self.direction, PipelineDirection):
+            log.error("Invalid value in direction; must be enum.")
             raise ValueError(
                 f"direction must be a PipelineDirection enum, got {type(self.direction).__name__}. "
                 f"Valid values: {[e.value for e in PipelineDirection]}"
@@ -388,28 +390,39 @@ class UserConfig:
         for field_name in bool_fields:
             val = getattr(self, field_name)
             if not isinstance(val, bool):
+                log.error(f"{field_name} must be a boolean, got {type(val).__name__}")
                 raise ValueError(
                     f"{field_name} must be a boolean, got {type(val).__name__}"
                 )
 
         # Path strings should be strings, if provided
         if self.input_docx is not None and not isinstance(self.input_docx, str):
+            log.error(
+                f"input_docx must be a string, got {type(self.input_docx).__name__}"
+            )
             raise ValueError(
                 f"input_docx must be a string, got {type(self.input_docx).__name__}"
             )
 
         if self.input_pptx is not None and not isinstance(self.input_pptx, str):
+            log.error(
+                f"input_pptx must be a string, got {type(self.input_pptx).__name__}"
+            )
             raise ValueError(
                 f"input_pptx must be a string, got {type(self.input_pptx).__name__}"
             )
 
         if self.output_folder is not None and not isinstance(self.output_folder, str):
+            log.error(
+                f"output_folder must be a string, got {type(self.output_folder).__name__}"
+            )
             raise ValueError(
                 f"output_folder must be a string, got {type(self.output_folder).__name__}"
             )
 
         # Can't be empty string
         if self.output_folder == "":
+            log.error("output_folder cannot be empty string; use None for default")
             raise ValueError(
                 "output_folder cannot be empty string; use None for default"
             )
@@ -429,7 +442,6 @@ class UserConfig:
                 f"Output path exists but is not a directory: {output_folder}"
             )
 
-    # TODO: Add logging to pipeline validation methods (validate_docx2pptx_pipeline_requirements, validate_pptx2docx_pipeline_requirements)
     def validate_docx2pptx_pipeline_requirements(self) -> None:
         """
         Validate external dependencies required to run the docx2pptx pipeline.
@@ -444,20 +456,27 @@ class UserConfig:
 
         # Check: did user provide an input file at all?
         if input_path is None:
+            log.error("No input docx file specified.")
             raise ValueError(
                 "No input docx file specified. Please set input_docx before running the pipeline."
             )
         # Check: does the file exist on disk?
         if not input_path.exists():
-            raise FileNotFoundError(f"Input docx file not found: {input_path}")
+            error_msg = f"Input docx file not found: {input_path}"
+            log.error(error_msg)
+            raise FileNotFoundError(error_msg)
         # Check: is it actually a file (not a directory)?
         if not input_path.is_file():
-            raise ValueError(f"Input docx path is not a file: {input_path}")
+            error_msg = f"Input docx path is not a file: {input_path}"
+            log.error(error_msg)
+            raise ValueError(error_msg)
 
         # Always need template
         pptx_template_path = self.get_template_pptx_path()
         if not pptx_template_path.exists():
-            raise FileNotFoundError(f"Template not found: {pptx_template_path}")
+            error_msg = f"Template not found: {pptx_template_path}"
+            log.error(error_msg)
+            raise FileNotFoundError(error_msg)
 
         self._validate_output_folder()
 
@@ -467,21 +486,28 @@ class UserConfig:
         # Check: did user provide an input file at all?
         input_path = self.get_input_pptx_file()
         if input_path is None:
+            log.error("No input pptx file specified.")
             raise ValueError(
-                "No input docx file specified. Please set input_pptx before running the pipeline."
+                "No input pptx file specified. Please set input_pptx before running the pipeline."
             )
 
         # Check: does the file exist on disk?
         if not input_path.exists():
-            raise FileNotFoundError(f"Input pptx not found: {input_path}")
+            error_msg = f"Input pptx not found: {input_path}"
+            log.error(error_msg)
+            raise FileNotFoundError(error_msg)
 
         # Check: is it actually a file (not a directory)?
         if not input_path.is_file():
-            raise ValueError(f"Not a file: {input_path}")
+            error_msg = f"Not a file: {input_path}"
+            log.error(error_msg)
+            raise ValueError(error_msg)
 
         docx_template_path = self.get_template_docx_path()
         if not docx_template_path.exists():
-            raise FileNotFoundError(f"Template not found: {docx_template_path}")
+            error_msg = f"Template not found: {docx_template_path}"
+            log.error(error_msg)
+            raise FileNotFoundError(error_msg)
 
         self._validate_output_folder()  # Shared check
 
