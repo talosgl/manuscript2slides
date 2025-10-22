@@ -8,40 +8,22 @@
 Epic: Investigate UI options, select one, implement it
 - Build a simple UI with good enough UX that any non-tech-savvy writer can use it without friction
 
-- [ ] Learn basic UI programming concepts by doing Tkinter mini-tutorials in the context of manuscript2slides
-    - [x] clean separation between UI frontend from backend/config (had this already because of backend architectural reasons, but now understand how it matters in context of UI)
-    - [x] Event-driven programming
-    - [x] UI state management
-    - [x] Layout systems (grid)
-    - [x] File dialogs
-    - [x] Dynamic UI updates
-    - [ ] Error handling in UI context
-    - [x] "Persistent state" pattern - implemented with TOML save/load
-    - [ ] Explicit actions > implicit "magic" when it comes to UI apps. (If we want to give users a dry run feature, we should have them click a button that makes it clear they're invoking that. Not just auto-call it, like we might with a cli command.)
-
-- [ ] finish Tkinter prototype/experiment - finish a complete, functional prototype.
-    - [x] Log viewer
-    - [x] Threading (so UI doesn't freeze)
-    - [x] Success/error message boxes
-    - Stretch:
-    - [-] Progress indicator (spinning wheel or progress bar)
-    - [x] Show output location on success
-    - Stretch even more:
-    - [x] Try some Tkinter templates to see if we can make it look modern (`from tkinter import ttk`) # ttk widgets look more modern
-
-- [ ] DESIGN BREAK
-    - Take a break from UI coding
-    - Design what you actually want:
-    - [x] Sketch it on paper / Wireframe what you want
+- [ ] Finish Tkinter toy GUI to cover last few UI programming concepts
+    - [ ] tabbed view
+    - [ ] refactor to be component-based architecture
+    - [ ] custom events in tkinter
+- Start real GUI work: Design
+	- [ ] Design it intentionally with wireframes
     - [ ] Plan/describe the structure
         - What are all the features?
         - What are all the states?
         - How should it look?
-    - [ ] Evaluate frameworks:
-        - [ ] try PyQt
-        - [ ] try Eel
-
-- [ ] Start fresh with a design and framework chosen intentionally
+	- [ ] Outline the architecture conceptually, modularized, etc., without worrying about specific code syntax or framework
+- GUI Framework Exploration after Design:
+	- [ ] Try PyQt and explore implementing design
+	- [ ] Try Eel and ditto, explore implementing design
+	- [ ] Pick a framework...
+- [ ] Real GUI build! Start fresh with a design and framework chosen intentionally
 
 Epic: Add tests & pytest
     - Test config validation
