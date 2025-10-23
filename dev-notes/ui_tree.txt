@@ -1,0 +1,95 @@
+# Conceptual
+`├ └ │ ─`
+
+# collapsed
+root (main UI window)
+└── ttk Notebook container
+   ├── docx2pptx tab frame
+   ├── pptx2docx tab frame
+   └── demo tab frame
+
+# one more level
+docx2pptx tab frame
+├── I/O Selection frame
+├── Options Frame
+├── Action Frame
+└── Log Viewer Frame
+
+pptx2docx tab frame
+├── I/O Selection frame
+├── Options Frame
+├── Action Frame
+└── Log Viewer Frame
+
+demo tab frame
+├── DemoType Selection frame
+├── Options Frame
+├── Action Frame
+└── Log Viewer Frame
+
+# Two more levels
+docx2pptx tab frame
+├── I/O Selection frame
+|   ├── Input File Selector* (docx)
+|   └── Hidden Frame
+|       ├── Output folder Selector*
+|       └── Custom Template Selector* (pptx)
+├── Options Frame
+|   ├── Basic Options Frame
+|   |    ├── Chunk Type Dropdown
+|   |    └── Experimental Formatting on
+|   └── Advanced Options Frame
+|       ├── Preserve metadata in speaker notes for reverse pipeline 
+|       ├── Annotations in Speaker Notes parent toggle + children
+|       └── Save/Load Config file
+├── Action Frame
+|   ├── Convert button
+|   └── Status Indicator
+└── Log Viewer Frame**
+    ├── Text window
+    └── Clear button
+
+----
+* Could have a file selector class that takes in args:
+    - file types
+    - Label/Frame name
+    - selected default | None
+
+** Should it be unique per tab, or shared? My gut is shared, if we offer a clear button, unless it's easier to do unique.
+----
+
+
+pptx2docx tab frame
+├── I/O Selection frame
+|   ├── Input File Selector (pptx)
+|   └── Hidden Frame
+|       ├── Output folder Selector
+|       └── Custom Template Selector (docx)
+├── Options Frame
+|   └── Basic Options Frame
+|       └── Save/Load Config***
+├── Action Frame
+|   ├── Convert button
+|   └── Status Indicator
+└── Log Viewer Frame
+    ├── Text window
+    └── Clear button
+
+----
+*** There aren't really options atm for the reverse pipeline but we can put something in the UI for later.
+----
+
+
+demo tab frame
+├── DemoType Selection frame
+|   ├── Prebaked or load
+├── Options Frame****
+|   ├── Prebaked Options
+|   OR
+|   └── Save/Load Config
+├── Action Frame
+└── Log Viewer Frame
+
+----
+**** This custom demo screen seems the most complicated atm. Maybe it can be simplified. Save for last?
+----

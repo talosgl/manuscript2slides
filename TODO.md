@@ -54,7 +54,15 @@ Epic: Document the program thoroughly
 
 ## Known Issues I'd like to investigate fixing:
 - [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
-
+- [ ] Consider adding backend support for a GUI Cancel button
+    - Implementation: Add optional `cancel_flag` callable parameter to pipeline entry points
+    - Check `if cancel_flag and cancel_flag(): return` at key points:
+        - (both pipes) Load docx/pptx contents - Could be slow for huge files (100+ pages)
+        - (docx2pptx) Process docx annotations - Could be slow if there are tons of comments/footnotes
+        - (docx2pptx) Build slides from chunks - Probably the slowest part (nested loops over chunks → paragraphs → runs), and the spot with the most natural loop to introduce a cancel
+        - (pptx2docx) JSON parsing?
+        - (pptx2docx) Populate docx by looping over slides - analogous to "Build slides from chunks" issue
+    - Note: Profile first to see if conversions are actually slow enough to need this
 
 ## Stretch Wishlist Features:
 - Split the output pptx or docx into multiple output files based on slide or page count. Add default counts and allow user overrides for the default.
