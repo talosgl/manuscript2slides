@@ -54,7 +54,7 @@
             "name": "tkinter gui manuscript2slides",
             "type": "debugpy",
             "request": "launch",
-            "module": "manuscript2slides.ui_tkinter",
+            "module": "manuscript2slides.experiments.ui_tkinter",
             "console": "integratedTerminal",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
