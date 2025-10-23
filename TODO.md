@@ -3,6 +3,8 @@
 - [x] Add logging to pipeline validation methods (validate_docx2pptx_pipeline_requirements, validate_pptx2docx_pipeline_requirements)
 - [x] CLI: Add argparse support for --config flag
 - [ ] GUI: Wire up auto-save/load for preference persistence across sessions (simple, just call the save_toml/load_toml methods we built)
+- [x] Change backend defaults to have most bools turned off so that default is empty speaker notes. Adjust round-trip to have them enabled.
+- [ ] Revisit the Demo speaker notes bool-setting code because I hard-coded the old way into cli.run() and it's... smelly....
 
 ## Major TODOs Ordered by priority/dependency
 Epic: Investigate UI options, select one, implement it

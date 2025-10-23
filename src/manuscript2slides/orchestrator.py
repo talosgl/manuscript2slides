@@ -36,12 +36,18 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
 
     # Safety check
     if original_docx is None:
+        log.debug(
+            f"Somehow, the input_docx wasn't set before run_round_trip() was called. This shouldn't happen. "
+            "It should have been called with this pre-filled by UserConfig.with_defaults() or UserConfig.for_demo() for CLI, "
+            "or by user selections / config loading in the GUI."
+        )
         raise ValueError(
             "Round-trip test requires input_docx to be set. "
             "Use UserConfig.with_defaults() or UserConfig.for_demo() to create a test config."
         )
 
     # Run docx -> pptx
+    # TODO: Do we need to set this here? Presumably it should be set by the caller, right? I guess it's harmless to set it again...
     cfg.direction = PipelineDirection.DOCX_TO_PPTX
     run_pipeline(cfg)
 

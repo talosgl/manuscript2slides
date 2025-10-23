@@ -35,6 +35,18 @@ def run() -> None:
     if args.demo_round_trip:
         log.info("Running round-trip test with sample files.")
         cfg.chunk_type = ChunkType.HEADING_FLAT
+
+        # TODO: Evaluate if we want this hard-coded behavior here long-term. For now it is just to preserve previous
+        # test behavior. If we do want to hard-code it, probably move this to the UserConfig.for_demo() method, or
+        # do something inside of arg-parse.
+        log.info(
+            "Setting bools to true that preserve annotations and metadata in Speaker Notes for CLI demo round-trip run."
+        )
+        cfg.preserve_docx_metadata_in_speaker_notes = True
+        cfg.display_comments = True
+        cfg.display_footnotes = True
+        cfg.display_endnotes = True
+
         from manuscript2slides.orchestrator import run_roundtrip_test
 
         run_roundtrip_test(cfg)

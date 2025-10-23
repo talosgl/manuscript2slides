@@ -86,16 +86,16 @@ class UserConfig:
 
     experimental_formatting_on: bool = True
 
-    display_comments: bool = True
+    display_comments: bool = False
     comments_sort_by_date: bool = True
     comments_keep_author_and_date: bool = True
 
-    display_footnotes: bool = True
-    display_endnotes: bool = True
+    display_footnotes: bool = False
+    display_endnotes: bool = False
 
     # We this way to leave speaker notes completely empty if the user really wants that, it's a valid use case.
     # Documentation and tooltips should make it clear that this means metadata loss for round-trip pipeline data.
-    preserve_docx_metadata_in_speaker_notes: bool = True
+    preserve_docx_metadata_in_speaker_notes: bool = False
 
     # endregion
 
