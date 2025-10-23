@@ -51,5 +51,17 @@
                 "PYTHONPATH": "${workspaceRoot}"
             }
         },
+        // TODO: remove later
+        // launch main() from ui_tkinter.py
+        {
+            "name": "tkinter gui manuscript2slides",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "manuscript2slides.experiments.ui_tkinter",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
+        },
     ]
 }
