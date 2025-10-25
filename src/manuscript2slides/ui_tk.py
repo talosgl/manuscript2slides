@@ -5,8 +5,6 @@ from __future__ import annotations
 
 import tkinter as tk
 from tkinter import ttk
-import sv_ttk
-import darkdetect
 
 from tkinter import scrolledtext
 from tkinter import messagebox
@@ -82,7 +80,6 @@ class MainWindow(tk.Tk):
 
     def _apply_theme(self) -> None:
         """Apply a modern(ish) theme to the UI."""
-        sv_ttk.set_theme(darkdetect.theme())  # type:ignore
         style = ttk.Style()
 
         available_themes = style.theme_names()
@@ -90,17 +87,41 @@ class MainWindow(tk.Tk):
 
         # Try to use the best theme for the platform
         if "aqua" in available_themes:  # macOS
+            # TODO: Test aesthetics on macOS and see if we need to do any workarounds
             style.theme_use("aqua")
             log.info("Using 'aqua' theme.")
         # elif "winnative" in available_themes:  # Windows '95
         #     style.theme_use("winnative")
         #     log.info("Usting 'winnative' theme.")
-        elif "vista" in available_themes:  # Windows
-            style.theme_use("vista")
-            log.info("Usting 'vista' theme.")
+        # elif "vista" in available_themes:  # Windows
+        #     style.theme_use("vista")
+        #     log.info("Usting 'vista' theme.")
         elif "clam" in available_themes:  # Linux/cross-plat
             style.theme_use("clam")
             log.info("Using 'clam' theme.")
+
+            # clam's main window background is not respected on Windows; this is a workaround
+            # TODO: Test and see how clam looks on Linux.
+            if platform.system() == "Windows":
+                self.configure(bg=style.lookup("TButton", "background"))
+
+            # Configure the collapse button to look like part of the TFrame, clam-only
+            tframe_background = style.lookup("TFrame", "background")
+            style.configure(
+                "Collapse.TButton",
+                # font=("Arial", 11, "bold"),
+                background=tframe_background,
+                borderwidth=0,
+                relief="flat",
+                anchor="w",
+            )
+            style.map(
+                "TButton",
+                background=[
+                    ("active", tframe_background),
+                    ("pressed", tframe_background),
+                ],
+            )
         else:
             style.theme_use("default")
             log.info("Using 'default' theme.")
@@ -133,6 +154,7 @@ class Docx2PptxTab(ttk.Frame):
         default_cfg = UserConfig()
 
         # === IO Section ===
+
         io_section = ttk.LabelFrame(self, text="Input/Output Selection")
         io_section.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
 
@@ -140,7 +162,13 @@ class Docx2PptxTab(ttk.Frame):
         self.input_selector = PathSelector(
             io_section, "Input .docx File:", filetypes=[("Word Documents", "*.docx")]
         )
-        self.input_selector.grid(row=0, column=0, sticky="ew", pady=2)
+        self.input_selector.grid(
+            row=0,
+            column=0,
+            sticky="ew",
+            pady=5,
+            padx=5,
+        )
 
         # Advanced (collapsible)
         advanced = CollapsibleFrame(io_section, title="Advanced")
@@ -281,20 +309,27 @@ class CollapsibleFrame(ttk.Frame):
         # Toggle button with arrow
         arrow = "▶" if start_collapsed else "▼"
         self.toggle_btn = ttk.Button(
-            self, text=f"{arrow} {title}", command=self.toggle, style="Collapse.TButton"
+            self,
+            text=f"{arrow} {title}",
+            command=self.toggle,
+            style="Collapse.TButton",
         )
-        self.toggle_btn.pack(fill="x", padx=5, pady=2)
+        self.toggle_btn.pack(
+            fill="x",
+            padx=5,
+            pady=2,
+        )
 
         # Content frame (for child widgets)
         self.content_frame = ttk.Frame(self)
         if not start_collapsed:
-            self.content_frame.pack(fill="both", expand=True, padx=10, pady=5)
+            self.content_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
     def toggle(self) -> None:
         """Toggle between collapsed and expanded states."""
         if self.is_collapsed:
             # Expand
-            self.content_frame.pack(fill="both", expand=True, padx=10, pady=5)
+            self.content_frame.pack(fill="both", expand=True, padx=5, pady=5)
             self.toggle_btn.config(text=self.toggle_btn.cget("text").replace("▶", "▼"))
             self.is_collapsed = False
         else:
