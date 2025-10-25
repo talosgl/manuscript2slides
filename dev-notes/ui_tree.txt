@@ -88,7 +88,9 @@ class MainWindow(tk.Tk)
 |   ├── set values that need to be set
 |   |   ├── call parent class init to set root, title
 |   |   └── set shared state (e.g., shared cancel bool flag)
+|   ├── call _apply_theme()
 |   └── call _create_widgets()
+├── define _apply_theme()
 └── define _create_widgets()
     ├── create the ttk.notebook (doesn't need a class)
     ├── populate the notebook's tabs
@@ -104,7 +106,11 @@ class Docx2PptxTab(ttk.Frame)
 |   ├── self.log_viewer = log_viewer  # Store reference
 |   └── self._create_widgets()
 └── define _create_widgets()
-|   ├── Create IO Frame (pass in label name, accepted types, & default file/None)
+|   ├── Create IO Frame
+|   |   ├── create input_file_selector: PathSelector()
+|   |   └── Create (Collapsible) Advanced IO frame
+|   |       ├── output_selector: PathSelector()
+|   |       └── template_selector: PathSelector()
 |   ├── Create Options Frame
 |   |   ├── Basic Options frame
 |   |   |   ├── Chunk Type Dropdown/combobox
@@ -115,19 +121,14 @@ class Docx2PptxTab(ttk.Frame)
 |   |       |   └── ...
 |   |       └── create SaveLoadConfig with on_save=set_config, on_load=get_config
 |   └── Create Action Frame
-├── def on_convert_click(self)  # The callback ActionFrame calls
-├── def _run_conversion_thread(self, cfg)  # The threaded worker
+├── def on_convert_click(self)  
+├── def _run_conversion_thread(self, cfg)
 ├── def ui_to_config()
 └── def config_to_ui()
 
-class IOFrame(ttk.LabelFrame)
-├── def __init__(self, parent, input_label, input_filetypes, template_filetypes):
-└── def _create_widgets(self, input_label, input_filetypes, template_filetypes):
-    ├── create input_file_selector = PathSelector(...)
-    ├── pack/grid input_file_selector
-    └── create advanced file selector frame, collapsed    
-        ├── create outputdir_selector = PathSelector(...)
-        └── create template_selector = PathSelector(...)
+class CollapsibleFrame(ttk.Frame) # tk and ttk don't have native collapsible frames
+├── def __init__(self, parent: tk.Widget, title: str, start_collapsed: bool = True)
+└── def toggle()
 
 class PathSelector(ttk.Frame)
 ├── def __init__(self, parent, label, is_dir=False, filetypes=None, default=None)
@@ -173,7 +174,11 @@ class Pptx2DocxTab(ttk.Frame)
 ├── init constructor
 ├── call _create_widgets()
 ├── def _create_widgets
-|   ├── Create IO Frame (pass in label name, accepted types, & default file/None)
+|   ├── Create IO Frame
+|   |   ├── create input_file_selector: PathSelector()
+|   |   └── Create (Collapsible) Advanced IO frame
+|   |       ├── output_selector: PathSelector()
+|   |       └── template_selector: PathSelector()
 |   ├── Create Options Frame
 |   |    └── create SaveLoadConfig with on_save=set_config, on_load=get_config
 |   └── ActionFrame
@@ -199,7 +204,6 @@ class DemoTab(ttk.Frame)
     ├── def run_roundtrip_demo(self)
     └── def run_custom_demo(self)
         └── Browse for .toml, load it, run pipeline
-
 
 class LogViewer(LabelFrame)
 ├── def __init__(self, parent)
