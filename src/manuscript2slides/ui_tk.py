@@ -214,8 +214,12 @@ class Docx2PptxTab(ttk.Frame):
         self.columnconfigure(0, weight=1)
         io_section.columnconfigure(0, weight=1)
 
-        # TODO: Create Options Frame
-        # TODO: Create Basic Options frame
+        # TODO: Create Options Frame -- do I need an outer frame? prob not?
+
+        # Create Basic Options frame
+        basic_options_frame = ttk.Labelframe(self, text="Basic Options")
+        basic_options_frame.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
+        
         # TODO: Chunk Type Dropdown/combobox
         # TODO: Experimental Formatting bool
         # TODO: Advanced Options Frame (collapsible)
@@ -225,7 +229,7 @@ class Docx2PptxTab(ttk.Frame):
         # ActionFrame for convert button
         # v1 inline
         action_frame = ttk.Frame(self)
-        action_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+        action_frame.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
 
         self.convert_btn = ttk.Button(
             action_frame,
@@ -579,7 +583,9 @@ class LogViewer(ttk.LabelFrame):
             state="disabled",
             wrap="word",
             bg="#f0f0f0",
-            font=("Courier", 9),
+            font=("Courier", 10),
+            padx=5,
+            pady=5,
         )
         self.text_widget.pack(fill="both", expand=True, padx=5, pady=5)
 
