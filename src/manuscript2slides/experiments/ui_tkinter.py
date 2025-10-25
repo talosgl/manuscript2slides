@@ -36,7 +36,7 @@ class Manuscript2SlidesUI:
 
         try:
             self.selected_file: Path | None = cfg_defaults.get_input_docx_file()
-            log.info(f"Loaded default file: {self.selected_file.name}")
+            log.info(f"Loaded default file: {self.selected_file.name}")  # type:ignore
         except Exception as e:
             self.selected_file = None
             log.warning(f"No default file available: {e}")

@@ -115,10 +115,10 @@ class Docx2PptxTab(ttk.Frame)
 |   |       |   └── ...
 |   |       └── create SaveLoadConfig with on_save=set_config, on_load=get_config
 |   └── Create Action Frame
-├── def run_conversion(self)  # The callback ActionFrame calls
-├── def _do_conversion(self, cfg)  # The threaded worker
-├── def get_config()
-└── def set_config()
+├── def on_convert_click(self)  # The callback ActionFrame calls
+├── def _run_conversion_thread(self, cfg)  # The threaded worker
+├── def ui_to_config()
+└── def config_to_ui()
 
 class IOFrame(ttk.LabelFrame)
 ├── def __init__(self, parent, input_label, input_filetypes, template_filetypes):
@@ -177,10 +177,10 @@ class Pptx2DocxTab(ttk.Frame)
 |   ├── Create Options Frame
 |   |    └── create SaveLoadConfig with on_save=set_config, on_load=get_config
 |   └── ActionFrame
-├── def run_conversion(self)  # The callback ActionFrame calls
-├── def _do_conversion(self, cfg)  # The threaded worker
-├── def get_config()
-└── def set_config()
+├── def on_convert_click(self)  # The callback ActionFrame calls
+├── def _run_conversion_thread(self, cfg)  # The threaded worker
+├── def ui_to_config()
+└── def config_to_ui()
 
 class DemoTab(ttk.Frame)
 ├── def __init__(self, parent)

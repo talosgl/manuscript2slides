@@ -62,6 +62,7 @@ class UserConfig:
     # Input/Output
 
     # Input file to process
+    # TODO: why did I use Optional here, instead of str | None?
     input_docx: Optional[str] = (
         None  # Use strings in the dataclass, convert to Path when you need to use them.
     )
