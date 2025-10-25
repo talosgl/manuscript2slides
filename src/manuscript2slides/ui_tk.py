@@ -22,7 +22,7 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     ChunkType,
 )
-
+from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.orchestrator import run_pipeline
 import sys
 
@@ -99,9 +99,10 @@ class MainWindow(tk.Tk):
         elif "clam" in available_themes:  # Linux/cross-plat
             style.theme_use("clam")
             log.info("Using 'clam' theme.")
+            # TODO: Test and see how clam looks on Linux.
 
             # clam's main window background is not respected on Windows; this is a workaround
-            # TODO: Test and see how clam looks on Linux.
+            # TODO: Test clam and the other possible windows themes on a few more PCs
             if platform.system() == "Windows":
                 self.configure(bg=style.lookup("TButton", "background"))
 
@@ -116,7 +117,7 @@ class MainWindow(tk.Tk):
                 anchor="w",
             )
             style.map(
-                "TButton",
+                "Collapse.TButton",
                 background=[
                     ("active", tframe_background),
                     ("pressed", tframe_background),
@@ -127,6 +128,21 @@ class MainWindow(tk.Tk):
             log.info("Using 'default' theme.")
 
         # (Optional TODO) Customize specific elements or give up and switch to PySide
+        style.configure(
+            "Convert.TButton",
+            background="#4CAF50",  # Green
+            foreground="white",
+            font=("Arial", 11, "bold"),
+            padding=10,
+        )
+
+        style.map(
+            "Convert.TButton",
+            background=[
+                ("active", "#45a049"),  # Darker green on hover
+                ("disabled", "#cccccc"),  # Gray when disabled
+            ],
+        )
 
 
 # endregion
@@ -144,6 +160,10 @@ class Docx2PptxTab(ttk.Frame):
         """Constructor for docx2pptx Tab"""
         super().__init__(parent)
         self.log_viewer = log_viewer  # Store reference so we can write to it
+        self.loaded_config = None  # Store loaded config here
+        self.last_run_config = (
+            None  # Config actually used for last conversion (for finding output)
+        )
 
         self._create_widgets()
 
@@ -201,31 +221,138 @@ class Docx2PptxTab(ttk.Frame):
         # TODO: Advanced Options Frame (collapsible)
         # TODO: Create Annotations master toggle & 3 child bools
         # TODO: create SaveLoadConfig with on_save=set_config, on_load=get_config
-        # TODO: Create ActionFrame for convert button
+
+        # ActionFrame for convert button
+        # v1 inline
+        action_frame = ttk.Frame(self)
+        action_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+
+        self.convert_btn = ttk.Button(
+            action_frame,
+            text="Convert",
+            command=self.on_convert_click,
+            state="disabled",  # Start disabled
+            padding=10,
+            style="Convert.TButton",
+        )
+        self.convert_btn.grid(row=0, column=0, padx=5, sticky="ew")
+
+        # Watch for file selection to enable button
+        self.input_selector.selected_path.trace_add("write", self._on_file_selected)
+
+        # Configure the action_frame columns
+        action_frame.columnconfigure(
+            0, weight=1
+        )  # Convert button - stretches east-west
+
         pass
+
+    def _on_file_selected(self, *args) -> None:  # noqa: ANN002
+        """Enable convert button when a file is selected."""
+        path = self.input_selector.selected_path.get()
+        if path and path != "No selection":
+            self.convert_btn.config(
+                state="normal",
+            )
+        else:
+            self.convert_btn.config(state="disabled")
 
     # We could make this _private since it is only called inside this class,
     # but conventionally callbacks are usually public in python.
     def on_convert_click(self) -> None:
         """Handle convert button click."""
+        # Disable button BEFORE starting thread (on UI thread)
+        self.convert_btn.config(state="disabled", text="Converting...")
+        # self.update_idletasks()  # Force UI to refresh NOW
+
+        # Start with loaded config (if any) or defaults
+        cfg = self.loaded_config if self.loaded_config else UserConfig()
+
+        # Update with UI values (preserves fields not in UI)
+        cfg = self.ui_to_config(cfg)
+
         # TODO: Prepare data for us to call the pipeline with by performing basic validation of selected options,
         # building a UserConfig object from valid UI selections, and starting a background thread for the pipeline
         # to be run on.
 
-        pass
+        # Start background thread
+        thread = threading.Thread(
+            target=self._run_conversion_thread, args=(cfg,), daemon=True
+        )
+        thread.start()
 
     def _run_conversion_thread(self, cfg) -> None:
         """Run the conversion in a background thread."""
+        # == DEBUGGING == #
+        # TODO: remove
+        if DEBUG_MODE:
+            import time
 
+            time.sleep(5)  # Fake work for 5 seconds
+        # == ========= == #
+
+        try:
+            run_pipeline(cfg)
+            # Success! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_success)
+        except Exception as e:
+            # Error! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_error, e)
         pass
 
-    def ui_to_config(self):
+    def ui_to_config(self, cfg):
         # TODO: gather UI values into UserConfig
+        # Only update fields that have UI controls
+        cfg.input_docx = self.input_selector.selected_path.get()
+        # cfg.chunk_type = ChunkType(self.chunk_dropdown.get())
+        # cfg.experimental_formatting_on = self.exp_formatting_var.get()
+        return cfg
+
+    def config_to_ui(self, cfg):
+        # TODO: Populate UI values from a loaded UserConfig
+        # Only populate fields that have UI controls, but
         pass
 
-    def config_to_ui(self):
-        # TODO: Populate UI values from UserConfig
-        pass
+    def _on_conversion_success(self):
+        log.info("Re-enabling convert button (success)")
+        self.convert_btn.config(state="normal", text="Convert")
+        # TODO: Popup message box and offer to open the output folder (call the helper)
+
+    def _on_conversion_error(self, error):
+        log.error(f"Re-enabling convert button (error): {error}")
+        self.convert_btn.config(state="normal", text="Convert")
+        # TODO: Popup error message box
+
+    def load_and_validate_config(self, path):
+        """Load config from file, validating it matches this tab's direction."""
+
+        # Load a config from disk into memory
+        try:
+            cfg = UserConfig.from_toml(path)  # Load from disk
+        except Exception as e:
+            error_msg = f"Failed to load config:\n\n{str(e)}"
+            log.info(error_msg)
+            messagebox.showerror("Load Failed", error_msg)
+            return
+
+        # Validate direction matches this tab
+        if cfg.direction != PipelineDirection.DOCX_TO_PPTX:
+            log.info("Wrong config type loaded; rejecting and informing user.")
+            messagebox.showerror(
+                "Invalid Config",
+                "This config is for PPTX→DOCX.\n"
+                "Please use the PPTX→DOCX tab to load this config.",
+            )
+            # TODO: Offer to swap tabs and load the config there for them or cancel.
+            # Note they'll still need to make sure an input file for conversion is selected on the new tab of the right type.
+            return
+
+        self.config_to_ui(cfg)  # Populate UI
+        self.loaded_config = cfg  # Store it as THE config
+
+        success_msg = f"Loaded config from {Path(path).name}"
+        log.info(success_msg)
+        messagebox.showinfo("Config Loaded", success_msg)
 
 
 # endregion
@@ -457,7 +584,7 @@ class LogViewer(ttk.LabelFrame):
         self.text_widget.pack(fill="both", expand=True, padx=5, pady=5)
 
         self.clear_btn = ttk.Button(self, text="Clear Log", command=self.clear_log)
-        self.clear_btn.pack(side="left", pady=(0, 5))
+        self.clear_btn.pack(side="left", pady=(0, 5), padx=5)
 
     def clear_log(self) -> None:
         """Clear all text from the log viewer."""
