@@ -99,7 +99,32 @@ class MainWindow(tk.Tk):
         elif "clam" in available_themes:  # Linux/cross-plat
             style.theme_use("clam")
             log.info("Using 'clam' theme.")
-            # TODO: Test and see how clam looks on Linux.
+
+            # TODO: maybe move this clam stuff into a helper; gettin big in here.
+            
+            # === FIX COMBOBOX STYLING === #
+            # Configure Combobox to look better in clam
+            style.configure(
+                "TCombobox",
+                fieldbackground="white",  # Background of the text field
+                background="white",  # Background of the dropdown
+                foreground="black",  # Text color
+                selectbackground="#0078d7",  # Selected item background
+                selectforeground="white",  # Selected item text
+            )
+
+            # Map states for better visual feedback
+            style.map(
+                "TCombobox",
+                fieldbackground=[
+                    ("disabled", "#e0e0e0"),  # Gray when disabled
+                    ("readonly", "white"),  # White when enabled but readonly
+                ],
+                foreground=[
+                    ("disabled", "#808080"),  # Gray text when disabled
+                    ("readonly", "black"),  # Black text when enabled
+                ],
+            )
 
             # clam's main window background is not respected on Windows; this is a workaround
             # TODO: Test clam and the other possible windows themes on a few more PCs
@@ -165,6 +190,12 @@ class Docx2PptxTab(ttk.Frame):
             None  # Config actually used for last conversion (for finding output)
         )
 
+        
+        # Get defaults from UserConfig
+        cfg_defaults = UserConfig()
+        self.chunk_var = tk.StringVar(value=cfg_defaults.chunk_type.value)
+
+
         self._create_widgets()
 
     # Styled as _private; this is definitely internal setup.
@@ -210,19 +241,69 @@ class Docx2PptxTab(ttk.Frame):
         )
         self.template_selector.pack(fill="x", pady=2)
 
-        # Configure column weights so widgets stretch
-        self.columnconfigure(0, weight=1)
-        io_section.columnconfigure(0, weight=1)
-
-        # TODO: Create Options Frame -- do I need an outer frame? prob not?
+        # TODO: Options Frame
 
         # Create Basic Options frame
-        basic_options_frame = ttk.Labelframe(self, text="Basic Options")
-        basic_options_frame.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
+        options_frame = ttk.Labelframe(self, text="Basic Options")
+        options_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
         
-        # TODO: Chunk Type Dropdown/combobox
-        # TODO: Experimental Formatting bool
-        # TODO: Advanced Options Frame (collapsible)
+        # TODO: Decide if we want to change chunk type Dropdown/combobox to a radio button,
+        # or restyle the combobox to look better.
+        # TODO: ideally each selection of combobox would have a docstring showing nearby 
+        # to explain what the choices mean.
+        chunk_label = ttk.Label(options_frame, text="Split by:")
+        chunk_label.grid(row=0, column=0, sticky="w", padx=5,pady=5)
+
+        self.chunk_dropdown = ttk.Combobox(
+            options_frame,
+            textvariable=self.chunk_var,
+            values=[chunk.value for chunk in ChunkType],
+            state="readonly",  # Can't type custom values
+            width=20,
+        )
+        self.chunk_dropdown.grid(row=0, column=1, sticky="w", padx=5,pady=5)
+
+        # TODO, stretch goal: dynamically resize docstring for chunk strategies
+        # alternate: write this in a txt or something and have a button here to open
+        # that txt for the user instead.
+        """
+        wraplength option:
+        When creating the ttk.Label, set the wraplength option to a value in pixels. 
+        The text will automatically wrap to a new line when it exceeds this length.
+
+        Dynamic Wrapping (Optional):
+        To make the wrapping adapt to window resizing, bind the <Configure> event of 
+        the root window (or the widget containing the label) to a function. This function
+        can then update the wraplength of the label based on the current width of the window
+        or container. Remember to account for any padding or borders when calculating the 
+        wraplength to ensure the text fits correctly."""
+        explain_chunks = CollapsibleFrame(options_frame, title="Explain choices...")
+        explain_chunks.grid(row=1, column=0, sticky="ew", pady=5)
+        dynamic_string = "TODO make this docstring dynamic; or enclose in a collapsible frame called 'Explain Chunking Options...'"
+        chunk_strat_explained = ttk.Label(explain_chunks.content_frame, text=dynamic_string, 
+            )
+        chunk_strat_explained.grid(row=1, column=0, sticky="w", padx=5,pady=5)
+
+        # TODO: Experimental Formatting bool; replace hard-coded values with UserConfig Default
+        # Q: I assume I need some kind of data bound bool value as well
+        exp_fmt_chkbx = ttk.Checkbutton(options_frame, text="Preserve advanced formatting (experimental)")
+        exp_fmt_chkbx.grid(row=2,column=0, sticky="w", padx=5,pady=0)
+        exp_fmt_chkbx.state(['selected']) 
+        exp_fmt_tip = ttk.Label(options_frame, text="    tip: disable if conversion is crashing or freezing")
+        exp_fmt_tip.grid(row=3,column=0, sticky="w", padx=5,pady=0)
+        # "Preserve advanced formatting (experimental)"
+        # "tip: disable if conversion is crashing or freezing"
+
+
+        # TODO: Advanced Options inner-frame (collapsible)
+        advanced_options = CollapsibleFrame(options_frame, title="Advanced Options")        
+        advanced_options.grid(row=4, column=0, sticky="ew", pady=5)
+        # remember to use advanced_options.content_frame
+        keep_metadata_chk = ttk.Checkbutton(advanced_options.content_frame, text="Preserve metadata in speaker notes")
+        keep_metadata_chk.grid(row=0,column=0, sticky="w", padx=5,pady=0)
+        keep_metadata_tip = ttk.Label(advanced_options.content_frame, text="    tip: enable if you want to do round-trip conversion\n    (pptx back to docx later) and you want to\n    maintain comments, heading formatting, etc.")
+        keep_metadata_tip.grid(row=1,column=0, sticky="w", padx=5,pady=0)
+        
         # TODO: Create Annotations master toggle & 3 child bools
         # TODO: create SaveLoadConfig with on_save=set_config, on_load=get_config
 
@@ -244,12 +325,19 @@ class Docx2PptxTab(ttk.Frame):
         # Watch for file selection to enable button
         self.input_selector.selected_path.trace_add("write", self._on_file_selected)
 
-        # Configure the action_frame columns
+
+        # Configure column weights so widgets stretch
+        self.columnconfigure(0, weight=1)
+
+        io_section.columnconfigure(0, weight=1)
+
+        options_frame.columnconfigure(0, weight=0)
+
         action_frame.columnconfigure(
             0, weight=1
         )  # Convert button - stretches east-west
 
-        pass
+        
 
     def _on_file_selected(self, *args) -> None:  # noqa: ANN002
         """Enable convert button when a file is selected."""
