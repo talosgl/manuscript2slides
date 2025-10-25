@@ -105,13 +105,16 @@ class MainWindow(tk.Tk):
             style.theme_use("default")
             log.info("Using 'default' theme.")
 
-        # (Optional TODO) Customize specific elements
+        # (Optional TODO) Customize specific elements or give up and switch to PySide
 
 
 # endregion
 
-
+# region Tabs
 # ============= Tab Classes =============
+# endregion
+
+
 # region Docx2PptxTab class
 class Docx2PptxTab(ttk.Frame):
     """UI Tab for the docx2pptx pipeline."""
@@ -258,9 +261,12 @@ class DemoTab(ttk.Frame):
 
 # endregion
 
+# region components
 # =============== Component Classes ============ #
+# endregion
 
 
+# region CollapsibleFrame
 class CollapsibleFrame(ttk.Frame):
     """A frame that can be collapsed/expanded with a toggle button."""
 
@@ -298,6 +304,10 @@ class CollapsibleFrame(ttk.Frame):
             self.is_collapsed = True
 
 
+# endregion
+
+
+# region PathSelector
 class PathSelector(ttk.Frame):
     """Shared file/directory path selector component."""
 
@@ -369,15 +379,23 @@ class PathSelector(ttk.Frame):
             self.selected_path.set(path)
 
 
+# endregion
+
+
+# region SaveLoadConfig
 class SaveLoadConfig(ttk.Frame):
     pass
 
 
+# endregion
+
+
+# region ActionFrame
 class ActionFrame(ttk.Frame):
     pass
 
 
-# =============== Log Viewer ============ #
+# endregion
 
 
 # region LogViewer
@@ -413,7 +431,6 @@ class LogViewer(ttk.LabelFrame):
         self.text_widget.delete("1.0", "end")
         self.text_widget.config(state="disabled")
 
-    # region setup_log_handler
     def _setup_log_handler(self) -> None:
         """Connect the log viewer text widget to the logging system via our custom handler"""
 
@@ -433,8 +450,6 @@ class LogViewer(ttk.LabelFrame):
         logger.addHandler(text_handler)
 
         log.info("Log viewer initialized in tkinter UI")
-
-    # endregion
 
 
 # endregion
