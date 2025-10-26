@@ -40,7 +40,7 @@ class MainWindow(tk.Tk):
 
         # Set up window
         self.title("manuscript2slides")
-        self.geometry("600x500")
+
         self.minsize(400, 300)
 
         # Apply theme BEFORE creating widgets
@@ -70,6 +70,7 @@ class MainWindow(tk.Tk):
         notebook.add(demo_tab, text="DEMO")
 
         # Add the log_viewer to the end of the UI Geo.
+        # TODO: gets smooshed/covered if Advanced Options are expanded in docx2pptx tab; fix to make responsive.
         log_viewer.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Configure grid weights (for resizing)
@@ -101,7 +102,6 @@ class MainWindow(tk.Tk):
             log.info("Using 'clam' theme.")
 
             self._fix_clam()
-            # TODO: maybe move this clam stuff into a helper; gettin big in here.
 
         else:
             self.style.theme_use("default")
@@ -199,19 +199,40 @@ class Docx2PptxTab(ttk.Frame):
         )
 
         # Get defaults from UserConfig
-        cfg_defaults = UserConfig()
-        self.chunk_var = tk.StringVar(value=cfg_defaults.chunk_type.value)
+        self.cfg_defaults = UserConfig()
+        self.chunk_var = tk.StringVar(value=self.cfg_defaults.chunk_type.value)
+
+        # BooleanVars for checkboxes
+        self.exp_fmt_var = tk.BooleanVar(
+            value=self.cfg_defaults.experimental_formatting_on
+        )
+        self.keep_metadata = tk.BooleanVar(
+            value=self.cfg_defaults.preserve_docx_metadata_in_speaker_notes
+        )
+        self.keep_all_annotations = tk.BooleanVar(value=False)
+        self.keep_comments = tk.BooleanVar(value=self.cfg_defaults.display_comments)
+        self.keep_footnotes = tk.BooleanVar(value=self.cfg_defaults.display_footnotes)
+        self.keep_endnotes = tk.BooleanVar(value=self.cfg_defaults.display_endnotes)
+
+        # These feel excessive to have in the UI.
+        # self.c_srt_by_date = tk.BooleanVar(value=self.cfg_defaults.comments_sort_by_date)
+        # self.c_keep_authordate = tk.BooleanVar(value=self.cfg_defaults.comments_keep_author_and_date)
 
         self._create_widgets()
 
     # Styled as _private; this is definitely internal setup.
     def _create_widgets(self) -> None:
 
-        # Get defaults from backend
-        default_cfg = UserConfig()
+        self._create_io_section()
 
-        # === IO Section ===
+        self._create_basic_options()
 
+        self._create_advanced_options()
+
+        self._create_action_section()
+
+    def _create_io_section(self) -> None:
+        """Create docx2pptx tab's io section."""
         io_section = ttk.LabelFrame(self, text="Input/Output Selection")
         io_section.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
 
@@ -235,7 +256,7 @@ class Docx2PptxTab(ttk.Frame):
             advanced.content_frame,
             "Output Folder:",
             is_dir=True,
-            default=str(default_cfg.get_output_folder()),
+            default=str(self.cfg_defaults.get_output_folder()),
         )
         self.output_selector.pack(fill="x", pady=2)
 
@@ -243,21 +264,19 @@ class Docx2PptxTab(ttk.Frame):
             advanced.content_frame,
             "Custom Template:",
             filetypes=[("PowerPoint", "*.pptx")],
-            default=str(default_cfg.get_template_pptx_path()),
+            default=str(self.cfg_defaults.get_template_pptx_path()),
         )
         self.template_selector.pack(fill="x", pady=2)
 
-        # TODO: Options Frame
+        io_section.columnconfigure(0, weight=1)
 
+    def _create_basic_options(self) -> None:
+        """Create pipeline options widgets."""
         # Create Basic Options frame
         options_frame = ttk.Labelframe(self, text="Basic Options")
         options_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
 
-        # TODO: Decide if we want to change chunk type Dropdown/combobox to a radio button,
-        # or restyle the combobox to look better.
-        # TODO: ideally each selection of combobox would have a docstring showing nearby
-        # to explain what the choices mean.
-        chunk_label = ttk.Label(options_frame, text="Split by:")
+        chunk_label = ttk.Label(options_frame, text="Chunk manuscript into slides by:")
         chunk_label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
 
         self.chunk_dropdown = ttk.Combobox(
@@ -269,60 +288,131 @@ class Docx2PptxTab(ttk.Frame):
         )
         self.chunk_dropdown.grid(row=0, column=1, sticky="w", padx=5, pady=5)
 
-        # TODO, stretch goal: dynamically resize docstring for chunk strategies
-        # alternate: write this in a txt or something and have a button here to open
-        # that txt for the user instead.
-        """
-        wraplength option:
-        When creating the ttk.Label, set the wraplength option to a value in pixels. 
-        The text will automatically wrap to a new line when it exceeds this length.
-
-        Dynamic Wrapping (Optional):
-        To make the wrapping adapt to window resizing, bind the <Configure> event of 
-        the root window (or the widget containing the label) to a function. This function
-        can then update the wraplength of the label based on the current width of the window
-        or container. Remember to account for any padding or borders when calculating the 
-        wraplength to ensure the text fits correctly."""
-        explain_chunks = CollapsibleFrame(options_frame, title="Explain choices...")
-        explain_chunks.grid(row=1, column=0, sticky="ew", pady=5)
-        dynamic_string = "TODO make this docstring dynamic; or enclose in a collapsible frame called 'Explain Chunking Options...'"
-        chunk_strat_explained = ttk.Label(
-            explain_chunks.content_frame,
-            text=dynamic_string,
+        # Collapsible explanation
+        explain_chunks = CollapsibleFrame(options_frame, title="What do these mean?")
+        explain_chunks.grid(row=1, column=0, columnspan=2, sticky="ew", pady=5, padx=5)
+        explanation_text = (
+            "PARAGRAPH (default): One slide per paragraph break.\n"
+            "PAGE: One slide for every page break.\n"
+            "Heading (Flat): New slides for every heading, regardless of parent-child hierarchy.\n"
+            "Heading (Nested): New slides only on finding a 'parent/grandparent' heading to the previously found. \n"
+            "All options create a new slide if there is a page break in the middle of a section."
         )
-        chunk_strat_explained.grid(row=1, column=0, sticky="w", padx=5, pady=5)
+        ttk.Label(
+            explain_chunks.content_frame, text=explanation_text, wraplength=500
+        ).pack(padx=5, pady=5)
 
-        # TODO: Experimental Formatting bool; replace hard-coded values with UserConfig Default
-        # Q: I assume I need some kind of data bound bool value as well
-        exp_fmt_chkbx = ttk.Checkbutton(
-            options_frame, text="Preserve advanced formatting (experimental)"
+        exp_fmt_chk = ttk.Checkbutton(
+            options_frame,
+            text="Preserve advanced formatting (experimental)",
+            variable=self.exp_fmt_var,  # ← Bind to BooleanVar,
         )
-        exp_fmt_chkbx.grid(row=2, column=0, sticky="w", padx=5, pady=0)
-        exp_fmt_chkbx.state(["selected"])
-        exp_fmt_tip = ttk.Label(
-            options_frame, text="    tip: disable if conversion is crashing or freezing"
+        exp_fmt_chk.grid(
+            row=2, column=0, columnspan=2, sticky="w", padx=5, pady=(10, 0)
         )
-        exp_fmt_tip.grid(row=3, column=0, sticky="w", padx=5, pady=0)
-        # "Preserve advanced formatting (experimental)"
-        # "tip: disable if conversion is crashing or freezing"
 
+        # Tip below checkbox (wraps automatically)
+        tip_label = ttk.Label(
+            options_frame,
+            text="Tip: Disable this if conversion crashes or freezes",
+            wraplength=400,  # Wraps at 400px
+            foreground="gray",
+        )
+        tip_label.grid(row=3, column=0, columnspan=2, sticky="w", padx=25, pady=(0, 5))
+
+        options_frame.columnconfigure(0, weight=0)
+        options_frame.columnconfigure(1, weight=1)
+
+    def _create_advanced_options(self) -> None:
+        """Create advanced options (collapsible)."""
         # TODO: Advanced Options inner-frame (collapsible)
-        advanced_options = CollapsibleFrame(options_frame, title="Advanced Options")
-        advanced_options.grid(row=4, column=0, sticky="ew", pady=5)
-        # remember to use advanced_options.content_frame
-        keep_metadata_chk = ttk.Checkbutton(
-            advanced_options.content_frame, text="Preserve metadata in speaker notes"
+        advanced = CollapsibleFrame(
+            self, title="Advanced Options", start_collapsed=True
         )
-        keep_metadata_chk.grid(row=0, column=0, sticky="w", padx=5, pady=0)
-        keep_metadata_tip = ttk.Label(
-            advanced_options.content_frame,
-            text="    tip: enable if you want to do round-trip conversion\n    (pptx back to docx later) and you want to\n    maintain comments, heading formatting, etc.",
-        )
-        keep_metadata_tip.grid(row=1, column=0, sticky="w", padx=5, pady=0)
+        advanced.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
 
-        # TODO: Create Annotations master toggle & 3 child bools
+        # Metadata preservation
+        keep_metadata_chk = ttk.Checkbutton(
+            advanced.content_frame,
+            text="Preserve metadata in speaker notes",
+            variable=self.keep_metadata,
+        )
+        keep_metadata_chk.pack(anchor="w", padx=5, pady=(5, 2))
+
+        ttk.Label(
+            advanced.content_frame,
+            text="Tip: Enable for round-trip conversion (maintains comments, heading formatting, etc.)",
+            wraplength=400,
+            foreground="gray",
+        ).pack(anchor="w", padx=25, pady=(0, 10))
+
+        # Annotations explanation
+        ttk.Label(
+            advanced.content_frame,
+            text="Annotations cannot be replicated in slides, but can be copied into the slides' speaker notes.",
+            wraplength=500,
+        ).pack(anchor="w")
+
+        # Checkboxes
+        self.keep_all_annotations_chk = ttk.Checkbutton(
+            advanced.content_frame,
+            text="Keep all annotations",
+            variable=self.keep_all_annotations,
+            command=self._on_parent_annotation_toggle,  # When parent is clicked
+        )
+        self.keep_all_annotations_chk.pack(anchor="w")
+        ttk.Checkbutton(
+            advanced.content_frame,
+            text="Keep comments",
+            variable=self.keep_comments,
+            command=self._on_child_annotation_toggle,
+        ).pack(
+            anchor="w",
+            padx=25,
+        )
+        ttk.Checkbutton(
+            advanced.content_frame,
+            text="Keep footnotes",
+            variable=self.keep_footnotes,
+            command=self._on_child_annotation_toggle,
+        ).pack(anchor="w", padx=25)
+        ttk.Checkbutton(
+            advanced.content_frame,
+            text="Keep endnotes",
+            variable=self.keep_endnotes,
+            command=self._on_child_annotation_toggle,
+        ).pack(anchor="w", padx=25)
         # TODO: create SaveLoadConfig with on_save=set_config, on_load=get_config
 
+    def _on_child_annotation_toggle(self) -> None:
+        """When any child is toggled, update parent state."""
+        children_checked = [
+            self.keep_comments.get(),
+            self.keep_footnotes.get(),
+            self.keep_endnotes.get(),
+        ]
+
+        if all(children_checked):
+            # All checked → parent checked
+            self.keep_all_annotations.set(True)
+            self.keep_all_annotations_chk.state(["!alternate"])  # Clear indeterminate
+        elif any(children_checked):
+            # Some checked → parent indeterminate (dash/gray)
+            self.keep_all_annotations_chk.state(["alternate"])
+        else:
+            # None checked → parent unchecked
+            self.keep_all_annotations.set(False)
+            self.keep_all_annotations_chk.state(["!alternate"])  # Clear indeterminate
+
+    def _on_parent_annotation_toggle(self) -> None:
+        """When parent is toggled, set all children to match."""
+        parent_value = self.keep_all_annotations.get()
+        self.keep_comments.set(parent_value)
+        self.keep_footnotes.set(parent_value)
+        self.keep_endnotes.set(parent_value)
+
+    def _create_action_section(self) -> None:
+        """Create convert button."""
         # ActionFrame for convert button
         # v1 inline
         action_frame = ttk.Frame(self)
@@ -344,10 +434,6 @@ class Docx2PptxTab(ttk.Frame):
         # Configure column weights so widgets stretch
         self.columnconfigure(0, weight=1)
 
-        io_section.columnconfigure(0, weight=1)
-
-        options_frame.columnconfigure(0, weight=0)
-
         action_frame.columnconfigure(
             0, weight=1
         )  # Convert button - stretches east-west
@@ -363,7 +449,7 @@ class Docx2PptxTab(ttk.Frame):
             self.convert_btn.config(state="disabled")
 
     # We could make this _private since it is only called inside this class,
-    # but conventionally callbacks are usually public in python.
+    # but callbacks are conventionally public in python.
     def on_convert_click(self) -> None:
         """Handle convert button click."""
         # Disable button BEFORE starting thread (on UI thread)
@@ -386,7 +472,7 @@ class Docx2PptxTab(ttk.Frame):
         )
         thread.start()
 
-    def _run_conversion_thread(self, cfg) -> None:
+    def _run_conversion_thread(self, cfg: UserConfig) -> None:
         """Run the conversion in a background thread."""
         # == DEBUGGING == #
         # TODO: remove
@@ -405,30 +491,36 @@ class Docx2PptxTab(ttk.Frame):
             self.winfo_toplevel().after(0, self._on_conversion_error, e)
         pass
 
-    def ui_to_config(self, cfg):
-        # TODO: gather UI values into UserConfig
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather UI-selected values and update the UserConfig object"""
+        # TODO: Gather UI values into UserConfig
         # Only update fields that have UI controls
         cfg.input_docx = self.input_selector.selected_path.get()
-        # cfg.chunk_type = ChunkType(self.chunk_dropdown.get())
-        # cfg.experimental_formatting_on = self.exp_formatting_var.get()
+        cfg.chunk_type = ChunkType(self.chunk_var.get())
+        cfg.experimental_formatting_on = self.exp_fmt_var.get()  # get from BooleanVar
+        cfg.preserve_docx_metadata_in_speaker_notes = self.keep_metadata.get()
+        # TODO: the rest of the bools
         return cfg
 
-    def config_to_ui(self, cfg):
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI values from a loaded UserConfig"""
         # TODO: Populate UI values from a loaded UserConfig
-        # Only populate fields that have UI controls, but
+        # Only populate fields that have UI controls
         pass
 
-    def _on_conversion_success(self):
+    def _on_conversion_success(self) -> None:
+        """Inform the user of pipeline success"""
         log.info("Re-enabling convert button (success)")
         self.convert_btn.config(state="normal", text="Convert")
         # TODO: Popup message box and offer to open the output folder (call the helper)
 
-    def _on_conversion_error(self, error):
+    def _on_conversion_error(self, error: Exception) -> None:
+        """Inform the user of pipeline failure and error."""
         log.error(f"Re-enabling convert button (error): {error}")
         self.convert_btn.config(state="normal", text="Convert")
         # TODO: Popup error message box
 
-    def load_and_validate_config(self, path):
+    def load_and_validate_config(self, path: Path) -> None:
         """Load config from file, validating it matches this tab's direction."""
 
         # Load a config from disk into memory
@@ -467,7 +559,7 @@ class Docx2PptxTab(ttk.Frame):
 class Pptx2DocxTab(ttk.Frame):
     """Tab frame for the Pptx2Docx Pipeline."""
 
-    def __init__(self, parent, log_viewer) -> None:
+    def __init__(self, parent: tk.Widget, log_viewer: tk.Widget) -> None:
         super().__init__(parent)
         self.log_viewer = log_viewer
 
@@ -491,7 +583,7 @@ class Pptx2DocxTab(ttk.Frame):
 class DemoTab(ttk.Frame):
     """Tab for running demo dry-runs"""
 
-    def __init__(self, parent, log_viewer) -> None:
+    def __init__(self, parent: tk.Widget, log_viewer: tk.Widget) -> None:
         super().__init__(parent)
         self.log_viewer = log_viewer
         self._create_widgets()
@@ -598,7 +690,8 @@ class PathSelector(ttk.Frame):
 
         self._create_widgets()
 
-    def _create_widgets(self):
+    def _create_widgets(self) -> None:
+        """Create the path widgets"""
         # Label showing what this selector is for
         label = ttk.Label(self, text=self.label_text)
         label.grid(row=0, column=0, sticky="w", padx=5)
@@ -616,7 +709,7 @@ class PathSelector(ttk.Frame):
         # Make entry stretch with window
         self.columnconfigure(1, weight=1)
 
-    def browse(self):
+    def browse(self) -> None:
         """Open file or directory dialog based on is_dir flag."""
 
         # Get initial directory from default (extract dir from file path if needed)
@@ -775,12 +868,12 @@ class TextWidgetHandler(logging.Handler):
 # region Helper functions (class agnostic)
 
 
-def show_completion_dialog(output_folder):
+def show_completion_dialog(output_folder: Path) -> None:
     """Helper to pop a message box for any tab that's completed a pipeline run & offer a button for the user to click if they want us to open the output folder for them."""
     pass
 
 
-def open_folder_in_os_explorer(folder_path):
+def open_folder_in_os_explorer(folder_path: Path) -> None:
     """Helper to open the output folder for a pipeline run for the user."""
     pass
 
