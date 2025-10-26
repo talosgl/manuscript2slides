@@ -71,8 +71,11 @@
  │  │                                                             │  │ 
  │  │ Output Folder:                              [ Browse ... ]  │  │ 
  |  │   ~/Documents/manuscript2slides/output/...                  │  │ 
+ |  │                                                             │  |
  │  │ Custom .pptx Template:                      [ Browse ... ]  │  │ 
  │  │   \Documents\manuscript2slides\templates\docx_template.docx │  │ 
+ │  │                                                             │  |
+ │  │         [Load Config...]             [Save Config...]       │  │ 
  │  │                                                             │  │ 
  │  └─────────────────────────────────────────────────────────────┘  │ 
  │                                                                   │ 
@@ -102,8 +105,6 @@
  │  │ │    [ ] Display Footnotes                                │ │  │ 
  │  │ │    [ ] Display Endnotes                                 │ │  │ 
  │  │ │                                                         │ │  │ 
- │  │ │ [ Save Config File ]                                    │ │  │ 
- │  │ │ [ Load Config File ]                                    │ │  │ 
  │  │ │                                                         │ │  │ 
  │  │ └─────────────────────────────────────────────────────────┘ │  │ 
  │  └─────────────────────────────────────────────────────────────┘  │ 

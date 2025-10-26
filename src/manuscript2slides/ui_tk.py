@@ -268,6 +268,9 @@ class Docx2PptxTab(ttk.Frame):
         )
         self.template_selector.pack(fill="x", pady=2)
 
+        # TODO: create SaveLoadConfig with on_save=set_config, on_load=get_config
+        # try parenting to io_section first and seeing how that looks.
+
         io_section.columnconfigure(0, weight=1)
 
     def _create_basic_options(self) -> None:
@@ -382,7 +385,6 @@ class Docx2PptxTab(ttk.Frame):
             variable=self.keep_endnotes,
             command=self._on_child_annotation_toggle,
         ).pack(anchor="w", padx=25)
-        # TODO: create SaveLoadConfig with on_save=set_config, on_load=get_config
 
     def _on_child_annotation_toggle(self) -> None:
         """When any child is toggled, update parent state."""
