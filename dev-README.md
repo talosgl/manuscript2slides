@@ -1,3 +1,8 @@
+## Package Dependencies
+```bash
+pip install -e '.[dev]'
+```
+
 ## System Dependencies
 On Windows, you'll need to install Python from python.org. That'll include Python and the UI library Tkinter.
 

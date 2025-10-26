@@ -80,15 +80,15 @@ class MainWindow(tk.Tk):
 
     def _apply_theme(self) -> None:
         """Apply a modern(ish) theme to the UI."""
-        style = ttk.Style()
+        self.style = ttk.Style()
 
-        available_themes = style.theme_names()
+        available_themes = self.style.theme_names()
         log.debug(f"Available themes: {available_themes}")
 
         # Try to use the best theme for the platform
         if "aqua" in available_themes:  # macOS
             # TODO: Test aesthetics on macOS and see if we need to do any workarounds
-            style.theme_use("aqua")
+            self.style.theme_use("aqua")
             log.info("Using 'aqua' theme.")
         # elif "winnative" in available_themes:  # Windows '95
         #     style.theme_use("winnative")
@@ -97,63 +97,18 @@ class MainWindow(tk.Tk):
         #     style.theme_use("vista")
         #     log.info("Usting 'vista' theme.")
         elif "clam" in available_themes:  # Linux/cross-plat
-            style.theme_use("clam")
+            self.style.theme_use("clam")
             log.info("Using 'clam' theme.")
 
+            self._fix_clam()
             # TODO: maybe move this clam stuff into a helper; gettin big in here.
-            
-            # === FIX COMBOBOX STYLING === #
-            # Configure Combobox to look better in clam
-            style.configure(
-                "TCombobox",
-                fieldbackground="white",  # Background of the text field
-                background="white",  # Background of the dropdown
-                foreground="black",  # Text color
-                selectbackground="#0078d7",  # Selected item background
-                selectforeground="white",  # Selected item text
-            )
 
-            # Map states for better visual feedback
-            style.map(
-                "TCombobox",
-                fieldbackground=[
-                    ("disabled", "#e0e0e0"),  # Gray when disabled
-                    ("readonly", "white"),  # White when enabled but readonly
-                ],
-                foreground=[
-                    ("disabled", "#808080"),  # Gray text when disabled
-                    ("readonly", "black"),  # Black text when enabled
-                ],
-            )
-
-            # clam's main window background is not respected on Windows; this is a workaround
-            # TODO: Test clam and the other possible windows themes on a few more PCs
-            if platform.system() == "Windows":
-                self.configure(bg=style.lookup("TButton", "background"))
-
-            # Configure the collapse button to look like part of the TFrame, clam-only
-            tframe_background = style.lookup("TFrame", "background")
-            style.configure(
-                "Collapse.TButton",
-                # font=("Arial", 11, "bold"),
-                background=tframe_background,
-                borderwidth=0,
-                relief="flat",
-                anchor="w",
-            )
-            style.map(
-                "Collapse.TButton",
-                background=[
-                    ("active", tframe_background),
-                    ("pressed", tframe_background),
-                ],
-            )
         else:
-            style.theme_use("default")
+            self.style.theme_use("default")
             log.info("Using 'default' theme.")
 
         # (Optional TODO) Customize specific elements or give up and switch to PySide
-        style.configure(
+        self.style.configure(
             "Convert.TButton",
             background="#4CAF50",  # Green
             foreground="white",
@@ -161,11 +116,64 @@ class MainWindow(tk.Tk):
             padding=10,
         )
 
-        style.map(
+        self.style.map(
             "Convert.TButton",
             background=[
                 ("active", "#45a049"),  # Darker green on hover
                 ("disabled", "#cccccc"),  # Gray when disabled
+            ],
+        )
+
+    def _fix_clam(self) -> None:
+        """Apply some styling fixes for clam theme if used."""
+
+        log.debug("Applying combobox fix for clam for Linux or Windows.")
+        # Configure Combobox to look better in clam
+        self.style.configure(
+            "TCombobox",
+            fieldbackground="white",  # Background of the text field
+            background="white",  # Background of the dropdown
+            foreground="black",  # Text color
+            selectbackground="#0078d7",  # Selected item background
+            selectforeground="white",  # Selected item text
+        )
+
+        # Map states for better visual feedback
+        self.style.map(
+            "TCombobox",
+            fieldbackground=[
+                ("disabled", "#e0e0e0"),  # Gray when disabled
+                ("readonly", "white"),  # White when enabled but readonly
+            ],
+            foreground=[
+                ("disabled", "#808080"),  # Gray text when disabled
+                ("readonly", "black"),  # Black text when enabled
+            ],
+        )
+
+        # clam's main window background is not respected on Windows; this is a workaround
+        # TODO: Test clam and the other possible windows themes on a few more PCs
+        if platform.system() == "Windows":
+            log.debug(
+                "Windows only clam fix: set the background color to what it should be, explicitly. Use TButton for color lookup."
+            )
+            self.configure(bg=self.style.lookup("TButton", "background"))
+
+        # Configure the collapse button to look like part of the TFrame, clam-only
+        tframe_background = self.style.lookup("TFrame", "background")
+        self.style.configure(
+            "Collapse.TButton",
+            # font=("Arial", 11, "bold"),
+            background=tframe_background,
+            borderwidth=0,
+            relief="flat",
+            anchor="w",
+        )
+        self.style.map(
+            "Collapse.TButton",
+            background=[
+                ("active", tframe_background),
+                ("pressed", tframe_background),
             ],
         )
 
@@ -190,11 +198,9 @@ class Docx2PptxTab(ttk.Frame):
             None  # Config actually used for last conversion (for finding output)
         )
 
-        
         # Get defaults from UserConfig
         cfg_defaults = UserConfig()
         self.chunk_var = tk.StringVar(value=cfg_defaults.chunk_type.value)
-
 
         self._create_widgets()
 
@@ -246,13 +252,13 @@ class Docx2PptxTab(ttk.Frame):
         # Create Basic Options frame
         options_frame = ttk.Labelframe(self, text="Basic Options")
         options_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
-        
+
         # TODO: Decide if we want to change chunk type Dropdown/combobox to a radio button,
         # or restyle the combobox to look better.
-        # TODO: ideally each selection of combobox would have a docstring showing nearby 
+        # TODO: ideally each selection of combobox would have a docstring showing nearby
         # to explain what the choices mean.
         chunk_label = ttk.Label(options_frame, text="Split by:")
-        chunk_label.grid(row=0, column=0, sticky="w", padx=5,pady=5)
+        chunk_label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
 
         self.chunk_dropdown = ttk.Combobox(
             options_frame,
@@ -261,7 +267,7 @@ class Docx2PptxTab(ttk.Frame):
             state="readonly",  # Can't type custom values
             width=20,
         )
-        self.chunk_dropdown.grid(row=0, column=1, sticky="w", padx=5,pady=5)
+        self.chunk_dropdown.grid(row=0, column=1, sticky="w", padx=5, pady=5)
 
         # TODO, stretch goal: dynamically resize docstring for chunk strategies
         # alternate: write this in a txt or something and have a button here to open
@@ -280,30 +286,40 @@ class Docx2PptxTab(ttk.Frame):
         explain_chunks = CollapsibleFrame(options_frame, title="Explain choices...")
         explain_chunks.grid(row=1, column=0, sticky="ew", pady=5)
         dynamic_string = "TODO make this docstring dynamic; or enclose in a collapsible frame called 'Explain Chunking Options...'"
-        chunk_strat_explained = ttk.Label(explain_chunks.content_frame, text=dynamic_string, 
-            )
-        chunk_strat_explained.grid(row=1, column=0, sticky="w", padx=5,pady=5)
+        chunk_strat_explained = ttk.Label(
+            explain_chunks.content_frame,
+            text=dynamic_string,
+        )
+        chunk_strat_explained.grid(row=1, column=0, sticky="w", padx=5, pady=5)
 
         # TODO: Experimental Formatting bool; replace hard-coded values with UserConfig Default
         # Q: I assume I need some kind of data bound bool value as well
-        exp_fmt_chkbx = ttk.Checkbutton(options_frame, text="Preserve advanced formatting (experimental)")
-        exp_fmt_chkbx.grid(row=2,column=0, sticky="w", padx=5,pady=0)
-        exp_fmt_chkbx.state(['selected']) 
-        exp_fmt_tip = ttk.Label(options_frame, text="    tip: disable if conversion is crashing or freezing")
-        exp_fmt_tip.grid(row=3,column=0, sticky="w", padx=5,pady=0)
+        exp_fmt_chkbx = ttk.Checkbutton(
+            options_frame, text="Preserve advanced formatting (experimental)"
+        )
+        exp_fmt_chkbx.grid(row=2, column=0, sticky="w", padx=5, pady=0)
+        exp_fmt_chkbx.state(["selected"])
+        exp_fmt_tip = ttk.Label(
+            options_frame, text="    tip: disable if conversion is crashing or freezing"
+        )
+        exp_fmt_tip.grid(row=3, column=0, sticky="w", padx=5, pady=0)
         # "Preserve advanced formatting (experimental)"
         # "tip: disable if conversion is crashing or freezing"
 
-
         # TODO: Advanced Options inner-frame (collapsible)
-        advanced_options = CollapsibleFrame(options_frame, title="Advanced Options")        
+        advanced_options = CollapsibleFrame(options_frame, title="Advanced Options")
         advanced_options.grid(row=4, column=0, sticky="ew", pady=5)
         # remember to use advanced_options.content_frame
-        keep_metadata_chk = ttk.Checkbutton(advanced_options.content_frame, text="Preserve metadata in speaker notes")
-        keep_metadata_chk.grid(row=0,column=0, sticky="w", padx=5,pady=0)
-        keep_metadata_tip = ttk.Label(advanced_options.content_frame, text="    tip: enable if you want to do round-trip conversion\n    (pptx back to docx later) and you want to\n    maintain comments, heading formatting, etc.")
-        keep_metadata_tip.grid(row=1,column=0, sticky="w", padx=5,pady=0)
-        
+        keep_metadata_chk = ttk.Checkbutton(
+            advanced_options.content_frame, text="Preserve metadata in speaker notes"
+        )
+        keep_metadata_chk.grid(row=0, column=0, sticky="w", padx=5, pady=0)
+        keep_metadata_tip = ttk.Label(
+            advanced_options.content_frame,
+            text="    tip: enable if you want to do round-trip conversion\n    (pptx back to docx later) and you want to\n    maintain comments, heading formatting, etc.",
+        )
+        keep_metadata_tip.grid(row=1, column=0, sticky="w", padx=5, pady=0)
+
         # TODO: Create Annotations master toggle & 3 child bools
         # TODO: create SaveLoadConfig with on_save=set_config, on_load=get_config
 
@@ -325,7 +341,6 @@ class Docx2PptxTab(ttk.Frame):
         # Watch for file selection to enable button
         self.input_selector.selected_path.trace_add("write", self._on_file_selected)
 
-
         # Configure column weights so widgets stretch
         self.columnconfigure(0, weight=1)
 
@@ -336,8 +351,6 @@ class Docx2PptxTab(ttk.Frame):
         action_frame.columnconfigure(
             0, weight=1
         )  # Convert button - stretches east-west
-
-        
 
     def _on_file_selected(self, *args) -> None:  # noqa: ANN002
         """Enable convert button when a file is selected."""
