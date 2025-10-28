@@ -70,7 +70,6 @@ class MainWindow(tk.Tk):
         notebook.add(demo_tab, text="DEMO")
 
         # Add the log_viewer to the end of the UI Geo.
-        # TODO: gets smooshed/covered if Advanced Options are expanded in docx2pptx tab; fix to make responsive.
         log_viewer.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Configure grid weights (for resizing)
@@ -107,7 +106,7 @@ class MainWindow(tk.Tk):
             self.style.theme_use("default")
             log.info("Using 'default' theme.")
 
-        # (Optional TODO) Customize specific elements or give up and switch to PySide
+        # (Optional) Customize specific elements (or give up and switch to PySide)
         self.style.configure(
             "Convert.TButton",
             background="#4CAF50",  # Green
@@ -152,7 +151,6 @@ class MainWindow(tk.Tk):
         )
 
         # clam's main window background is not respected on Windows; this is a workaround
-        # TODO: Test clam and the other possible windows themes on a few more PCs
         if platform.system() == "Windows":
             log.debug(
                 "Windows only clam fix: set the background color to what it should be, explicitly. Use TButton for color lookup."
@@ -189,6 +187,7 @@ class MainWindow(tk.Tk):
 class Docx2PptxTab(ttk.Frame):
     """UI Tab for the docx2pptx pipeline."""
 
+    # region d2p init + _create_widgets()
     def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
         """Constructor for docx2pptx Tab"""
         super().__init__(parent)
@@ -220,7 +219,6 @@ class Docx2PptxTab(ttk.Frame):
 
         self._create_widgets()
 
-    # Styled as _private; this is definitely internal setup.
     def _create_widgets(self) -> None:
 
         self._create_io_section()
@@ -231,10 +229,16 @@ class Docx2PptxTab(ttk.Frame):
 
         self._create_action_section()
 
+        self.columnconfigure(0, weight=1)
+
+    # endregion
+
+    # region d2p _create_io_section + helpers
     def _create_io_section(self) -> None:
         """Create docx2pptx tab's io section."""
         io_section = ttk.LabelFrame(self, text="Input/Output Selection")
         io_section.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+        io_section.columnconfigure(0, weight=1)
 
         # Input file
         self.input_selector = PathSelector(
@@ -251,6 +255,7 @@ class Docx2PptxTab(ttk.Frame):
         # Advanced (collapsible)
         advanced = CollapsibleFrame(io_section, title="Advanced")
         advanced.grid(row=1, column=0, sticky="ew", pady=5)
+        advanced.columnconfigure(0, weight=1)
 
         self.output_selector = PathSelector(
             advanced.content_frame,
@@ -268,11 +273,113 @@ class Docx2PptxTab(ttk.Frame):
         )
         self.template_selector.pack(fill="x", pady=2)
 
-        # TODO: create SaveLoadConfig with on_save=set_config, on_load=get_config
-        # try parenting to io_section first and seeing how that looks.
+        save_btn = tk.Button(
+            advanced.content_frame,
+            text="Save Options to Config",
+            command=self.on_save_click,
+        )
+        save_btn.pack(side="left", padx=5)
 
-        io_section.columnconfigure(0, weight=1)
+        load_btn = tk.Button(
+            advanced.content_frame, text="Load Config", command=self.on_load_click
+        )
+        load_btn.pack(side="left", padx=5)
 
+    def on_save_click(self) -> None:
+        """Handle Save Config button click"""
+        path = filedialog.asksaveasfilename(
+            title="Save Config As",
+            defaultextension=".toml",
+            filetypes=[("TOML Config", "*.toml")],
+            initialfile="my_config.toml",
+        )
+        if path:
+            cfg = self.ui_to_config(UserConfig())
+            cfg.save_toml(Path(path))
+            messagebox.showinfo("Config Saved", f"Saved config to {Path(path).name}")
+
+    def on_load_click(self) -> None:
+        """Handle Load Config button click"""
+        path = browse_for_file(
+            title="Load Config", filetypes=[("TOML Config", "*.toml")]
+        )
+        if path:
+            self.load_and_validate_config(Path(path))
+
+    def load_and_validate_config(self, path: Path) -> None:
+        """Load config from file, validating it matches this tab's direction."""
+
+        # Load a config from disk into memory
+        try:
+            cfg = UserConfig.from_toml(path)  # Load from disk
+        except Exception as e:
+            error_msg = f"Failed to load config:\n\n{str(e)}"
+            log.info(error_msg)
+            messagebox.showerror("Load Failed", error_msg)
+            return
+
+        # Validate direction matches this tab
+        if cfg.direction != PipelineDirection.DOCX_TO_PPTX:
+            log.error("Wrong config type loaded; rejecting and informing user.")
+            messagebox.showerror(
+                "Invalid Config",
+                "This config is for PPTX→DOCX.\n"
+                "Please use the PPTX→DOCX tab to load this config.",
+            )
+            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
+            # Note they'll still need to make sure an input file for conversion is selected
+            # on the new tab of the right type.
+            return
+
+        self.config_to_ui(cfg)  # Populate UI
+        self.loaded_config = cfg  # Store it as THE config
+
+        success_msg = f"Loaded config from {Path(path).name}"
+        log.info(success_msg)
+        messagebox.showinfo("Config Loaded", success_msg)
+
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather UI-selected values and update the UserConfig object"""
+
+        # Only update fields that have UI controls
+        cfg.input_docx = self.input_selector.selected_path.get()
+        cfg.chunk_type = ChunkType(self.chunk_var.get())
+        cfg.experimental_formatting_on = self.exp_fmt_var.get()
+        cfg.preserve_docx_metadata_in_speaker_notes = self.keep_metadata.get()
+        cfg.display_comments = self.keep_comments.get()
+        cfg.display_footnotes = self.keep_footnotes.get()
+        cfg.display_endnotes = self.keep_endnotes.get()
+
+        # Handle optional paths (might be "No selection")
+        output = self.output_selector.selected_path.get()
+        cfg.output_folder = output if output != "No selection" else None
+
+        template = self.template_selector.selected_path.get()
+        cfg.template_pptx = template if template != "No selection" else None
+        return cfg
+
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI values from a loaded UserConfig"""
+        # Only populate fields that have UI controls
+
+        # Set Path selectors
+        self.input_selector.selected_path.set(cfg.input_docx or "No selection")
+        self.output_selector.selected_path.set(cfg.output_folder or "No selection")
+        self.template_selector.selected_path.set(cfg.template_pptx or "No selection")
+
+        # Set dropdown
+        self.chunk_var.set(cfg.chunk_type.value)
+
+        # Set checkboxes
+        self.exp_fmt_var.set(cfg.experimental_formatting_on)
+        self.keep_metadata.set(cfg.preserve_docx_metadata_in_speaker_notes)
+        self.keep_comments.set(cfg.display_comments)
+        self.keep_footnotes.set(cfg.display_footnotes)
+        self.keep_endnotes.set(cfg.display_endnotes)
+
+    # endregion
+
+    # region d2p _create_basic_options
     def _create_basic_options(self) -> None:
         """Create pipeline options widgets."""
         # Create Basic Options frame
@@ -326,9 +433,11 @@ class Docx2PptxTab(ttk.Frame):
         options_frame.columnconfigure(0, weight=0)
         options_frame.columnconfigure(1, weight=1)
 
+    # endregion
+
+    # region d2p _create_advanced_options + helpers
     def _create_advanced_options(self) -> None:
         """Create advanced options (collapsible)."""
-        # TODO: Advanced Options inner-frame (collapsible)
         advanced = CollapsibleFrame(
             self, title="Advanced Options", start_collapsed=True
         )
@@ -413,6 +522,9 @@ class Docx2PptxTab(ttk.Frame):
         self.keep_footnotes.set(parent_value)
         self.keep_endnotes.set(parent_value)
 
+    # endregion
+
+    # region _create_action_section + helpers
     def _create_action_section(self) -> None:
         """Create convert button."""
         # ActionFrame for convert button
@@ -450,10 +562,29 @@ class Docx2PptxTab(ttk.Frame):
         else:
             self.convert_btn.config(state="disabled")
 
-    # We could make this _private since it is only called inside this class,
-    # but callbacks are conventionally public in python.
     def on_convert_click(self) -> None:
         """Handle convert button click."""
+
+        # Gather config
+        cfg = self.loaded_config if self.loaded_config else UserConfig()
+        cfg = self.ui_to_config(cfg)
+
+        # # Validate required fields
+        if not cfg.input_docx or cfg.input_docx == "No selection":
+            messagebox.showerror("Missing Input", "Please select an input .docx file.")
+            return
+
+        if not Path(cfg.input_docx).exists():
+            messagebox.showerror(
+                "File Not Found", f"Input file does not exist:\n{cfg.input_docx}"
+            )
+            return
+
+        # Optional: validate it's actually a .docx
+        if not cfg.input_docx.endswith(".docx"):
+            messagebox.showerror("Invalid File", "Input file must be a .docx file.")
+            return
+
         # Disable button BEFORE starting thread (on UI thread)
         self.convert_btn.config(state="disabled", text="Converting...")
         # self.update_idletasks()  # Force UI to refresh NOW
@@ -463,10 +594,7 @@ class Docx2PptxTab(ttk.Frame):
 
         # Update with UI values (preserves fields not in UI)
         cfg = self.ui_to_config(cfg)
-
-        # TODO: Prepare data for us to call the pipeline with by performing basic validation of selected options,
-        # building a UserConfig object from valid UI selections, and starting a background thread for the pipeline
-        # to be run on.
+        self.last_run_config = cfg
 
         # Start background thread
         thread = threading.Thread(
@@ -477,7 +605,6 @@ class Docx2PptxTab(ttk.Frame):
     def _run_conversion_thread(self, cfg: UserConfig) -> None:
         """Run the conversion in a background thread."""
         # == DEBUGGING == #
-        # TODO: remove
         if DEBUG_MODE:
             import time
 
@@ -485,6 +612,7 @@ class Docx2PptxTab(ttk.Frame):
         # == ========= == #
 
         try:
+            cfg.validate()
             run_pipeline(cfg)
             # Success! Schedule UI update on main thread
             self.winfo_toplevel().after(0, self._on_conversion_success)
@@ -493,72 +621,63 @@ class Docx2PptxTab(ttk.Frame):
             self.winfo_toplevel().after(0, self._on_conversion_error, e)
         pass
 
-    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
-        """Gather UI-selected values and update the UserConfig object"""
-        # TODO: Gather UI values into UserConfig
-        # Only update fields that have UI controls
-        cfg.input_docx = self.input_selector.selected_path.get()
-        cfg.chunk_type = ChunkType(self.chunk_var.get())
-        cfg.experimental_formatting_on = self.exp_fmt_var.get()  # get from BooleanVar
-        cfg.preserve_docx_metadata_in_speaker_notes = self.keep_metadata.get()
-        # TODO: the rest of the bools
-        return cfg
-
-    def config_to_ui(self, cfg: UserConfig) -> None:
-        """Populate UI values from a loaded UserConfig"""
-        # TODO: Populate UI values from a loaded UserConfig
-        # Only populate fields that have UI controls
-        pass
-
     def _on_conversion_success(self) -> None:
         """Inform the user of pipeline success"""
         log.info("Re-enabling convert button (success)")
         self.convert_btn.config(state="normal", text="Convert")
-        # TODO: Popup message box and offer to open the output folder (call the helper)
+
+        # Get the output folder location
+        cfg = self.last_run_config if self.last_run_config else UserConfig()
+        output_folder = cfg.get_output_folder()
+
+        # Show success message
+        input_file = Path(
+            self.input_selector.selected_path.get()
+        ).name  # Get only the filename
+        message = (
+            f"Successfully converted {input_file} to PowerPoint!\n\n"
+            f"Output location:\n{output_folder}\n\n"
+            f"Open output folder?"
+        )
+
+        # Ask if user wants to open folder
+        result = messagebox.askokcancel("Conversion Complete!", message)
+
+        # User clicked OK
+        if result:
+            open_folder_in_os_explorer(output_folder)
 
     def _on_conversion_error(self, error: Exception) -> None:
         """Inform the user of pipeline failure and error."""
         log.error(f"Re-enabling convert button (error): {error}")
         self.convert_btn.config(state="normal", text="Convert")
-        # TODO: Popup error message box
 
-    def load_and_validate_config(self, path: Path) -> None:
-        """Load config from file, validating it matches this tab's direction."""
+        error_msg = str(error)
+        if len(error_msg) > 300:
+            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
 
-        # Load a config from disk into memory
-        try:
-            cfg = UserConfig.from_toml(path)  # Load from disk
-        except Exception as e:
-            error_msg = f"Failed to load config:\n\n{str(e)}"
-            log.info(error_msg)
-            messagebox.showerror("Load Failed", error_msg)
-            return
+        message = (
+            f"An error occurred during conversion:\n\n"
+            f"{error_msg}\n\n"
+            f"Check the log viewer below for details.\n\n"
+            f"Open log folder?"
+        )
 
-        # Validate direction matches this tab
-        if cfg.direction != PipelineDirection.DOCX_TO_PPTX:
-            log.info("Wrong config type loaded; rejecting and informing user.")
-            messagebox.showerror(
-                "Invalid Config",
-                "This config is for PPTX→DOCX.\n"
-                "Please use the PPTX→DOCX tab to load this config.",
-            )
-            # TODO: Offer to swap tabs and load the config there for them or cancel.
-            # Note they'll still need to make sure an input file for conversion is selected on the new tab of the right type.
-            return
+        result = messagebox.askokcancel("Conversion Failed", message, icon="error")
 
-        self.config_to_ui(cfg)  # Populate UI
-        self.loaded_config = cfg  # Store it as THE config
+        if result:
+            # Get log folder from config
+            log_folder = UserConfig().get_log_folder()
+            open_folder_in_os_explorer(log_folder)
 
-        success_msg = f"Loaded config from {Path(path).name}"
-        log.info(success_msg)
-        messagebox.showinfo("Config Loaded", success_msg)
+    # endregion
 
 
 # endregion
 
 
 # region Pptx2DocxTab
-class Pptx2DocxTab(ttk.Frame):
+class Pptx2DocxTab(tk.Frame):
     """Tab frame for the Pptx2Docx Pipeline."""
 
     def __init__(self, parent: tk.Widget, log_viewer: tk.Widget) -> None:
@@ -600,15 +719,19 @@ class DemoTab(ttk.Frame):
         pass
 
     def run_docx2pptx_demo(self) -> None:
+        """TODO"""
         pass
 
     def run_pptx2docx_demo(self) -> None:
+        """TODO"""
         pass
 
     def run_roundtrip_demo(self) -> None:
+        """TODO"""
         pass
 
     def run_custom_demo(self) -> None:
+        """TODO"""
         # TODO: Browse for .toml, load it, run pipeline
         pass
 
@@ -685,9 +808,6 @@ class PathSelector(ttk.Frame):
         self.label_text = label
         self.is_dir = is_dir
         self.filetypes = filetypes  # Ignored if is_dir=True
-        self.default = default
-
-        # TODO: Study - this is data binding-- use this example to understand that UI concept better.
         self.selected_path = tk.StringVar(value=default or "No selection")
 
         self._create_widgets()
@@ -713,48 +833,15 @@ class PathSelector(ttk.Frame):
 
     def browse(self) -> None:
         """Open file or directory dialog based on is_dir flag."""
-
-        # Get initial directory from default (extract dir from file path if needed)
-        initial_dir = None
-        if self.default:
-            default_path = Path(self.default)
-            if default_path.exists():
-                # If default is a file, use its parent directory
-                initial_dir = (
-                    str(default_path.parent)
-                    if default_path.is_file()
-                    else str(default_path)
-                )
-
         if self.is_dir:
-            path = filedialog.askdirectory(
-                title=f"Select {self.label_text}", initialdir=initial_dir
-            )
+            path = browse_for_dir(title=f"Select {self.label_text}")
         else:
-            path = filedialog.askopenfilename(
-                title=f"Select {self.label_text}",
-                filetypes=self.filetypes if self.filetypes else [("All files", "*.*")],
-                initialdir=initial_dir,
+            path = browse_for_file(
+                title=f"Select {self.label_text}", filetypes=self.filetypes
             )
 
         if path:
             self.selected_path.set(path)
-
-
-# endregion
-
-
-# region SaveLoadConfig
-class SaveLoadConfig(ttk.Frame):
-    pass
-
-
-# endregion
-
-
-# region ActionFrame
-class ActionFrame(ttk.Frame):
-    pass
 
 
 # endregion
@@ -868,16 +955,52 @@ class TextWidgetHandler(logging.Handler):
 
 
 # region Helper functions (class agnostic)
+def open_folder_in_os_explorer(folder_path: Path | str) -> None:
+    """
+    Open the folder in the system file explorer, platform-specific.
+
+    Args:
+        folder_path: Path to the folder to open
+    """
+    try:
+        folder_path = Path(folder_path)  # Convert to Path if string
+        system = platform.system()
+
+        if system == "Windows":
+            subprocess.run(["explorer", str(folder_path)])
+        elif system == "Darwin":  # macOS
+            subprocess.run(["open", str(folder_path)])
+        else:  # Linux and others
+            subprocess.run(["xdg-open", str(folder_path)])
+
+        log.info(f"Opened folder: {folder_path}")
+
+    except Exception as e:
+        log.error(f"Failed to open folder: {e}")
+        messagebox.showwarning(
+            "Cannot Open Folder",
+            f"Could not open the folder automatically.\n\n" f"Location: {folder_path}",
+        )
 
 
-def show_completion_dialog(output_folder: Path) -> None:
-    """Helper to pop a message box for any tab that's completed a pipeline run & offer a button for the user to click if they want us to open the output folder for them."""
-    pass
+def browse_for_file(
+    title: str,
+    filetypes: list[tuple[str, str]] | None = None,
+    initial_dir: str | None = None,
+) -> str | None:
+    """Open the fial dialog for the user to pick a file and return the selected path (or None, if cancelled.)"""
+    path = filedialog.askopenfilename(
+        title=title,
+        filetypes=filetypes if filetypes else [("All files", "*.*")],
+        initialdir=initial_dir,
+    )
+    return path if path else None
 
 
-def open_folder_in_os_explorer(folder_path: Path) -> None:
-    """Helper to open the output folder for a pipeline run for the user."""
-    pass
+def browse_for_dir(title: str, initial_dir: str | None = None) -> str | None:
+    """Open directory dialog and return selected path (or None if cancelled)."""
+    path = filedialog.askdirectory(title=title, initialdir=initial_dir)
+    return path if path else None
 
 
 # endregion

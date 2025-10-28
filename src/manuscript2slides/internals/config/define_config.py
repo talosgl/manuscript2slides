@@ -22,6 +22,7 @@ from manuscript2slides.internals.paths import (
     user_input_dir,
     user_output_dir,
     user_templates_dir,
+    user_log_dir_path,
 )
 from manuscript2slides.internals.run_context import get_pipeline_run_id
 import logging
@@ -173,6 +174,10 @@ class UserConfig:
             return self._resolve_path(self.input_pptx)
 
         return None  # No more fallback to sample
+
+    def get_log_folder(self) -> Path:
+        """Get the log folder path."""
+        return user_log_dir_path()
 
     # endregion
 
