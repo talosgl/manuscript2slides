@@ -15,6 +15,7 @@ import platform
 import subprocess
 
 from tkinter import filedialog
+from typing import Callable
 
 from manuscript2slides.startup import initialize_application
 from manuscript2slides.internals.config.define_config import (
@@ -923,6 +924,134 @@ class DemoTab(ttk.Frame):
 
 
 # endregion
+
+
+# region BaseConversionTab
+class BaseConversionTab(ttk.Frame):
+    """Base class for conversion tabs with shared threading & button logic."""
+
+    def __init__(self, parent: tk.Widget, log_viewer: LogViewer):
+        super().__init__(parent)
+        self.log_viewer = log_viewer
+        self.last_run_config = None
+        self._create_widgets()
+        self.buttons = []
+
+    def _create_widgets(self):
+        raise NotImplementedError("Child class must implement this.")
+
+    def _create_convert_button(
+        self, button_text: str, cmd: Callable[[], None]
+    ) -> ttk.Button:
+        """Create a button widget styled for conversion without grid/pack. Caller must grid/pack."""
+        return ttk.Button(self, text=button_text, style="Convert.TButton", command=cmd)
+
+    def on_convert_click(self, cfg: UserConfig) -> None:
+        raise NotImplementedError("Child class must implement this.")
+    
+    def on_load_click(self, cmd: Callable):
+        """Handle Load Config button click"""
+        path = browse_for_file(
+            title="Load Config file", filetypes=[("TOML Config", "*.toml")]
+        )
+        if path:
+            cmd(Path(path))
+        
+    def get_config(self) -> UserConfig:
+        """Build config from UI. Must be implemented by child."""
+        raise NotImplementedError
+
+    def start_conversion(self, cfg: UserConfig, pipeline_func: Callable | None = None):
+        """
+        Disable buttons for the tab and start the conversion background thread.
+
+        NOTE: Child must handle cfg prep and any other unique prep.
+        """
+        # "None sentinal pattern" to set the default pipeline
+        if pipeline_func is None:
+            pipeline_func = run_pipeline  # Resolved at runtime
+
+        self.disable_buttons()
+        log.info("Starting conversion in background thread.")
+        thread = threading.Thread(target=self._run_in_thread, args=(cfg, pipeline_func), daemon=True)
+        thread.start()
+
+    def disable_buttons(self):
+        log.debug("Disabling button(s) during conversion.")
+        for button in self.buttons:
+            button._original_text = button.cget("text")
+            button.config(state="disabled", text="Running Demo Conversion...")
+
+    def enable_buttons(self):
+        log.debug("Renabling convert button(s).")
+        for button in self.buttons:
+            button(state="normal", text=button._original_text)
+
+    def _run_in_thread(self, cfg: UserConfig, pipeline_func: Callable) -> None:
+        
+        # == DEBUGGING == #
+        # Pause the UI for a few seconds so we can verify button disable/enable
+        if DEBUG_MODE:
+            import time
+
+            time.sleep(3)
+        # =============== #
+        
+        try:
+            cfg.validate()
+            pipeline_func(cfg)
+            # Success! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_success)
+        except Exception as e:
+            # Error! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_error, e)
+
+    def _on_conversion_success(self) -> None:
+        """Inform the user of pipeline success"""
+        self.enable_buttons()
+
+        # Get the output folder location
+        cfg = self.last_run_config if self.last_run_config else UserConfig()
+        output_folder = cfg.get_output_folder()
+
+        # Show success message
+        message = (
+            f"Successfully ran conversion!\n\n"
+            f"Output location:\n{output_folder}\n\n"
+            f"Open output folder?"
+        )
+
+        # Ask if user wants to open folder
+        result = messagebox.askokcancel("Conversion Complete!", message)
+
+        # User clicked OK
+        if result:
+            open_folder_in_os_explorer(output_folder)
+
+    def _on_conversion_error(self, error: Exception) -> None:
+        """Inform the user of pipeline failure and error."""
+        log.error(f"Re-enabling buttons (error): {error}")
+        self.enable_buttons()
+
+        error_msg = str(error)
+        if len(error_msg) > 300:
+            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
+
+        message = (
+            f"An error occurred during conversion:\n\n"
+            f"{error_msg}\n\n"
+            f"Check the log viewer below for details.\n\n"
+            f"Open log folder?"
+        )
+        result = messagebox.askokcancel("Demo Conversion Failed", message, icon="error")
+
+        if result:
+            # Get log folder from config
+            log_folder = UserConfig().get_log_folder()
+            open_folder_in_os_explorer(log_folder)
+
+# endregion
+
 
 # region components
 # =============== Component Classes ============ #
