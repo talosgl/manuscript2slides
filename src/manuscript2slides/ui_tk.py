@@ -23,7 +23,7 @@ from manuscript2slides.internals.config.define_config import (
     ChunkType,
 )
 from manuscript2slides.internals.constants import DEBUG_MODE
-from manuscript2slides.orchestrator import run_pipeline
+from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 import sys
 
 
@@ -569,7 +569,7 @@ class Docx2PptxTab(ttk.Frame):
         cfg = self.loaded_config if self.loaded_config else UserConfig()
         cfg = self.ui_to_config(cfg)
 
-        # # Validate required fields
+        # Validate required fields
         if not cfg.input_docx or cfg.input_docx == "No selection":
             messagebox.showerror("Missing Input", "Please select an input .docx file.")
             return
@@ -619,7 +619,6 @@ class Docx2PptxTab(ttk.Frame):
         except Exception as e:
             # Error! Schedule UI update on main thread
             self.winfo_toplevel().after(0, self._on_conversion_error, e)
-        pass
 
     def _on_conversion_success(self) -> None:
         """Inform the user of pipeline success"""
@@ -707,33 +706,220 @@ class DemoTab(ttk.Frame):
     def __init__(self, parent: tk.Widget, log_viewer: tk.Widget) -> None:
         super().__init__(parent)
         self.log_viewer = log_viewer
+        self.last_run_config = None
         self._create_widgets()
 
     def _create_widgets(self) -> None:
-        # TODO: Demo Selection Frame
-        # Button: "DOCX → PPTX Demo" (command=self.run_docx2pptx_demo)
-        # Button: "PPTX → DOCX Demo" (command=self.run_pptx2docx_demo)
-        # Button: "Round-trip Demo" (command=self.run_roundtrip_demo)
-        # Separator
-        # Button: "Load Config & Run" (command=self.run_custom_demo)
-        pass
+        info = ttk.Label(
+            self,
+            text="Run demos with built-in sample files to try out the pipeline.",
+            font=("Arial", 10),
+        )
+        info.pack(pady=10)
 
-    def run_docx2pptx_demo(self) -> None:
-        """TODO"""
-        pass
+        self.d2p_btn = ttk.Button(
+            self,
+            text="DOCX → PPTX Demo",
+            style="Convert.TButton",
+            command=self.on_docx2pptx_demo_click,
+        )
+        self.d2p_btn.pack(pady=5)
 
-    def run_pptx2docx_demo(self) -> None:
-        """TODO"""
-        pass
+        self.p2d_btn = ttk.Button(
+            self,
+            text="PPTX → DOCX Demo",
+            style="Convert.TButton",
+            command=self.on_pptx2docx_demo_click,
+        )
+        self.p2d_btn.pack(pady=5)
 
-    def run_roundtrip_demo(self) -> None:
-        """TODO"""
-        pass
+        self.round_trip_btn = ttk.Button(
+            self,
+            text="Round-trip Demo (DOCX → PPTX → DOCX)",
+            style="Convert.TButton",
+            command=self.on_roundtrip_demo_click,
+        )
+        self.round_trip_btn.pack(pady=5)
 
-    def run_custom_demo(self) -> None:
-        """TODO"""
-        # TODO: Browse for .toml, load it, run pipeline
-        pass
+        # ttk.Separator(self, orient="horizontal").pack(pady=5, fill="x")
+
+        self.load_demo_btn = ttk.Button(
+            self,
+            text="Load & Run Config",
+            style="Convert.TButton",
+            command=self.on_load_demo_click,
+        )
+        self.load_demo_btn.pack(
+            pady=5,
+        )
+
+    def _disable_all_buttons(self) -> None:
+        log.debug("Disabling buttons during Demo conversion.")
+        self.d2p_btn.config(state="disabled", text="Running Demo Conversion...")
+        self.p2d_btn.config(state="disabled", text="Running Demo Conversion...")
+        self.round_trip_btn.config(state="disabled", text="Running Demo Conversion...")
+        self.load_demo_btn.config(state="disabled", text="Running Demo Conversion...")
+
+    def _enable_all_buttons(self) -> None:
+        log.debug("Re-enabling buttons following Demo conversion.")
+        self.d2p_btn.config(state="normal", text="DOCX → PPTX Demo")
+        self.p2d_btn.config(state="normal", text="PPTX → DOCX Demo")
+        self.round_trip_btn.config(
+            state="normal", text="Round-trip Demo (DOCX → PPTX → DOCX)"
+        )
+        self.load_demo_btn.config(state="normal", text="Load & Run Config")
+
+    def on_docx2pptx_demo_click(self) -> None:
+        """Handle DOCX → PPTX Demo button click."""
+        # Make the config object
+        direction = PipelineDirection.DOCX_TO_PPTX
+        cfg = UserConfig().for_demo(direction=direction)
+        self.last_run_config = cfg
+
+        # Temporarily disable all buttons
+        self._disable_all_buttons()
+
+        # Start background thread
+        log.info("Starting demo in background thread.")
+        thread = threading.Thread(target=self._run_demo, args=(cfg,), daemon=True)
+        thread.start()
+
+    def on_pptx2docx_demo_click(self) -> None:
+        """Handle PPTX → DOCX Demo button click."""
+        direction = PipelineDirection.PPTX_TO_DOCX
+        cfg = UserConfig().for_demo(direction=direction)
+        self.last_run_config = cfg
+
+        # Temporarily disable all buttons
+        self._disable_all_buttons()
+
+        # Start background thread
+        log.info("Starting demo in background thread.")
+        thread = threading.Thread(target=self._run_demo, args=(cfg,), daemon=True)
+        thread.start()
+
+    def on_roundtrip_demo_click(self) -> None:
+        """Handle Round-trip Demo button click."""
+
+        cfg = UserConfig().with_defaults()
+        self.last_run_config = cfg
+
+        # Temporarily disable all buttons
+        self._disable_all_buttons()
+
+        # Start background thread
+        log.info("Starting demo in background thread.")
+        thread = threading.Thread(target=self._run_roundtrip, args=(cfg,), daemon=True)
+        thread.start()
+
+    def on_load_demo_click(self) -> None:
+        """Handle Load & Run Config button click"""
+        path = browse_for_file(
+            title="Load Config", filetypes=[("TOML Config", "*.toml")]
+        )
+        if path:
+            # Load a config from disk into memory
+            try:
+                cfg = UserConfig.from_toml(Path(path))  # Load from disk
+                self.last_run_config = cfg
+                log.info(f"Loaded config from {Path(path).name}")
+
+                # Temporarily disable all buttons
+                self._disable_all_buttons()
+
+                # Start background thread
+                log.info("Starting loaded config as a demo in background thread.")
+                thread = threading.Thread(
+                    target=self._run_demo, args=(cfg,), daemon=True
+                )
+                thread.start()
+
+            except Exception as e:
+                error_msg = f"Failed to load config:\n\n{str(e)}"
+                log.info(error_msg)
+                messagebox.showerror("Load Failed", error_msg)
+                return
+
+    def _run_roundtrip(self, cfg: UserConfig) -> None:
+        # == DEBUGGING == #
+        if DEBUG_MODE:
+            import time
+
+            time.sleep(3)
+        # == ========= == #
+        try:
+            cfg.validate()
+            run_roundtrip_test(cfg)
+            # Success! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_success)
+
+        except Exception as e:
+            # Error! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_error, e)
+
+    def _run_demo(self, cfg: UserConfig) -> None:
+        """Run a one-way DOCX -> PPTX or PPTX -> DOCX demo conversion in a background thread."""
+        # == DEBUGGING == #
+        if DEBUG_MODE:
+            import time
+
+            time.sleep(3)
+        # == ========= == #
+        try:
+            cfg.validate()
+            run_pipeline(cfg)
+            # Success! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_success)
+        except Exception as e:
+            # Error! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_error, e)
+
+    def _on_conversion_success(self) -> None:
+        """Inform the user of pipeline success"""
+        self._enable_all_buttons()
+
+        # Get the output folder location
+        cfg = self.last_run_config if self.last_run_config else UserConfig()
+        output_folder = cfg.get_output_folder()
+
+        # Show success message
+        message = (
+            f"Successfully ran demo!\n\n"
+            f"Output location:\n{output_folder}\n\n"
+            f"Open output folder?"
+        )
+
+        # Ask if user wants to open folder
+        result = messagebox.askokcancel("Conversion Complete!", message)
+
+        # User clicked OK
+        if result:
+            open_folder_in_os_explorer(output_folder)
+
+    def _on_conversion_error(self, error: Exception) -> None:
+        """Inform the user of pipeline failure and error."""
+        log.error(f"Re-enabling buttons (error): {error}")
+        self._enable_all_buttons()
+
+        error_msg = str(error)
+        if len(error_msg) > 300:
+            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
+
+        message = (
+            f"An error occurred during conversion:\n\n"
+            f"{error_msg}\n\n"
+            f"Check the log viewer below for details.\n\n"
+            f"Open log folder?"
+        )
+
+        result = messagebox.askokcancel("Demo Conversion Failed", message, icon="error")
+
+        if result:
+            # Get log folder from config
+            log_folder = UserConfig().get_log_folder()
+            open_folder_in_os_explorer(log_folder)
+
+    # endregion
 
 
 # endregion
