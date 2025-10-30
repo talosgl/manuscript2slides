@@ -16,15 +16,16 @@ docx2pptx tab frame
 ├── I/O Selection frame
 ├── Options Frame
 └── Action Frame
+└── (Shared Log Viewer Frame)
 
 pptx2docx tab frame
 ├── I/O Selection frame
-├── Options Frame
 └── Action Frame
+└── (Shared Log Viewer Frame)
 
 demo tab frame
 └── Select Demo frame
-
+└── (Shared Log Viewer Frame)
 
 # Two more levels
 docx2pptx tab frame
@@ -32,21 +33,21 @@ docx2pptx tab frame
 |   ├── Input File Selector* (docx)
 |   └── Hidden Frame
 |       ├── Output folder Selector*
-|       └── Custom Template Selector* (pptx)
+|       ├── Custom Template Selector* (pptx)
+|       └── Save/Load Config file
 ├── Options Frame
 |   ├── Basic Options Frame
 |   |    ├── Chunk Type Dropdown
 |   |    └── Experimental Formatting on
 |   └── Advanced Options Frame
 |       ├── Preserve metadata in speaker notes for reverse pipeline 
-|       ├── Annotations in Speaker Notes parent toggle + children
-|       └── Save/Load Config file
+|       └──  Annotations in Speaker Notes parent toggle + children
 └── Action Frame
     ├── Convert button
     └── Status Indicator
 
 ----
-* Could have a file selector class that takes in args:
+* File selector class that takes in args:
     - file types
     - Label/Frame name
     - selected default | None
@@ -58,10 +59,10 @@ pptx2docx tab frame
 |   ├── Input File Selector (pptx)
 |   └── Hidden Frame
 |       ├── Output folder Selector
-|       └── Custom Template Selector (docx)
-├── Options Frame
-|   └── Basic Options Frame
+|       ├── Custom Template Selector (docx)
 |       └── Save/Load Config**
+├── Options Frame (unused)
+|       
 └── Action Frame
     ├── Convert button
     └── Status Indicator
@@ -92,7 +93,7 @@ class MainWindow(tk.Tk)
 |   └── call _create_widgets()
 ├── define _apply_theme()
 └── define _create_widgets()
-    ├── create the ttk.notebook (doesn't need a class)
+    ├── create the ttk.notebook (doesn't need a component)
     ├── populate the notebook's tabs
     |   ├── create docx2pptx tab frame (call its class init)
     |   ├── create pptx2docx tab frame
@@ -100,31 +101,110 @@ class MainWindow(tk.Tk)
     |   └── add all 3 tabs to the notebook so they're visible (notebook.add(..))
     └── create/call the log viewer frame
 
+## Tab Classes
+
+### Parent Classes
+class BaseConversionTab(ttk.Frame)
+├── def init constructor
+└── def all the methods shared by all three tabs
+    ├── _create_convert_button() # ignored by DemoTab
+    ├── _load_config() # load a config from file but don't do anything with it (child class will call/implement)
+    ├── start_conversion() # disable buttons and start conversion background thread
+    ├── disable_buttons
+    ├── enable_buttons
+    ├── _run_in_thread()
+    ├── _on_conversion_success
+    └── _on_conversion_error
+
+class ConfigurableConversionTab(BaseConversionTab)
+├── def init constructor
+└── def all the methods shared by docx2pptx and pptx2docx tabs
+    ├── (first, abstract methods children must implement)
+    ├── ui_to_config
+    ├── config_to_ui
+    ├── get_pipeline_direction()
+    ├── _validate_input
+    ├── (then, concrete, shared behavior methods)
+    ├── _create_action_section
+    ├── _on_file_selected
+    ├── on_convert_click
+    ├── on_save_config_click
+    ├── on_load_config_click
+    └── _validate_loaded_config
+
+
+## Child classes
 class Docx2PptxTab(ttk.Frame)
 ├── def init constructor
 |   ├── super().__init__(parent)
-|   ├── self.log_viewer = log_viewer  # Store reference
+|   ├── (other tab-specific vars)
 |   └── self._create_widgets()
-└── define _create_widgets()
-|   ├── Create IO Frame
-|   |   ├── create input_file_selector: PathSelector()
-|   |   └── Create (Collapsible) Advanced IO frame
-|   |       ├── output_selector: PathSelector()
-|   |       └── template_selector: PathSelector()
-|   ├── Create Options Frame
-|   |   ├── Basic Options frame
-|   |   |   ├── Chunk Type Dropdown/combobox
-|   |   |   └── Experimental Formatting bool
-|   |   └── Advanced Options frame (collapsible)
-|   |       ├── annotations master toggle frame
-|   |       |   ├── 3 bools
-|   |       |   └── ...
-|   |       └── create SaveLoadConfig with on_save=set_config, on_load=get_config
-|   └── Create Action Frame
-├── def on_convert_click(self)  
-├── def _run_conversion_thread(self, cfg)
+├── def _create_widgets()
+|   ├── calls create io_frame, basic options, and advanced options from self
+|   └── calls create action frame defined on parent
+├── def Create IO Frame
+|   ├── create input_file_selector: PathSelector()
+|   ├── Create (Collapsible) Advanced IO frame
+|   |   ├── output_selector: PathSelector()
+|   |   └── template_selector: PathSelector()
+|   └── Create Save/Load buttons
+├── def Basic Options frame
+|   ├── Chunk Type Dropdown/combobox
+|   ├── Collapsible chunk type explanation
+|   └── Experimental Formatting bool
+├── def Advanced Options frame (collapsible)
+|   ├── preserve_docx_metadata_in_speaker_notes
+|   └── annotations master toggle frame
+|       └── 3 child bools
+├── def _setup_annotation_observers
+├── def _on_child_annotation_changed
+├── def _on_parent_annotation_changed
 ├── def ui_to_config()
-└── def config_to_ui()
+├── def config_to_ui()
+├── _get_input_path
+├── get_pipeline_direction
+└── _validate_input
+
+class Pptx2DocxTab(ttk.Frame)
+├── def init constructor
+|   ├── super().__init__(parent)
+|   ├── (other tab-specific vars)
+|   └── self._create_widgets()
+├── def _create_widgets()
+|   ├── calls create io_frame
+|   └── calls create action frame defined on parent
+├── def Create IO Frame
+|   ├── create input_file_selector: PathSelector()
+|   ├── Create (Collapsible) Advanced IO frame
+|   |   ├── output_selector: PathSelector()
+|   |   └── template_selector: PathSelector()
+|   └── Create Save/Load buttons
+├── (UNUSED) def create_options()
+├── def ui_to_config()
+├── def config_to_ui()
+├── _get_input_path
+├── get_pipeline_direction
+└── _validate_input
+
+
+class DemoTab(BaseConversionTab)
+├── def __init__(self, parent)
+|   ├── super().__init__(parent)
+|   └── self._create_widgets()
+└── def _create_widgets()
+    ├── Demo Selection Frame
+    |   ├── Button: "DOCX → PPTX Demo" (command=self.on_docx2pptx_demo_click)
+    |   ├── Button: "PPTX → DOCX Demo" (command=self.on_pptx2docx_demo_click)
+    |   ├── Button: "Round-trip Demo" (command=self.on_roundtrip_demo_click)
+    |   └── Button: "Load Config & Run" (command=self.on_load_demo_click)
+    ├── def on_docx2pptx_demo_click(self)
+    |   └── Load pre-baked config, run pipeline
+    ├── def on_pptx2docx_demo_click(self)
+    ├── def on_roundtrip_demo_click(self)
+    └── def on_load_demo_click(self)
+        └── Browse for .toml, load it, run pipeline
+
+## Component Classes
 
 class CollapsibleFrame(ttk.Frame) # tk and ttk don't have native collapsible frames
 ├── def __init__(self, parent: tk.Widget, title: str, start_collapsed: bool = True)
@@ -145,66 +225,6 @@ class PathSelector(ttk.Frame)
     ├── create entry widget (and grid/pack it inside self)
     └── create browse button, with browse as callback (and grid/pack it inside self)
 
-class SaveLoadConfig(ttk.Frame)
-├── def __init__
-|   ├── super stuff
-|   ├── self.on_save = on_save  # Callback to get config
-|   ├── self.on_load = on_load  # Callback to set config
-|   └── self._create_widgets()
-├── def _create_widgets()
-|   ├── Save Button
-|   └── Load Button
-├── def on_save_click
-|   └── browse for location and then save
-└── def on_load_click
-    └── browse for location and then load into UI/populate fields
-
-class ActionFrame(ttk.Frame)
-├── def init
-|   ├── self.on_convert = on_convert # Callback from parent
-|   ├── call create widget
-├── def _create_widgets()
-|   ├── Convert button
-|   └── Status Indicator
-├── def set_status
-├── def disable_convertbtn
-└── def enable_convertbtn
-
-class Pptx2DocxTab(ttk.Frame)
-├── init constructor
-├── call _create_widgets()
-├── def _create_widgets
-|   ├── Create IO Frame
-|   |   ├── create input_file_selector: PathSelector()
-|   |   └── Create (Collapsible) Advanced IO frame
-|   |       ├── output_selector: PathSelector()
-|   |       └── template_selector: PathSelector()
-|   ├── Create Options Frame
-|   |    └── create SaveLoadConfig with on_save=set_config, on_load=get_config
-|   └── ActionFrame
-├── def on_convert_click(self)  # The callback ActionFrame calls
-├── def _run_conversion_thread(self, cfg)  # The threaded worker
-├── def ui_to_config()
-└── def config_to_ui()
-
-class DemoTab(ttk.Frame)
-├── def __init__(self, parent)
-|   ├── super().__init__(parent)
-|   └── self._create_widgets()
-└── def _create_widgets()
-    ├── Demo Selection Frame
-    |   ├── Button: "DOCX → PPTX Demo" (command=self.run_docx2pptx_demo)
-    |   ├── Button: "PPTX → DOCX Demo" (command=self.run_pptx2docx_demo)
-    |   ├── Button: "Round-trip Demo" (command=self.run_roundtrip_demo)
-    |   └── Separator
-    |   └── Button: "Load Config & Run" (command=self.run_custom_demo)
-    ├── def run_docx2pptx_demo(self)
-    |   └── Load pre-baked config, run pipeline
-    ├── def run_pptx2docx_demo(self)
-    ├── def run_roundtrip_demo(self)
-    └── def run_custom_demo(self)
-        └── Browse for .toml, load it, run pipeline
-
 class LogViewer(LabelFrame)
 ├── def __init__(self, parent)
 |   ├── super().__init__(parent, text="Log Viewer")
@@ -213,9 +233,9 @@ class LogViewer(LabelFrame)
 ├── def _create_widgets()
 |   ├── self.text_widget = scrolledtext.ScrolledText(...)
 |   └── self.clear_btn = ttk.Button(..., command=self.clear)
-├── def _setup_logging(self)
+├── def _setup_log_handler(self)
 |   └── Create TextWidgetHandler, attach to 'manuscript2slides' logger
-├── def clear(self)
+├── def clear_log(self)
 |   └── Delete all text from text_widget
 └── def _auto_scroll(self)
     └── text_widget.see('end')
@@ -224,15 +244,21 @@ class TextWidgetHandler(logging.Handler)
 ├── def __init__(self, text_widget)
 |   ├── super().__init__()
 |   └── self.text_widget = text_widget
-├── def emit(self, record)
+├── def emit(self, record) # implmenting from LogRecord parent class
 |   └── Format record, use .after() to call _append (thread-safe)
-└── def _append(self, msg)
+└── def _append_log(self, msg)
     └── Insert msg into text_widget, auto-scroll
 
+Helper methods:
+def browse_for_file(
+    title: str,
+    filetypes: list[tuple[str, str]] | None = None,
+    initial_dir: str | None = None,
+)
+def open_folder_in_os_explorer(folder_path)
+
 def main():
+    initialize_application()  # configure the log & other startup tasks
+    log.info("Initializing Tkinter UI")
     app = MainWindow()  # Creates the window
     app.mainloop()      # Starts the event loop
-
-Helper methods:
-def show_completion_dialog(output_folder)
-def open_folder_in_os_explorer(folder_path)

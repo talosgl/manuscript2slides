@@ -50,7 +50,7 @@ class MainWindow(tk.Tk):
         # Build the UI
         self._create_widgets()
 
-    # region MainWindow_create_widgets()
+    # region _create_widgets()
     def _create_widgets(self) -> None:
         """Create all UI widgets in turn, calling components and their constructors as needed."""
 
