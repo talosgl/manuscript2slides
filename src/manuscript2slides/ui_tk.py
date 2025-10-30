@@ -629,14 +629,12 @@ class Docx2PptxTab(ConfigurableConversionTab):
             advanced.content_frame,
             text="Keep all annotations",
             variable=self.keep_all_annotations,
-            command=self._on_parent_annotation_toggle,  # When parent is clicked
         )
         self.keep_all_annotations_chk.pack(anchor="w")
         ttk.Checkbutton(
             advanced.content_frame,
             text="Keep comments",
             variable=self.keep_comments,
-            command=self._on_child_annotation_toggle,
         ).pack(
             anchor="w",
             padx=25,
@@ -645,18 +643,27 @@ class Docx2PptxTab(ConfigurableConversionTab):
             advanced.content_frame,
             text="Keep footnotes",
             variable=self.keep_footnotes,
-            command=self._on_child_annotation_toggle,
         ).pack(anchor="w", padx=25)
         ttk.Checkbutton(
             advanced.content_frame,
             text="Keep endnotes",
             variable=self.keep_endnotes,
-            command=self._on_child_annotation_toggle,
         ).pack(anchor="w", padx=25)
 
-    # TODO change to observer pattern
-    def _on_child_annotation_toggle(self) -> None:
-        """When any child is toggled, update parent state."""
+        self._setup_annotation_observers()
+
+    def _setup_annotation_observers(self) -> None:
+        """Wire up parent/child checkbox relationships using observers."""
+        # Children notify parent when they change
+        self.keep_comments.trace_add("write", self._on_child_annotation_changed)
+        self.keep_footnotes.trace_add("write", self._on_child_annotation_changed)
+        self.keep_endnotes.trace_add("write", self._on_child_annotation_changed)
+
+        # Parent notifies children when it changes
+        self.keep_all_annotations.trace_add("write", self._on_parent_annotation_changed)
+
+    def _on_child_annotation_changed(self, *args) -> None:  # noqa: ANN002
+        """Observer: When any child changes, update parent state."""
         children_checked = [
             self.keep_comments.get(),
             self.keep_footnotes.get(),
@@ -664,20 +671,22 @@ class Docx2PptxTab(ConfigurableConversionTab):
         ]
 
         if all(children_checked):
-            # All checked → parent checked
             self.keep_all_annotations.set(True)
             self.keep_all_annotations_chk.state(["!alternate"])  # Clear indeterminate
         elif any(children_checked):
-            # Some checked → parent indeterminate (dash/gray)
             self.keep_all_annotations_chk.state(["alternate"])
         else:
-            # None checked → parent unchecked
             self.keep_all_annotations.set(False)
-            self.keep_all_annotations_chk.state(["!alternate"])  # Clear indeterminate
+            self.keep_all_annotations_chk.state(["!alternate"])
 
-    def _on_parent_annotation_toggle(self) -> None:
-        """When parent is toggled, set all children to match."""
+    def _on_parent_annotation_changed(self, *args) -> None:  # noqa: ANN002
+        """Observer: When parent changes, update all children."""
         parent_value = self.keep_all_annotations.get()
+
+        # Setting all these children will actually trigger the child's observer. 
+        # We handle this in cycle within the children's observer (`if all(children_checked): / self.keep_all_annotations.set(True)`)
+        # so it is actually fine. But if we didn't, we'd need to temporarily 
+        # disable child observers here before setting them, in order to avoid infinite loop
         self.keep_comments.set(parent_value)
         self.keep_footnotes.set(parent_value)
         self.keep_endnotes.set(parent_value)
@@ -688,7 +697,7 @@ class Docx2PptxTab(ConfigurableConversionTab):
 
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
-        
+
         cfg.direction = self.get_pipeline_direction()
 
         # Only update fields that have UI controls
@@ -781,8 +790,10 @@ class Pptx2DocxTab(ConfigurableConversionTab):
 
         self.columnconfigure(0, weight=1)
 
-    # TODO: This could probably be moved to the ConfigurableConversionTab class
-    # if we added logic to resolve the slightly different strings based on the tab's pipeline direction.
+    # NOTE: This could probably be moved to the ConfigurableConversionTab class
+    # if we added logic to resolve the slightly different strings based on the
+    # tab's pipeline direction. For the time being we've decided the duplication
+    # is more readable.
     def _create_io_section(self) -> None:
         """Create Pptx2Docx tab's IO section."""
         io_section = ttk.LabelFrame(self, text="Input/Output Selection")
