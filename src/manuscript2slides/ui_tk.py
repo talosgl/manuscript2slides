@@ -188,7 +188,7 @@ class MainWindow(tk.Tk):
 class BaseConversionTab(ttk.Frame):
     """Base class for conversion tabs with shared threading & button logic."""
 
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer):
+    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
         super().__init__(parent)
         self.log_viewer = log_viewer
         self.last_run_config = None
@@ -215,7 +215,9 @@ class BaseConversionTab(ttk.Frame):
             )
             return None
 
-    def start_conversion(self, cfg: UserConfig, pipeline_func: Callable | None = None):
+    def start_conversion(
+        self, cfg: UserConfig, pipeline_func: Callable | None = None
+    ) -> None:
         """
         Disable buttons for the tab and start the conversion background thread.
 
@@ -233,18 +235,21 @@ class BaseConversionTab(ttk.Frame):
         )
         thread.start()
 
-    def disable_buttons(self):
+    def disable_buttons(self) -> None:
+        """Disable all buttons inside self.buttons[] on this tab. Use to prevent button clicks during conversion pipeline runs."""
         log.debug("Disabling button(s) during conversion.")
         for button in self.buttons:
             button._original_text = button.cget("text")
             button.config(state="disabled", text="Converting...")
 
-    def enable_buttons(self):
+    def enable_buttons(self) -> None:
+        """Re-enable all buttons inside self.buttons[] on this tab. Use after conversion pipeline is complete."""
         log.debug("Renabling convert button(s).")
         for button in self.buttons:
             button.config(state="normal", text=button._original_text)
 
     def _run_in_thread(self, cfg: UserConfig, pipeline_func: Callable) -> None:
+        """Run a pipeline_func call inside a background thread."""
 
         # == DEBUGGING == #
         # Pause the UI for a few seconds so we can verify button disable/enable
@@ -313,8 +318,9 @@ class BaseConversionTab(ttk.Frame):
 
 # region ConfigurableConversionTab
 class ConfigurableConversionTab(BaseConversionTab):
+    """Extends BaseConversionTab with logic and UI very similar between Docx2PptxTab and Pptx2DocxTab."""
 
-    def __init__(self, parent, log_viewer):
+    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
         super().__init__(parent, log_viewer)
         self.loaded_config = None
         # Get defaults from UserConfig
@@ -390,7 +396,7 @@ class ConfigurableConversionTab(BaseConversionTab):
 
         self.start_conversion(cfg)
 
-    def on_save_config_click(self):
+    def on_save_config_click(self) -> None:
         """Handle Save Config button click"""
         path = filedialog.asksaveasfilename(
             title="Save Config As",
@@ -726,6 +732,7 @@ class Docx2PptxTab(ConfigurableConversionTab):
         return self.input_selector.selected_path.get()
 
     def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
         return PipelineDirection.DOCX_TO_PPTX
 
     def _validate_input(self, cfg: UserConfig) -> bool:
@@ -771,6 +778,7 @@ class Pptx2DocxTab(ConfigurableConversionTab):
         pass
 
     def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
         return PipelineDirection.PPTX_TO_DOCX
 
 
@@ -781,7 +789,7 @@ class Pptx2DocxTab(ConfigurableConversionTab):
 class DemoTab(BaseConversionTab):
     """Tab for running demo dry-runs"""
 
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer):
+    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
         # Call parent constructor
         super().__init__(parent, log_viewer)
         self._create_widgets()
