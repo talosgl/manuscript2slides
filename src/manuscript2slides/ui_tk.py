@@ -184,22 +184,266 @@ class MainWindow(tk.Tk):
 # endregion
 
 
+# region BaseConversionTab
+class BaseConversionTab(ttk.Frame):
+    """Base class for conversion tabs with shared threading & button logic."""
+
+    def __init__(self, parent: tk.Widget, log_viewer: LogViewer):
+        super().__init__(parent)
+        self.log_viewer = log_viewer
+        self.last_run_config = None
+        self.buttons = []
+        # children should call self._create_widgets()
+
+    # def _create_widgets(self):
+    #     raise NotImplementedError("Child class must implement this.")
+
+    def _create_convert_button(
+        self, button_text: str, cmd: Callable[[], None]
+    ) -> ttk.Button:
+        """Create a button widget styled for conversion without grid/pack. Caller must grid/pack."""
+        return ttk.Button(self, text=button_text, style="Convert.TButton", command=cmd)
+
+    def _load_config(self, path: Path) -> UserConfig | None:
+        try:
+            cfg = UserConfig.from_toml(path)  # Load from disk
+            log.info(f"Loaded config from {path.name}")
+            return cfg
+        except Exception as e:
+            log.error(
+                f"Try again; something went wrong when we tried to load that config from disk: {e}"
+            )
+            return None
+
+    def start_conversion(self, cfg: UserConfig, pipeline_func: Callable | None = None):
+        """
+        Disable buttons for the tab and start the conversion background thread.
+
+        NOTE: Child must handle cfg prep and any other unique prep.
+        """
+        # "None sentinal pattern" to set the default pipeline
+        if pipeline_func is None:
+            pipeline_func = run_pipeline  # Resolved at runtime
+
+        self.disable_buttons()
+        self.last_run_config = cfg
+        log.info("Starting conversion in background thread.")
+        thread = threading.Thread(
+            target=self._run_in_thread, args=(cfg, pipeline_func), daemon=True
+        )
+        thread.start()
+
+    def disable_buttons(self):
+        log.debug("Disabling button(s) during conversion.")
+        for button in self.buttons:
+            button._original_text = button.cget("text")
+            button.config(state="disabled", text="Converting...")
+
+    def enable_buttons(self):
+        log.debug("Renabling convert button(s).")
+        for button in self.buttons:
+            button.config(state="normal", text=button._original_text)
+
+    def _run_in_thread(self, cfg: UserConfig, pipeline_func: Callable) -> None:
+
+        # == DEBUGGING == #
+        # Pause the UI for a few seconds so we can verify button disable/enable
+        if DEBUG_MODE:
+            import time
+
+            time.sleep(3)
+        # =============== #
+
+        try:
+            cfg.validate()
+            pipeline_func(cfg)
+            # Success! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_success)
+        except Exception as e:
+            # Error! Schedule UI update on main thread
+            self.winfo_toplevel().after(0, self._on_conversion_error, e)
+
+    def _on_conversion_success(self) -> None:
+        """Inform the user of pipeline success"""
+        self.enable_buttons()
+
+        # Get the output folder location
+        cfg = self.last_run_config if self.last_run_config else UserConfig()
+        output_folder = cfg.get_output_folder()
+
+        # Show success message
+        message = (
+            f"Successfully ran conversion!\n\n"
+            f"Output location:\n{output_folder}\n\n"
+            f"Open output folder?"
+        )
+
+        # Ask if user wants to open folder
+        result = messagebox.askokcancel("Conversion Complete!", message)
+
+        # User clicked OK
+        if result:
+            open_folder_in_os_explorer(output_folder)
+
+    def _on_conversion_error(self, error: Exception) -> None:
+        """Inform the user of pipeline failure and error."""
+        log.error(f"Re-enabling buttons (error): {error}")
+        self.enable_buttons()
+
+        error_msg = str(error)
+        if len(error_msg) > 300:
+            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
+
+        message = (
+            f"An error occurred during conversion:\n\n"
+            f"{error_msg}\n\n"
+            f"Check the log viewer below for details.\n\n"
+            f"Open log folder?"
+        )
+        result = messagebox.askokcancel("Demo Conversion Failed", message, icon="error")
+
+        if result:
+            # Get log folder from config
+            log_folder = UserConfig().get_log_folder()
+            open_folder_in_os_explorer(log_folder)
+
+
+# endregion
+
+
+# region ConfigurableConversionTab
+class ConfigurableConversionTab(BaseConversionTab):
+
+    def __init__(self, parent, log_viewer):
+        super().__init__(parent, log_viewer)
+        self.loaded_config = None
+        # Get defaults from UserConfig
+        self.cfg_defaults = UserConfig()
+        self.convert_btn = None
+        # children to call _create_widgets()
+
+    # Abstract - children implement
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather values from UI widgets into config."""
+        raise NotImplementedError
+
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI widgets from config."""
+        raise NotImplementedError
+
+    def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
+        raise NotImplementedError
+
+    def _validate_input(self, cfg: UserConfig) -> bool:
+        """Validate input before conversion. Child must implement."""
+        raise NotImplementedError
+
+    # Concrete - shared by both conversion tabs
+    # region _create_action_section + helpers
+    def _create_action_section(self) -> None:
+        """Create convert button section."""
+        # ActionFrame for convert button
+        # v1 inline
+        action_frame = ttk.Frame(self)
+        action_frame.grid(
+            row=99, column=0, sticky="ew", padx=5, pady=5
+        )  # High row number so it goes to bottom
+
+        self.convert_btn = ttk.Button(
+            action_frame,
+            text="Convert",
+            command=self.on_convert_click,
+            state="disabled",  # Start disabled
+            padding=10,
+            style="Convert.TButton",
+        )
+        self.convert_btn.grid(row=0, column=0, padx=5, sticky="ew")
+        self.buttons.append(self.convert_btn)  # For base class disable/enable
+
+        action_frame.columnconfigure(
+            0, weight=1
+        )  # Convert button - stretches east-west
+
+    def _on_file_selected(self, *args) -> None:  # noqa: ANN002
+        """Enable convert button when a file is selected."""
+        # Child needs to wire this up with trace_add
+        if self.convert_btn:
+            path = self._get_input_path()
+            if path and path != "No selection":
+                self.convert_btn.config(state="normal")
+            else:
+                self.convert_btn.config(state="disabled")
+
+    def _get_input_path(self) -> str:
+        """Get current input path. Child implements."""
+        raise NotImplementedError
+
+    def on_convert_click(self) -> None:
+        """Handle convert button click with validation."""
+        cfg = self.loaded_config if self.loaded_config else UserConfig()
+        cfg = self.ui_to_config(cfg)
+
+        # Call child's validation (they implement specifics)
+        if not self._validate_input(cfg):
+            return  # Validation failed, error already shown
+
+        self.start_conversion(cfg)
+
+    def on_save_config_click(self):
+        """Handle Save Config button click"""
+        path = filedialog.asksaveasfilename(
+            title="Save Config As",
+            defaultextension=".toml",
+            filetypes=[("TOML Config", "*.toml")],
+            initialfile="my_config.toml",
+        )
+        if path:
+            cfg = self.ui_to_config(UserConfig())
+            cfg.save_toml(Path(path))
+            messagebox.showinfo("Config Saved", f"Saved config to {Path(path).name}")
+
+    def on_load_config_click(self) -> None:
+        """Handle load config button click."""
+        path = browse_for_file(
+            title="Load Config file", filetypes=[("TOML Config", "*.toml")]
+        )
+        if path:
+            cfg = self._load_config(Path(path))
+            if cfg:
+                self._validate_loaded_config(cfg)
+
+    def _validate_loaded_config(self, cfg: UserConfig) -> None:
+        """Load config with direction validation."""
+
+        # Validate direction
+        if cfg.direction != self.get_pipeline_direction():
+            messagebox.showerror(
+                "Invalid Config",
+                f"This config is for {cfg.direction.value}.\n"
+                f"Please use the correct tab.",
+            )
+            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
+            # Note they'll still need to make sure an input file for conversion is selected
+            # on the new tab of the right type.
+            return
+
+        self.config_to_ui(cfg)
+        self.loaded_config = cfg
+        messagebox.showinfo("Config Loaded", f"Loaded config successfully")
+
+
+# endregion
+
+
 # region Docx2PptxTab class
-class Docx2PptxTab(ttk.Frame):
+class Docx2PptxTab(ConfigurableConversionTab):
     """UI Tab for the docx2pptx pipeline."""
 
     # region d2p init + _create_widgets()
     def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
         """Constructor for docx2pptx Tab"""
-        super().__init__(parent)
-        self.log_viewer = log_viewer  # Store reference so we can write to it
-        self.loaded_config = None  # Store loaded config here
-        self.last_run_config = (
-            None  # Config actually used for last conversion (for finding output)
-        )
-
-        # Get defaults from UserConfig
-        self.cfg_defaults = UserConfig()
+        super().__init__(parent, log_viewer)
         self.chunk_var = tk.StringVar(value=self.cfg_defaults.chunk_type.value)
 
         # BooleanVars for checkboxes
@@ -252,6 +496,8 @@ class Docx2PptxTab(ttk.Frame):
             pady=5,
             padx=5,
         )
+        # Watch for file selection to enable convert button
+        self.input_selector.selected_path.trace_add("write", self._on_file_selected)
 
         # Advanced (collapsible)
         advanced = CollapsibleFrame(io_section, title="Advanced")
@@ -277,67 +523,16 @@ class Docx2PptxTab(ttk.Frame):
         save_btn = tk.Button(
             advanced.content_frame,
             text="Save Options to Config",
-            command=self.on_save_click,
+            command=self.on_save_config_click,
         )
         save_btn.pack(side="left", padx=5)
 
         load_btn = tk.Button(
-            advanced.content_frame, text="Load Config", command=self.on_load_click
+            advanced.content_frame,
+            text="Load Config",
+            command=self.on_load_config_click,
         )
         load_btn.pack(side="left", padx=5)
-
-    def on_save_click(self) -> None:
-        """Handle Save Config button click"""
-        path = filedialog.asksaveasfilename(
-            title="Save Config As",
-            defaultextension=".toml",
-            filetypes=[("TOML Config", "*.toml")],
-            initialfile="my_config.toml",
-        )
-        if path:
-            cfg = self.ui_to_config(UserConfig())
-            cfg.save_toml(Path(path))
-            messagebox.showinfo("Config Saved", f"Saved config to {Path(path).name}")
-
-    def on_load_click(self) -> None:
-        """Handle Load Config button click"""
-        path = browse_for_file(
-            title="Load Config", filetypes=[("TOML Config", "*.toml")]
-        )
-        if path:
-            self.load_and_validate_config(Path(path))
-
-    def load_and_validate_config(self, path: Path) -> None:
-        """Load config from file, validating it matches this tab's direction."""
-
-        # Load a config from disk into memory
-        try:
-            cfg = UserConfig.from_toml(path)  # Load from disk
-        except Exception as e:
-            error_msg = f"Failed to load config:\n\n{str(e)}"
-            log.info(error_msg)
-            messagebox.showerror("Load Failed", error_msg)
-            return
-
-        # Validate direction matches this tab
-        if cfg.direction != PipelineDirection.DOCX_TO_PPTX:
-            log.error("Wrong config type loaded; rejecting and informing user.")
-            messagebox.showerror(
-                "Invalid Config",
-                "This config is for PPTX→DOCX.\n"
-                "Please use the PPTX→DOCX tab to load this config.",
-            )
-            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
-            # Note they'll still need to make sure an input file for conversion is selected
-            # on the new tab of the right type.
-            return
-
-        self.config_to_ui(cfg)  # Populate UI
-        self.loaded_config = cfg  # Store it as THE config
-
-        success_msg = f"Loaded config from {Path(path).name}"
-        log.info(success_msg)
-        messagebox.showinfo("Config Loaded", success_msg)
 
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
@@ -496,6 +691,7 @@ class Docx2PptxTab(ttk.Frame):
             command=self._on_child_annotation_toggle,
         ).pack(anchor="w", padx=25)
 
+    # TODO change to observer pattern
     def _on_child_annotation_toggle(self) -> None:
         """When any child is toggled, update parent state."""
         children_checked = [
@@ -525,150 +721,32 @@ class Docx2PptxTab(ttk.Frame):
 
     # endregion
 
-    # region _create_action_section + helpers
-    def _create_action_section(self) -> None:
-        """Create convert button."""
-        # ActionFrame for convert button
-        # v1 inline
-        action_frame = ttk.Frame(self)
-        action_frame.grid(row=4, column=0, sticky="ew", padx=5, pady=5)
+    # region d2p helpers
+    def _get_input_path(self) -> str:
+        return self.input_selector.selected_path.get()
 
-        self.convert_btn = ttk.Button(
-            action_frame,
-            text="Convert",
-            command=self.on_convert_click,
-            state="disabled",  # Start disabled
-            padding=10,
-            style="Convert.TButton",
-        )
-        self.convert_btn.grid(row=0, column=0, padx=5, sticky="ew")
+    def get_pipeline_direction(self) -> PipelineDirection:
+        return PipelineDirection.DOCX_TO_PPTX
 
-        # Watch for file selection to enable button
-        self.input_selector.selected_path.trace_add("write", self._on_file_selected)
-
-        # Configure column weights so widgets stretch
-        self.columnconfigure(0, weight=1)
-
-        action_frame.columnconfigure(
-            0, weight=1
-        )  # Convert button - stretches east-west
-
-    def _on_file_selected(self, *args) -> None:  # noqa: ANN002
-        """Enable convert button when a file is selected."""
-        path = self.input_selector.selected_path.get()
-        if path and path != "No selection":
-            self.convert_btn.config(
-                state="normal",
-            )
-        else:
-            self.convert_btn.config(state="disabled")
-
-    def on_convert_click(self) -> None:
-        """Handle convert button click."""
-
-        # Gather config
-        cfg = self.loaded_config if self.loaded_config else UserConfig()
-        cfg = self.ui_to_config(cfg)
-
+    def _validate_input(self, cfg: UserConfig) -> bool:
+        """Validate docx-specific input."""
         # Validate required fields
         if not cfg.input_docx or cfg.input_docx == "No selection":
             messagebox.showerror("Missing Input", "Please select an input .docx file.")
-            return
+            return False
 
         if not Path(cfg.input_docx).exists():
             messagebox.showerror(
                 "File Not Found", f"Input file does not exist:\n{cfg.input_docx}"
             )
-            return
+            return False
 
-        # Optional: validate it's actually a .docx
+        # Validate it's actually a .docx
         if not cfg.input_docx.endswith(".docx"):
             messagebox.showerror("Invalid File", "Input file must be a .docx file.")
-            return
+            return False
 
-        # Disable button BEFORE starting thread (on UI thread)
-        self.convert_btn.config(state="disabled", text="Converting...")
-        # self.update_idletasks()  # Force UI to refresh NOW
-
-        # Start with loaded config (if any) or defaults
-        cfg = self.loaded_config if self.loaded_config else UserConfig()
-
-        # Update with UI values (preserves fields not in UI)
-        cfg = self.ui_to_config(cfg)
-        self.last_run_config = cfg
-
-        # Start background thread
-        thread = threading.Thread(
-            target=self._run_conversion_thread, args=(cfg,), daemon=True
-        )
-        thread.start()
-
-    def _run_conversion_thread(self, cfg: UserConfig) -> None:
-        """Run the conversion in a background thread."""
-        # == DEBUGGING == #
-        if DEBUG_MODE:
-            import time
-
-            time.sleep(5)  # Fake work for 5 seconds
-        # == ========= == #
-
-        try:
-            cfg.validate()
-            run_pipeline(cfg)
-            # Success! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_success)
-        except Exception as e:
-            # Error! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_error, e)
-
-    def _on_conversion_success(self) -> None:
-        """Inform the user of pipeline success"""
-        log.info("Re-enabling convert button (success)")
-        self.convert_btn.config(state="normal", text="Convert")
-
-        # Get the output folder location
-        cfg = self.last_run_config if self.last_run_config else UserConfig()
-        output_folder = cfg.get_output_folder()
-
-        # Show success message
-        input_file = Path(
-            self.input_selector.selected_path.get()
-        ).name  # Get only the filename
-        message = (
-            f"Successfully converted {input_file} to PowerPoint!\n\n"
-            f"Output location:\n{output_folder}\n\n"
-            f"Open output folder?"
-        )
-
-        # Ask if user wants to open folder
-        result = messagebox.askokcancel("Conversion Complete!", message)
-
-        # User clicked OK
-        if result:
-            open_folder_in_os_explorer(output_folder)
-
-    def _on_conversion_error(self, error: Exception) -> None:
-        """Inform the user of pipeline failure and error."""
-        log.error(f"Re-enabling convert button (error): {error}")
-        self.convert_btn.config(state="normal", text="Convert")
-
-        error_msg = str(error)
-        if len(error_msg) > 300:
-            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
-
-        message = (
-            f"An error occurred during conversion:\n\n"
-            f"{error_msg}\n\n"
-            f"Check the log viewer below for details.\n\n"
-            f"Open log folder?"
-        )
-
-        result = messagebox.askokcancel("Conversion Failed", message, icon="error")
-
-        if result:
-            # Get log folder from config
-            log_folder = UserConfig().get_log_folder()
-            open_folder_in_os_explorer(log_folder)
+        return True
 
     # endregion
 
@@ -677,16 +755,12 @@ class Docx2PptxTab(ttk.Frame):
 
 
 # region Pptx2DocxTab
-class Pptx2DocxTab(tk.Frame):
+class Pptx2DocxTab(ConfigurableConversionTab):
     """Tab frame for the Pptx2Docx Pipeline."""
 
-    def __init__(self, parent: tk.Widget, log_viewer: tk.Widget) -> None:
-        super().__init__(parent)
-        self.log_viewer = log_viewer
-
+    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
+        super().__init__(parent, log_viewer)
         # Get defaults from backend
-        default_cfg = UserConfig()
-        self.default_template = str(default_cfg.get_template_docx_path())
         self._create_widgets()
 
     def _create_widgets(self) -> None:
@@ -696,18 +770,20 @@ class Pptx2DocxTab(tk.Frame):
         # TODO: Create ActionFrame for Convert button
         pass
 
+    def get_pipeline_direction(self) -> PipelineDirection:
+        return PipelineDirection.PPTX_TO_DOCX
+
 
 # endregion
 
 
 # region DemoTab
-class DemoTab(ttk.Frame):
+class DemoTab(BaseConversionTab):
     """Tab for running demo dry-runs"""
 
-    def __init__(self, parent: tk.Widget, log_viewer: tk.Widget) -> None:
-        super().__init__(parent)
-        self.log_viewer = log_viewer
-        self.last_run_config = None
+    def __init__(self, parent: tk.Widget, log_viewer: LogViewer):
+        # Call parent constructor
+        super().__init__(parent, log_viewer)
         self._create_widgets()
 
     def _create_widgets(self) -> None:
@@ -725,6 +801,7 @@ class DemoTab(ttk.Frame):
             command=self.on_docx2pptx_demo_click,
         )
         self.d2p_btn.pack(pady=5)
+        self.buttons.append(self.d2p_btn)
 
         self.p2d_btn = ttk.Button(
             self,
@@ -733,6 +810,7 @@ class DemoTab(ttk.Frame):
             command=self.on_pptx2docx_demo_click,
         )
         self.p2d_btn.pack(pady=5)
+        self.buttons.append(self.p2d_btn)
 
         self.round_trip_btn = ttk.Button(
             self,
@@ -741,8 +819,7 @@ class DemoTab(ttk.Frame):
             command=self.on_roundtrip_demo_click,
         )
         self.round_trip_btn.pack(pady=5)
-
-        # ttk.Separator(self, orient="horizontal").pack(pady=5, fill="x")
+        self.buttons.append(self.round_trip_btn)
 
         self.load_demo_btn = ttk.Button(
             self,
@@ -753,302 +830,36 @@ class DemoTab(ttk.Frame):
         self.load_demo_btn.pack(
             pady=5,
         )
-
-    def _disable_all_buttons(self) -> None:
-        log.debug("Disabling buttons during Demo conversion.")
-        self.d2p_btn.config(state="disabled", text="Running Demo Conversion...")
-        self.p2d_btn.config(state="disabled", text="Running Demo Conversion...")
-        self.round_trip_btn.config(state="disabled", text="Running Demo Conversion...")
-        self.load_demo_btn.config(state="disabled", text="Running Demo Conversion...")
-
-    def _enable_all_buttons(self) -> None:
-        log.debug("Re-enabling buttons following Demo conversion.")
-        self.d2p_btn.config(state="normal", text="DOCX → PPTX Demo")
-        self.p2d_btn.config(state="normal", text="PPTX → DOCX Demo")
-        self.round_trip_btn.config(
-            state="normal", text="Round-trip Demo (DOCX → PPTX → DOCX)"
-        )
-        self.load_demo_btn.config(state="normal", text="Load & Run Config")
+        self.buttons.append(self.load_demo_btn)
 
     def on_docx2pptx_demo_click(self) -> None:
         """Handle DOCX → PPTX Demo button click."""
-        # Make the config object
         direction = PipelineDirection.DOCX_TO_PPTX
         cfg = UserConfig().for_demo(direction=direction)
-        self.last_run_config = cfg
-
-        # Temporarily disable all buttons
-        self._disable_all_buttons()
-
-        # Start background thread
-        log.info("Starting demo in background thread.")
-        thread = threading.Thread(target=self._run_demo, args=(cfg,), daemon=True)
-        thread.start()
+        self.start_conversion(cfg, run_pipeline)
 
     def on_pptx2docx_demo_click(self) -> None:
         """Handle PPTX → DOCX Demo button click."""
         direction = PipelineDirection.PPTX_TO_DOCX
         cfg = UserConfig().for_demo(direction=direction)
-        self.last_run_config = cfg
-
-        # Temporarily disable all buttons
-        self._disable_all_buttons()
-
-        # Start background thread
-        log.info("Starting demo in background thread.")
-        thread = threading.Thread(target=self._run_demo, args=(cfg,), daemon=True)
-        thread.start()
-
-    def on_roundtrip_demo_click(self) -> None:
-        """Handle Round-trip Demo button click."""
-
-        cfg = UserConfig().with_defaults()
-        self.last_run_config = cfg
-
-        # Temporarily disable all buttons
-        self._disable_all_buttons()
-
-        # Start background thread
-        log.info("Starting demo in background thread.")
-        thread = threading.Thread(target=self._run_roundtrip, args=(cfg,), daemon=True)
-        thread.start()
+        self.start_conversion(cfg, run_pipeline)
 
     def on_load_demo_click(self) -> None:
-        """Handle Load & Run Config button click"""
-        path = browse_for_file(
-            title="Load Config", filetypes=[("TOML Config", "*.toml")]
-        )
-        if path:
-            # Load a config from disk into memory
-            try:
-                cfg = UserConfig.from_toml(Path(path))  # Load from disk
-                self.last_run_config = cfg
-                log.info(f"Loaded config from {Path(path).name}")
-
-                # Temporarily disable all buttons
-                self._disable_all_buttons()
-
-                # Start background thread
-                log.info("Starting loaded config as a demo in background thread.")
-                thread = threading.Thread(
-                    target=self._run_demo, args=(cfg,), daemon=True
-                )
-                thread.start()
-
-            except Exception as e:
-                error_msg = f"Failed to load config:\n\n{str(e)}"
-                log.info(error_msg)
-                messagebox.showerror("Load Failed", error_msg)
-                return
-
-    def _run_roundtrip(self, cfg: UserConfig) -> None:
-        # == DEBUGGING == #
-        if DEBUG_MODE:
-            import time
-
-            time.sleep(3)
-        # == ========= == #
-        try:
-            cfg.validate()
-            run_roundtrip_test(cfg)
-            # Success! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_success)
-
-        except Exception as e:
-            # Error! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_error, e)
-
-    def _run_demo(self, cfg: UserConfig) -> None:
-        """Run a one-way DOCX -> PPTX or PPTX -> DOCX demo conversion in a background thread."""
-        # == DEBUGGING == #
-        if DEBUG_MODE:
-            import time
-
-            time.sleep(3)
-        # == ========= == #
-        try:
-            cfg.validate()
-            run_pipeline(cfg)
-            # Success! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_success)
-        except Exception as e:
-            # Error! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_error, e)
-
-    def _on_conversion_success(self) -> None:
-        """Inform the user of pipeline success"""
-        self._enable_all_buttons()
-
-        # Get the output folder location
-        cfg = self.last_run_config if self.last_run_config else UserConfig()
-        output_folder = cfg.get_output_folder()
-
-        # Show success message
-        message = (
-            f"Successfully ran demo!\n\n"
-            f"Output location:\n{output_folder}\n\n"
-            f"Open output folder?"
-        )
-
-        # Ask if user wants to open folder
-        result = messagebox.askokcancel("Conversion Complete!", message)
-
-        # User clicked OK
-        if result:
-            open_folder_in_os_explorer(output_folder)
-
-    def _on_conversion_error(self, error: Exception) -> None:
-        """Inform the user of pipeline failure and error."""
-        log.error(f"Re-enabling buttons (error): {error}")
-        self._enable_all_buttons()
-
-        error_msg = str(error)
-        if len(error_msg) > 300:
-            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
-
-        message = (
-            f"An error occurred during conversion:\n\n"
-            f"{error_msg}\n\n"
-            f"Check the log viewer below for details.\n\n"
-            f"Open log folder?"
-        )
-
-        result = messagebox.askokcancel("Demo Conversion Failed", message, icon="error")
-
-        if result:
-            # Get log folder from config
-            log_folder = UserConfig().get_log_folder()
-            open_folder_in_os_explorer(log_folder)
-
-    # endregion
-
-
-# endregion
-
-
-# region BaseConversionTab
-class BaseConversionTab(ttk.Frame):
-    """Base class for conversion tabs with shared threading & button logic."""
-
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer):
-        super().__init__(parent)
-        self.log_viewer = log_viewer
-        self.last_run_config = None
-        self._create_widgets()
-        self.buttons = []
-
-    def _create_widgets(self):
-        raise NotImplementedError("Child class must implement this.")
-
-    def _create_convert_button(
-        self, button_text: str, cmd: Callable[[], None]
-    ) -> ttk.Button:
-        """Create a button widget styled for conversion without grid/pack. Caller must grid/pack."""
-        return ttk.Button(self, text=button_text, style="Convert.TButton", command=cmd)
-
-    def on_convert_click(self, cfg: UserConfig) -> None:
-        raise NotImplementedError("Child class must implement this.")
-    
-    def on_load_click(self, cmd: Callable):
-        """Handle Load Config button click"""
+        """Handle Load & Run Config button click."""
         path = browse_for_file(
             title="Load Config file", filetypes=[("TOML Config", "*.toml")]
         )
         if path:
-            cmd(Path(path))
-        
-    def get_config(self) -> UserConfig:
-        """Build config from UI. Must be implemented by child."""
-        raise NotImplementedError
+            cfg = self._load_config(Path(path))
+            if cfg:
+                # No specific validation in this tab's version
+                self.start_conversion(cfg, run_pipeline)
 
-    def start_conversion(self, cfg: UserConfig, pipeline_func: Callable | None = None):
-        """
-        Disable buttons for the tab and start the conversion background thread.
+    def on_roundtrip_demo_click(self) -> None:
+        """Handle Roundtrip demo button click."""
+        cfg = UserConfig().with_defaults()
+        self.start_conversion(cfg, run_roundtrip_test)
 
-        NOTE: Child must handle cfg prep and any other unique prep.
-        """
-        # "None sentinal pattern" to set the default pipeline
-        if pipeline_func is None:
-            pipeline_func = run_pipeline  # Resolved at runtime
-
-        self.disable_buttons()
-        log.info("Starting conversion in background thread.")
-        thread = threading.Thread(target=self._run_in_thread, args=(cfg, pipeline_func), daemon=True)
-        thread.start()
-
-    def disable_buttons(self):
-        log.debug("Disabling button(s) during conversion.")
-        for button in self.buttons:
-            button._original_text = button.cget("text")
-            button.config(state="disabled", text="Running Demo Conversion...")
-
-    def enable_buttons(self):
-        log.debug("Renabling convert button(s).")
-        for button in self.buttons:
-            button(state="normal", text=button._original_text)
-
-    def _run_in_thread(self, cfg: UserConfig, pipeline_func: Callable) -> None:
-        
-        # == DEBUGGING == #
-        # Pause the UI for a few seconds so we can verify button disable/enable
-        if DEBUG_MODE:
-            import time
-
-            time.sleep(3)
-        # =============== #
-        
-        try:
-            cfg.validate()
-            pipeline_func(cfg)
-            # Success! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_success)
-        except Exception as e:
-            # Error! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_error, e)
-
-    def _on_conversion_success(self) -> None:
-        """Inform the user of pipeline success"""
-        self.enable_buttons()
-
-        # Get the output folder location
-        cfg = self.last_run_config if self.last_run_config else UserConfig()
-        output_folder = cfg.get_output_folder()
-
-        # Show success message
-        message = (
-            f"Successfully ran conversion!\n\n"
-            f"Output location:\n{output_folder}\n\n"
-            f"Open output folder?"
-        )
-
-        # Ask if user wants to open folder
-        result = messagebox.askokcancel("Conversion Complete!", message)
-
-        # User clicked OK
-        if result:
-            open_folder_in_os_explorer(output_folder)
-
-    def _on_conversion_error(self, error: Exception) -> None:
-        """Inform the user of pipeline failure and error."""
-        log.error(f"Re-enabling buttons (error): {error}")
-        self.enable_buttons()
-
-        error_msg = str(error)
-        if len(error_msg) > 300:
-            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
-
-        message = (
-            f"An error occurred during conversion:\n\n"
-            f"{error_msg}\n\n"
-            f"Check the log viewer below for details.\n\n"
-            f"Open log folder?"
-        )
-        result = messagebox.askokcancel("Demo Conversion Failed", message, icon="error")
-
-        if result:
-            # Get log folder from config
-            log_folder = UserConfig().get_log_folder()
-            open_folder_in_os_explorer(log_folder)
 
 # endregion
 
