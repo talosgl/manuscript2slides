@@ -24,9 +24,9 @@ Epic: Investigate UI options, select one, implement it
 	- [x] Outline the architecture conceptually, modularized, etc., without worrying about specific code syntax or framework
     - [x] v1 complete (Inheritance + Component mix)    
     - [x] Refactor Tabs to use MVP Pattern
-    - [ ] (Optional) Refactor components to use MVP
+    - [-] ~~(Optional) Refactor components to use MVP~~
     - [ ] Decide Tkinter is in a polished/good enough state to call done and use as an architectural reference for GUI v2, and move on.
-        - [ ] Make sure you update dev-notes/ui_tree.txt and ui_wireframe.txt!!
+        - [ ] Make sure you update dev-notes/ui_tree.txt and ui_wireframe.txt with MVP refactor!!
 
 - [ ] GUI Framework Exploration: PySide (Qt)
     - Think I want to fully swap to using PySide after finishing out Tkinter in a state I'm happy with.
@@ -38,6 +38,8 @@ Epic: Investigate UI options, select one, implement it
     - [ ] Real GUI v2 build! Start fresh with a design and framework chosen intentionally
         - [ ] Progressively work through each bit of the old architecture to port to PySide
 
+Feature: Add Provenance feature
+    - Minimum: at the start of a pipeline call, dump the run_id/session_id + cfg (UserConfig) object's fields to log and/or file 
 
 Epic: Add tests & pytest
     - Test config validation
