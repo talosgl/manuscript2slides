@@ -1,5 +1,6 @@
 """Tkinter and ttk GUI interface entry point."""
 
+# region imports
 from __future__ import annotations
 
 
@@ -29,9 +30,9 @@ import sys
 
 
 log = logging.getLogger("manuscript2slides")
+# end region
 
 
-# region MainWindow
 class MainWindow(tk.Tk):
     """Main UI Window application class for manuscript2slides."""
 
@@ -61,14 +62,22 @@ class MainWindow(tk.Tk):
         # Create the log_viewer first, so we can pass to the other widgets, but wait to pack it into the UI geo.
         log_viewer = LogViewer(self)
 
-        docx2pptx_tab = Docx2PptxTab(notebook, log_viewer)
-        notebook.add(docx2pptx_tab, text="DOCX → PPTX")
+        # MVP Docx Tab
+        docx2pptx_view = Docx2PptxTabView(notebook)
+        docx2pptx_presenter = Docx2PptxTabPresenter(docx2pptx_view)
+        notebook.add(docx2pptx_view, text="DOCX → PPTX")
 
-        pptx2docx_tab = Pptx2DocxTab(notebook, log_viewer)
-        notebook.add(pptx2docx_tab, text="PPTX → DOCX")
+        # MVP Pptx
+        pptx2docx_view = Pptx2DocxTabView(notebook)
+        pptx2docx_presenter = Pptx2DocxTabPresenter(
+            pptx2docx_view
+        )  # pass the view to the presenter
+        notebook.add(pptx2docx_view, text="PPTX → DOCX")  # add the VIEW to notebook
 
-        demo_tab = DemoTab(notebook, log_viewer)
-        notebook.add(demo_tab, text="DEMO")
+        # MVP DemoTab
+        demo_view = DemoTabView(notebook)
+        demo_presenter = DemoTabPresenter(demo_view)  # pass the view to the presenter
+        notebook.add(demo_view, text="DEMO")  # add the VIEW to notebook
 
         # Add the log_viewer to the end of the UI Geo.
         log_viewer.pack(fill="both", expand=True, padx=10, pady=10)
@@ -79,6 +88,7 @@ class MainWindow(tk.Tk):
 
     # endregion
 
+    # region _apply_theme
     def _apply_theme(self) -> None:
         """Apply a modern(ish) theme to the UI."""
         self.style = ttk.Style()
@@ -91,12 +101,6 @@ class MainWindow(tk.Tk):
             # TODO: Test aesthetics on macOS and see if we need to do any workarounds
             self.style.theme_use("aqua")
             log.info("Using 'aqua' theme.")
-        # elif "winnative" in available_themes:  # Windows '95
-        #     style.theme_use("winnative")
-        #     log.info("Usting 'winnative' theme.")
-        # elif "vista" in available_themes:  # Windows
-        #     style.theme_use("vista")
-        #     log.info("Usting 'vista' theme.")
         elif "clam" in available_themes:  # Linux/cross-plat
             self.style.theme_use("clam")
             log.info("Using 'clam' theme.")
@@ -176,6 +180,8 @@ class MainWindow(tk.Tk):
             ],
         )
 
+    # endregion
+
 
 # endregion
 
@@ -184,22 +190,44 @@ class MainWindow(tk.Tk):
 # endregion
 
 
-# region BaseConversionTab
-class BaseConversionTab(ttk.Frame):
-    """Base class for conversion tabs with shared threading & button logic."""
+# region BaseConversionTabView
+class BaseConversionTabView(ttk.Frame):
+    """Base view for all conversion tabs"""
 
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
+    # The View doesn't know what happens when buttons are clicked.
+    # It just creates them and then defines methods for the Presenter to control them.
+
+    def __init__(self, parent: tk.Widget) -> None:
         super().__init__(parent)
-        self.log_viewer = log_viewer
-        self.last_run_config = None
         self.buttons = []
-        # children should call self._create_widgets()
+        # children must define and call self._create_widgets()
 
-    def _create_convert_button(
-        self, button_text: str, cmd: Callable[[], None]
-    ) -> ttk.Button:
-        """Create a button widget styled for conversion without grid/pack. Caller must grid/pack."""
-        return ttk.Button(self, text=button_text, style="Convert.TButton", command=cmd)
+    # Public interface for Presenter to control the view's widgets
+    def disable_buttons(self) -> None:
+        """Disable all buttons inside self.buttons[] on this tab. Use to prevent button clicks during conversion pipeline runs."""
+        log.debug("Disabling button(s) during conversion.")
+        for button in self.buttons:
+            button._original_text = button.cget("text")
+            button.config(state="disabled", text="Converting...")
+
+    def enable_buttons(self) -> None:
+        """Re-enable all buttons inside self.buttons[] on this tab. Use after conversion pipeline is complete."""
+        log.debug("Renabling convert button(s).")
+        for button in self.buttons:
+            button.config(state="normal", text=button._original_text)
+
+
+# endregion
+
+
+# region BaseConversionTabPresenter
+class BaseConversionTabPresenter:
+    """Presenter class for the BaseConversionTab."""
+
+    def __init__(self, view: BaseConversionTabView) -> None:
+        self.view = (
+            view  # instantiated and passed in from MainWindow's _create_widgets()
+        )
 
     def _load_config(self, path: Path) -> UserConfig | None:
         try:
@@ -224,26 +252,13 @@ class BaseConversionTab(ttk.Frame):
         if pipeline_func is None:
             pipeline_func = run_pipeline  # Resolved at runtime
 
-        self.disable_buttons()
+        self.view.disable_buttons()
         self.last_run_config = cfg
         log.info("Starting conversion in background thread.")
         thread = threading.Thread(
             target=self._run_in_thread, args=(cfg, pipeline_func), daemon=True
         )
         thread.start()
-
-    def disable_buttons(self) -> None:
-        """Disable all buttons inside self.buttons[] on this tab. Use to prevent button clicks during conversion pipeline runs."""
-        log.debug("Disabling button(s) during conversion.")
-        for button in self.buttons:
-            button._original_text = button.cget("text")
-            button.config(state="disabled", text="Converting...")
-
-    def enable_buttons(self) -> None:
-        """Re-enable all buttons inside self.buttons[] on this tab. Use after conversion pipeline is complete."""
-        log.debug("Renabling convert button(s).")
-        for button in self.buttons:
-            button.config(state="normal", text=button._original_text)
 
     def _run_in_thread(self, cfg: UserConfig, pipeline_func: Callable) -> None:
         """Run a pipeline_func call inside a background thread."""
@@ -260,14 +275,14 @@ class BaseConversionTab(ttk.Frame):
             cfg.validate()
             pipeline_func(cfg)
             # Success! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_success)
+            self.view.after(0, self._on_conversion_success)
         except Exception as e:
             # Error! Schedule UI update on main thread
-            self.winfo_toplevel().after(0, self._on_conversion_error, e)
+            self.view.after(0, self._on_conversion_error, e)
 
     def _on_conversion_success(self) -> None:
         """Inform the user of pipeline success"""
-        self.enable_buttons()
+        self.view.enable_buttons()
 
         # Get the output folder location
         cfg = self.last_run_config if self.last_run_config else UserConfig()
@@ -290,7 +305,7 @@ class BaseConversionTab(ttk.Frame):
     def _on_conversion_error(self, error: Exception) -> None:
         """Inform the user of pipeline failure and error."""
         log.error(f"Re-enabling buttons (error): {error}")
-        self.enable_buttons()
+        self.view.enable_buttons()
 
         error_msg = str(error)
         if len(error_msg) > 300:
@@ -313,22 +328,16 @@ class BaseConversionTab(ttk.Frame):
 # endregion
 
 
-# region ConfigurableConversionTab
-class ConfigurableConversionTab(BaseConversionTab):
-    """Extends BaseConversionTab with logic and UI very similar between Docx2PptxTab and Pptx2DocxTab."""
+# region ConfigurableConversionTabView
+class ConfigurableConversionTabView(BaseConversionTabView):
+    """View class for the ConfigurableConversionTab."""
 
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
-        super().__init__(parent, log_viewer)
-        self.loaded_config = None
+    def __init__(self, parent: tk.Widget) -> None:
+        super().__init__(parent)
         # Get defaults from UserConfig
         self.cfg_defaults = UserConfig()
-        self.convert_btn = None
+        self.convert_btn: ttk.Button | None = None
         # children to call _create_widgets()
-
-    # Abstract - children implement
-    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
-        """Gather values from UI widgets into config."""
-        raise NotImplementedError
 
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI widgets from config."""
@@ -342,12 +351,6 @@ class ConfigurableConversionTab(BaseConversionTab):
         """Get current input path. Child implements."""
         raise NotImplementedError
 
-    def _validate_input(self, cfg: UserConfig) -> bool:
-        """Validate input before conversion. Child must implement."""
-        raise NotImplementedError
-
-    # Concrete - shared by both conversion tabs
-    # region _create_action_section + helpers
     def _create_action_section(self) -> None:
         """Create convert button section."""
         # ActionFrame for convert button
@@ -359,7 +362,6 @@ class ConfigurableConversionTab(BaseConversionTab):
         self.convert_btn = ttk.Button(
             action_frame,
             text="Convert",
-            command=self.on_convert_click,
             state="disabled",  # Start disabled
             padding=10,
             style="Convert.TButton",
@@ -371,15 +373,38 @@ class ConfigurableConversionTab(BaseConversionTab):
             0, weight=1
         )  # Convert button - stretches east-west
 
+
+# endregion
+
+
+# region ConfigurableConversionTabPresenter
+class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
+    """Presenter class for the ConfigurableConversionTab."""
+
+    def __init__(self, view: ConfigurableConversionTabView) -> None:
+        super().__init__(view)
+        self.view = view
+        self.loaded_config = None
+
+    # Abstract - children implement
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather values from UI widgets into config."""
+        raise NotImplementedError
+
+    def _validate_input(self, cfg: UserConfig) -> bool:
+        """Validate input before conversion. Child must implement."""
+        raise NotImplementedError
+
+    # Concrete - shared by both conversion tabs
     def _on_file_selected(self, *args) -> None:  # noqa: ANN002
         """Enable convert button when a file is selected."""
         # Child needs to wire this up with trace_add
-        if self.convert_btn:
-            path = self._get_input_path()
+        if self.view.convert_btn:
+            path = self.view._get_input_path()
             if path and path != "No selection":
-                self.convert_btn.config(state="normal")
+                self.view.convert_btn.config(state="normal")
             else:
-                self.convert_btn.config(state="disabled")
+                self.view.convert_btn.config(state="disabled")
 
     def on_convert_click(self) -> None:
         """Handle convert button click with validation."""
@@ -419,7 +444,7 @@ class ConfigurableConversionTab(BaseConversionTab):
         """Load config with direction validation."""
 
         # Validate direction
-        if cfg.direction != self.get_pipeline_direction():
+        if cfg.direction != self.view.get_pipeline_direction():
             messagebox.showerror(
                 "Invalid Config",
                 f"This config is for {cfg.direction.value}.\n"
@@ -430,7 +455,7 @@ class ConfigurableConversionTab(BaseConversionTab):
             # on the new tab of the right type.
             return
 
-        self.config_to_ui(cfg)
+        self.view.config_to_ui(cfg)
         self.loaded_config = cfg
         messagebox.showinfo("Config Loaded", f"Loaded config successfully")
 
@@ -438,14 +463,282 @@ class ConfigurableConversionTab(BaseConversionTab):
 # endregion
 
 
-# region Docx2PptxTab class
-class Docx2PptxTab(ConfigurableConversionTab):
+# region DemoTabView
+class DemoTabView(BaseConversionTabView):
+    """DemoTab View class."""
+
+    def __init__(self, parent: tk.Widget) -> None:
+        super().__init__(parent)
+        self._create_widgets()
+
+    def _create_widgets(self) -> None:
+        info = ttk.Label(
+            self,
+            text="Run demos with built-in sample files to try out the pipeline.",
+            font=("Arial", 10),
+        )
+        info.pack(pady=10)
+
+        # Create the 4 buttons (but NO commands yet!), just arrange them in the frame
+        self.docx2pptx_btn = ttk.Button(
+            self,
+            text="DOCX → PPTX Demo",
+            style="Convert.TButton",
+        )
+        self.docx2pptx_btn.pack(pady=5)
+        self.buttons.append(self.docx2pptx_btn)
+
+        self.pptx2docx_btn = ttk.Button(
+            self,
+            text="PPTX → DOCX Demo",
+            style="Convert.TButton",
+        )
+        self.pptx2docx_btn.pack(pady=5)
+        self.buttons.append(self.pptx2docx_btn)
+
+        self.round_trip_btn = ttk.Button(
+            self,
+            text="Round-trip Demo (DOCX → PPTX → DOCX)",
+            style="Convert.TButton",
+        )
+        self.round_trip_btn.pack(pady=5)
+        self.buttons.append(self.round_trip_btn)
+
+        self.load_demo_btn = ttk.Button(
+            self,
+            text="Load & Run Config",
+            style="Convert.TButton",
+        )
+        self.load_demo_btn.pack(
+            pady=5,
+        )
+        self.buttons.append(self.load_demo_btn)
+
+
+# endregion
+
+
+# region DemoTabPresenter
+class DemoTabPresenter(BaseConversionTabPresenter):
+    """Coordinates between View and Model"""
+
+    def __init__(self, view: DemoTabView) -> None:
+        self.view = (
+            view  # instantiated and passed in from MainWindow's _create_widgets()
+        )
+
+        # Wire up the View's buttons to Presenter's handlers
+        self.view.docx2pptx_btn.config(command=self.on_docx2pptx_demo)
+        self.view.pptx2docx_btn.config(command=self.on_pptx2docx_demo_click)
+        self.view.round_trip_btn.config(command=self.on_roundtrip_demo_click)
+        self.view.load_demo_btn.config(command=self.on_load_demo_click)
+
+    def on_docx2pptx_demo(self) -> None:
+        """Handle DOCX → PPTX Demo button click."""
+        direction = PipelineDirection.DOCX_TO_PPTX
+        cfg = UserConfig().for_demo(direction=direction)
+        self.start_conversion(cfg, run_pipeline)
+
+    def on_pptx2docx_demo_click(self) -> None:
+        """Handle PPTX → DOCX Demo button click."""
+        direction = PipelineDirection.PPTX_TO_DOCX
+        cfg = UserConfig().for_demo(direction=direction)
+        self.start_conversion(cfg, run_pipeline)
+
+    def on_load_demo_click(self) -> None:
+        """Handle Load & Run Config button click."""
+        path = browse_for_file(
+            title="Load Config file", filetypes=[("TOML Config", "*.toml")]
+        )
+        if path:
+            cfg = self._load_config(Path(path))
+            if cfg:
+                # No specific validation in this tab's version
+                self.start_conversion(cfg, run_pipeline)
+
+    def on_roundtrip_demo_click(self) -> None:
+        """Handle Roundtrip demo button click."""
+        cfg = UserConfig().with_defaults()
+        self.start_conversion(cfg, run_roundtrip_test)
+
+
+# endregion
+
+
+# region Pptx2DocxView
+class Pptx2DocxTabView(ConfigurableConversionTabView):
+    """View Tab for the Pptx2Docx Pipeline."""
+
+    def __init__(self, parent: tk.Widget) -> None:
+        super().__init__(parent)
+        self._create_widgets()
+
+    def _create_widgets(self) -> None:
+        self._create_io_section()
+
+        # We don't yet offer options for the reverse pipeline;
+        # behavior is all inferred from the available data in the .docx.
+        # Eventually we might want to; this is where it would be long in the UI.
+        # self._create_options()
+
+        self._create_action_section()  # defined by parent
+
+        self.columnconfigure(0, weight=1)
+
+    # NOTE: This could probably be moved to the ConfigurableConversionTabView class
+    # if we added logic to resolve the slightly different strings based on the
+    # tab's pipeline direction. For the time being we've decided the duplication
+    # is more readable.
+    def _create_io_section(self) -> None:
+        """Create Pptx2Docx tab's IO section."""
+        io_section = ttk.LabelFrame(self, text="Input/Output Selection")
+        io_section.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+        io_section.columnconfigure(0, weight=1)
+
+        # Input file
+        self.input_selector = PathSelector(
+            io_section, "Input .pptx File:", filetypes=[("PowerPoint", "*.pptx")]
+        )
+        self.input_selector.grid(
+            row=0,
+            column=0,
+            sticky="ew",
+            pady=5,
+            padx=5,
+        )
+
+        # Advanced (collapsible)
+        advanced = CollapsibleFrame(io_section, title="Advanced")
+        advanced.grid(row=1, column=0, sticky="ew", pady=5)
+        advanced.columnconfigure(0, weight=1)
+
+        self.output_selector = PathSelector(
+            advanced.content_frame,
+            "Output Folder:",
+            is_dir=True,
+            default=str(self.cfg_defaults.get_output_folder()),
+        )
+        self.output_selector.pack(fill="x", pady=2)
+
+        self.template_selector = PathSelector(
+            advanced.content_frame,
+            "Custom Template:",
+            filetypes=[("Word Document", "*.docx")],
+            default=str(self.cfg_defaults.get_template_docx_path()),
+        )
+        self.template_selector.pack(fill="x", pady=2)
+
+        ttk.Separator(advanced.content_frame, orient="horizontal").pack(
+            fill="x", pady=5
+        )
+
+        self.save_btn = tk.Button(
+            advanced.content_frame,
+            text="Save Options to Config",
+        )
+        self.save_btn.pack(side="left", padx=5)
+
+        self.load_btn = tk.Button(
+            advanced.content_frame,
+            text="Load Config",
+        )
+        self.load_btn.pack(side="left", padx=5)
+
+    def _create_options(self) -> None:
+        """UNUSED. Create pipeline options widget(s)."""
+        options_frame = ttk.Labelframe(self, text="Basic Options")
+        options_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+
+        # NOTE: Here is where we would add user-configurable options to the pptx2docx UI.
+
+    def _get_input_path(self) -> str:
+        return self.input_selector.selected_path.get()
+
+    def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
+        return PipelineDirection.PPTX_TO_DOCX
+
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI values from a loaded UserConfig"""
+        # Set Path selectors
+        self.input_selector.selected_path.set(cfg.input_pptx or "No selection")
+        self.output_selector.selected_path.set(cfg.output_folder or "No selection")
+        self.template_selector.selected_path.set(cfg.template_docx or "No selection")
+
+
+# endregion
+
+
+# region Pptx2DocxPresenter
+class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
+    """Presenter class for the PPTX -> Docx Tab."""
+
+    def __init__(self, view: Pptx2DocxTabView) -> None:
+        super().__init__(view)
+        self.view = view
+
+        # Wire up the View's buttons to Presenter's handlers
+        if self.view.convert_btn:  # Please Pylance
+            self.view.convert_btn.config(command=self.on_convert_click)
+        self.view.save_btn.config(command=self.on_save_config_click)
+        self.view.load_btn.config(command=self.on_load_config_click)
+
+        # Watch for file selection to enable convert button; callback is defined on parent class
+        self.view.input_selector.selected_path.trace_add(
+            "write", self._on_file_selected
+        )
+
+    def _validate_input(self, cfg: UserConfig) -> bool:
+        """Validate pptx-specific input."""
+        if not cfg.input_pptx or cfg.input_pptx == "No selection":
+            messagebox.showerror("Missing Input", "Please select an input .pptx file.")
+            return False
+
+        if not Path(cfg.input_pptx).exists():
+            messagebox.showerror(
+                "File Not Found", f"Input file does not exist:\n{cfg.input_pptx}"
+            )
+            return False
+
+        # Validate it's actually a .pptx
+        if not cfg.input_pptx.endswith(".pptx"):
+            messagebox.showerror("Invalid File", "Input file must be a .pptx file.")
+            return False
+
+        return True
+
+    # region p2d child implementation of parent abstract methods
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather UI-selected values and update the UserConfig object"""
+
+        # Set the direction based on what tab we're in.
+        cfg.direction = self.view.get_pipeline_direction()
+
+        # Only update fields that have UI controls
+        cfg.input_pptx = self.view.input_selector.selected_path.get()
+
+        # Handle optional paths (might be "No selection")
+        output = self.view.output_selector.selected_path.get()
+        cfg.output_folder = output if output != "No selection" else None
+
+        template = self.view.template_selector.selected_path.get()
+        cfg.template_docx = template if template != "No selection" else None
+        return cfg
+
+    # endregion
+
+
+# endregion
+
+
+# region Docx2PptxView
+class Docx2PptxTabView(ConfigurableConversionTabView):
     """UI Tab for the docx2pptx pipeline."""
 
     # region d2p init + _create_widgets()
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
+    def __init__(self, parent: tk.Widget) -> None:
         """Constructor for docx2pptx Tab"""
-        super().__init__(parent, log_viewer)
+        super().__init__(parent)
         self.chunk_var = tk.StringVar(value=self.cfg_defaults.chunk_type.value)
 
         # BooleanVars for checkboxes
@@ -478,8 +771,6 @@ class Docx2PptxTab(ConfigurableConversionTab):
 
         self.columnconfigure(0, weight=1)
 
-    # endregion
-
     # region d2p _create_io_section
     def _create_io_section(self) -> None:
         """Create docx2pptx tab's io section."""
@@ -498,8 +789,6 @@ class Docx2PptxTab(ConfigurableConversionTab):
             pady=5,
             padx=5,
         )
-        # Watch for file selection to enable convert button
-        self.input_selector.selected_path.trace_add("write", self._on_file_selected)
 
         # Advanced (collapsible)
         advanced = CollapsibleFrame(io_section, title="Advanced")
@@ -522,19 +811,11 @@ class Docx2PptxTab(ConfigurableConversionTab):
         )
         self.template_selector.pack(fill="x", pady=2)
 
-        save_btn = tk.Button(
-            advanced.content_frame,
-            text="Save Options to Config",
-            command=self.on_save_config_click,
-        )
-        save_btn.pack(side="left", padx=5)
+        self.save_btn = tk.Button(advanced.content_frame, text="Save Options to Config")
+        self.save_btn.pack(side="left", padx=5)
 
-        load_btn = tk.Button(
-            advanced.content_frame,
-            text="Load Config",
-            command=self.on_load_config_click,
-        )
-        load_btn.pack(side="left", padx=5)
+        self.load_btn = tk.Button(advanced.content_frame, text="Load Config")
+        self.load_btn.pack(side="left", padx=5)
 
     # endregion
 
@@ -683,39 +964,13 @@ class Docx2PptxTab(ConfigurableConversionTab):
         """Observer: When parent changes, update all children."""
         parent_value = self.keep_all_annotations.get()
 
-        # Setting all these children will actually trigger the child's observer. 
+        # Setting all these children will actually trigger the child's observer.
         # We handle this in cycle within the children's observer (`if all(children_checked): / self.keep_all_annotations.set(True)`)
-        # so it is actually fine. But if we didn't, we'd need to temporarily 
+        # so it is actually fine. But if we didn't, we'd need to temporarily
         # disable child observers here before setting them, in order to avoid infinite loop
         self.keep_comments.set(parent_value)
         self.keep_footnotes.set(parent_value)
         self.keep_endnotes.set(parent_value)
-
-    # endregion
-
-    # region d2p child implementation of parent methods
-
-    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
-        """Gather UI-selected values and update the UserConfig object"""
-
-        cfg.direction = self.get_pipeline_direction()
-
-        # Only update fields that have UI controls
-        cfg.input_docx = self.input_selector.selected_path.get()
-        cfg.chunk_type = ChunkType(self.chunk_var.get())
-        cfg.experimental_formatting_on = self.exp_fmt_var.get()
-        cfg.preserve_docx_metadata_in_speaker_notes = self.keep_metadata.get()
-        cfg.display_comments = self.keep_comments.get()
-        cfg.display_footnotes = self.keep_footnotes.get()
-        cfg.display_endnotes = self.keep_endnotes.get()
-
-        # Handle optional paths (might be "No selection")
-        output = self.output_selector.selected_path.get()
-        cfg.output_folder = output if output != "No selection" else None
-
-        template = self.template_selector.selected_path.get()
-        cfg.template_pptx = template if template != "No selection" else None
-        return cfg
 
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI values from a loaded UserConfig"""
@@ -743,6 +998,31 @@ class Docx2PptxTab(ConfigurableConversionTab):
         """Return this tab's direction for validation."""
         return PipelineDirection.DOCX_TO_PPTX
 
+    # endregion
+
+
+# endregion
+
+
+# region Docx2PptxPresenter
+class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
+    """Presenter class for the Docx -> Pptx tab."""
+
+    def __init__(self, view: Docx2PptxTabView) -> None:
+        super().__init__(view)
+        self.view = view
+
+        # Wire up the View's buttons to Presenter's handlers
+        if self.view.convert_btn:  # Please Pylance
+            self.view.convert_btn.config(command=self.on_convert_click)
+        self.view.save_btn.config(command=self.on_save_config_click)
+        self.view.load_btn.config(command=self.on_load_config_click)
+
+        # Watch for file selection to enable convert button; callback is defined on parent class
+        self.view.input_selector.selected_path.trace_add(
+            "write", self._on_file_selected
+        )
+
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate docx-specific input."""
         # Validate required fields
@@ -763,248 +1043,27 @@ class Docx2PptxTab(ConfigurableConversionTab):
 
         return True
 
-    # endregion
-
-
-# endregion
-
-
-# region Pptx2DocxTab
-class Pptx2DocxTab(ConfigurableConversionTab):
-    """Tab frame for the Pptx2Docx Pipeline."""
-
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
-        super().__init__(parent, log_viewer)
-        # Get defaults from backend
-        self._create_widgets()
-
-    def _create_widgets(self) -> None:
-        self._create_io_section()
-
-        # We don't yet offer options for the reverse pipeline;
-        # behavior is all inferred from the available data in the .docx.
-        # Eventually we might want to; this is where it would be long in the UI.
-        # self._create_options()
-
-        self._create_action_section()  # defined by parent
-
-        self.columnconfigure(0, weight=1)
-
-    # NOTE: This could probably be moved to the ConfigurableConversionTab class
-    # if we added logic to resolve the slightly different strings based on the
-    # tab's pipeline direction. For the time being we've decided the duplication
-    # is more readable.
-    def _create_io_section(self) -> None:
-        """Create Pptx2Docx tab's IO section."""
-        io_section = ttk.LabelFrame(self, text="Input/Output Selection")
-        io_section.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-        io_section.columnconfigure(0, weight=1)
-
-        # Input file
-        self.input_selector = PathSelector(
-            io_section, "Input .pptx File:", filetypes=[("PowerPoint", "*.pptx")]
-        )
-        self.input_selector.grid(
-            row=0,
-            column=0,
-            sticky="ew",
-            pady=5,
-            padx=5,
-        )
-
-        # Advanced (collapsible)
-        advanced = CollapsibleFrame(io_section, title="Advanced")
-        advanced.grid(row=1, column=0, sticky="ew", pady=5)
-        advanced.columnconfigure(0, weight=1)
-
-        self.output_selector = PathSelector(
-            advanced.content_frame,
-            "Output Folder:",
-            is_dir=True,
-            default=str(self.cfg_defaults.get_output_folder()),
-        )
-        self.output_selector.pack(fill="x", pady=2)
-
-        self.template_selector = PathSelector(
-            advanced.content_frame,
-            "Custom Template:",
-            filetypes=[("Word Document", "*.docx")],
-            default=str(self.cfg_defaults.get_template_docx_path()),
-        )
-        self.template_selector.pack(fill="x", pady=2)
-
-        ttk.Separator(advanced.content_frame, orient="horizontal").pack(
-            fill="x", pady=5
-        )
-
-        save_btn = tk.Button(
-            advanced.content_frame,
-            text="Save Options to Config",
-            command=self.on_save_config_click,
-        )
-        save_btn.pack(side="left", padx=5)
-
-        load_btn = tk.Button(
-            advanced.content_frame,
-            text="Load Config",
-            command=self.on_load_config_click,
-        )
-        load_btn.pack(side="left", padx=5)
-
-        # Watch for file selection to enable convert button; callback is defined on parent class
-        self.input_selector.selected_path.trace_add("write", self._on_file_selected)
-
-    def _create_options(self) -> None:
-        """UNUSED. Create pipeline options widget(s)."""
-        options_frame = ttk.Labelframe(self, text="Basic Options")
-        options_frame.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
-
-        # NOTE: Here is where we would add user-configurable options to the pptx2docx UI.
-
-    # region p2d child implementation of parent abstract methods
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
 
-        # Set the direction based on what tab we're in.
-        cfg.direction = self.get_pipeline_direction()
+        cfg.direction = self.view.get_pipeline_direction()
 
         # Only update fields that have UI controls
-        cfg.input_pptx = self.input_selector.selected_path.get()
+        cfg.input_docx = self.view.input_selector.selected_path.get()
+        cfg.chunk_type = ChunkType(self.view.chunk_var.get())
+        cfg.experimental_formatting_on = self.view.exp_fmt_var.get()
+        cfg.preserve_docx_metadata_in_speaker_notes = self.view.keep_metadata.get()
+        cfg.display_comments = self.view.keep_comments.get()
+        cfg.display_footnotes = self.view.keep_footnotes.get()
+        cfg.display_endnotes = self.view.keep_endnotes.get()
 
         # Handle optional paths (might be "No selection")
-        output = self.output_selector.selected_path.get()
+        output = self.view.output_selector.selected_path.get()
         cfg.output_folder = output if output != "No selection" else None
 
-        template = self.template_selector.selected_path.get()
-        cfg.template_docx = template if template != "No selection" else None
+        template = self.view.template_selector.selected_path.get()
+        cfg.template_pptx = template if template != "No selection" else None
         return cfg
-
-    def config_to_ui(self, cfg: UserConfig) -> None:
-        """Populate UI values from a loaded UserConfig"""
-        # Set Path selectors
-        self.input_selector.selected_path.set(cfg.input_pptx or "No selection")
-        self.output_selector.selected_path.set(cfg.output_folder or "No selection")
-        self.template_selector.selected_path.set(cfg.template_docx or "No selection")
-
-    def _get_input_path(self) -> str:
-        return self.input_selector.selected_path.get()
-
-    def get_pipeline_direction(self) -> PipelineDirection:
-        """Return this tab's direction for validation."""
-        return PipelineDirection.PPTX_TO_DOCX
-
-    def _validate_input(self, cfg: UserConfig) -> bool:
-        """Validate pptx-specific input."""
-        if not cfg.input_pptx or cfg.input_pptx == "No selection":
-            messagebox.showerror("Missing Input", "Please select an input .pptx file.")
-            return False
-
-        if not Path(cfg.input_pptx).exists():
-            messagebox.showerror(
-                "File Not Found", f"Input file does not exist:\n{cfg.input_pptx}"
-            )
-            return False
-
-        # Validate it's actually a .pptx
-        if not cfg.input_pptx.endswith(".pptx"):
-            messagebox.showerror("Invalid File", "Input file must be a .pptx file.")
-            return False
-
-        return True
-
-
-# endregion
-
-
-# region DemoTab
-class DemoTab(BaseConversionTab):
-    """Tab for running demo dry-runs"""
-
-    # region init & _create_widgets
-
-    def __init__(self, parent: tk.Widget, log_viewer: LogViewer) -> None:
-        # Call parent constructor
-        super().__init__(parent, log_viewer)
-        self._create_widgets()
-
-    def _create_widgets(self) -> None:
-        info = ttk.Label(
-            self,
-            text="Run demos with built-in sample files to try out the pipeline.",
-            font=("Arial", 10),
-        )
-        info.pack(pady=10)
-
-        self.d2p_btn = ttk.Button(
-            self,
-            text="DOCX → PPTX Demo",
-            style="Convert.TButton",
-            command=self.on_docx2pptx_demo_click,
-        )
-        self.d2p_btn.pack(pady=5)
-        self.buttons.append(self.d2p_btn)
-
-        self.p2d_btn = ttk.Button(
-            self,
-            text="PPTX → DOCX Demo",
-            style="Convert.TButton",
-            command=self.on_pptx2docx_demo_click,
-        )
-        self.p2d_btn.pack(pady=5)
-        self.buttons.append(self.p2d_btn)
-
-        self.round_trip_btn = ttk.Button(
-            self,
-            text="Round-trip Demo (DOCX → PPTX → DOCX)",
-            style="Convert.TButton",
-            command=self.on_roundtrip_demo_click,
-        )
-        self.round_trip_btn.pack(pady=5)
-        self.buttons.append(self.round_trip_btn)
-
-        self.load_demo_btn = ttk.Button(
-            self,
-            text="Load & Run Config",
-            style="Convert.TButton",
-            command=self.on_load_demo_click,
-        )
-        self.load_demo_btn.pack(
-            pady=5,
-        )
-        self.buttons.append(self.load_demo_btn)
-
-    # endregion
-
-    # region on_clicks
-    def on_docx2pptx_demo_click(self) -> None:
-        """Handle DOCX → PPTX Demo button click."""
-        direction = PipelineDirection.DOCX_TO_PPTX
-        cfg = UserConfig().for_demo(direction=direction)
-        self.start_conversion(cfg, run_pipeline)
-
-    def on_pptx2docx_demo_click(self) -> None:
-        """Handle PPTX → DOCX Demo button click."""
-        direction = PipelineDirection.PPTX_TO_DOCX
-        cfg = UserConfig().for_demo(direction=direction)
-        self.start_conversion(cfg, run_pipeline)
-
-    def on_load_demo_click(self) -> None:
-        """Handle Load & Run Config button click."""
-        path = browse_for_file(
-            title="Load Config file", filetypes=[("TOML Config", "*.toml")]
-        )
-        if path:
-            cfg = self._load_config(Path(path))
-            if cfg:
-                # No specific validation in this tab's version
-                self.start_conversion(cfg, run_pipeline)
-
-    def on_roundtrip_demo_click(self) -> None:
-        """Handle Roundtrip demo button click."""
-        cfg = UserConfig().with_defaults()
-        self.start_conversion(cfg, run_roundtrip_test)
-
-    # endregion
 
 
 # endregion
@@ -1058,6 +1117,10 @@ class CollapsibleFrame(ttk.Frame):
             self.content_frame.pack_forget()
             self.toggle_btn.config(text=self.toggle_btn.cget("text").replace("▼", "▶"))
             self.is_collapsed = True
+
+        # Force window to recalculate size
+        self.winfo_toplevel().update_idletasks()
+        self.winfo_toplevel().geometry("")  # ← Reset to minimum size
 
 
 # endregion

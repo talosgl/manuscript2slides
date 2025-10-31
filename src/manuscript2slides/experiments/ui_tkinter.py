@@ -1,4 +1,4 @@
-"""Tkinter desktop UI for manuscript2slides."""
+"""Early/toy Tkinter desktop UI for manuscript2slides."""
 
 import tkinter as tk
 from tkinter import ttk
