@@ -2,30 +2,42 @@
 - [x] refactor run_id: we need separate things considering run_id per-pipeline-run vs. session_id for per-UI session
 - [x] Add logging to pipeline validation methods (validate_docx2pptx_pipeline_requirements, validate_pptx2docx_pipeline_requirements)
 - [x] CLI: Add argparse support for --config flag
-- [ ] GUI: Wire up auto-save/load for preference persistence across sessions (simple, just call the save_toml/load_toml methods we built)
 - [x] Change backend defaults to have most bools turned off so that default is empty speaker notes. Adjust round-trip to have them enabled.
+- [ ] GUI: Wire up auto-save/load for preference persistence across sessions (call the save_toml/load_toml methods on UserConfig)
 - [ ] Revisit the Demo speaker notes bool-setting code because I hard-coded the old way into cli.run() and it's... smelly....
 
 ## Major TODOs Ordered by priority/dependency
 Epic: Investigate UI options, select one, implement it
 - Build a simple UI with good enough UX that any non-tech-savvy writer can use it without friction
 
-- [ ] Finish Tkinter toy GUI to cover last few UI programming concepts
-    - [ ] tabbed view
-    - [ ] refactor to be component-based architecture
-    - [ ] custom events in tkinter
-- Start real GUI work: Design
-	- [ ] Design it intentionally with wireframes
-    - [ ] Plan/describe the structure
+- [x] Finish toy GUI (Tkinter) to cover last few UI programming concepts
+    - [x] tabbed view
+    - [x] refactor to be component-based architecture
+    - [-] ~~Custom events in tkinter~~
+- [ ] Real Tkinter GUI (v1 real GUI)
+    - Start real GUI work: Design
+	- [x] Design it intentionally with wireframes
+    - [x] Plan/describe the structure
         - What are all the features?
         - What are all the states?
         - How should it look?
-	- [ ] Outline the architecture conceptually, modularized, etc., without worrying about specific code syntax or framework
-- GUI Framework Exploration after Design:
-	- [ ] Try PyQt and explore implementing design
-	- [ ] Try Eel and ditto, explore implementing design
-	- [ ] Pick a framework...
-- [ ] Real GUI build! Start fresh with a design and framework chosen intentionally
+	- [x] Outline the architecture conceptually, modularized, etc., without worrying about specific code syntax or framework
+    - [x] v1 complete (Inheritance + Component mix)    
+    - [x] Refactor Tabs to use MVP Pattern
+    - [ ] (Optional) Refactor components to use MVP
+    - [ ] Decide Tkinter is in a polished/good enough state to call done and use as an architectural reference for GUI v2, and move on.
+        - [ ] Make sure you update dev-notes/ui_tree.txt and ui_wireframe.txt!!
+
+- [ ] GUI Framework Exploration: PySide (Qt)
+    - Think I want to fully swap to using PySide after finishing out Tkinter in a state I'm happy with.
+        1) That'll help me reinforce/internalize what I learned during Tkinter build
+        2) That'll give me experience with a more modern GUI framework
+        3) Please, gods, let Qt solve the ugly theming and DPI issues of Tkinter
+    - [ ] Work through some basic lessons on Qt/PySide, or directly adapt a component (LogViewer?) as a tutorial
+    - RESIST THEMING/STYLING UNTIL YOU GET THE ARCHITECTURE DONE, JOJO!
+    - [ ] Real GUI v2 build! Start fresh with a design and framework chosen intentionally
+        - [ ] Progressively work through each bit of the old architecture to port to PySide
+
 
 Epic: Add tests & pytest
     - Test config validation
@@ -54,15 +66,7 @@ Epic: Document the program thoroughly
 
 ## Known Issues I'd like to investigate fixing:
 - [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
-- [ ] Consider adding backend support for a GUI Cancel button
-    - Implementation: Add optional `cancel_flag` callable parameter to pipeline entry points
-    - Check `if cancel_flag and cancel_flag(): return` at key points:
-        - (both pipes) Load docx/pptx contents - Could be slow for huge files (100+ pages)
-        - (docx2pptx) Process docx annotations - Could be slow if there are tons of comments/footnotes
-        - (docx2pptx) Build slides from chunks - Probably the slowest part (nested loops over chunks → paragraphs → runs), and the spot with the most natural loop to introduce a cancel
-        - (pptx2docx) JSON parsing?
-        - (pptx2docx) Populate docx by looping over slides - analogous to "Build slides from chunks" issue
-    - Note: Profile first to see if conversions are actually slow enough to need this
+
 
 ## Stretch Wishlist Features:
 - Split the output pptx or docx into multiple output files based on slide or page count. Add default counts and allow user overrides for the default.
