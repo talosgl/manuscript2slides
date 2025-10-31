@@ -226,6 +226,8 @@ class BaseConversionTabView(ttk.Frame):
 
 # region BaseConversionTabPresenter
 class BaseConversionTabPresenter:
+    """Presenter class for the BaseConversionTab."""
+
     def __init__(self, view: BaseConversionTabView) -> None:
         self.view = (
             view  # instantiated and passed in from MainWindow's _create_widgets()
@@ -332,6 +334,8 @@ class BaseConversionTabPresenter:
 
 # region ConfigurableConversionTabView
 class ConfigurableConversionTabView(BaseConversionTabView):
+    """View class for the ConfigurableConversionTab."""
+
     def __init__(self, parent: tk.Widget) -> None:
         super().__init__(parent)
         # Get defaults from UserConfig
@@ -379,6 +383,8 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
 # region ConfigurableConversionTabPresenter
 class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
+    """Presenter class for the ConfigurableConversionTab."""
+
     def __init__(self, view: ConfigurableConversionTabView) -> None:
         super().__init__(view)
         self.view = view
@@ -463,6 +469,8 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
 # region DemoTabView
 class DemoTabView(BaseConversionTabView):
+    """DemoTab View class."""
+
     def __init__(self, parent: tk.Widget) -> None:
         super().__init__(parent)
         self._create_widgets()
@@ -667,6 +675,8 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
 # region Pptx2DocxPresenter
 class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
+    """Presenter class for the PPTX -> Docx Tab."""
+
     def __init__(self, view: Pptx2DocxTabView) -> None:
         super().__init__(view)
         self.view = view
@@ -1000,6 +1010,8 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
 # region Docx2PptxPresenter
 class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
+    """Presenter class for the Docx -> Pptx tab."""
+
     def __init__(self, view: Docx2PptxTabView) -> None:
         super().__init__(view)
         self.view = view
