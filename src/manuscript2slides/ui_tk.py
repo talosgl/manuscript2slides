@@ -3,39 +3,33 @@
 # region imports
 from __future__ import annotations
 
-
-import tkinter as tk
-from tkinter import ttk
-
-from tkinter import scrolledtext
-from tkinter import messagebox
 import logging
-from pathlib import Path
-import threading
 import platform
 import subprocess
-
-from tkinter import filedialog
+import threading
+import tkinter as tk
+from pathlib import Path
+from tkinter import filedialog, messagebox, scrolledtext, ttk
 from typing import Callable
 
-from manuscript2slides.startup import initialize_application
 from manuscript2slides.internals.config.define_config import (
-    UserConfig,
-    PipelineDirection,
     ChunkType,
+    PipelineDirection,
+    UserConfig,
 )
 from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
-import sys
-
+from manuscript2slides.startup import initialize_application
 
 log = logging.getLogger("manuscript2slides")
-# end region
+# endregion
 
 
+# region MainWindow
 class MainWindow(tk.Tk):
     """Main UI Window application class for manuscript2slides."""
 
+    # region init
     def __init__(self) -> None:
         """Constructor for the Main Window UI."""
         super().__init__()  # Initialize tk.Tk
@@ -50,6 +44,8 @@ class MainWindow(tk.Tk):
 
         # Build the UI
         self._create_widgets()
+
+    # endregion
 
     # region _create_widgets()
     def _create_widgets(self) -> None:
@@ -194,13 +190,15 @@ class MainWindow(tk.Tk):
 class BaseConversionTabView(ttk.Frame):
     """Base view for all conversion tabs"""
 
-    # The View doesn't know what happens when buttons are clicked.
-    # It just creates them and then defines methods for the Presenter to control them.
-
+    # region init
     def __init__(self, parent: tk.Widget) -> None:
         super().__init__(parent)
         self.buttons = []
         # children must define and call self._create_widgets()
+
+    # endregion
+
+    # region methods
 
     # Public interface for Presenter to control the view's widgets
     def disable_buttons(self) -> None:
@@ -216,6 +214,8 @@ class BaseConversionTabView(ttk.Frame):
         for button in self.buttons:
             button.config(state="normal", text=button._original_text)
 
+    # endregion
+
 
 # endregion
 
@@ -229,6 +229,7 @@ class BaseConversionTabPresenter:
             view  # instantiated and passed in from MainWindow's _create_widgets()
         )
 
+    # region _load_config
     def _load_config(self, path: Path) -> UserConfig | None:
         try:
             cfg = UserConfig.from_toml(path)  # Load from disk
@@ -240,6 +241,9 @@ class BaseConversionTabPresenter:
             )
             return None
 
+    # endregion
+
+    # region start_conversion
     def start_conversion(
         self, cfg: UserConfig, pipeline_func: Callable | None = None
     ) -> None:
@@ -260,6 +264,9 @@ class BaseConversionTabPresenter:
         )
         thread.start()
 
+    # endregion
+
+    # region _run_in_thread
     def _run_in_thread(self, cfg: UserConfig, pipeline_func: Callable) -> None:
         """Run a pipeline_func call inside a background thread."""
 
@@ -280,6 +287,9 @@ class BaseConversionTabPresenter:
             # Error! Schedule UI update on main thread
             self.view.after(0, self._on_conversion_error, e)
 
+    # endregion
+
+    # region on_conversion_success/error
     def _on_conversion_success(self) -> None:
         """Inform the user of pipeline success"""
         self.view.enable_buttons()
@@ -324,6 +334,8 @@ class BaseConversionTabPresenter:
             log_folder = UserConfig().get_log_folder()
             open_folder_in_os_explorer(log_folder)
 
+    # endregion
+
 
 # endregion
 
@@ -339,6 +351,7 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.convert_btn: ttk.Button | None = None
         # children to call _create_widgets()
 
+    # region abstract methods
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI widgets from config."""
         raise NotImplementedError
@@ -351,6 +364,9 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         """Get current input path. Child implements."""
         raise NotImplementedError
 
+    # endregion
+
+    # region _create_action_section
     def _create_action_section(self) -> None:
         """Create convert button section."""
         # ActionFrame for convert button
@@ -373,6 +389,8 @@ class ConfigurableConversionTabView(BaseConversionTabView):
             0, weight=1
         )  # Convert button - stretches east-west
 
+    # endregion
+
 
 # endregion
 
@@ -386,7 +404,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
         self.view = view
         self.loaded_config = None
 
-    # Abstract - children implement
+    # region abstract methods
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather values from UI widgets into config."""
         raise NotImplementedError
@@ -395,7 +413,11 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
         """Validate input before conversion. Child must implement."""
         raise NotImplementedError
 
-    # Concrete - shared by both conversion tabs
+    # endregion
+
+    # concrete methods shared by both conversion tabs
+
+    # region _on_file_selected
     def _on_file_selected(self, *args) -> None:  # noqa: ANN002
         """Enable convert button when a file is selected."""
         # Child needs to wire this up with trace_add
@@ -406,6 +428,9 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
             else:
                 self.view.convert_btn.config(state="disabled")
 
+    # endregion
+
+    # region on_(xyz)_click
     def on_convert_click(self) -> None:
         """Handle convert button click with validation."""
         cfg = self.loaded_config if self.loaded_config else UserConfig()
@@ -440,6 +465,9 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
             if cfg:
                 self._validate_loaded_config(cfg)
 
+    # endregion
+
+    # region _validate_loaded_config
     def _validate_loaded_config(self, cfg: UserConfig) -> None:
         """Load config with direction validation."""
 
@@ -459,6 +487,8 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
         self.loaded_config = cfg
         messagebox.showinfo("Config Loaded", f"Loaded config successfully")
 
+    # endregion
+
 
 # endregion
 
@@ -471,6 +501,7 @@ class DemoTabView(BaseConversionTabView):
         super().__init__(parent)
         self._create_widgets()
 
+    # region _create_widgets
     def _create_widgets(self) -> None:
         info = ttk.Label(
             self,
@@ -479,7 +510,7 @@ class DemoTabView(BaseConversionTabView):
         )
         info.pack(pady=10)
 
-        # Create the 4 buttons (but NO commands yet!), just arrange them in the frame
+        # Create the 4 buttons (but NO commands!), just arrange them in the frame
         self.docx2pptx_btn = ttk.Button(
             self,
             text="DOCX → PPTX Demo",
@@ -514,6 +545,8 @@ class DemoTabView(BaseConversionTabView):
         )
         self.buttons.append(self.load_demo_btn)
 
+    # endregion
+
 
 # endregion
 
@@ -522,6 +555,7 @@ class DemoTabView(BaseConversionTabView):
 class DemoTabPresenter(BaseConversionTabPresenter):
     """Coordinates between View and Model"""
 
+    # region init
     def __init__(self, view: DemoTabView) -> None:
         self.view = (
             view  # instantiated and passed in from MainWindow's _create_widgets()
@@ -533,6 +567,9 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         self.view.round_trip_btn.config(command=self.on_roundtrip_demo_click)
         self.view.load_demo_btn.config(command=self.on_load_demo_click)
 
+    # endregion
+
+    # region unique child methods
     def on_docx2pptx_demo(self) -> None:
         """Handle DOCX → PPTX Demo button click."""
         direction = PipelineDirection.DOCX_TO_PPTX
@@ -561,6 +598,8 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         cfg = UserConfig().with_defaults()
         self.start_conversion(cfg, run_roundtrip_test)
 
+    # endregion
+
 
 # endregion
 
@@ -569,6 +608,7 @@ class DemoTabPresenter(BaseConversionTabPresenter):
 class Pptx2DocxTabView(ConfigurableConversionTabView):
     """View Tab for the Pptx2Docx Pipeline."""
 
+    # region init & _create_widgets
     def __init__(self, parent: tk.Widget) -> None:
         super().__init__(parent)
         self._create_widgets()
@@ -585,6 +625,9 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
         self.columnconfigure(0, weight=1)
 
+    # endregion
+
+    # region create_io
     # NOTE: This could probably be moved to the ConfigurableConversionTabView class
     # if we added logic to resolve the slightly different strings based on the
     # tab's pipeline direction. For the time being we've decided the duplication
@@ -644,6 +687,9 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         )
         self.load_btn.pack(side="left", padx=5)
 
+    # endregion
+
+    # region (UNUSED) create options
     def _create_options(self) -> None:
         """UNUSED. Create pipeline options widget(s)."""
         options_frame = ttk.Labelframe(self, text="Basic Options")
@@ -651,6 +697,9 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
         # NOTE: Here is where we would add user-configurable options to the pptx2docx UI.
 
+    # endregion
+
+    # region p2d implement parent class's abstract methods
     def _get_input_path(self) -> str:
         return self.input_selector.selected_path.get()
 
@@ -658,12 +707,17 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         """Return this tab's direction for validation."""
         return PipelineDirection.PPTX_TO_DOCX
 
+    # endregion
+
+    # region p2d config_to_ui
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI values from a loaded UserConfig"""
         # Set Path selectors
         self.input_selector.selected_path.set(cfg.input_pptx or "No selection")
         self.output_selector.selected_path.set(cfg.output_folder or "No selection")
         self.template_selector.selected_path.set(cfg.template_docx or "No selection")
+
+    # endregion
 
 
 # endregion
@@ -673,6 +727,8 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     """Presenter class for the PPTX -> Docx Tab."""
 
+    # region init
+    # (where we wire up view & buttons from view)
     def __init__(self, view: Pptx2DocxTabView) -> None:
         super().__init__(view)
         self.view = view
@@ -688,6 +744,9 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
             "write", self._on_file_selected
         )
 
+    # endregion
+
+    # region p2d _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate pptx-specific input."""
         if not cfg.input_pptx or cfg.input_pptx == "No selection":
@@ -707,7 +766,9 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 
         return True
 
-    # region p2d child implementation of parent abstract methods
+    # endregion
+
+    # region p2d ui_to_config
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
 
@@ -735,7 +796,7 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 class Docx2PptxTabView(ConfigurableConversionTabView):
     """UI Tab for the docx2pptx pipeline."""
 
-    # region d2p init + _create_widgets()
+    # region d2p init + wiring + _create_widgets
     def __init__(self, parent: tk.Widget) -> None:
         """Constructor for docx2pptx Tab"""
         super().__init__(parent)
@@ -771,7 +832,9 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
         self.columnconfigure(0, weight=1)
 
-    # region d2p _create_io_section
+    # endregion
+
+    # region d2p _create_io
     def _create_io_section(self) -> None:
         """Create docx2pptx tab's io section."""
         io_section = ttk.LabelFrame(self, text="Input/Output Selection")
@@ -875,7 +938,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
     # endregion
 
-    # region d2p _create_advanced_options + helpers
+    # region d2p _create_advanced_options
     def _create_advanced_options(self) -> None:
         """Create advanced options (collapsible)."""
         advanced = CollapsibleFrame(
@@ -933,6 +996,9 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
         self._setup_annotation_observers()
 
+    # endregion
+
+    # region annotation observers
     def _setup_annotation_observers(self) -> None:
         """Wire up parent/child checkbox relationships using observers."""
         # Children notify parent when they change
@@ -972,6 +1038,19 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.keep_footnotes.set(parent_value)
         self.keep_endnotes.set(parent_value)
 
+    # endregion
+
+    # region d2p implement parent abstract methods
+    def _get_input_path(self) -> str:
+        return self.input_selector.selected_path.get()
+
+    def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
+        return PipelineDirection.DOCX_TO_PPTX
+
+    # endregion
+
+    # region d2p config_to_ui
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI values from a loaded UserConfig"""
         # Only populate fields that have UI controls
@@ -991,13 +1070,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.keep_footnotes.set(cfg.display_footnotes)
         self.keep_endnotes.set(cfg.display_endnotes)
 
-    def _get_input_path(self) -> str:
-        return self.input_selector.selected_path.get()
-
-    def get_pipeline_direction(self) -> PipelineDirection:
-        """Return this tab's direction for validation."""
-        return PipelineDirection.DOCX_TO_PPTX
-
     # endregion
 
 
@@ -1008,6 +1080,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     """Presenter class for the Docx -> Pptx tab."""
 
+    # region init and wiring up view + buttons
     def __init__(self, view: Docx2PptxTabView) -> None:
         super().__init__(view)
         self.view = view
@@ -1023,6 +1096,9 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
             "write", self._on_file_selected
         )
 
+    # endregion
+
+    # region _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate docx-specific input."""
         # Validate required fields
@@ -1043,6 +1119,9 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
         return True
 
+    # endregion
+
+    # region d2p ui_to_config
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
 
@@ -1065,6 +1144,8 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
         cfg.template_pptx = template if template != "No selection" else None
         return cfg
 
+    # endregion
+
 
 # endregion
 
@@ -1078,6 +1159,7 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 class CollapsibleFrame(ttk.Frame):
     """A frame that can be collapsed/expanded with a toggle button."""
 
+    # region init
     def __init__(
         self, parent: tk.Widget, title: str, start_collapsed: bool = True
     ) -> None:
@@ -1105,6 +1187,9 @@ class CollapsibleFrame(ttk.Frame):
         if not start_collapsed:
             self.content_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
+    # endregion
+
+    # region toggle
     def toggle(self) -> None:
         """Toggle between collapsed and expanded states."""
         if self.is_collapsed:
@@ -1122,6 +1207,8 @@ class CollapsibleFrame(ttk.Frame):
         self.winfo_toplevel().update_idletasks()
         self.winfo_toplevel().geometry("")  # ← Reset to minimum size
 
+    # endregion
+
 
 # endregion
 
@@ -1130,6 +1217,7 @@ class CollapsibleFrame(ttk.Frame):
 class PathSelector(ttk.Frame):
     """Shared file/directory path selector component."""
 
+    # region init
     def __init__(
         self,
         parent: tk.Widget,
@@ -1147,6 +1235,9 @@ class PathSelector(ttk.Frame):
 
         self._create_widgets()
 
+    # endregion
+
+    # region _create_widgets
     def _create_widgets(self) -> None:
         """Create the path widgets"""
         # Label showing what this selector is for
@@ -1166,6 +1257,9 @@ class PathSelector(ttk.Frame):
         # Make entry stretch with window
         self.columnconfigure(1, weight=1)
 
+    # endregion
+
+    # region browse
     def browse(self) -> None:
         """Open file or directory dialog based on is_dir flag."""
         if self.is_dir:
@@ -1178,6 +1272,10 @@ class PathSelector(ttk.Frame):
         if path:
             self.selected_path.set(path)
 
+    # end region
+
+
+# endregion
 
 # endregion
 
@@ -1193,6 +1291,7 @@ class LogViewer(ttk.LabelFrame):
         self._create_widgets()
         self._setup_log_handler()
 
+    # region _create_widgets
     def _create_widgets(self) -> None:
         """Create the text widget and clear button."""
         self.text_widget = scrolledtext.ScrolledText(
@@ -1210,6 +1309,9 @@ class LogViewer(ttk.LabelFrame):
         self.clear_btn = ttk.Button(self, text="Clear Log", command=self.clear_log)
         self.clear_btn.pack(side="left", pady=(0, 5), padx=5)
 
+    # endregion
+
+    # region clear_log
     def clear_log(self) -> None:
         """Clear all text from the log viewer."""
         self.text_widget.config(state="normal")  # enable editing
@@ -1217,6 +1319,9 @@ class LogViewer(ttk.LabelFrame):
         self.text_widget.delete("1.0", "end")
         self.text_widget.config(state="disabled")
 
+    # endregion
+
+    # region _setup_log_handler
     def _setup_log_handler(self) -> None:
         """Connect the log viewer text widget to the logging system via our custom handler"""
 
@@ -1237,6 +1342,8 @@ class LogViewer(ttk.LabelFrame):
 
         log.info("Log viewer initialized in tkinter UI")
 
+    # endregion
+
 
 # endregion
 
@@ -1245,6 +1352,7 @@ class LogViewer(ttk.LabelFrame):
 class TextWidgetHandler(logging.Handler):
     """Custom logging handler that writes to a Tkinter Text widget"""
 
+    # region init
     def __init__(self, text_widget: tk.Text, root: tk.Tk) -> None:
         """
         Initialize handler.
@@ -1256,6 +1364,10 @@ class TextWidgetHandler(logging.Handler):
         super().__init__()  # We're inheriting from logging.Handler. This is calling that guy's constructor to start init
         self.text_widget = text_widget
         self.root = root
+
+    # endregion
+
+    # region emit
 
     # This is called automatically by Python's logging system
     # whenever a log message is generated, because we made a subclass.
@@ -1271,6 +1383,9 @@ class TextWidgetHandler(logging.Handler):
         # Critical: emit() might be called from a background thread; we use root.after() to safely update the UI.
         self.root.after(0, self._append_log, msg)
 
+    # endregion
+
+    # region append_log
     def _append_log(self, message: str) -> None:
         """Append message to text widget (must run on UI thread)."""
         # Enable editing temporarily
@@ -1285,11 +1400,14 @@ class TextWidgetHandler(logging.Handler):
         # disable editing again to make it read-only
         self.text_widget.config(state="disabled")
 
+    # endregion
+
 
 # endregion
 
 
 # region Helper functions (class agnostic)
+# region open_folder_in_os_explorer
 def open_folder_in_os_explorer(folder_path: Path | str) -> None:
     """
     Open the folder in the system file explorer, platform-specific.
@@ -1318,6 +1436,10 @@ def open_folder_in_os_explorer(folder_path: Path | str) -> None:
         )
 
 
+# endregion
+
+
+# region browse for file & dir
 def browse_for_file(
     title: str,
     filetypes: list[tuple[str, str]] | None = None,
@@ -1337,6 +1459,8 @@ def browse_for_dir(title: str, initial_dir: str | None = None) -> str | None:
     path = filedialog.askdirectory(title=title, initialdir=initial_dir)
     return path if path else None
 
+
+# endregion
 
 # endregion
 
