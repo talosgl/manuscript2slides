@@ -15,22 +15,16 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QCheckBox,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QObject, Signal
 import sys
+import time
 
 # log = logging.getLogger("manuscript2slides")
 # endregion
 
 
-# region event handlers
-def on_button_click():
-    """Handle button click."""
-    print("Yoooo, button clicked!")
+# region helpers
 
-
-# endregion
-
-# region stylers
 
 # endregion
 
@@ -46,20 +40,30 @@ def main() -> None:
     window.setWindowTitle("Signals & Slots")
     layout = QVBoxLayout()
 
-    checkbox = QCheckBox("Enable button")
-    button = QPushButton("Click me")
+    firstnum = QLineEdit()
+    secondnum = QLineEdit()
+    sumnum = QLineEdit()
+    sumnum.setDisabled(True)
+    sumnum.setPlaceholderText("Sum will print here")
 
-    # Connect checkbox signal to button's setEnabled slot directly
-    checkbox.toggled.connect(button.setEnabled)
-    # Q: So this makes it so that button.setEnabled is "listening" for checkbox.toggled to "occur", right? The syntax feels a little backwards, so just making sure.
-    # Start with button disabled
-    button.setEnabled(False)
+    def calc_if_valid():
+        try:
+            val1 = int(firstnum.text())
+            val2 = int(secondnum.text())
+            sumnum.setText(str(val1 + val2))
+        except ValueError:
+            sumnum.setText("Must be numbers only!")
 
-    layout.addWidget(checkbox)
-    layout.addWidget(button)
+    # connect the fields to the validation func
+    # I think this'd happen in the presenter init
+    firstnum.textChanged.connect(calc_if_valid)
+    secondnum.textChanged.connect(calc_if_valid)
 
+    layout.addWidget(QLabel("Jojo's calculator"))
+    layout.addWidget(firstnum)
+    layout.addWidget(secondnum)
+    layout.addWidget(sumnum)
     window.setLayout(layout)
-
     window.show()
     sys.exit(
         app.exec()
