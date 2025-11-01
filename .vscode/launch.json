@@ -63,5 +63,19 @@
                 "PYTHONPATH": "${workspaceRoot}"
             }
         },
+        // launch main() from ui_qt.py
+        {
+            "name": "ui_qt gui manuscript2slides",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "manuscript2slides.experiments.ui_qt",
+            "console": "integratedTerminal",
+            "args": [
+                "--fusion"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            }
+        },
     ]
 }
