@@ -66,13 +66,6 @@ class PathSelector(QWidget):
         self.filetypes = filetypes
         self.typenames = typenames
 
-        # Create persistent dialog instance
-        self.dialog = QFileDialog(self)
-        if is_dir:
-            self.dialog.setFileMode(QFileDialog.FileMode.Directory)
-        else:
-            self.dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
-
         self._create_widgets(
             label_text, read_only
         )  # No other method needs read_only, so we don't clutter self with it.
@@ -104,9 +97,9 @@ class PathSelector(QWidget):
 
     def _connect_signals(self):
         """Wire up internal signals."""
-        connection1 = self.browse_btn.clicked.connect(self.browse)
+        self.browse_btn.clicked.connect(self.browse)
         # Emit signal when line edit text changes
-        connection2 = self.line_edit.textChanged.connect(self.path_changed.emit)
+        self.line_edit.textChanged.connect(self.path_changed.emit)
         self.line_edit.textChanged.connect(self._validate_path)
 
     def _build_qtfilter_str(self) -> str:
