@@ -5,6 +5,7 @@
 - [x] Change backend defaults to have most bools turned off so that default is empty speaker notes. Adjust round-trip to have them enabled.
 - [ ] GUI: Wire up auto-save/load for preference persistence across sessions (call the save_toml/load_toml methods on UserConfig)
 - [ ] Revisit the Demo speaker notes bool-setting code because I hard-coded the old way into cli.run() and it's... smelly....
+- [ ] Add feature to allow page ranges (Pipeline/backend + interface updates)
 
 ## Major TODOs Ordered by priority/dependency
 Epic: Investigate UI options, select one, implement it
