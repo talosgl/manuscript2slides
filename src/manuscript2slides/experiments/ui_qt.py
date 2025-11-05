@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QGroupBox,
+    QFrame,
 )
 from PySide6.QtCore import QObject, Signal, QSettings, QThread, Qt
 import sys
@@ -75,6 +76,9 @@ class MainWindow(QMainWindow):
         self.log_viewer = LogViewer()
 
         # TODO: Add the rest of the tabs
+        self.p2d_tab_view = Pptx2DocxTabView()
+
+        self.tabs.addTab(self.p2d_tab_view, "PPTX -> DOCX")
 
         self.demo_tab_view = DemoTabView()
         self.demo_presenter = DemoTabPresenter(self.demo_tab_view)
@@ -363,9 +367,12 @@ class BaseConversionTabPresenter(QObject):
 
 # TODO
 # region ConfigurableConversionTabView
+
 # endregion
+
 # TODO
 # region ConfigurableConversionTabPresenter
+
 # endregion
 
 
@@ -524,12 +531,185 @@ class DemoTabPresenter(BaseConversionTabPresenter):
 
 # endregion
 
+
 # TODO
 # region Pptx2DocxView
+class Pptx2DocxTabView(BaseConversionTabView):
+    """View Tab for the Pptx2Docx Pipeline."""
+
+    # Signals (if any)
+
+    # region init, _create_widgets, _create_layout
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
+        # TODO: move to ConfigurableConversionTabView
+        # Get defaults from UserConfig
+        self.cfg_defaults = UserConfig()
+        self.convert_btn: QPushButton | None = None
+
+        # Create widgets
+        self._create_widgets()
+
+        # Arrange them in a layout
+        self._create_layout()
+
+    def _create_widgets(self) -> None:
+
+        self._create_io_section()
+
+        # We don't yet offer options for the reverse pipeline;
+        # behavior is all inferred from the available data in the .docx.
+        # Eventually we might want to; this is where it would be long in the UI.
+        # self._create_options_section()
+
+        self._create_convert_section()
+
+    # region create_io
+    def _create_io_section(self) -> None:
+        """Create and"""
+        self._create_io_widgets()
+        self._create_io_layout()
+
+    def _create_io_widgets(self) -> None:
+        # Create I/O Section Group
+        self.io_section = QGroupBox("Input/Output Selection")
+
+        # Input file
+        self.input_selector = PathSelector(
+            parent=self.io_section,  # Q: Do we define parent here, or addWidget later? | A: It seems like you don't really need to define parents if you are using layouts, but it doesn't hurt.
+            label_text="Input .pptx File:",
+            is_dir=False,
+            filetypes=[".pptx"],
+            typenames="PowerPoint",
+            default_path="No Selection",
+            read_only=True,
+        )
+
+        # Create Advanced I/O Collapsible Frame/Group
+        self.advanced_io = CollapsibleFrame(title="Advanced", start_collapsed=True)
+
+        # Create items that'll go under the collapse
+        self.output_selector = PathSelector(
+            parent=self.advanced_io,
+            label_text="Output Folder:",
+            is_dir=True,
+            default_path=str(self.cfg_defaults.get_output_folder()),
+        )
+
+        self.template_selector = PathSelector(
+            parent=self.advanced_io,
+            label_text="Custom Template:",
+            filetypes=[("Word Document", "*.docx")],
+            default_path=str(self.cfg_defaults.get_template_docx_path()),
+        )
+
+        self.save_btn = QPushButton("Save Config")
+        self.load_btn = QPushButton("Load Config")
+
+    def _create_io_layout(self) -> None:
+        """Arrange the I/O section's widgets & subsections."""
+
+        # Arrange items in the the "Advanced" CollapsibleFrame subsection
+        # (NOTE: the advanced_io subsection creates it own layout)
+        self.advanced_io.content_layout.addWidget(self.template_selector)
+        self.advanced_io.content_layout.addWidget(self.output_selector)
+
+        # Create horizontal line separator to go between paths and buttons
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
+        self.advanced_io.content_layout.addWidget(separator)
+
+        # Put save/load buttons in their own self-contained sub-layout
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.save_btn)
+        button_layout.addWidget(self.load_btn)
+        # button_layout.addStretch()  # Push buttons to left
+        self.advanced_io.content_layout.addLayout(button_layout)
+
+        # Create the outermost main I/O Layout
+        io_layout = QVBoxLayout()
+
+        # Add the input_selector to it
+        io_layout.addWidget(self.input_selector)
+        io_layout.addWidget(self.advanced_io)
+
+        self.io_section.setLayout(io_layout)
+
+    # endregion
+
+    # region (UNUSED) create options
+    def _create_options_section(self) -> None:
+        """UNUSED. Create pipeline options widget(s)."""
+        self.options_frame = QGroupBox("Basic Options")
+
+        # NOTE: Here is where we could add user-configurable options widgets to the pptx2docx UI.
+        # If things get complex, split this into _create_options_widgets() and _create_options_layouts()
+
+    # endregion
+
+    # region create_action TODO move to parent
+    def _create_convert_section(self) -> None:
+        """Create convert button section."""
+
+        # TODO: Create action/button section (on tk version, this is defined by parent)
+        self.convert_section = QGroupBox("Let's Go!")
+
+        self.convert_btn = QPushButton("Convert!")  # TODO: start disabled?
+        # TODO: Style the button to be big!
+        # TODO: And to be green when ready, grayed-out when not ready/disabled
+
+        self.buttons.append(self.convert_btn)  # For base class disable/enable
+
+        convert_layout = QVBoxLayout()
+        convert_layout.addWidget(self.convert_btn)
+        self.convert_section.setLayout(convert_layout)
+
+    # endregion
+
+    def _create_layout(self) -> None:
+        """Arrange sections into main layout."""
+        layout = QVBoxLayout()
+        layout.addWidget(self.io_section)
+        # layout.addWidget(self.options_section)
+        layout.addWidget(self.convert_section)
+        layout.addStretch()
+        self.setLayout(layout)
+
+    # endregion
+
+    # region p2d _get_input_path
+    def _get_input_path(self) -> str:
+        return self.input_selector.get_path()
+
+    # endregion
+
+    # region p2d _get_pipeline_direction
+    def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
+        return PipelineDirection.PPTX_TO_DOCX
+
+    # endregion
+
+    # region p2d config_to_ui
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI values from a loaded UserConfig"""
+        # Set Path selectors
+        self.input_selector.set_path(cfg.input_pptx or "No selection")
+        self.output_selector.set_path(cfg.output_folder or "No selection")
+        self.template_selector.set_path(cfg.template_docx or "No selection")
+
+    # endregion
+
+
 # endregion
+
 # TODO
 # region Pptx2DocxPresenter
 # endregion
+
+
 # TODO
 # region Docx2PptxView
 # endregion
@@ -572,6 +752,9 @@ class CollapsibleFrame(QWidget):
         self.content_frame.setVisible(
             not self.is_collapsed
         )  # Hidden if starting collapsed
+
+        self.content_layout = QVBoxLayout()
+        self.content_frame.setLayout(self.content_layout)
 
     def _create_layout(self) -> None:
         """Arrange widgets in layout."""
@@ -710,8 +893,8 @@ class PathSelector(QWidget):
 
     def _validate_path(self, path: str) -> None:
         """Validate path and change line_edit color accordingly"""
-        if not path:
-            # Empty is OK
+        if not path or path == "No Selection":
+            # Empty or "No Selection" is OK
             self._set_line_edit_color(None)
             return
 
@@ -727,7 +910,7 @@ class PathSelector(QWidget):
 
         # Set color based on validity
         if is_valid:
-            self._set_line_edit_color("lightgreen")
+            self._set_line_edit_color("green")
         else:
             self._set_line_edit_color("lightcoral")
 
