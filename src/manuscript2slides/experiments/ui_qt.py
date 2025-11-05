@@ -365,8 +365,57 @@ class BaseConversionTabPresenter(QObject):
 
 # endregion
 
+
 # TODO
 # region ConfigurableConversionTabView
+class ConfigurableConversionTabView(BaseConversionTabView):
+    """View class for the ConfigurableConversionTab."""
+
+    # region init
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
+        # Get defaults from UserConfig
+        self.cfg_defaults = UserConfig()
+        self.convert_btn: QPushButton | None = None
+
+        # children to call _create_widgets(), _create_layouts()
+
+    # endregion
+
+    # region abstract methods
+    # subclasses must implement these
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI widgets from config."""
+        raise NotImplementedError
+
+    def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
+        raise NotImplementedError
+
+    def _get_input_path(self) -> str:
+        """Get current input path. Child implements."""
+        raise NotImplementedError
+
+    # endregion
+
+    # region _create_convert_section
+    def _create_convert_section(self) -> None:
+        """Create convert button section."""
+        self.convert_section = QGroupBox("Let's Go!")
+
+        self.convert_btn = QPushButton("Convert!")  # TODO: start disabled?
+        # TODO: Style the button to be big!
+        # TODO: And to be green when ready, grayed-out when not ready/disabled
+
+        self.buttons.append(self.convert_btn)  # For base class disable/enable
+
+        convert_layout = QVBoxLayout()
+        convert_layout.addWidget(self.convert_btn)
+        self.convert_section.setLayout(convert_layout)
+
+    # endregion
+
 
 # endregion
 
@@ -532,9 +581,9 @@ class DemoTabPresenter(BaseConversionTabPresenter):
 # endregion
 
 
-# TODO
+# done~
 # region Pptx2DocxView
-class Pptx2DocxTabView(BaseConversionTabView):
+class Pptx2DocxTabView(ConfigurableConversionTabView):
     """View Tab for the Pptx2Docx Pipeline."""
 
     # Signals (if any)
@@ -542,11 +591,6 @@ class Pptx2DocxTabView(BaseConversionTabView):
     # region init, _create_widgets, _create_layout
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-
-        # TODO: move to ConfigurableConversionTabView
-        # Get defaults from UserConfig
-        self.cfg_defaults = UserConfig()
-        self.convert_btn: QPushButton | None = None
 
         # Create widgets
         self._create_widgets()
@@ -646,25 +690,6 @@ class Pptx2DocxTabView(BaseConversionTabView):
 
         # NOTE: Here is where we could add user-configurable options widgets to the pptx2docx UI.
         # If things get complex, split this into _create_options_widgets() and _create_options_layouts()
-
-    # endregion
-
-    # region create_action TODO move to parent
-    def _create_convert_section(self) -> None:
-        """Create convert button section."""
-
-        # TODO: Create action/button section (on tk version, this is defined by parent)
-        self.convert_section = QGroupBox("Let's Go!")
-
-        self.convert_btn = QPushButton("Convert!")  # TODO: start disabled?
-        # TODO: Style the button to be big!
-        # TODO: And to be green when ready, grayed-out when not ready/disabled
-
-        self.buttons.append(self.convert_btn)  # For base class disable/enable
-
-        convert_layout = QVBoxLayout()
-        convert_layout.addWidget(self.convert_btn)
-        self.convert_section.setLayout(convert_layout)
 
     # endregion
 
