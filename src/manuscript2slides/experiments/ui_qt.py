@@ -19,6 +19,9 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QGroupBox,
     QFrame,
+    QComboBox,
+    QCheckBox,
+    QSizePolicy,
 )
 from PySide6.QtCore import QObject, Signal, QSettings, QThread, Qt
 import sys
@@ -76,6 +79,8 @@ class MainWindow(QMainWindow):
         self.log_viewer = LogViewer()
 
         # TODO: Add docx2pptxtab
+        self.d2p_tab_view = Docx2PptxTabView()
+        self.tabs.addTab(self.d2p_tab_view, "DOCX -> PPTX")
 
         self.p2d_tab_view = Pptx2DocxTabView()
         self.p2d_tab_presenter = Pptx2DocxTabPresenter(self.p2d_tab_view)
@@ -386,42 +391,114 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
         # Get defaults from UserConfig
         self.cfg_defaults = UserConfig()
-        self.convert_btn: QPushButton | None = None
-        self.save_btn: QPushButton | None = None
-        self.load_btn: QPushButton | None = None
+
+        # Subclasses must define these attributes in their own _create_io_widgets()
+        self.input_label = "Input File:"
+        self.input_filetypes = self.template_filetypes = ["*.*"]
+        self.input_typenames = self.template_typenames = "Files"
+        self.template_default = "No Selection"  # This is a bit gross but is there another option? None, with checks?
 
         # children to call _create_widgets(), _create_layouts()
 
     # endregion
 
-    # region abstract methods
-    # subclasses must implement these
-    def config_to_ui(self, cfg: UserConfig) -> None:
-        """Populate UI widgets from config."""
-        raise NotImplementedError
+    # region _create_[widgets] pieces (concrete/shared)
+    def _create_io_section(self) -> None:
+        """Create and layout IO section"""
+        self._create_io_widgets()
+        self._create_io_layout()
 
-    def get_pipeline_direction(self) -> PipelineDirection:
-        """Return this tab's direction for validation."""
-        raise NotImplementedError
+    # region _create_io_widgets (partial)
+    def _create_io_widgets(self) -> None:
+        """Create I/O section.
 
-    def _get_input_path(self) -> str:
-        """Get current input path. Child implements."""
-        raise NotImplementedError
+        Subclasses must define special attributes in their own _create_io_widgets() BEFORE
+        calling super()._create_io_widgets() to override. If they don't, the defaults from
+        this parent class's init will be used:
+
+        self.input_label = "Input File:"
+        self.input_filetypes = ["*.*"]
+        self.input_typenames = "Files"
+        self.template_filetypes = ["*.*"]
+        self.template_typenames = "Files"
+        self.template_default = "No selection"
+        """
+
+        # Create I/O Section Group
+        self.io_section = QGroupBox("Input/Output Selection")
+
+        # Input file
+        self.input_selector = PathSelector(
+            parent=self.io_section,
+            label_text=self.input_label,
+            is_dir=False,
+            filetypes=self.input_filetypes,
+            typenames=self.input_typenames,
+            default_path="No Selection",
+            read_only=True,
+        )
+
+        # Create Advanced I/O Collapsible Frame/Group
+        self.advanced_io = CollapsibleFrame(title="Advanced", start_collapsed=True)
+
+        # Create items that'll go under the collapse
+        self.output_selector = PathSelector(
+            parent=self.advanced_io.content_frame,
+            label_text="Output Folder:",
+            is_dir=True,
+            default_path=str(self.cfg_defaults.get_output_folder()),
+        )
+
+        self.template_selector = PathSelector(
+            parent=self.advanced_io.content_frame,
+            label_text="Custom Template:",
+            filetypes=self.template_filetypes,
+            typenames=self.template_typenames,
+            default_path=self.template_default,
+        )
+
+        self.save_btn = QPushButton("Save Config")
+        self.load_btn = QPushButton("Load Config")
 
     # endregion
 
-    # region _update_convert_button signal handler/slot
-    def _update_convert_button(self, path: str) -> None:
-        """Enable/disable convert button based on path validity."""
-        if self.convert_btn:
-            if path and path != "No selection" and Path(path).exists():
-                self.convert_btn.setEnabled(True)
-            else:
-                self.convert_btn.setEnabled(False)
+    # region _create_io_layout (concrete/shared)
+    def _create_io_layout(self) -> None:
+        """Arrange the I/O section's widgets & subsections."""
+
+        # Arrange items in the the "Advanced" CollapsibleFrame subsection
+        # (NOTE: the advanced_io subsection creates it own layout)
+        self.advanced_io.content_layout.addWidget(self.output_selector)
+
+        self.advanced_io.content_layout.addWidget(self.template_selector)
+
+        # Create horizontal line separator to go between paths and buttons
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
+        self.advanced_io.content_layout.addWidget(separator)
+
+        # Put save/load buttons in their own self-contained sub-layout
+        button_layout = QHBoxLayout()
+
+        button_layout.addWidget(self.save_btn)  # Pylance, are you happy?
+        button_layout.addWidget(self.load_btn)
+
+        # button_layout.addStretch()  # Push buttons to left
+        self.advanced_io.content_layout.addLayout(button_layout)
+
+        # Create the outermost main I/O Layout
+        io_layout = QVBoxLayout()
+
+        # Add the input_selector to it
+        io_layout.addWidget(self.input_selector)
+        io_layout.addWidget(self.advanced_io)
+
+        self.io_section.setLayout(io_layout)
 
     # endregion
 
-    # region _create_convert_section
+    # region _create_convert_section (concrete/shared)
     def _create_convert_section(self) -> None:
         """Create convert button section."""
         self.convert_section = QGroupBox("Let's Go!")
@@ -435,6 +512,35 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         convert_layout = QVBoxLayout()
         convert_layout.addWidget(self.convert_btn)
         self.convert_section.setLayout(convert_layout)
+
+    # endregion
+
+    # region _update_convert_button (concrete/shared) signal handler/slot
+    def _update_convert_button(self, path: str) -> None:
+        """Enable/disable convert button based on path validity."""
+        if self.convert_btn:
+            if path and path != "No selection" and Path(path).exists():
+                self.convert_btn.setEnabled(True)
+            else:
+                self.convert_btn.setEnabled(False)
+
+    # endregion
+    # region config_to_ui (abstract)
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI widgets from config."""
+        raise NotImplementedError
+
+    # endregion
+    # region get_pipeline_direction (abstract)
+    def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
+        raise NotImplementedError
+
+    # endregion
+    # region get_input_path (abstract)
+    def _get_input_path(self) -> str:
+        """Get current input path. Child implements."""
+        raise NotImplementedError
 
     # endregion
 
@@ -726,94 +832,29 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         # We don't yet offer options for the reverse pipeline;
         # behavior is all inferred from the available data in the .docx.
         # Eventually we might want to; this is where it would be long in the UI.
-        # self._create_options_section()
+        # self._create_basic_options()
 
         self._create_convert_section()
 
     # endregion
 
-    # region create_io
-    def _create_io_section(self) -> None:
-        """Create and"""
-        self._create_io_widgets()
-        self._create_io_layout()
-
+    # region p2d create_io_widgets() (extended)
     def _create_io_widgets(self) -> None:
-        # Create I/O Section Group
-        self.io_section = QGroupBox("Input/Output Selection")
+        # Define this subclass's unique attributes
+        self.input_label = "Input .pptx File:"
+        self.input_filetypes = ["*.pptx"]
+        self.input_typenames = "PowerPoint"
+        self.template_filetypes = ["*.docx"]
+        self.template_typenames = "Word Document"
+        self.template_default = str(self.cfg_defaults.get_template_docx_path())
 
-        # Input file
-        self.input_selector = PathSelector(
-            parent=self.io_section,  # Q: Do we define parent here, or addWidget later? | A: It seems like you don't really need to define parents if you are using layouts, but it doesn't hurt.
-            label_text="Input .pptx File:",
-            is_dir=False,
-            filetypes=[".pptx"],
-            typenames="PowerPoint",
-            default_path="No Selection",
-            read_only=True,
-        )
-
-        # Create Advanced I/O Collapsible Frame/Group
-        self.advanced_io = CollapsibleFrame(title="Advanced", start_collapsed=True)
-
-        # Create items that'll go under the collapse
-        self.output_selector = PathSelector(
-            parent=self.advanced_io,
-            label_text="Output Folder:",
-            is_dir=True,
-            default_path=str(self.cfg_defaults.get_output_folder()),
-        )
-
-        self.template_selector = PathSelector(
-            parent=self.advanced_io,
-            label_text="Custom Template:",
-            filetypes=[("Word Document", "*.docx")],
-            default_path=str(self.cfg_defaults.get_template_docx_path()),
-        )
-
-        self.save_btn = QPushButton("Save Config")
-        self.load_btn = QPushButton("Load Config")
-
-    def _create_io_layout(self) -> None:
-        """Arrange the I/O section's widgets & subsections."""
-
-        # Arrange items in the the "Advanced" CollapsibleFrame subsection
-        # (NOTE: the advanced_io subsection creates it own layout)
-        self.advanced_io.content_layout.addWidget(self.template_selector)
-        self.advanced_io.content_layout.addWidget(self.output_selector)
-
-        # Create horizontal line separator to go between paths and buttons
-        separator = QFrame()
-        separator.setFrameShape(QFrame.Shape.HLine)
-        separator.setFrameShadow(QFrame.Shadow.Sunken)
-        self.advanced_io.content_layout.addWidget(separator)
-
-        # Put save/load buttons in their own self-contained sub-layout
-        button_layout = QHBoxLayout()
-
-        # We could, instead, do: `assert self.save_btn is not None`, but this is slightly more graceful if it fails
-        # (e.g., many users probably dgaf if these buttons don't show up; not really worth crashing the app for)
-        if self.save_btn:
-            button_layout.addWidget(self.save_btn)  # Pylance, are you happy?
-        if self.load_btn:
-            button_layout.addWidget(self.load_btn)
-
-        # button_layout.addStretch()  # Push buttons to left
-        self.advanced_io.content_layout.addLayout(button_layout)
-
-        # Create the outermost main I/O Layout
-        io_layout = QVBoxLayout()
-
-        # Add the input_selector to it
-        io_layout.addWidget(self.input_selector)
-        io_layout.addWidget(self.advanced_io)
-
-        self.io_section.setLayout(io_layout)
+        # Call parent's method
+        super()._create_io_widgets()
 
     # endregion
 
-    # region (UNUSED) create options
-    def _create_options_section(self) -> None:
+    # region (UNUSED) create basic options
+    def _create_basic_options(self) -> None:
         """UNUSED. Create pipeline options widget(s)."""
         self.options_frame = QGroupBox("Basic Options")
 
@@ -966,48 +1007,144 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 class Docx2PptxTabView(ConfigurableConversionTabView):
     """View Tab for the DOCX -> PPTX Pipeline."""
 
-    # region init
+    # region init _create_widgets()
     def __init__(self, parent=None) -> None:
+        """Constructor for docx2pptx Tab"""
         super().__init__(parent)
 
+        # Unlike in tk, no need to declare a bunch of BooleanVar or StringVar in Qt
+
         # Create widgets
-        # self._create_widgets()
+        self._create_widgets()
 
         # Arrange them in a layout
-        # self._create_layout()
+        self._create_layout()
 
         # Wire up internal signals
-        # self._connect_internal_signals()
-
-    # endregion
+        self._connect_internal_signals()
 
     def _create_widgets(self) -> None:
-        pass
+        self._create_io_section()
 
-    # region _create_io
-    def _create_io_section(self) -> None:
-        """Create docx2pptx tab's io section."""
-        pass
+        self._create_basic_options()
+
+        self._create_advanced_options()
+
+        self._create_convert_section()
 
     # endregion
 
-    # region _create_basic_options
+    # region d2p create_io_widgets() (extended)
+    def _create_io_widgets(self) -> None:
+
+        # Define this subclass's unique attributes
+        self.input_label = "Input .docx File:"
+        self.input_filetypes = ["*.docx"]
+        self.input_typenames = "Word Document"
+        self.template_filetypes = ["*.pptx"]
+        self.template_typenames = "PowerPoint"
+        self.template_default = str(self.cfg_defaults.get_template_pptx_path())
+
+        # Call parent's method
+        super()._create_io_widgets()
+
+    # endregion
+
     # region d2p _create_basic_options
     def _create_basic_options(self) -> None:
         """Create pipeline options widgets."""
-        pass
+        self.basic_options = QGroupBox("Basic Options")
+
+        chunk_label = QLabel("Chunk manuscript into slides by:")
+
+        # Use self.* because we know we'll need to read from it later.
+        self.chunk_dropdown = QComboBox()
+        self.chunk_dropdown.addItems([chunk.value for chunk in ChunkType])
+        self.chunk_dropdown.setCurrentText(self.cfg_defaults.chunk_type.value)
+        # read with selected_chunk = self.chunk_dropdown.currentText()
+
+        explain_chunks = CollapsibleFrame(
+            self.basic_options, title="What do these mean?"
+        )
+        explain_chunks_text = QPlainTextEdit(parent=explain_chunks.content_frame)
+        explain_chunks_text.setPlainText(
+            "PARAGRAPH (default): One slide per paragraph break.\n"
+            "PAGE: One slide for every page break.\n"
+            "Heading (Flat): New slides for every heading, regardless of parent-child hierarchy.\n"
+            "Heading (Nested): New slides only on finding a 'parent/grandparent' heading to the previously found. \n"
+            "All options create a new slide if there is a page break in the middle of a section.",
+        )
+        explain_chunks_text.setReadOnly(True)
+
+        # Set up min/max for height so it doesn't get squished
+        explain_chunks_text.setMinimumHeight(100)  # Give it some breathing room
+        explain_chunks_text.setMaximumHeight(150)  # But not infinite
+
+        # Optional: Remove scrollbars if text fits
+        explain_chunks_text.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        explain_chunks_text.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        explain_chunks.content_layout.addWidget(explain_chunks_text)
+
+        self.experimental_fmt_chk = QCheckBox(
+            "Preserve advanced formatting (experimental)"
+        )
+        # Unlike in Tk, in Qt it is good practice to split widget creation and state configuration into separate lines
+        self.experimental_fmt_chk.setChecked(
+            self.cfg_defaults.experimental_formatting_on
+        )
+
+        tip_label = QLabel(r"Tip: Disable this if conversion crashes or freezes")
+        tip_label.setWordWrap(True)  # wraps at the layout width
+        tip_label.setContentsMargins(25, 0, 0, 0)
+        tip_label.setStyleSheet("color: gray;")  # same as foreground="gray" in tk
+
+        # Add to layout
+        layout = QVBoxLayout()
+        layout.addWidget(chunk_label)
+        layout.addWidget(self.chunk_dropdown)
+
+        # Explanation section
+        layout.addWidget(explain_chunks)
+
+        # Experimental formatting section
+        layout.addWidget(self.experimental_fmt_chk)
+        layout.addWidget(tip_label)
+
+        self.basic_options.setLayout(layout)
 
     # endregion
 
     # region _create_advanced_options
     def _create_advanced_options(self) -> None:
         """Create advanced options (collapsible)."""
+        # self.advanced_options = CollapsibleFrame(
+        #     self, title="Advanced Options", start_collapsed=True
+        # )
+
+        keep_metadata_chk = "checkbox pointing at value=self.cfg_defaults.preserve_docx_metadata_in_speaker_notes"
+        tip_text = "Tip: Enable for round-trip conversion (maintains comments, heading formatting, etc.)"
+
+        annotations_note = (
+            "Annotations cannot be replicated in slides, but can be copied into the slides' speaker notes.",
+        )
+        # TODO: Annotations quartet with observer
 
     # endregion
 
     # region create_layout
     def _create_layout(self) -> None:
-        pass
+        """Arrange sections into main layout."""
+        layout = QVBoxLayout()
+        layout.addWidget(self.io_section)
+        layout.addWidget(self.basic_options)
+        # layout.addWidget(self.convert_section)
+        layout.addStretch()
+        self.setLayout(layout)
 
     # endregion
 
@@ -1153,6 +1290,10 @@ class CollapsibleFrame(QWidget):
             self.toggle_btn.setText(f"▶ {self.title}")
             self.is_collapsed = True
 
+        # Force layout recalculation
+        self.adjustSize()
+        self.updateGeometry()
+
 
 # endregion
 
@@ -1186,7 +1327,7 @@ class PathSelector(QWidget):
             parent: Parent widget
             label_text: Label to display
             is_dir: True for folder selection, False for file selection
-            file_types: List of allowed extensions (e.g., [".docx", ".txt"])
+            file_types: List of allowed extensions (e.g., ["*.docx", "*.txt"])
         """
         super().__init__(parent)
 
@@ -1236,7 +1377,7 @@ class PathSelector(QWidget):
             # No specific types - just "All Files"
             return "All Files (*)"
 
-        extensions = " ".join(f"*{ext}" for ext in self.filetypes)
+        extensions = " ".join(f"{ext}" for ext in self.filetypes)
         return f"{self.typenames} ({extensions});;All Files (*)"
 
     def browse(self):
