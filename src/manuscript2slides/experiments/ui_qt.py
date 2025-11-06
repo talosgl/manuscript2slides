@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         super().__init__()  # Initialize using QMainWindow's constructor
 
         self.setWindowTitle("manuscript2slides")
-        self.setGeometry(100, 100, 800, 600)
+        # self.resize(800, 600)  # Initial size, but resizable
 
         # In Tk, we applied theme BEFORE creating widgets (do we need at all in Qt?)
         # self._apply_theme()
@@ -75,9 +75,10 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.log_viewer = LogViewer()
 
-        # TODO: Add the rest of the tabs
-        self.p2d_tab_view = Pptx2DocxTabView()
+        # TODO: Add docx2pptxtab
 
+        self.p2d_tab_view = Pptx2DocxTabView()
+        self.p2d_tab_presenter = Pptx2DocxTabPresenter(self.p2d_tab_view)
         self.tabs.addTab(self.p2d_tab_view, "PPTX -> DOCX")
 
         self.demo_tab_view = DemoTabView()
@@ -229,9 +230,17 @@ class BaseConversionTabPresenter(QObject):
             log.info(f"Loaded config from {path.name}")
             return cfg
         except Exception as e:
+
             log.error(
                 f"Try again; something went wrong when we tried to load that config from disk: {e}"
             )
+
+            QMessageBox.critical(
+                self.view,
+                "Title",
+                "Try again; something went wrong when we tried to load that config from disk. See log for details.",
+            )
+
             return None
 
     # endregion
@@ -299,7 +308,7 @@ class BaseConversionTabPresenter(QObject):
         self, title: str, text: str, info_text: str, icon: QMessageBox.Icon
     ) -> bool:
         """Helper to show a dialog with OK/Cancel."""
-        msg = QMessageBox(self.view)
+        msg = QMessageBox(parent=self.view)
         msg.setIcon(icon)
         msg.setWindowTitle(title)
         msg.setText(text)
@@ -366,7 +375,7 @@ class BaseConversionTabPresenter(QObject):
 # endregion
 
 
-# TODO
+# done~ (apart from styling)
 # region ConfigurableConversionTabView
 class ConfigurableConversionTabView(BaseConversionTabView):
     """View class for the ConfigurableConversionTab."""
@@ -378,6 +387,8 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         # Get defaults from UserConfig
         self.cfg_defaults = UserConfig()
         self.convert_btn: QPushButton | None = None
+        self.save_btn: QPushButton | None = None
+        self.load_btn: QPushButton | None = None
 
         # children to call _create_widgets(), _create_layouts()
 
@@ -396,6 +407,17 @@ class ConfigurableConversionTabView(BaseConversionTabView):
     def _get_input_path(self) -> str:
         """Get current input path. Child implements."""
         raise NotImplementedError
+
+    # endregion
+
+    # region _update_convert_button signal handler/slot
+    def _update_convert_button(self, path: str) -> None:
+        """Enable/disable convert button based on path validity."""
+        if self.convert_btn:
+            if path and path != "No selection" and Path(path).exists():
+                self.convert_btn.setEnabled(True)
+            else:
+                self.convert_btn.setEnabled(False)
 
     # endregion
 
@@ -419,8 +441,119 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
 # endregion
 
-# TODO
+
+# done???
 # region ConfigurableConversionTabPresenter
+class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
+    """Presenter class for the ConfigurableConversionTab."""
+
+    # region init
+    def __init__(self, view: ConfigurableConversionTabView) -> None:
+        super().__init__(view)
+        self.view = view
+        self.loaded_config = None
+
+        # subclasses must call self._connect_signals()
+
+    # endregion
+
+    # region shared concrete methods
+
+    # region _connect_signals base method
+    # (docx2pptx will probably want to extend)
+    def _connect_signals(self) -> None:
+        """Wire up view signals to presenter handlers."""
+
+        # Button click handlers
+        if self.view.convert_btn:  # Please Pylance
+            self.view.convert_btn.clicked.connect(self.on_convert_click)
+
+        if self.view.save_btn:
+            self.view.save_btn.clicked.connect(self.on_save_config_click)
+
+        if self.view.load_btn:
+            self.view.load_btn.clicked.connect(self.on_load_config_click)
+
+    # endregion
+
+    # region on_convert_click
+    def on_convert_click(self) -> None:
+        """Handle convert button click with validation."""
+        cfg = self.loaded_config if self.loaded_config else UserConfig()
+        cfg = self.ui_to_config(cfg)
+
+        # Call child's validation (they implement specifics)
+        if not self._validate_input(cfg):
+            return  # Validation failed, error already shown
+
+        self.start_conversion(cfg)
+
+    # endregion
+
+    # region on_save_config_click
+    def on_save_config_click(self) -> None:
+        """Handle Save Config button click"""
+
+        # load the last-used directory from QSettings, if it's there
+        last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
+
+        # Combine directory + filename
+        initial_path = (
+            str(Path(last_dir) / "my_config.toml") if last_dir else "my_config.toml"
+        )
+
+        path, _ = QFileDialog.getSaveFileName(
+            parent=self.view,
+            caption="Save Config As",
+            dir=initial_path,  # Sets BOTH starting directory to "look" in, and the initial filename
+            filter="TOML Config (*.toml);;All Files (*)",
+        )
+
+        if path:
+            # Qt doesn't auto-add extension, so ensure it
+            if not path.endswith(".toml"):
+                path += ".toml"
+
+            cfg = self.ui_to_config(UserConfig())
+            cfg.save_toml(Path(path))
+            QMessageBox.information(
+                self.view, "Config Saved", f"Saved config to {Path(path).name}"
+            )
+
+    # endregion
+
+    # region on_load_config_click
+    def on_load_config_click(self) -> None:
+        """Handle load config button click."""
+        # load the last-used directory from QSettings, if it's there
+        last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
+        path, _ = QFileDialog.getOpenFileName(
+            self.view, "Load Config", last_dir, "TOML Config (*.toml)"
+        )
+        if path:
+            cfg = self._load_config(Path(path))
+            if cfg:
+                self._validate_loaded_config(cfg)
+
+    # endregion
+
+    # endregion
+
+    # region abstract methods
+    # subclasses must implement
+    def _validate_loaded_config(self, cfg: UserConfig) -> None:
+        raise NotImplementedError
+
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather values from UI widgets into config."""
+        raise NotImplementedError
+
+    def _validate_input(self, cfg: UserConfig) -> bool:
+        """Validate input before conversion. Child must implement."""
+        raise NotImplementedError
+
+    # endregion
+
 
 # endregion
 
@@ -430,7 +563,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 # endregion
 
 
-# TODO: clean up collapsible thing
 # region DemoTabView
 class DemoTabView(BaseConversionTabView):
     """Demo Tab with sample conversion buttons."""
@@ -476,17 +608,6 @@ class DemoTabView(BaseConversionTabView):
             ]
         )
 
-        # ======= TODO remove
-        # Test collapsible frame
-        self.test_collapsible = CollapsibleFrame(
-            title="\t\tTest Collapsible", start_collapsed=True
-        )
-        # Add some dummy content
-        test_label = QLabel("This content can be hidden!")
-        test_layout = QVBoxLayout()
-        test_layout.addWidget(test_label)
-        self.test_collapsible.content_frame.setLayout(test_layout)
-
     # endregion
 
     # region _create_layout
@@ -503,10 +624,6 @@ class DemoTabView(BaseConversionTabView):
         layout.addWidget(self.pptx2docx_btn)
         layout.addWidget(self.round_trip_btn)
         layout.addWidget(self.load_demo_btn)
-
-        # ==== TODO REMOVE
-        # Test collapsible
-        layout.addWidget(self.test_collapsible)
 
         # Add stretch at bottom to push everything up
         layout.addStretch()
@@ -586,9 +703,7 @@ class DemoTabPresenter(BaseConversionTabPresenter):
 class Pptx2DocxTabView(ConfigurableConversionTabView):
     """View Tab for the Pptx2Docx Pipeline."""
 
-    # Signals (if any)
-
-    # region init, _create_widgets, _create_layout
+    # region init
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
@@ -598,6 +713,12 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         # Arrange them in a layout
         self._create_layout()
 
+        # Wire up internal signals
+        self._connect_internal_signals()
+
+    # endregion
+
+    # region _create_widgets
     def _create_widgets(self) -> None:
 
         self._create_io_section()
@@ -608,6 +729,8 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         # self._create_options_section()
 
         self._create_convert_section()
+
+    # endregion
 
     # region create_io
     def _create_io_section(self) -> None:
@@ -667,8 +790,14 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
         # Put save/load buttons in their own self-contained sub-layout
         button_layout = QHBoxLayout()
-        button_layout.addWidget(self.save_btn)
-        button_layout.addWidget(self.load_btn)
+
+        # We could, instead, do: `assert self.save_btn is not None`, but this is slightly more graceful if it fails
+        # (e.g., many users probably dgaf if these buttons don't show up; not really worth crashing the app for)
+        if self.save_btn:
+            button_layout.addWidget(self.save_btn)  # Pylance, are you happy?
+        if self.load_btn:
+            button_layout.addWidget(self.load_btn)
+
         # button_layout.addStretch()  # Push buttons to left
         self.advanced_io.content_layout.addLayout(button_layout)
 
@@ -693,6 +822,7 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
     # endregion
 
+    # region _create_layout
     def _create_layout(self) -> None:
         """Arrange sections into main layout."""
         layout = QVBoxLayout()
@@ -701,6 +831,19 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         layout.addWidget(self.convert_section)
         layout.addStretch()
         self.setLayout(layout)
+
+    # endregion
+
+    # endregion
+
+    # region p2d _connect_internal_signals
+    # We could move this to the parent class since this is identical on both tabs, but that introduces
+    # a lot of cleanup needed for the type hints, so we'll live with the duplication.
+    def _connect_internal_signals(self):
+        """Wire up view's internal logic."""
+        self.input_selector.path_changed.connect(
+            self._update_convert_button
+        )  # slot/handler defined on base class
 
     # endregion
 
@@ -730,16 +873,219 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
 # endregion
 
-# TODO
+
+# done?~?~??
 # region Pptx2DocxPresenter
+class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
+    """Presenter class for the PPTX -> Docx Tab."""
+
+    def __init__(self, view: Pptx2DocxTabView) -> None:
+        super().__init__(view)
+        self.view = view  # self.view already exists from base class, but we have this for typehints
+        self.loaded_config = None
+
+        self._connect_signals()
+
+    # region p2d _validate_loaded_config
+    def _validate_loaded_config(self, cfg: UserConfig) -> None:
+        """Load config with direction validation."""
+        if cfg.direction != self.view.get_pipeline_direction():
+            QMessageBox.critical(
+                self.view,
+                "Invalid Config",
+                f"This config is for {cfg.direction.value}.\n"
+                f"Please use the correct tab.",
+            )
+            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
+            # Note they'll still need to make sure an input file for conversion is selected
+            # on the new tab of the right type.
+            return
+
+        self.view.config_to_ui(cfg)
+        self.loaded_config = cfg
+        QMessageBox.information(
+            self.view, "Config Loaded", f"Loaded config successfully"
+        )
+
+    # endregion
+
+    # region p2d _validate_input
+    def _validate_input(self, cfg: UserConfig) -> bool:
+        """Validate pptx-specific input."""
+        if not cfg.input_pptx or cfg.input_pptx == "No selection":
+            QMessageBox.critical(
+                self.view, "Missing Input", "Please select an input .pptx file."
+            )
+            return False
+
+        if not Path(cfg.input_pptx).exists():
+            QMessageBox.critical(
+                self.view,
+                "File Not Found",
+                f"Input file does not exist:\n{cfg.input_pptx}",
+            )
+            return False
+
+        # Validate it's actually a .pptx
+        if not cfg.input_pptx.endswith(".pptx"):
+            QMessageBox.critical(
+                self.view, "Invalid File", "Input file must be a .pptx file."
+            )
+            return False
+
+        return True
+
+    # endregion
+
+    # region p2d ui_to_config
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather UI-selected values and update the UserConfig object"""
+
+        # Set the direction based on what tab we're in.
+        cfg.direction = self.view.get_pipeline_direction()
+
+        # Only update fields that have UI controls
+        cfg.input_pptx = self.view.input_selector.get_path()
+
+        # Handle optional paths (might be "No selection")
+        output = self.view.output_selector.get_path()
+        cfg.output_folder = output if output != "No selection" else None
+
+        template = self.view.template_selector.get_path()
+        cfg.template_docx = template if template != "No selection" else None
+        return cfg
+
+    # endregion
+
+
 # endregion
 
 
 # TODO
 # region Docx2PptxView
+class Docx2PptxTabView(ConfigurableConversionTabView):
+    """View Tab for the DOCX -> PPTX Pipeline."""
+
+    # region init
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+
+        # Create widgets
+        # self._create_widgets()
+
+        # Arrange them in a layout
+        # self._create_layout()
+
+        # Wire up internal signals
+        # self._connect_internal_signals()
+
+    # endregion
+
+    def _create_widgets(self) -> None:
+        pass
+
+    # region _create_io
+    def _create_io_section(self) -> None:
+        """Create docx2pptx tab's io section."""
+        pass
+
+    # endregion
+
+    # region _create_basic_options
+    # region d2p _create_basic_options
+    def _create_basic_options(self) -> None:
+        """Create pipeline options widgets."""
+        pass
+
+    # endregion
+
+    # region _create_advanced_options
+    def _create_advanced_options(self) -> None:
+        """Create advanced options (collapsible)."""
+
+    # endregion
+
+    # region create_layout
+    def _create_layout(self) -> None:
+        pass
+
+    # endregion
+
+    # region d2p _connect_internal_signals
+    def _connect_internal_signals(self):
+        """Wire up view's internal logic."""
+        # self.input_selector.path_changed.connect(
+        #     self._update_convert_button
+        # )  # slot/handler defined on base class
+
+    # endregion
+
+    # region d2p _get_input_path
+    def _get_input_path(self) -> str:
+        raise NotImplementedError
+        # return self.input_selector.selected_path.get()
+
+    # endregion
+
+    # region d2p _get_pipeline_direction
+    def get_pipeline_direction(self) -> PipelineDirection:
+        """Return this tab's direction for validation."""
+        return PipelineDirection.DOCX_TO_PPTX
+
+    # endregion
+
+    # region d2p config_to_ui
+    def config_to_ui(self, cfg: UserConfig) -> None:
+        """Populate UI values from a loaded UserConfig"""
+        # Only populate fields that have UI controls
+
+        # Set Path selectors
+
+        # Set dropdown
+
+        # Set checkboxes
+
+    # endregion
+
+    # region annotation observers
+    # TODO: Figure out how to make the annotation checkboxes with signals/slots
+    # maybe Qt checkboxes already have a signal built in we can use.
+    # endregion
+
+
 # endregion
+
+
 # TODO
 # region Docx2PptxPresenter
+class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
+
+    def __init__(self, view: Docx2PptxTabView) -> None:
+        super().__init__(view)
+        self.view = view  # self.view already exists from base class, but we have this for typehints
+        self.loaded_config = None
+
+        self._connect_signals()
+
+    # TODO: Extend for this subclass's needs
+    def _connect_signals(self):
+        super()._connect_signals()  # Get shared signals
+        # ... add subclass-specific ones
+        raise NotImplementedError
+
+    # subclass must implement
+    def _validate_loaded_config(self, cfg: UserConfig) -> None:
+        raise NotImplementedError
+
+    def ui_to_config(self, cfg: UserConfig) -> UserConfig:
+        """Gather values from UI widgets into config."""
+        raise NotImplementedError
+
+    def _validate_input(self, cfg: UserConfig) -> bool:
+        """Validate input before conversion. Child must implement."""
+        raise NotImplementedError
+
+
 # endregion
 
 # region Components
