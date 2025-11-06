@@ -21,7 +21,6 @@ from PySide6.QtWidgets import (
     QFrame,
     QComboBox,
     QCheckBox,
-    QSizePolicy,
 )
 from PySide6.QtCore import QObject, Signal, QSettings, QThread, Qt
 import sys
@@ -80,6 +79,7 @@ class MainWindow(QMainWindow):
 
         # TODO: Add docx2pptxtab
         self.d2p_tab_view = Docx2PptxTabView()
+        self.d2p_tab_presenter = Docx2PptxTabPresenter(self.d2p_tab_view)
         self.tabs.addTab(self.d2p_tab_view, "DOCX -> PPTX")
 
         self.p2d_tab_view = Pptx2DocxTabView()
@@ -398,7 +398,7 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.input_typenames = self.template_typenames = "Files"
         self.template_default = "No Selection"  # This is a bit gross but is there another option? None, with checks?
 
-        # children to call _create_widgets(), _create_layouts()
+        # children to call _create_widgets(), _create_layouts(), _connect_internal_signals()
 
     # endregion
 
@@ -498,6 +498,19 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
     # endregion
 
+    # region _connect_internal_signals
+    def _connect_internal_signals(self):
+        """Wire up view's internal logic."""
+        self.input_selector.path_changed.connect(self._update_convert_button)
+
+    # endregion
+
+    # region _get_input_path (concrete/shared)
+    def _get_input_path(self) -> str:
+        return self.input_selector.get_path()
+
+    # endregion
+
     # region _create_convert_section (concrete/shared)
     def _create_convert_section(self) -> None:
         """Create convert button section."""
@@ -508,6 +521,8 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         # TODO: And to be green when ready, grayed-out when not ready/disabled
 
         self.buttons.append(self.convert_btn)  # For base class disable/enable
+
+        self._update_convert_button(self.input_selector.get_path())
 
         convert_layout = QVBoxLayout()
         convert_layout.addWidget(self.convert_btn)
@@ -534,12 +549,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
     # region get_pipeline_direction (abstract)
     def get_pipeline_direction(self) -> PipelineDirection:
         """Return this tab's direction for validation."""
-        raise NotImplementedError
-
-    # endregion
-    # region get_input_path (abstract)
-    def _get_input_path(self) -> str:
-        """Get current input path. Child implements."""
         raise NotImplementedError
 
     # endregion
@@ -626,6 +635,10 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
                 self.view, "Config Saved", f"Saved config to {Path(path).name}"
             )
 
+            # Save the selected path to QSettings so we can load it next session.
+            selected_dir = str(Path(path).parent)
+            APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+
     # endregion
 
     # region on_load_config_click
@@ -637,6 +650,10 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
             self.view, "Load Config", last_dir, "TOML Config (*.toml)"
         )
         if path:
+            # Save the selected path to QSettings so we can load it next session.
+            selected_dir = str(Path(path).parent)
+            APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+
             cfg = self._load_config(Path(path))
             if cfg:
                 self._validate_loaded_config(cfg)
@@ -868,29 +885,10 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         """Arrange sections into main layout."""
         layout = QVBoxLayout()
         layout.addWidget(self.io_section)
-        # layout.addWidget(self.options_section)
+        # layout.addWidget(self.options_frame)
         layout.addWidget(self.convert_section)
         layout.addStretch()
         self.setLayout(layout)
-
-    # endregion
-
-    # endregion
-
-    # region p2d _connect_internal_signals
-    # We could move this to the parent class since this is identical on both tabs, but that introduces
-    # a lot of cleanup needed for the type hints, so we'll live with the duplication.
-    def _connect_internal_signals(self):
-        """Wire up view's internal logic."""
-        self.input_selector.path_changed.connect(
-            self._update_convert_button
-        )  # slot/handler defined on base class
-
-    # endregion
-
-    # region p2d _get_input_path
-    def _get_input_path(self) -> str:
-        return self.input_selector.get_path()
 
     # endregion
 
@@ -1122,17 +1120,122 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
     # region _create_advanced_options
     def _create_advanced_options(self) -> None:
         """Create advanced options (collapsible)."""
-        # self.advanced_options = CollapsibleFrame(
-        #     self, title="Advanced Options", start_collapsed=True
-        # )
 
-        keep_metadata_chk = "checkbox pointing at value=self.cfg_defaults.preserve_docx_metadata_in_speaker_notes"
-        tip_text = "Tip: Enable for round-trip conversion (maintains comments, heading formatting, etc.)"
+        self.advanced_options = CollapsibleFrame(
+            title="Advanced Options", start_collapsed=True
+        )
 
-        annotations_note = (
+        self.keep_metadata_chk = QCheckBox("Preserve metadata in speaker notes")
+        self.keep_metadata_chk.setChecked(
+            self.cfg_defaults.preserve_docx_metadata_in_speaker_notes
+        )
+        tip_label = QLabel(
+            "Tip: Enable for round-trip conversion (maintains comments, heading formatting, etc.)"
+        )
+        tip_label.setWordWrap(True)
+        tip_label.setMaximumWidth(400)
+        tip_label.setContentsMargins(25, 0, 0, 0)
+        tip_label.setStyleSheet("color: gray;")
+
+        annotations_label = QLabel(
             "Annotations cannot be replicated in slides, but can be copied into the slides' speaker notes.",
         )
+        annotations_label.setWordWrap(True)
+
         # TODO: Annotations quartet with observer
+
+        # Parent checkbox
+        self.keep_all_annotations_chk = QCheckBox("Keep all annotations")
+        self.keep_all_annotations_chk.setTristate(True)
+
+        # Children checkboxes
+        self.keep_comments_chk = QCheckBox("Keep comments")
+        self.keep_footnotes_chk = QCheckBox("Keep footnotes")
+        self.keep_endnotes_chk = QCheckBox("Keep endnotes")
+
+        # SET BASELINE STATES (before connecting signals)
+        self.keep_comments_chk.setChecked(self.cfg_defaults.display_comments)
+        self.keep_footnotes_chk.setChecked(self.cfg_defaults.display_footnotes)
+        self.keep_endnotes_chk.setChecked(self.cfg_defaults.display_endnotes)
+
+        # Call this handler explicitly to set parent state
+        self._on_child_annotation_changed()
+
+        # Create sub-layout & indent children
+        # TODO These checkboxes are squished top-bottom too
+        child_layout = QVBoxLayout()
+        child_layout.setContentsMargins(25, 0, 0, 0)  # Indent 25px from left
+        child_layout.addWidget(self.keep_comments_chk)
+        child_layout.addWidget(self.keep_footnotes_chk)
+        child_layout.addWidget(self.keep_endnotes_chk)
+
+        # Add everything to layout
+        self.advanced_options.content_layout.addWidget(self.keep_metadata_chk)
+
+        # TODO: This is still a bit squished
+        self.advanced_options.content_layout.addWidget(tip_label, stretch=1)
+        self.advanced_options.content_layout.addWidget(annotations_label, stretch=1)
+        self.advanced_options.content_layout.addWidget(self.keep_all_annotations_chk)
+        self.advanced_options.content_layout.addLayout(child_layout)
+
+        # Connect signals
+        self._setup_annotation_observers()
+
+    # endregion
+
+    # region _setup_annotation_observers()
+    def _setup_annotation_observers(self):
+        """Wire up parent/child checkbox relationships."""
+        # Children notify parent when they change
+        self.keep_comments_chk.stateChanged.connect(self._on_child_annotation_changed)
+        self.keep_footnotes_chk.stateChanged.connect(self._on_child_annotation_changed)
+        self.keep_endnotes_chk.stateChanged.connect(self._on_child_annotation_changed)
+
+        # Parent notifies children when it changes
+        self.keep_all_annotations_chk.stateChanged.connect(
+            self._on_parent_annotation_changed
+        )
+
+    def _on_child_annotation_changed(self, *args) -> None:  # noqa: ANN002
+        """Observer: When any child changes, update parent state."""
+        children_checked = [
+            self.keep_comments_chk.isChecked(),
+            self.keep_footnotes_chk.isChecked(),
+            self.keep_endnotes_chk.isChecked(),
+        ]
+
+        if all(children_checked):
+            self.keep_all_annotations_chk.setCheckState(Qt.CheckState.Checked)
+        elif any(children_checked):
+            self.keep_all_annotations_chk.setCheckState(Qt.CheckState.PartiallyChecked)
+        else:
+            self.keep_all_annotations_chk.setCheckState(Qt.CheckState.Unchecked)
+
+    def _on_parent_annotation_changed(self, *args) -> None:  # noqa: ANN002
+        """Observer: When parent changes, update all children."""
+        parent_value = self.keep_all_annotations_chk.checkState()
+        if parent_value == Qt.CheckState.Checked:
+            parent_bool = True
+        elif parent_value == Qt.CheckState.Unchecked:
+            parent_bool = False
+        else:
+            return
+
+        # Setting children will trigger the child's observer. In order to avoid infinite loop,
+        # we handle this in cycle within the children's observer (`if all(children_checked): / self.keep_all_annotations.set(True)`),
+        # but we also disable child observers here before setting them, out of paranoia.
+
+        self.keep_comments_chk.blockSignals(True)
+        self.keep_comments_chk.setChecked(parent_bool)
+        self.keep_comments_chk.blockSignals(False)
+
+        self.keep_footnotes_chk.blockSignals(True)
+        self.keep_footnotes_chk.setChecked(parent_bool)
+        self.keep_footnotes_chk.blockSignals(False)
+
+        self.keep_endnotes_chk.blockSignals(True)
+        self.keep_endnotes_chk.setChecked(parent_bool)
+        self.keep_endnotes_chk.blockSignals(False)
 
     # endregion
 
@@ -1142,25 +1245,10 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         layout = QVBoxLayout()
         layout.addWidget(self.io_section)
         layout.addWidget(self.basic_options)
-        # layout.addWidget(self.convert_section)
+        layout.addWidget(self.advanced_options)
+        layout.addWidget(self.convert_section)
         layout.addStretch()
         self.setLayout(layout)
-
-    # endregion
-
-    # region d2p _connect_internal_signals
-    def _connect_internal_signals(self):
-        """Wire up view's internal logic."""
-        # self.input_selector.path_changed.connect(
-        #     self._update_convert_button
-        # )  # slot/handler defined on base class
-
-    # endregion
-
-    # region d2p _get_input_path
-    def _get_input_path(self) -> str:
-        raise NotImplementedError
-        # return self.input_selector.selected_path.get()
 
     # endregion
 
@@ -1177,16 +1265,22 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         # Only populate fields that have UI controls
 
         # Set Path selectors
+        self.input_selector.set_path(cfg.input_docx or "No selection")
+        self.output_selector.set_path(cfg.output_folder or "No selection")
+        self.template_selector.set_path(cfg.template_pptx or "No selection")
 
         # Set dropdown
+        self.chunk_dropdown.setCurrentText(cfg.chunk_type.value)
+        # Qt will search the items in the combo box and select the one matching that text.
+        # If the text isn't in the combo, nothing changes.
 
         # Set checkboxes
+        self.experimental_fmt_chk.setChecked(cfg.experimental_formatting_on)
+        self.keep_metadata_chk.setChecked(cfg.preserve_docx_metadata_in_speaker_notes)
+        self.keep_comments_chk.setChecked(cfg.display_comments)
+        self.keep_footnotes_chk.setChecked(cfg.display_footnotes)
+        self.keep_endnotes_chk.setChecked(cfg.display_endnotes)
 
-    # endregion
-
-    # region annotation observers
-    # TODO: Figure out how to make the annotation checkboxes with signals/slots
-    # maybe Qt checkboxes already have a signal built in we can use.
     # endregion
 
 
@@ -1208,7 +1302,6 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     def _connect_signals(self):
         super()._connect_signals()  # Get shared signals
         # ... add subclass-specific ones
-        raise NotImplementedError
 
     # subclass must implement
     def _validate_loaded_config(self, cfg: UserConfig) -> None:
