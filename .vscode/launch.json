@@ -70,9 +70,9 @@
             "request": "launch",
             "module": "manuscript2slides.experiments.ui_qt",
             "console": "integratedTerminal",
-            "args": [
-                "--fusion"
-            ],
+            // "args": [
+            //     "--fusion"
+            // ],
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
             }

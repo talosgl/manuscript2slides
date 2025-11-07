@@ -21,8 +21,10 @@ from PySide6.QtWidgets import (
     QFrame,
     QComboBox,
     QCheckBox,
+    QSizePolicy,
 )
 from PySide6.QtCore import QObject, Signal, QSettings, QThread, Qt
+from PySide6.QtGui import QColor, QPalette
 import sys
 import time
 from pathlib import Path
@@ -60,10 +62,7 @@ class MainWindow(QMainWindow):
         super().__init__()  # Initialize using QMainWindow's constructor
 
         self.setWindowTitle("manuscript2slides")
-        # self.resize(800, 600)  # Initial size, but resizable
-
-        # In Tk, we applied theme BEFORE creating widgets (do we need at all in Qt?)
-        # self._apply_theme()
+        self.resize(400, 800)  # Initial size, but resizable
 
         # Build the UI
         self._create_widgets()
@@ -100,10 +99,6 @@ class MainWindow(QMainWindow):
         splitter.setSizes([420, 180])
 
         self.setCentralWidget(splitter)
-
-    # endregion
-
-    # region _apply_theme?
 
     # endregion
 
@@ -220,7 +215,8 @@ class BaseConversionTabPresenter(QObject):
         self.view = view
         self.last_run_config = None
 
-        # Instance variables to prevent garbage collection; storing self.worker_thread and self.worker keeps Python references alive during execution.
+        # Instance variables to prevent garbage collection; storing self.worker_thread
+        # and self.worker keeps Python references alive during execution.
         self.worker_thread = None
         self.worker = None
 
@@ -230,7 +226,8 @@ class BaseConversionTabPresenter(QObject):
     def _load_config(self, path: Path) -> UserConfig | None:
         """Load config from disk."""
         try:
-            cfg = UserConfig.from_toml(path)  # Load from disk
+            log.info(f"Attempting to load config from {path.name}")
+            cfg = UserConfig.from_toml(path)
             log.info(f"Loaded config from {path.name}")
             return cfg
         except Exception as e:
@@ -1117,7 +1114,10 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         tip_label = QLabel(r"Tip: Disable this if conversion crashes or freezes")
         tip_label.setWordWrap(True)  # wraps at the layout width
         tip_label.setContentsMargins(25, 0, 0, 0)
-        tip_label.setStyleSheet("color: gray;")  # same as foreground="gray" in tk
+
+        # Compute a "gray-like" color for tip
+        soft_color = get_soft_text_color(tip_label, ratio=0.6)
+        tip_label.setStyleSheet(f"color: {soft_color.name()};")
 
         # Add to layout
         layout = QVBoxLayout()
@@ -1151,9 +1151,11 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
             "Tip: Enable for round-trip conversion (maintains comments, heading formatting, etc.)"
         )
         tip_label.setWordWrap(True)
-        tip_label.setMaximumWidth(400)
+        # tip_label.setMaximumWidth(400)
         tip_label.setContentsMargins(25, 0, 0, 0)
-        tip_label.setStyleSheet("color: gray;")
+        # Compute a "gray-like" color for tip
+        soft_color = get_soft_text_color(tip_label, ratio=0.6)
+        tip_label.setStyleSheet(f"color: {soft_color.name()};")
 
         annotations_label = QLabel(
             "Annotations cannot be replicated in slides, but can be copied into the slides' speaker notes.",
@@ -1189,8 +1191,8 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.advanced_options.content_layout.addWidget(self.keep_metadata_chk)
 
         # TODO: This is still a bit squished
-        self.advanced_options.content_layout.addWidget(tip_label, stretch=1)
-        self.advanced_options.content_layout.addWidget(annotations_label, stretch=1)
+        self.advanced_options.content_layout.addWidget(tip_label)
+        self.advanced_options.content_layout.addWidget(annotations_label)
         self.advanced_options.content_layout.addWidget(self.keep_all_annotations_chk)
         self.advanced_options.content_layout.addLayout(child_layout)
 
@@ -1421,6 +1423,15 @@ class CollapsibleFrame(QWidget):
             not self.is_collapsed
         )  # Hidden if starting collapsed
 
+        # Prevent vertical squishing
+        self.content_frame.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Minimum,  # Don't compress below minimum size
+        )
+        # Lesson: When creating custom Qt widgets that contain layouts, 
+        # explicitly set their setSizePolicy(). Qt's defaults aren't always
+        # what you expect, especially for the vertical direction.
+
         self.content_layout = QVBoxLayout()
         self.content_frame.setLayout(self.content_layout)
 
@@ -1630,6 +1641,10 @@ class LogViewer(QGroupBox):
         self.text_widget = QPlainTextEdit()
         self.text_widget.setReadOnly(True)  # User can't edit
 
+        self.text_widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+
         # Set a monospace font for logs
         font = self.text_widget.font()
         font.setFamily("Courier")
@@ -1667,7 +1682,8 @@ class LogViewer(QGroupBox):
         # Create our custom handler
         text_handler = QTextEditHandler(self.text_widget)
 
-        # format log messages
+        # Format how log messages appear in the widget. (This won't affect how log lines *sent* from Qt will look when viewing
+        # output from the other handlers, like in the file or stdout.)
         formatter = logging.Formatter(
             "%(asctime)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S"
         )
@@ -1739,6 +1755,40 @@ class QTextEditHandler(logging.Handler):
 # endregion
 
 
+# region theme/style helpers
+def apply_theme(app: QApplication) -> None:
+    """Apply Fusion on Linux, otherwise use native style."""
+    if sys.platform.startswith("linux"):
+        app.setStyle("Fusion")
+        log.info("Linux detected; applying 'Fusion' style to Qt.")
+    else:
+        log.info("Using native platform style for Qt.")
+
+
+def get_soft_text_color(widget: QWidget, ratio: float = 0.5) -> QColor:
+    """
+    Return a softer version of the widget's normal text color.
+
+    Blends the normal text color with the widget's background to achieve
+    a "secondary" text look that works in both light and dark modes.
+    """
+    palette = widget.palette()
+    base_color = palette.color(QPalette.ColorRole.WindowText)
+    bg_color = palette.color(QPalette.ColorRole.Window)
+
+    # Blend each RGB channel
+    soft_color = QColor(
+        int(base_color.red() * ratio + bg_color.red() * (1 - ratio)),
+        int(base_color.green() * ratio + bg_color.green() * (1 - ratio)),
+        int(base_color.blue() * ratio + bg_color.blue() * (1 - ratio)),
+    )
+
+    return soft_color
+
+
+# endregion
+
+
 # region main
 def main() -> None:
     """Qt UI entry point."""
@@ -1746,6 +1796,8 @@ def main() -> None:
     log.info("Initializing Qt UI")
 
     app = QApplication(sys.argv)  # Create App
+    apply_theme(app)  # Apply platform-appropriate theme
+    # app.setStyle("Fusion")
 
     # Create the window
     window = MainWindow()
