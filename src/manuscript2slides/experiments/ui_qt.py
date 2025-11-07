@@ -77,7 +77,6 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.log_viewer = LogViewer()
 
-        # TODO: Add docx2pptxtab
         self.d2p_tab_view = Docx2PptxTabView()
         self.d2p_tab_presenter = Docx2PptxTabPresenter(self.d2p_tab_view)
         self.tabs.addTab(self.d2p_tab_view, "DOCX -> PPTX")
@@ -540,12 +539,14 @@ class ConfigurableConversionTabView(BaseConversionTabView):
                 self.convert_btn.setEnabled(False)
 
     # endregion
+
     # region config_to_ui (abstract)
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI widgets from config."""
         raise NotImplementedError
 
     # endregion
+
     # region get_pipeline_direction (abstract)
     def get_pipeline_direction(self) -> PipelineDirection:
         """Return this tab's direction for validation."""
@@ -553,6 +554,8 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
     # endregion
 
+
+# endregion
 
 # endregion
 
@@ -660,12 +663,33 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
     # endregion
 
+    # region p2d _validate_loaded_config
+    def _validate_loaded_config(self, cfg: UserConfig) -> None:
+        """Load config with direction validation."""
+        if cfg.direction != self.view.get_pipeline_direction():
+            QMessageBox.critical(
+                self.view,
+                "Invalid Config",
+                f"This config is for {cfg.direction.value}.\n"
+                f"Please use the correct tab.",
+            )
+            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
+            # Note they'll still need to make sure an input file for conversion is selected
+            # on the new tab of the right type.
+            return
+
+        self.view.config_to_ui(cfg)
+        self.loaded_config = cfg
+        QMessageBox.information(
+            self.view, "Config Loaded", f"Loaded config successfully"
+        )
+
+    # endregion
+
     # endregion
 
     # region abstract methods
     # subclasses must implement
-    def _validate_loaded_config(self, cfg: UserConfig) -> None:
-        raise NotImplementedError
 
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather values from UI widgets into config."""
@@ -925,35 +949,12 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 
         self._connect_signals()
 
-    # region p2d _validate_loaded_config
-    def _validate_loaded_config(self, cfg: UserConfig) -> None:
-        """Load config with direction validation."""
-        if cfg.direction != self.view.get_pipeline_direction():
-            QMessageBox.critical(
-                self.view,
-                "Invalid Config",
-                f"This config is for {cfg.direction.value}.\n"
-                f"Please use the correct tab.",
-            )
-            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
-            # Note they'll still need to make sure an input file for conversion is selected
-            # on the new tab of the right type.
-            return
-
-        self.view.config_to_ui(cfg)
-        self.loaded_config = cfg
-        QMessageBox.information(
-            self.view, "Config Loaded", f"Loaded config successfully"
-        )
-
-    # endregion
-
     # region p2d _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate pptx-specific input."""
         if not cfg.input_pptx or cfg.input_pptx == "No selection":
             QMessageBox.critical(
-                self.view, "Missing Input", "Please select an input .pptx file."
+                self.view, "Missing Input", "Please select a valid .pptx input file."
             )
             return False
 
@@ -1000,7 +1001,7 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 # endregion
 
 
-# TODO
+# done?!
 # region Docx2PptxView
 class Docx2PptxTabView(ConfigurableConversionTabView):
     """View Tab for the DOCX -> PPTX Pipeline."""
@@ -1142,8 +1143,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         )
         annotations_label.setWordWrap(True)
 
-        # TODO: Annotations quartet with observer
-
         # Parent checkbox
         self.keep_all_annotations_chk = QCheckBox("Keep all annotations")
         self.keep_all_annotations_chk.setTristate(True)
@@ -1153,16 +1152,16 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.keep_footnotes_chk = QCheckBox("Keep footnotes")
         self.keep_endnotes_chk = QCheckBox("Keep endnotes")
 
-        # SET BASELINE STATES (before connecting signals)
+        # Set baseline states before connecting signals
         self.keep_comments_chk.setChecked(self.cfg_defaults.display_comments)
         self.keep_footnotes_chk.setChecked(self.cfg_defaults.display_footnotes)
         self.keep_endnotes_chk.setChecked(self.cfg_defaults.display_endnotes)
 
-        # Call this handler explicitly to set parent state
+        # Set parent state by explicitly calling handler
         self._on_child_annotation_changed()
 
         # Create sub-layout & indent children
-        # TODO These checkboxes are squished top-bottom too
+        # TODO: Fix that these checkboxes are squished top-bottom too
         child_layout = QVBoxLayout()
         child_layout.setContentsMargins(25, 0, 0, 0)  # Indent 25px from left
         child_layout.addWidget(self.keep_comments_chk)
@@ -1287,7 +1286,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 # endregion
 
 
-# TODO
+# Done?
 # region Docx2PptxPresenter
 class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
@@ -1298,22 +1297,67 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
         self._connect_signals()
 
-    # TODO: Extend for this subclass's needs
+    # TODO?: Extend for this subclass's needs
+    # RE: Are there any? All the observer stuff is in the UI Only.
+    # TODO: Delete?
     def _connect_signals(self):
         super()._connect_signals()  # Get shared signals
         # ... add subclass-specific ones
 
-    # subclass must implement
-    def _validate_loaded_config(self, cfg: UserConfig) -> None:
-        raise NotImplementedError
-
+    # region d2p ui_to_config
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
-        """Gather values from UI widgets into config."""
-        raise NotImplementedError
+        """Gather UI-selected values and update the UserConfig object"""
 
+        cfg.direction = self.view.get_pipeline_direction()
+
+        # Only update fields that have UI controls
+        cfg.input_docx = self.view.input_selector.get_path()
+        cfg.chunk_type = ChunkType(self.view.chunk_dropdown.currentText())
+        cfg.experimental_formatting_on = self.view.experimental_fmt_chk.isChecked()
+        cfg.preserve_docx_metadata_in_speaker_notes = (
+            self.view.keep_metadata_chk.isChecked()
+        )
+        cfg.display_comments = self.view.keep_comments_chk.isChecked()
+        cfg.display_footnotes = self.view.keep_footnotes_chk.isChecked()
+        cfg.display_endnotes = self.view.keep_endnotes_chk.isChecked()
+
+        # Handle optional paths (might be "No selection")
+        output = self.view.output_selector.get_path()
+        cfg.output_folder = output if output != "No selection" else None
+
+        template = self.view.template_selector.get_path()
+        cfg.template_pptx = template if template != "No selection" else None
+        return cfg
+
+    # endregion
+
+    # region d2p _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate input before conversion. Child must implement."""
-        raise NotImplementedError
+        if not cfg.input_docx or cfg.input_docx == "No selection":
+            QMessageBox.critical(
+                self.view, "Missing Input", "Please select a valid .docx input file."
+            )
+            return False
+
+        if not Path(cfg.input_docx).exists():
+            QMessageBox.critical(
+                self.view,
+                "File Not Found",
+                f"Input file does not exist:\n{cfg.input_docx}",
+            )
+            return False
+
+        # Validate it's actually a .docx
+        if not cfg.input_docx.endswith(".docx"):
+            QMessageBox.critical(
+                self.view, "Invalid File", "Input file must be a .docx file."
+            )
+            return False
+
+        return True
+
+    # endregion
 
 
 # endregion
