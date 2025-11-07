@@ -51,31 +51,5 @@
                 "PYTHONPATH": "${workspaceRoot}"
             }
         },
-        // TODO: remove later
-        // launch main() from ui_tkinter.py
-        {
-            "name": "ui_tk gui manuscript2slides",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "manuscript2slides.ui_tk",
-            "console": "integratedTerminal",
-            "env": {
-                "PYTHONPATH": "${workspaceRoot}"
-            }
-        },
-        // launch main() from ui_qt.py
-        {
-            "name": "ui_qt gui manuscript2slides",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "manuscript2slides.experiments.ui_qt",
-            "console": "integratedTerminal",
-            // "args": [
-            //     "--fusion"
-            // ],
-            "env": {
-                "PYTHONPATH": "${workspaceRoot}"
-            }
-        },
     ]
 }

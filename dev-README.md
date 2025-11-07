@@ -4,18 +4,26 @@ pip install -e '.[dev]'
 ```
 
 ## System Dependencies
-On Windows, you'll need to install Python from python.org. That'll include Python and the UI library Tkinter.
+On Windows, you'll need to install Python from python.org. That'll include Python and pip.
 
-Macs have Python preinstalled, and the system Python should have Tkinter already, but if you have trouble you can install python from python.org.
+Macs have Python preinstalled, but we recommend installing from python.org for the latest version.
 
-Linux usually has Python preinstalled, too, but Tkinter is excluded from some distros' versions. You'll need to install this package globally, rather than pip install it.
+Linux usually has Python preinstalled, too. However, you may need to install some system packages for Qt dependencies.
 
 ### Ubuntu/Debian
 ```bash
-sudo apt install python3-tk
+sudo apt install libxcb-xinerama0 libxcb-cursor0
 ```
 
 ### Fedora/RHEL
 ```bash
-sudo dnf install python3-tkinter
+sudo dnf install xcb-util-cursor
 ```
+
+## Troubleshooting
+
+### Qt platform plugin errors on Linux
+If you get errors about "qt.qpa.plugin", install the system packages above.
+
+### "No module named 'PySide6'" error
+Run `pip install -e '.[dev]'` to install all dependencies.
