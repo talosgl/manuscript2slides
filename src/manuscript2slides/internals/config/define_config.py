@@ -339,11 +339,14 @@ class UserConfig:
 
         # Filter out None values (TOML can't serialize None)
         data = {k: v for k, v in data.items() if v is not None}
+        log.debug(f"Data to be written is: \n{data}")
 
         # Write to TOML file
         try:
+            log.info(f"Attempting to save to {path}")
             with open(path, "wb") as f:
                 tomli_w.dump(data, f)
+            log.info(f"Saved toml config file at {path}")
         except PermissionError as e:
             error_msg = f"Permission denied writing to: {path}"
             log.error(error_msg)
