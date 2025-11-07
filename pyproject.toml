@@ -1,22 +1,45 @@
 [project]
 name = "manuscript2slides"
-version = "0.0.0"
+version = "0.1.0"
 requires-python = ">=3.10"
-description = "Convert Word documents to PowerPoint slides"
+description = "Convert Word documents to PowerPoint slides and back"
+readme = "README.md"
+license = { text = "MIT" }
 authors = [{ name = "talosgl" }]
+keywords = ["docx", "pptx", "converter", "powerpoint", "word"]
 
 dependencies = [
-    "python-docx>=1.1.0",
-    "python-pptx>=0.6.21",
-    "platformdirs>=3.5",
-    "PySide6>=6.5.0",
-    "tomli>=2.0.0; python_version < '3.11'", # Only install if Python < 3.11
-    "tomli-w>=1.0.0",
+    "python-docx>=1.1.0,<2.0",
+    "python-pptx>=0.6.21,<1.0",
+    "platformdirs>=3.5,<5.0",
+    "PySide6>=6.5.0,<7.0",
+    "tomli>=2.0.0; python_version < '3.11'",
+    "tomli-w>=1.0.0,<2.0",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Topic :: Office/Business",
+    "Topic :: Text Processing",
+    "Topic :: Utilities",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only", # Not compatible with Python 2
+    "Operating System :: OS Independent",
+    "Environment :: X11 Applications :: Qt",
+    "Natural Language :: English",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "tomli>=2.0.0",   # Always install for dev, even on 3.11+
+    "pytest>=7.0.0,<9.0",
+    "pytest-cov>=4.0.0,<6.0", # Coverage reports
+    "pytest-qt>=4.0.0,<5.0",  # Qt testing helpers
+    "tomli>=2.0.0",           # Always install for dev
     "tomli-w>=1.0.0",
 ]
 
