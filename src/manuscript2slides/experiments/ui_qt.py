@@ -347,7 +347,10 @@ class BaseConversionTabPresenter(QObject):
 
         # If the user clicked OK, open the output folder. Otherwise, they hit cancel, so do nothing.
         if result:
+            log.info(f"Opening {output_folder}")
             open_folder_in_os_explorer(output_folder)
+        else:
+            log.info("Operation cancelled by user.")
 
     def _on_conversion_error(self, error: Exception) -> None:
         """Handle conversion failure."""
@@ -371,7 +374,10 @@ class BaseConversionTabPresenter(QObject):
         )
 
         if result:
+            log.info(f"Opening {log_folder}")
             open_folder_in_os_explorer(log_folder)
+        else:
+            log.info("Operation cancelled by user.")
 
     # endregion
 
@@ -397,7 +403,7 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.input_typenames = self.template_typenames = "Files"
         self.template_default = "No Selection"  # This is a bit gross but is there another option? None, with checks?
 
-        # children to call _create_widgets(), _create_layouts(), _connect_internal_signals()
+        # children must call _create_widgets(), _create_layouts(), _connect_internal_signals()
 
     # endregion
 
@@ -497,13 +503,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
     # endregion
 
-    # region _connect_internal_signals
-    def _connect_internal_signals(self):
-        """Wire up view's internal logic."""
-        self.input_selector.path_changed.connect(self._update_convert_button)
-
-    # endregion
-
     # region _get_input_path (concrete/shared)
     def _get_input_path(self) -> str:
         return self.input_selector.get_path()
@@ -528,7 +527,9 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.convert_section.setLayout(convert_layout)
 
     # endregion
+    # endregion
 
+    # region internal ui signal handlers
     # region _update_convert_button (concrete/shared) signal handler/slot
     def _update_convert_button(self, path: str) -> None:
         """Enable/disable convert button based on path validity."""
@@ -538,6 +539,14 @@ class ConfigurableConversionTabView(BaseConversionTabView):
             else:
                 self.convert_btn.setEnabled(False)
 
+    # endregion
+
+    # region _connect_internal_signals
+    def _connect_internal_signals(self):
+        """Wire up view's internal logic."""
+        self.input_selector.path_changed.connect(self._update_convert_button)
+
+    # endregion
     # endregion
 
     # region config_to_ui (abstract)
@@ -554,8 +563,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
     # endregion
 
-
-# endregion
 
 # endregion
 
@@ -628,19 +635,22 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
         )
 
         if path:
+            # Save the selected path to QSettings so we can load it next session.
+            selected_dir = str(Path(path).parent)
+            log.debug(f"Set Qsettings last_browse_directory to {selected_dir}")
+            APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+
             # Qt doesn't auto-add extension, so ensure it
             if not path.endswith(".toml"):
                 path += ".toml"
 
             cfg = self.ui_to_config(UserConfig())
+            # TODO: Do we need try/except here? there's one inside .save_toml
             cfg.save_toml(Path(path))
+            log.debug("UI reporting save config completed.")
             QMessageBox.information(
                 self.view, "Config Saved", f"Saved config to {Path(path).name}"
             )
-
-            # Save the selected path to QSettings so we can load it next session.
-            selected_dir = str(Path(path).parent)
-            APP_SETTINGS.setValue("last_browse_directory", selected_dir)
 
     # endregion
 
@@ -653,8 +663,10 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
             self.view, "Load Config", last_dir, "TOML Config (*.toml)"
         )
         if path:
+            # TODO wrap into helper?
             # Save the selected path to QSettings so we can load it next session.
             selected_dir = str(Path(path).parent)
+            log.debug(f"Set Qsettings last_browse_directory to {selected_dir}")
             APP_SETTINGS.setValue("last_browse_directory", selected_dir)
 
             cfg = self._load_config(Path(path))
@@ -667,6 +679,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     def _validate_loaded_config(self, cfg: UserConfig) -> None:
         """Load config with direction validation."""
         if cfg.direction != self.view.get_pipeline_direction():
+            log.error("Wrong direction in selected config")
             QMessageBox.critical(
                 self.view,
                 "Invalid Config",
@@ -680,6 +693,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
         self.view.config_to_ui(cfg)
         self.loaded_config = cfg
+        log.info("Loaded config validated; UI values set.")
         QMessageBox.information(
             self.view, "Config Loaded", f"Loaded config successfully"
         )
@@ -688,7 +702,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
     # endregion
 
-    # region abstract methods
+    # region abstract methods ui_to_config, _validate_input
     # subclasses must implement
 
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
@@ -953,12 +967,14 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate pptx-specific input."""
         if not cfg.input_pptx or cfg.input_pptx == "No selection":
+            log.error(f"Invalid input file selected: {cfg.input_pptx}")
             QMessageBox.critical(
                 self.view, "Missing Input", "Please select a valid .pptx input file."
             )
             return False
 
         if not Path(cfg.input_pptx).exists():
+            log.error(f"Input file does not exist:\n{cfg.input_pptx}")
             QMessageBox.critical(
                 self.view,
                 "File Not Found",
@@ -968,6 +984,7 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 
         # Validate it's actually a .pptx
         if not cfg.input_pptx.endswith(".pptx"):
+            log.error(f"Invalid input file selected: {cfg.input_pptx}")
             QMessageBox.critical(
                 self.view, "Invalid File", "Input file must be a .pptx file."
             )
@@ -1290,12 +1307,15 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 # region Docx2PptxPresenter
 class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
+    # region init
     def __init__(self, view: Docx2PptxTabView) -> None:
         super().__init__(view)
         self.view = view  # self.view already exists from base class, but we have this for typehints
         self.loaded_config = None
 
         self._connect_signals()
+
+    # endregion
 
     # TODO?: Extend for this subclass's needs
     # RE: Are there any? All the observer stuff is in the UI Only.
@@ -1335,12 +1355,14 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate input before conversion. Child must implement."""
         if not cfg.input_docx or cfg.input_docx == "No selection":
+            log.error(f"Invalid File selected: {cfg.input_docx}")
             QMessageBox.critical(
                 self.view, "Missing Input", "Please select a valid .docx input file."
             )
             return False
 
         if not Path(cfg.input_docx).exists():
+            log.error(f"Input file does not exist: {cfg.input_docx}")
             QMessageBox.critical(
                 self.view,
                 "File Not Found",
@@ -1350,6 +1372,7 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
         # Validate it's actually a .docx
         if not cfg.input_docx.endswith(".docx"):
+            log.error(f"Invalid File selected: {cfg.input_docx}; must be .docx")
             QMessageBox.critical(
                 self.view, "Invalid File", "Input file must be a .docx file."
             )
