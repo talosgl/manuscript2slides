@@ -2,52 +2,55 @@
 
 # region imports
 from __future__ import annotations
+
+import logging
+import sys
+from pathlib import Path
+from typing import Any, Callable
+
+from PySide6.QtCore import QObject, QSettings, Qt, QThread, Signal
+from PySide6.QtGui import QColor, QKeySequence, QPalette, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QPushButton,
-    QWidget,
-    QVBoxLayout,
+    QCheckBox,
+    QComboBox,
+    QFileDialog,
+    QFrame,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QFileDialog,
-    QTabWidget,
-    QSplitter,
+    QMainWindow,
     QMessageBox,
     QPlainTextEdit,
-    QGroupBox,
-    QFrame,
-    QComboBox,
-    QCheckBox,
+    QPushButton,
     QSizePolicy,
+    QSplitter,
     QStyle,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtCore import QObject, Signal, QSettings, QThread, Qt
-from PySide6.QtGui import QColor, QPalette, QShortcut, QKeySequence
-import sys
-from pathlib import Path
-from typing import Callable, Any
 
 from manuscript2slides.internals.config.define_config import (
     ChunkType,
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.utils import open_folder_in_os_explorer
 from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
-
-import logging
+from manuscript2slides.utils import open_folder_in_os_explorer
 
 log = logging.getLogger("manuscript2slides")
-
-# We have to use QSettings to store preference persistence and things like last-selected-dialog because
-# QT doesn't integrate as cleanly with OS memory as Tkinter did.
-APP_SETTINGS = QSettings("manuscript2slides", "manuscript2slides")
 # endregion
+
+
+# region Module-level constants and helpers
 NO_SELECTION = "No Selection"
+
+# QSettings instance
+APP_SETTINGS = QSettings("manuscript2slides", "manuscript2slides")
 
 
 # region QSettings helpers
@@ -68,6 +71,42 @@ def get_last_browse_directory() -> str:
 # endregion
 
 
+# region Theme/style helpers
+def apply_theme(app: QApplication) -> None:
+    """Apply Fusion on Linux, otherwise use native style."""
+    if sys.platform.startswith("linux"):
+        app.setStyle("Fusion")
+        log.info("Linux detected; applying 'Fusion' style to Qt.")
+    else:
+        log.info("Using native platform style for Qt.")
+
+
+def get_soft_text_color(widget: QWidget, ratio: float = 0.5) -> QColor:
+    """
+    Return a softer version of the widget's normal text color.
+
+    Blends the normal text color with the widget's background to achieve
+    a "secondary" text look that works in both light and dark modes.
+    """
+    palette = widget.palette()
+    base_color = palette.color(QPalette.ColorRole.WindowText)
+    bg_color = palette.color(QPalette.ColorRole.Window)
+
+    # Blend each RGB channel
+    soft_color = QColor(
+        int(base_color.red() * ratio + bg_color.red() * (1 - ratio)),
+        int(base_color.green() * ratio + bg_color.green() * (1 - ratio)),
+        int(base_color.blue() * ratio + bg_color.blue() * (1 - ratio)),
+    )
+
+    return soft_color
+
+
+# endregion
+
+# endregion
+
+
 # region MainWindow
 class MainWindow(QMainWindow):
     """Main Qt Application Window."""
@@ -83,7 +122,7 @@ class MainWindow(QMainWindow):
             QStyle.StandardPixmap.SP_FileDialogContentsView
         )
         # Alternatives: QStyle.StandardPixmap.SP_FileIcon, QStyle.StandardPixmap.SP_FileDialogDetailedView
-        
+
         self.setWindowIcon(icon)
 
         self.resize(500, 800)  # Initial size, but resizable
@@ -134,9 +173,7 @@ class MainWindow(QMainWindow):
 # endregion
 
 
-# region Abstract Parent Tab Classes
-# =============
-# endregion
+# region Base/Abstract Classes
 
 
 # region BaseConversionTabView
@@ -260,7 +297,6 @@ class BaseConversionTabPresenter(QObject):
             log.info(f"Loaded config from {path.name}")
             return cfg
         except Exception as e:
-
             log.error(
                 f"Try again; something went wrong when we tried to load that config from disk: {e}"
             )
@@ -769,10 +805,10 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
 # endregion
 
-
-# region Real Tab Classes
-# =============
 # endregion
+
+
+# region Concrete Tab Classes
 
 
 # region DemoTabView
@@ -825,8 +861,6 @@ class DemoTabView(BaseConversionTabView):
         self.force_error_btn = QPushButton("🐛 Test Error Handling")
         self.force_error_btn.setStyleSheet("color: lightcoral;")
         self.buttons.append(self.force_error_btn)
-
-    # endregion
 
     # endregion
 
@@ -935,7 +969,6 @@ class DemoTabPresenter(BaseConversionTabPresenter):
 # endregion
 
 
-# done~
 # region Pptx2DocxView
 class Pptx2DocxTabView(ConfigurableConversionTabView):
     """View Tab for the Pptx2Docx Pipeline."""
@@ -957,7 +990,6 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
     # region _create_widgets
     def _create_widgets(self) -> None:
-
         self._create_io_section()
 
         # We don't yet offer options for the reverse pipeline;
@@ -1027,7 +1059,6 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 # endregion
 
 
-# done?~?~??
 # region Pptx2DocxPresenter
 class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     """Presenter class for the PPTX -> Docx Tab."""
@@ -1129,7 +1160,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
     # region d2p create_io_widgets() (extended)
     def _create_io_widgets(self) -> None:
-
         # Define this subclass's unique attributes
         self.input_label = "Input .docx File:"
         self.input_filetypes = ["*.docx"]
@@ -1459,9 +1489,10 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
 # endregion
 
-# region Components
-# ===========
 # endregion
+
+
+# region Reusable Components
 
 
 # region CollapsibleFrame
@@ -1833,59 +1864,25 @@ class QTextEditHandler(logging.Handler):
 
 # endregion
 
-
-# region Theme/style helpers
-def apply_theme(app: QApplication) -> None:
-    """Apply Fusion on Linux, otherwise use native style."""
-    if sys.platform.startswith("linux"):
-        app.setStyle("Fusion")
-        log.info("Linux detected; applying 'Fusion' style to Qt.")
-    else:
-        log.info("Using native platform style for Qt.")
-
-
-def get_soft_text_color(widget: QWidget, ratio: float = 0.5) -> QColor:
-    """
-    Return a softer version of the widget's normal text color.
-
-    Blends the normal text color with the widget's background to achieve
-    a "secondary" text look that works in both light and dark modes.
-    """
-    palette = widget.palette()
-    base_color = palette.color(QPalette.ColorRole.WindowText)
-    bg_color = palette.color(QPalette.ColorRole.Window)
-
-    # Blend each RGB channel
-    soft_color = QColor(
-        int(base_color.red() * ratio + bg_color.red() * (1 - ratio)),
-        int(base_color.green() * ratio + bg_color.green() * (1 - ratio)),
-        int(base_color.blue() * ratio + bg_color.blue() * (1 - ratio)),
-    )
-
-    return soft_color
-
-
 # endregion
 
 
-# region main
-def main() -> None:
-    """Qt UI entry point."""
-    initialize_application()  # configure the log & other startup tasks
+# region Entry Points
+def run() -> None:
+    """Run Qt GUI interface. Assumes startup.initialize_application() already called."""
     log.info("Initializing Qt UI")
 
-    app = QApplication(sys.argv)  # Create App
+    app = QApplication(sys.argv)
     apply_theme(app)  # Apply platform-appropriate theme
-    # app.setStyle("Fusion")
-
-    # Create the window
     window = MainWindow()
-    # Make it visible
     window.show()
+    sys.exit(app.exec())
 
-    sys.exit(
-        app.exec()
-    )  # Start event loop with app.exec(); includes sys.exit() for proper cleanup
+
+def main() -> None:
+    """Development entry point - run GUI directly with `python -m manuscript2slides.gui`"""
+    initialize_application()  # configure the log & other startup tasks
+    run()
 
 
 if __name__ == "__main__":
