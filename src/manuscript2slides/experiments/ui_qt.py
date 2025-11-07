@@ -1,6 +1,5 @@
-"""Toy UI to learn Qt/PySide"""
+"""Main GUI entry point for manuscript2slides"""
 
-# ruff: noqa
 # region imports
 from __future__ import annotations
 from PySide6.QtWidgets import (
@@ -22,13 +21,13 @@ from PySide6.QtWidgets import (
     QComboBox,
     QCheckBox,
     QSizePolicy,
+    QStyle,
 )
 from PySide6.QtCore import QObject, Signal, QSettings, QThread, Qt
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtGui import QColor, QPalette, QShortcut, QKeySequence, QIcon
 import sys
-import time
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Any
 
 from manuscript2slides.internals.config.define_config import (
     ChunkType,
@@ -48,13 +47,30 @@ log = logging.getLogger("manuscript2slides")
 # QT doesn't integrate as cleanly with OS memory as Tkinter did.
 APP_SETTINGS = QSettings("manuscript2slides", "manuscript2slides")
 # endregion
+NO_SELECTION = "No Selection"
+
+
+# region QSettings helpers
+def save_last_browse_directory(path: Path | str) -> None:
+    """Save the directory of the given path to settings for next session."""
+    path_obj = Path(path)
+
+    selected_dir = str(path_obj.parent if path_obj.is_file() else path_obj)
+    log.debug(f"Saving last browse directory: {selected_dir}")
+    APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+
+
+def get_last_browse_directory() -> str:
+    """Get the last used browse directory from settings."""
+    return str(APP_SETTINGS.value("last_browse_directory", ""))
+
+
+# endregion
 
 
 # region MainWindow
 class MainWindow(QMainWindow):
     """Main Qt Application Window."""
-
-    # TODO: How do we change the favicon? Also what do you call a favicon when it's for a desktop app and not a website tab...
 
     # region init
     def __init__(self) -> None:
@@ -62,27 +78,35 @@ class MainWindow(QMainWindow):
         super().__init__()  # Initialize using QMainWindow's constructor
 
         self.setWindowTitle("manuscript2slides")
-        self.resize(400, 800)  # Initial size, but resizable
+        # Set window icon to prevent broken icon in system tray
+        icon = self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)
+        self.setWindowIcon(icon)
+
+        self.resize(500, 800)  # Initial size, but resizable
 
         # Build the UI
         self._create_widgets()
         self._create_layout()
 
+        # Power User shortcuts
+        save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        save_shortcut.activated.connect(self.d2p_tab_presenter.on_save_config_click)
+
     # endregion
 
     # region _create_widgets()
-    def _create_widgets(self):
+    def _create_widgets(self) -> None:
         """Create main components."""
         self.tabs = QTabWidget()
         self.log_viewer = LogViewer()
 
         self.d2p_tab_view = Docx2PptxTabView()
         self.d2p_tab_presenter = Docx2PptxTabPresenter(self.d2p_tab_view)
-        self.tabs.addTab(self.d2p_tab_view, "DOCX -> PPTX")
+        self.tabs.addTab(self.d2p_tab_view, "DOCX → PPTX")
 
         self.p2d_tab_view = Pptx2DocxTabView()
         self.p2d_tab_presenter = Pptx2DocxTabPresenter(self.p2d_tab_view)
-        self.tabs.addTab(self.p2d_tab_view, "PPTX -> DOCX")
+        self.tabs.addTab(self.p2d_tab_view, "PPTX → DOCX")
 
         self.demo_tab_view = DemoTabView()
         self.demo_presenter = DemoTabPresenter(self.demo_tab_view)
@@ -91,12 +115,12 @@ class MainWindow(QMainWindow):
     # endregion
 
     # region _create_layout
-    def _create_layout(self):
+    def _create_layout(self) -> None:
         """Arrange components."""
         splitter = QSplitter(Qt.Orientation.Vertical)
         splitter.addWidget(self.tabs)
         splitter.addWidget(self.log_viewer)
-        splitter.setSizes([420, 180])
+        splitter.setSizes([350, 250])
 
         self.setCentralWidget(splitter)
 
@@ -119,7 +143,7 @@ class BaseConversionTabView(QWidget):
     # endregion
 
     # region init
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.buttons: list[QPushButton] = []  # Track buttons for enable/disable
         self.button_original_texts: dict[QPushButton, str] = {}
@@ -168,7 +192,9 @@ class ConversionWorker(QObject):
     # endregion
 
     # region init
-    def __init__(self, cfg: UserConfig, pipeline_func: Callable):
+    def __init__(
+        self, cfg: UserConfig, pipeline_func: Callable[[UserConfig], Any]
+    ) -> None:
         super().__init__()
         self.cfg = cfg
         self.pipeline_func = pipeline_func
@@ -176,7 +202,7 @@ class ConversionWorker(QObject):
     # endregion
 
     # region run
-    def run(self):
+    def run(self) -> None:
         """Run the conversion (called in a background thread)."""
         # == DEBUGGING == #
         # Pause the UI for a few seconds so we can verify button disable/enable
@@ -187,7 +213,6 @@ class ConversionWorker(QObject):
         # =============== #
 
         try:
-            self.cfg.validate()
             self.pipeline_func(self.cfg)
             self.finished.emit()  # Success
         except Exception as e:
@@ -248,7 +273,7 @@ class BaseConversionTabPresenter(QObject):
 
     # region start_conversion
     def start_conversion(
-        self, cfg: UserConfig, pipeline_func: Callable | None = None
+        self, cfg: UserConfig, pipeline_func: Callable[[UserConfig], Any] | None = None
     ) -> None:
         """
         Disable buttons for the tab and start the conversion background thread.
@@ -261,6 +286,14 @@ class BaseConversionTabPresenter(QObject):
                 "No pipeline_func was passed into start_conversion(), so we'll use run_pipeline."
             )
             pipeline_func = run_pipeline  # Resolved at runtime
+        # Validate FIRST
+        try:
+            log.info("Running configuration validation.")
+            cfg.validate()
+        except Exception as e:
+            log.error(f"Validation failed: {e}")
+            QMessageBox.critical(self.view, "Invalid Config", str(e))
+            return
 
         self.view.disable_buttons()
         self.last_run_config = cfg
@@ -293,9 +326,14 @@ class BaseConversionTabPresenter(QObject):
 
         # The deleteLater calls tell Qt to safely clean up the objects after the thread finishes.
         # This prevents segfaults from accessing deleted objects.
-        # I don't know if we actually need this.
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.error.connect(self.worker.deleteLater)
+
+        # This ensures cleanup happens when the thread finishes, not just when the worker finishes.
+        # In normal flow, worker finishes -> tells thread to quit -> thread finishes.
+        # But if something weird happens and the thread stops without the worker finishing normally,
+        # this third line catches it. I don't know if we actually need this, but I had so much trouble
+        # with threading that I'm erring on paranoid.
         self.worker_thread.finished.connect(self.worker.deleteLater)
 
         # Start the thread
@@ -306,7 +344,12 @@ class BaseConversionTabPresenter(QObject):
 
     # region _show_question_dialog
     def _show_question_dialog(
-        self, title: str, text: str, info_text: str, icon: QMessageBox.Icon
+        self,
+        title: str,
+        text: str,
+        info_text: str,
+        icon: QMessageBox.Icon,
+        detailedText: str | None = None,
     ) -> bool:
         """Helper to show a dialog with OK/Cancel."""
         msg = QMessageBox(parent=self.view)
@@ -314,6 +357,8 @@ class BaseConversionTabPresenter(QObject):
         msg.setWindowTitle(title)
         msg.setText(text)
         msg.setInformativeText(info_text)
+        if detailedText:
+            msg.setDetailedText(detailedText)
         msg.setStandardButtons(
             QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
         )  # Remember: Qt uses the pipe | for flag composition, so we're telling it to add both of these items with this syntax
@@ -354,10 +399,6 @@ class BaseConversionTabPresenter(QObject):
         self.view.enable_buttons()
         log.error(f"Conversion failed: {error}")
 
-        error_msg = str(error)
-        if len(error_msg) > 300:
-            error_msg = error_msg[:300] + "...\n\n(See log for full details)"
-
         # Get log folder from config
         cfg = self.last_run_config if self.last_run_config else UserConfig()
         log_folder = cfg.get_log_folder()
@@ -366,8 +407,9 @@ class BaseConversionTabPresenter(QObject):
         result = self._show_question_dialog(
             title="Conversion Failed",
             text="An error occurred during conversion:",
-            info_text=f"{error_msg}\n\nCheck the log viewer for details.\n\nOpen log folder?",
+            info_text="Check the log viewer for details.\n\nOpen log folder?",
             icon=QMessageBox.Icon.Critical,
+            detailedText=str(error),
         )
 
         if result:
@@ -382,13 +424,12 @@ class BaseConversionTabPresenter(QObject):
 # endregion
 
 
-# done~ (apart from styling)
 # region ConfigurableConversionTabView
 class ConfigurableConversionTabView(BaseConversionTabView):
     """View class for the ConfigurableConversionTab."""
 
     # region init
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         # Get defaults from UserConfig
@@ -398,7 +439,7 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.input_label = "Input File:"
         self.input_filetypes = self.template_filetypes = ["*.*"]
         self.input_typenames = self.template_typenames = "Files"
-        self.template_default = "No Selection"  # This is a bit gross but is there another option? None, with checks?
+        self.template_default = NO_SELECTION  # This is a bit gross but is there another option? None, with checks?
 
         # children must call _create_widgets(), _create_layouts(), _connect_internal_signals()
 
@@ -436,7 +477,7 @@ class ConfigurableConversionTabView(BaseConversionTabView):
             is_dir=False,
             filetypes=self.input_filetypes,
             typenames=self.input_typenames,
-            default_path="No Selection",
+            default_path=NO_SELECTION,
             read_only=True,
         )
 
@@ -511,9 +552,9 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         """Create convert button section."""
         self.convert_section = QGroupBox("Let's Go!")
 
-        self.convert_btn = QPushButton("Convert!")  # TODO: start disabled?
-        # TODO: Style the button to be big!
-        # TODO: And to be green when ready, grayed-out when not ready/disabled
+        self.convert_btn = QPushButton("Convert!")
+        # Style the button to be big!
+        self.convert_btn.setMinimumHeight(50)
 
         self.buttons.append(self.convert_btn)  # For base class disable/enable
 
@@ -531,15 +572,29 @@ class ConfigurableConversionTabView(BaseConversionTabView):
     def _update_convert_button(self, path: str) -> None:
         """Enable/disable convert button based on path validity."""
         if self.convert_btn:
-            if path and path != "No selection" and Path(path).exists():
+            if path and path != NO_SELECTION and Path(path).exists():
                 self.convert_btn.setEnabled(True)
+                # self.convert_btn.setStyleSheet("background-color: green; color: white;")
+                self.convert_btn.setStyleSheet(
+                    """
+                QPushButton {
+                    background-color: green;
+                    color: white;
+                }
+                QPushButton:hover {
+                    background-color: #28a745;
+                    color: white;
+                }
+                """
+                )
+
             else:
                 self.convert_btn.setEnabled(False)
 
     # endregion
 
     # region _connect_internal_signals
-    def _connect_internal_signals(self):
+    def _connect_internal_signals(self) -> None:
         """Wire up view's internal logic."""
         self.input_selector.path_changed.connect(self._update_convert_button)
 
@@ -564,7 +619,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 # endregion
 
 
-# done???
 # region ConfigurableConversionTabPresenter
 class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     """Presenter class for the ConfigurableConversionTab."""
@@ -587,14 +641,9 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
         """Wire up view signals to presenter handlers."""
 
         # Button click handlers
-        if self.view.convert_btn:  # Please Pylance
-            self.view.convert_btn.clicked.connect(self.on_convert_click)
-
-        if self.view.save_btn:
-            self.view.save_btn.clicked.connect(self.on_save_config_click)
-
-        if self.view.load_btn:
-            self.view.load_btn.clicked.connect(self.on_load_config_click)
+        self.view.convert_btn.clicked.connect(self.on_convert_click)
+        self.view.save_btn.clicked.connect(self.on_save_config_click)
+        self.view.load_btn.clicked.connect(self.on_load_config_click)
 
     # endregion
 
@@ -617,7 +666,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
         """Handle Save Config button click"""
 
         # load the last-used directory from QSettings, if it's there
-        last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
+        last_dir = get_last_browse_directory()
 
         # Combine directory + filename
         initial_path = (
@@ -633,21 +682,26 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
         if path:
             # Save the selected path to QSettings so we can load it next session.
-            selected_dir = str(Path(path).parent)
-            log.debug(f"Set Qsettings last_browse_directory to {selected_dir}")
-            APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+            save_last_browse_directory(path)
 
             # Qt doesn't auto-add extension, so ensure it
             if not path.endswith(".toml"):
                 path += ".toml"
 
             cfg = self.ui_to_config(UserConfig())
-            # TODO: Do we need try/except here? there's one inside .save_toml
-            cfg.save_toml(Path(path))
-            log.debug("UI reporting save config completed.")
-            QMessageBox.information(
-                self.view, "Config Saved", f"Saved config to {Path(path).name}"
-            )
+
+            try:
+                log.debug("UI attempting to call save_toml")
+                cfg.save_toml(Path(path))
+                log.debug("UI reporting save config completed.")
+                QMessageBox.information(
+                    self.view, "Config Saved", f"Saved config to {Path(path).name}"
+                )
+            except Exception as e:
+                log.error(f"Failed to save config: {e}")
+                QMessageBox.critical(
+                    self.view, "Save Failed", f"Failed to save config:\n\n{e}"
+                )
 
     # endregion
 
@@ -655,16 +709,13 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     def on_load_config_click(self) -> None:
         """Handle load config button click."""
         # load the last-used directory from QSettings, if it's there
-        last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
+        last_dir = get_last_browse_directory()
         path, _ = QFileDialog.getOpenFileName(
             self.view, "Load Config", last_dir, "TOML Config (*.toml)"
         )
         if path:
-            # TODO wrap into helper?
             # Save the selected path to QSettings so we can load it next session.
-            selected_dir = str(Path(path).parent)
-            log.debug(f"Set Qsettings last_browse_directory to {selected_dir}")
-            APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+            save_last_browse_directory(path)
 
             cfg = self._load_config(Path(path))
             if cfg:
@@ -726,11 +777,8 @@ class DemoTabView(BaseConversionTabView):
     """Demo Tab with sample conversion buttons."""
 
     # region init
-    def __init__(
-        self, parent=None
-    ) -> (
-        None
-    ):  # Note: Unlike in Tkinter, where parents are absolutely required at all times, parent=None is a conventional pattern in Qt to allow flexibility
+    # Note: Unlike in Tkinter, where parents are absolutely required at all times, parent=None is a conventional pattern in Qt to allow flexibility
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         # Create widgets
@@ -755,7 +803,13 @@ class DemoTabView(BaseConversionTabView):
         self.docx2pptx_btn = QPushButton("DOCX → PPTX Demo")
         self.pptx2docx_btn = QPushButton("PPTX → DOCX Demo")
         self.round_trip_btn = QPushButton("Round-trip Demo (DOCX → PPTX → DOCX)")
-        self.load_demo_btn = QPushButton("Load & Run Config")
+        self.load_demo_btn = QPushButton("Load && Run Config")
+
+        # Turn them all green
+        # self.docx2pptx_btn.setStyleSheet("background-color: green; color: white;")
+        # self.pptx2docx_btn.setStyleSheet("background-color: green; color: white;")
+        # self.round_trip_btn.setStyleSheet("background-color: green; color: white;")
+        # self.load_demo_btn.setStyleSheet("background-color: green; color: white;")
 
         self.buttons.extend(
             [
@@ -765,6 +819,11 @@ class DemoTabView(BaseConversionTabView):
                 self.load_demo_btn,
             ]
         )
+        self.force_error_btn = QPushButton("🐛 Test Error Handling")
+        self.force_error_btn.setStyleSheet("color: lightcoral;")
+        self.buttons.append(self.force_error_btn)
+
+    # endregion
 
     # endregion
 
@@ -786,6 +845,9 @@ class DemoTabView(BaseConversionTabView):
         # Add stretch at bottom to push everything up
         layout.addStretch()
 
+        if DEBUG_MODE:
+            layout.addWidget(self.force_error_btn)
+
         # Actually apply the layout to this widget
         self.setLayout(layout)
 
@@ -799,12 +861,12 @@ class DemoTabView(BaseConversionTabView):
 class DemoTabPresenter(BaseConversionTabPresenter):
     """Presenter for Demo tab. Handles coordination between the view and the backend (a.k.a model, business logic)"""
 
+    # Instance attribute type hints/metadata
+    view: DemoTabView
+
     # region init
     def __init__(self, view: DemoTabView) -> None:
         super().__init__(view)  # Call base class init
-        self.view = (
-            view  # instantiated and passed in from MainWindow's _create_widgets()
-        )
 
         # Wire up the View's buttons (signals) to Presenter's handlers (slots)
         self._connect_signals()
@@ -820,6 +882,8 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         self.view.pptx2docx_btn.clicked.connect(self.on_pptx2docx_demo)
         self.view.round_trip_btn.clicked.connect(self.on_roundtrip_demo)
         self.view.load_demo_btn.clicked.connect(self.on_load_demo)
+
+        self.view.force_error_btn.clicked.connect(self.on_force_error)
 
         # `button.clicked` is a Signal (Qt emits it when button is clicked)
         # `.connect(method)` connects that signal to a Slot (your handler method)
@@ -850,6 +914,18 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         """Handle Roundtrip demo button click."""
         log.debug("Load & Run Config clicked!")
 
+    # In DemoTabPresenter:
+    def on_force_error(self) -> None:
+        """Trigger a test error."""
+        log.debug("Forcing error for testing!")
+        cfg = UserConfig().for_demo(direction=PipelineDirection.DOCX_TO_PPTX)
+
+        # Use a lambda that raises an error
+        def error_pipeline(cfg: UserConfig) -> None:
+            raise ValueError("This is a test error with a really long message! " * 20)
+
+        self.start_conversion(cfg, error_pipeline)
+
     # endregion
 
 
@@ -862,7 +938,7 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
     """View Tab for the Pptx2Docx Pipeline."""
 
     # region init
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         # Create widgets
@@ -938,9 +1014,9 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI values from a loaded UserConfig"""
         # Set Path selectors
-        self.input_selector.set_path(cfg.input_pptx or "No selection")
-        self.output_selector.set_path(cfg.output_folder or "No selection")
-        self.template_selector.set_path(cfg.template_docx or "No selection")
+        self.input_selector.set_path(cfg.input_pptx or NO_SELECTION)
+        self.output_selector.set_path(cfg.output_folder or NO_SELECTION)
+        self.template_selector.set_path(cfg.template_docx or NO_SELECTION)
 
     # endregion
 
@@ -953,17 +1029,18 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     """Presenter class for the PPTX -> Docx Tab."""
 
+    # Instance attribute type hints/metadata
+    view: Pptx2DocxTabView
+
     def __init__(self, view: Pptx2DocxTabView) -> None:
         super().__init__(view)
-        self.view = view  # self.view already exists from base class, but we have this for typehints
-        self.loaded_config = None
 
         self._connect_signals()
 
     # region p2d _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate pptx-specific input."""
-        if not cfg.input_pptx or cfg.input_pptx == "No selection":
+        if not cfg.input_pptx or cfg.input_pptx == NO_SELECTION:
             log.error(f"Invalid input file selected: {cfg.input_pptx}")
             QMessageBox.critical(
                 self.view, "Missing Input", "Please select a valid .pptx input file."
@@ -1001,12 +1078,12 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
         # Only update fields that have UI controls
         cfg.input_pptx = self.view.input_selector.get_path()
 
-        # Handle optional paths (might be "No selection")
+        # Handle optional paths (might be "No Selection")
         output = self.view.output_selector.get_path()
-        cfg.output_folder = output if output != "No selection" else None
+        cfg.output_folder = output if output != NO_SELECTION else None
 
         template = self.view.template_selector.get_path()
-        cfg.template_docx = template if template != "No selection" else None
+        cfg.template_docx = template if template != NO_SELECTION else None
         return cfg
 
     # endregion
@@ -1015,13 +1092,13 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 # endregion
 
 
-# done?!
 # region Docx2PptxView
 class Docx2PptxTabView(ConfigurableConversionTabView):
     """View Tab for the DOCX -> PPTX Pipeline."""
 
     # region init _create_widgets()
-    def __init__(self, parent=None) -> None:
+
+    def __init__(self, parent: QWidget | None = None) -> None:
         """Constructor for docx2pptx Tab"""
         super().__init__(parent)
 
@@ -1180,7 +1257,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self._on_child_annotation_changed()
 
         # Create sub-layout & indent children
-        # TODO: Fix that these checkboxes are squished top-bottom too
         child_layout = QVBoxLayout()
         child_layout.setContentsMargins(25, 0, 0, 0)  # Indent 25px from left
         child_layout.addWidget(self.keep_comments_chk)
@@ -1190,7 +1266,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         # Add everything to layout
         self.advanced_options.content_layout.addWidget(self.keep_metadata_chk)
 
-        # TODO: This is still a bit squished
         self.advanced_options.content_layout.addWidget(tip_label)
         self.advanced_options.content_layout.addWidget(annotations_label)
         self.advanced_options.content_layout.addWidget(self.keep_all_annotations_chk)
@@ -1202,7 +1277,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
     # endregion
 
     # region _setup_annotation_observers()
-    def _setup_annotation_observers(self):
+    def _setup_annotation_observers(self) -> None:
         """Wire up parent/child checkbox relationships."""
         # Children notify parent when they change
         self.keep_comments_chk.stateChanged.connect(self._on_child_annotation_changed)
@@ -1214,7 +1289,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
             self._on_parent_annotation_changed
         )
 
-    def _on_child_annotation_changed(self, *args) -> None:  # noqa: ANN002
+    def _on_child_annotation_changed(self) -> None:
         """Observer: When any child changes, update parent state."""
         children_checked = [
             self.keep_comments_chk.isChecked(),
@@ -1229,7 +1304,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         else:
             self.keep_all_annotations_chk.setCheckState(Qt.CheckState.Unchecked)
 
-    def _on_parent_annotation_changed(self, *args) -> None:  # noqa: ANN002
+    def _on_parent_annotation_changed(self) -> None:
         """Observer: When parent changes, update all children."""
         parent_value = self.keep_all_annotations_chk.checkState()
         if parent_value == Qt.CheckState.Checked:
@@ -1283,9 +1358,9 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         # Only populate fields that have UI controls
 
         # Set Path selectors
-        self.input_selector.set_path(cfg.input_docx or "No selection")
-        self.output_selector.set_path(cfg.output_folder or "No selection")
-        self.template_selector.set_path(cfg.template_pptx or "No selection")
+        self.input_selector.set_path(cfg.input_docx or NO_SELECTION)
+        self.output_selector.set_path(cfg.output_folder or NO_SELECTION)
+        self.template_selector.set_path(cfg.template_pptx or NO_SELECTION)
 
         # Set dropdown
         self.chunk_dropdown.setCurrentText(cfg.chunk_type.value)
@@ -1305,26 +1380,20 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 # endregion
 
 
-# Done?
 # region Docx2PptxPresenter
 class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
+    """Presenter class for Docx2Pptx Tab."""
+
+    # Instance attribute type hints/metadata
+    view: Docx2PptxTabView
 
     # region init
     def __init__(self, view: Docx2PptxTabView) -> None:
         super().__init__(view)
-        self.view = view  # self.view already exists from base class, but we have this for typehints
-        self.loaded_config = None
 
         self._connect_signals()
 
     # endregion
-
-    # TODO?: Extend for this subclass's needs
-    # RE: Are there any? All the observer stuff is in the UI Only.
-    # TODO: Delete?
-    def _connect_signals(self):
-        super()._connect_signals()  # Get shared signals
-        # ... add subclass-specific ones
 
     # region d2p ui_to_config
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
@@ -1345,10 +1414,10 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
         # Handle optional paths (might be "No selection")
         output = self.view.output_selector.get_path()
-        cfg.output_folder = output if output != "No selection" else None
+        cfg.output_folder = output if output != NO_SELECTION else None
 
         template = self.view.template_selector.get_path()
-        cfg.template_pptx = template if template != "No selection" else None
+        cfg.template_pptx = template if template != NO_SELECTION else None
         return cfg
 
     # endregion
@@ -1356,7 +1425,7 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     # region d2p _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate input before conversion. Child must implement."""
-        if not cfg.input_docx or cfg.input_docx == "No selection":
+        if not cfg.input_docx or cfg.input_docx == NO_SELECTION:
             log.error(f"Invalid File selected: {cfg.input_docx}")
             QMessageBox.critical(
                 self.view, "Missing Input", "Please select a valid .docx input file."
@@ -1397,7 +1466,10 @@ class CollapsibleFrame(QWidget):
     """A widget that can be collapsed/expanded with a toggle button."""
 
     def __init__(
-        self, parent=None, title: str = "Advanced", start_collapsed: bool = True
+        self,
+        parent: QWidget | None = None,
+        title: str = "Advanced",
+        start_collapsed: bool = True,
     ) -> None:
         super().__init__(parent)
 
@@ -1428,7 +1500,7 @@ class CollapsibleFrame(QWidget):
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Minimum,  # Don't compress below minimum size
         )
-        # Lesson: When creating custom Qt widgets that contain layouts, 
+        # Lesson: When creating custom Qt widgets that contain layouts,
         # explicitly set their setSizePolicy(). Qt's defaults aren't always
         # what you expect, especially for the vertical direction.
 
@@ -1448,7 +1520,7 @@ class CollapsibleFrame(QWidget):
 
         self.setLayout(layout)
 
-    def toggle(self):
+    def toggle(self) -> None:
         """Toggle between collapsed and expanded states."""
         if self.is_collapsed:
             # Expand
@@ -1485,10 +1557,10 @@ class PathSelector(QWidget):
 
     def __init__(
         self,
-        parent,
+        parent: QWidget | None = None,
         label_text: str = "Path: ",
         is_dir: bool = False,
-        filetypes: list = [],
+        filetypes: list[str] = [],
         typenames: str = "Files",
         default_path: str | None = None,
         read_only: bool = True,
@@ -1516,14 +1588,14 @@ class PathSelector(QWidget):
         if default_path:
             self.set_path(default_path)
 
-    def _create_widgets(self, label_text, read_only):
+    def _create_widgets(self, label_text: str, read_only: bool) -> None:
         """Create child widgets"""
         self.label = QLabel(label_text)
         self.line_edit = QLineEdit()
         self.line_edit.setReadOnly(read_only)
         self.browse_btn = QPushButton("Browse...")
 
-    def _create_layout(self):
+    def _create_layout(self) -> None:
         """Arrange widgets horizontally: label-input-button"""
         # add widgets to layout and arrange them
         layout = QHBoxLayout()
@@ -1535,7 +1607,7 @@ class PathSelector(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)  # No extra padding
         self.setLayout(layout)
 
-    def _connect_signals(self):
+    def _connect_signals(self) -> None:
         """Wire up internal signals."""
         self.browse_btn.clicked.connect(self.browse)
         # Emit signal when line edit text changes
@@ -1551,10 +1623,10 @@ class PathSelector(QWidget):
         extensions = " ".join(f"{ext}" for ext in self.filetypes)
         return f"{self.typenames} ({extensions});;All Files (*)"
 
-    def browse(self):
+    def browse(self) -> None:
         """Open file/folder dialog."""
         # load the last-used directory from QSettings, if it's there
-        last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
+        last_dir = get_last_browse_directory()
 
         if self.is_dir:
             path = QFileDialog.getExistingDirectory(
@@ -1567,23 +1639,21 @@ class PathSelector(QWidget):
             )
 
         if path:  # if the user picked something and did not cancel...
+            save_last_browse_directory(path)
             self.line_edit.setText(path)
-
-            save_dir = str(Path(path).parent) if not self.is_dir else path
-
-            # Save the selected path to QSettings so we can load it next session.
-            APP_SETTINGS.setValue("last_browse_directory", save_dir)
 
     def _validate_path(self, path: str) -> None:
         """Validate path and change line_edit color accordingly"""
-        if not path or path == "No Selection":
+        if not path or path == NO_SELECTION:
             # Empty or "No Selection" is OK
             self._set_line_edit_color(None)
             return
 
         try:
             path_obj = Path(path)
-        except:
+        except (ValueError, TypeError):
+            log.warning("Selected Path couldn't be parsed as a path.")
+            self._set_line_edit_color("lightcoral")
             return
 
         if self.is_dir:
@@ -1597,7 +1667,7 @@ class PathSelector(QWidget):
         else:
             self._set_line_edit_color("lightcoral")
 
-    def _set_line_edit_color(self, color: str | None):
+    def _set_line_edit_color(self, color: str | None) -> None:
         """Set background color of line edit."""
         if color:
             self.line_edit.setStyleSheet(f"background-color: {color};")
@@ -1626,7 +1696,7 @@ class LogViewer(QGroupBox):
     """Scrolling log viewer."""
 
     # region init
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(title="Log Viewer", parent=parent)
 
         self._create_widgets()
@@ -1725,14 +1795,18 @@ class LogSignaller(QObject):
 class QTextEditHandler(logging.Handler):
     """Custom logging handler that writes to a QPlainTextEdit widget."""
 
-    def __init__(self, text_widget: QPlainTextEdit):
+    # region init
+    def __init__(self, text_widget: QPlainTextEdit) -> None:
         super().__init__()
         self.text_widget = text_widget
         self.signaller = LogSignaller()
 
         # Connect signal to widget's appendPlainText slot (thread-safe!)
-        self.signaller.log_message.connect(self.text_widget.appendPlainText)
+        self.signaller.log_message.connect(self._append_and_scroll)
 
+    # endregion
+
+    # region emit
     def emit(self, record: logging.LogRecord) -> None:
         """Called by logging system when a log message is generated."""
         # Format the message
@@ -1741,21 +1815,23 @@ class QTextEditHandler(logging.Handler):
         # Emit signal (Qt routes to main thread automatically)
         self.signaller.log_message.emit(msg)
 
+    # endregion
 
-# region init
+    # region append_log
+    def _append_and_scroll(self, msg: str) -> None:
+        self.text_widget.appendPlainText(msg)
+
+        # Auto-scroll the log view to the bottom
+        scrollbar = self.text_widget.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+
+    # endregion
+
 
 # endregion
 
-# region emit
-# endregion
 
-# region append_log
-# endregion
-
-# endregion
-
-
-# region theme/style helpers
+# region Theme/style helpers
 def apply_theme(app: QApplication) -> None:
     """Apply Fusion on Linux, otherwise use native style."""
     if sys.platform.startswith("linux"):
