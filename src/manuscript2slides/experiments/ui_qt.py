@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
     QStyle,
 )
 from PySide6.QtCore import QObject, Signal, QSettings, QThread, Qt
-from PySide6.QtGui import QColor, QPalette, QShortcut, QKeySequence, QIcon
+from PySide6.QtGui import QColor, QPalette, QShortcut, QKeySequence
 import sys
 from pathlib import Path
 from typing import Callable, Any
@@ -79,7 +79,11 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("manuscript2slides")
         # Set window icon to prevent broken icon in system tray
-        icon = self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)
+        icon = self.style().standardIcon(
+            QStyle.StandardPixmap.SP_FileDialogContentsView
+        )
+        # Alternatives: QStyle.StandardPixmap.SP_FileIcon, QStyle.StandardPixmap.SP_FileDialogDetailedView
+        
         self.setWindowIcon(icon)
 
         self.resize(500, 800)  # Initial size, but resizable
@@ -574,7 +578,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         if self.convert_btn:
             if path and path != NO_SELECTION and Path(path).exists():
                 self.convert_btn.setEnabled(True)
-                # self.convert_btn.setStyleSheet("background-color: green; color: white;")
                 self.convert_btn.setStyleSheet(
                     """
                 QPushButton {
