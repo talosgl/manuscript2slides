@@ -1,6 +1,7 @@
-## TODOs found while doing UI Exploration
+## TODOs/Known Issues I'd like to investigate fixing before v1
 - [ ] GUI: Wire up auto-save/load for preference persistence across sessions (call the save_toml/load_toml methods on UserConfig)
-- [ ] Revisit the Demo speaker notes bool-setting code because I hard-coded the old way into cli.run() and it's... smelly....
+- [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
+- [ ] Add feature to allow page ranges (Pipeline/backend + interface updates)
 
 ## Major TODOs Ordered by priority/dependency
 Feature: Add Provenance feature
@@ -22,18 +23,6 @@ Epic: Document the program thoroughly
     - for non-tech-savvy users
     - for future contributors
     - Don't forget to put the actual docstrings at the top of all the module files!
-
-## Public v1 Guidelines
-- What does is "done enough for public github repo mean"? 
-    - "When I'm comfortable having strangers use it without asking me questions."
-    - Engineer-audience documentation
-    - Log & error messages that tell users what went wrong and how to fix it
-    - Code that doesn't crash on common edge cases.
-- OK, but I think I really want it to *start* with UI in its first public version.
-
-## Known Issues I'd like to investigate fixing:
-- [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
-- [ ] Add feature to allow page ranges (Pipeline/backend + interface updates)
 
 ## Stretch Wishlist Features:
 - Split the output pptx or docx into multiple output files based on slide or page count. Add default counts and allow user overrides for the default.

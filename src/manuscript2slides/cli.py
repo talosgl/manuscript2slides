@@ -34,18 +34,6 @@ def run() -> None:
 
     if args.demo_round_trip:
         log.info("Running round-trip test with sample files.")
-        cfg.chunk_type = ChunkType.HEADING_FLAT
-
-        # TODO: Evaluate if we want this hard-coded behavior here long-term. For now it is just to preserve previous
-        # test behavior. If we do want to hard-code it, probably move this to the UserConfig.for_demo() method, or
-        # do something inside of arg-parse.
-        log.info(
-            "Setting bools to true that preserve annotations and metadata in Speaker Notes for CLI demo round-trip run."
-        )
-        cfg.preserve_docx_metadata_in_speaker_notes = True
-        cfg.display_comments = True
-        cfg.display_footnotes = True
-        cfg.display_endnotes = True
 
         from manuscript2slides.orchestrator import run_roundtrip_test
 
@@ -71,7 +59,7 @@ Examples:
   manuscript2slides --config path/to/my_settings.toml
 
   # See a demo run with sample files
-  manuscript2slides --demo-run
+  manuscript2slides --demo-docx2pptx
   
   # Quick conversion of a real file with defaults
   manuscript2slides --input-docx manuscript.docx
@@ -81,12 +69,22 @@ Examples:
         """,
     )
 
-    # Arg for running dry run
+    # Args for running dry runs
     parser.add_argument(
-        "--demo-run",
+        "--demo-docx2pptx",
         action="store_true",
-        dest="demo_run",
-        help="Run with sample files for demonstration/testing",
+        dest="demo_docx2pptx",
+        help=(
+            "Run a demonstration conversion from a sample Word document to PowerPoint slides. "
+            "Ignores other CLI options and uses built-in example files."
+        ),
+    )
+    parser.add_argument(
+        "--demo-pptx2docx",
+        action="store_true",
+        dest="demo_pptx2docx",
+        help="Run a demonstration conversion from sample PowerPoint slides to a Word document. "
+        "Ignores other CLI options and uses built-in example files.",
     )
 
     # Arg for running dry run
@@ -94,7 +92,10 @@ Examples:
         "--demo-round-trip",
         action="store_true",
         dest="demo_round_trip",
-        help="Run both pipelines back to back using sample files for demonstration/testing",
+        help=(
+            "Run both conversions (docx -> pptx and pptx -> docx) using sample files, back to back. "
+            "Useful for testing end-to-end behavior. Ignores other CLI options."
+        ),
     )
 
     # Config file (special - loads other values)
@@ -290,10 +291,25 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     Returns:
         UserConfig instance with all values set
     """
-    # Start with defaults, demo, or config file
-    if args.demo_run or args.demo_round_trip:
-        log.info("Demo requested; populating input fields with sample defaults.")
+    # Start with demo samples, config file, or defaults
+    if args.demo_round_trip:
+        log.info(
+            "Roundtrip Demo requested; populating input fields with sample defaults."
+        )
         cfg = UserConfig().with_defaults()
+        return cfg
+    elif args.demo_docx2pptx:
+        log.info(
+            "docx2pptx demo requested; populating input fields with sample defaults."
+        )
+        cfg = UserConfig().for_demo(direction=PipelineDirection.DOCX_TO_PPTX)
+        return cfg
+    elif args.demo_pptx2docx:
+        log.info(
+            "pptx2docx demo requested; populating input fields with sample defaults."
+        )
+        cfg = UserConfig().for_demo(direction=PipelineDirection.PPTX_TO_DOCX)
+        return cfg
     elif args.config:
         config_path = Path(args.config)
         log.info(f"Loading config from {config_path}")
