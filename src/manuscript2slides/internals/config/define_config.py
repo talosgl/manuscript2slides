@@ -173,7 +173,7 @@ class UserConfig:
         if self.input_pptx:
             return self._resolve_path(self.input_pptx)
 
-        return None  # No more fallback to sample
+        return None
 
     def get_log_folder(self) -> Path:
         """Get the log folder path."""
@@ -299,6 +299,31 @@ class UserConfig:
         return cls(**data)
 
     # endregion
+
+    # region enable_all_options
+    def enable_all_options(self) -> UserConfig:
+        """
+        Enable all options by mutating an existing config. Use for demos, testing, and
+        preserving as much as possible during roundtrip pipeline runs.
+        Returns the mutated object.
+        """
+        log.info("Enabling all bool options on existing config.")
+        # Defaults should already set these to True, but just in case.
+        self.experimental_formatting_on = True
+        self.comments_keep_author_and_date = True
+        self.comments_sort_by_date = True
+
+        # We leave these empty by default to have speaker notes empty,
+        # but for demo and testing cases we want them enabled.
+        self.preserve_docx_metadata_in_speaker_notes = True
+        self.display_comments = True
+        self.display_endnotes = True
+        self.display_footnotes = True
+
+        return self
+
+    # endregion
+
     # region save_toml
     def save_toml(self, path: Path) -> None:
         """

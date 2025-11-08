@@ -297,6 +297,8 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
             "Roundtrip Demo requested; populating input fields with sample defaults."
         )
         cfg = UserConfig().with_defaults()
+        cfg.enable_all_options()
+        log.debug(f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}")
         # Early return for demos
         return cfg
     elif args.demo_docx2pptx:

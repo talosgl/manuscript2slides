@@ -945,11 +945,14 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         """Handle Load & Run Config button click."""
         log.debug("Round-trip Demo clicked!")
         cfg = UserConfig().with_defaults()
+        cfg.enable_all_options()
+        log.debug(f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}")
         self.start_conversion(cfg, run_roundtrip_test)
 
     def on_load_demo(self) -> None:
         """Handle Roundtrip demo button click."""
         log.debug("Load & Run Config clicked!")
+        # TODO
 
     # In DemoTabPresenter:
     def on_force_error(self) -> None:
