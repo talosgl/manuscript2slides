@@ -10,6 +10,7 @@ from manuscript2slides.processing.create_slides import slides_from_chunks
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.templates import create_empty_slide_deck
 from manuscript2slides.internals.run_context import start_pipeline_run
+from manuscript2slides.internals.run_context import get_pipeline_run_id
 
 log = logging.getLogger("manuscript2slides")
 
@@ -20,8 +21,8 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     # Validate we have what we need to run
     cfg.validate_docx2pptx_pipeline_requirements()
 
-    # Start pipeline run and get a fresh ID
-    pipeline_id = start_pipeline_run()
+    # Get the pipeline_id for logging
+    pipeline_id = get_pipeline_run_id()
     log.info(f"Starting docx2pptx pipeline. [pipeline:{pipeline_id}]")
 
     user_docx = cfg.get_input_docx_file()
@@ -76,3 +77,4 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     io.save_output(output_prs, cfg)
 
     log.info(f"docx2pptx pipeline complete [pipeline:{pipeline_id}]")
+    log.info(f"See log: {cfg.get_log_folder()}")

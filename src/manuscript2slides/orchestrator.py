@@ -8,12 +8,22 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
 )
+from manuscript2slides.internals.run_context import get_session_id, get_pipeline_run_id
+from manuscript2slides.internals.run_context import start_pipeline_run
 
 log = logging.getLogger("manuscript2slides")
 
 
 def run_pipeline(cfg: UserConfig) -> None:
     """Route to the appropriate pipeline based on config."""
+
+    # Start pipeline run and get a fresh ID
+    pipeline_id = start_pipeline_run()
+    log.info(f"Initializing pipeline run. [pipeline:{pipeline_id}]")
+
+    # Dump pipeline run info to log
+    log_pipeline_info(cfg)
+
     if cfg.direction == PipelineDirection.DOCX_TO_PPTX:
         docx2pptx.run_docx2pptx_pipeline(cfg)
     elif cfg.direction == PipelineDirection.PPTX_TO_DOCX:
@@ -47,7 +57,6 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
         )
 
     # Run docx -> pptx
-    # TODO: Do we need to set this here? Presumably it should be set by the caller, right? I guess it's harmless to set it again...
     cfg.direction = PipelineDirection.DOCX_TO_PPTX
     run_pipeline(cfg)
 
@@ -81,3 +90,12 @@ def _find_most_recent_file(folder: Path, pattern: str) -> Path:
     # Use st_mtime (modification time) which is reliable across platforms
     # and makes more sense for "most recent output file"
     return max(files, key=lambda p: p.stat().st_mtime)
+
+
+def log_pipeline_info(cfg: UserConfig) -> None:
+    log.info(f"=== Pipeline Run Started ===")
+    log.info(f"Run ID: {get_pipeline_run_id()}")
+    log.info(f"Session ID: {get_session_id()}")
+    log.info(f"Direction: {cfg.direction.value}")
+    log.info(f"Input: {cfg.input_docx or cfg.input_pptx}")
+    log.info(f"Configuration: {cfg}")  # This will use the dataclass __repr__

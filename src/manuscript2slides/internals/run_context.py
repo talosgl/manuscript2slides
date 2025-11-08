@@ -104,7 +104,7 @@ def get_pipeline_run_id() -> str:
     """
     if _pipeline_run_id is None:
         raise RuntimeError(
-            "No active pipeline run. Call start_pipeline_run() at the beginning of pipeline execution."
+            "No active pipeline run id hs been generated. Call start_pipeline_run() at the beginning of pipeline execution."
         )
     return _pipeline_run_id
 
