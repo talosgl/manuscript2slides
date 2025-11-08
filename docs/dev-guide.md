@@ -1,3 +1,35 @@
+
+## Development
+
+### Install from Source
+
+```bash
+git clone https://github.com/talosgl/manuscript2slides.git
+cd manuscript2slides
+pip install -e ".[dev]"
+```
+
+### Run Tests
+
+```bash
+pytest
+```
+
+### Run from Source
+
+```bash
+python -m manuscript2slides
+```
+## Contributing
+
+Contributions are welcome. Please feel free to:
+
+- Report bugs via [GitHub Issues](https://github.com/talosgl/manuscript2slides/issues)
+- Suggest features
+- Submit pull requests
+
+For substantial changes, please open an issue first to discuss your approach.
+
 ## Package Dependencies
 ```bash
 pip install -e '.[dev]'

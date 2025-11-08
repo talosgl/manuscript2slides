@@ -1,10 +1,14 @@
-## TODOs/Known Issues I'd like to investigate fixing before v1
-- [ ] GUI: Wire up auto-save/load for preference persistence across sessions (call the save_toml/load_toml methods on UserConfig)
-- [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
-- [ ] Add feature to allow page ranges (Pipeline/backend + interface updates)
-
 ## Major TODOs Ordered by priority/dependency
-Feature: Add Provenance feature
+Epic: Bucket o' Fixes & Features pre-v1: 
+- Backend-only:
+  - [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
+
+- GUI-only Feature:
+  - [ ]  Wire up auto-save/load for preference persistence across sessions (call the save_toml/load_toml methods on UserConfig)
+
+- GUI/CLI + Backend Features: 
+  - [ ] Add feature to allow page ranges
+  - [ ] Add Provenance feature
     - Minimum: at the start of a pipeline call, dump the run_id/session_id + cfg (UserConfig) object's fields to log and/or file 
 
 Epic: Add tests & pytest
@@ -29,6 +33,6 @@ Epic: Document the program thoroughly
 - Investigate if we can insert pptx sections safely enough (to allow for docx headings -> pptx sections, or other section-chunking); if not, investigate if/when we want to mimic the same type of behavior with "segue slides"
 - Investigate how impossible non-local file input/output (OneDrive/SharePoint) would be; add to known limitations if not supportable.
 - Investigate linking slides or sections-of-slides or file chunks back to their source "place" in the original docx (og file if possible, or a copy where we insert the anchor)
-- Add support for importing .md and .txt; split by whitespaces or newline characters.
 - Add support to export to .md (1 file per chunk)
-- Add support to break chunks (of any type) at a word count threshold.
+- Add support to break chunks (of any type) at a word count threshold.- 
+- Add support for importing .md and .txt; split by whitespaces or newline characters.

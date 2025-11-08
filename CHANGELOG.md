@@ -15,5 +15,4 @@ All notable changes to this project will be documented in this file.
 - Experimental formatting preservation
 
 ### Known Issues
-- Images and tables not supported
 - Some hyperlink types may not convert correctly
