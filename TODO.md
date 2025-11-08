@@ -23,7 +23,8 @@ Epic: Package/Distribution
     - Figure out how to package it into an installer for each non-mobile platform (Win 11, MacOS, Linux)
     - Make sure to update the resources/.. source inside of scaffold.py to use the packaged version
 
-Epic: Document the program thoroughly 
+Epic: Document the program thoroughly
+    - [ ] Add "how to launch/run from vs code" into the docs/dev-guide.md 
     - for non-tech-savvy users
     - for future contributors
     - Don't forget to put the actual docstrings at the top of all the module files!
