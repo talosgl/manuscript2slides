@@ -184,7 +184,7 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
     - Move the run's XML element from being a direct child of the paragraph to being a nested child of the Hyperlink element
     - Add the Hyperlink element (which now contains the run) to the paragraph
 
-    Adapted from https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
+    Adapted from/referenced https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
     and https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130
     """
     # Create a new run on this paragraph

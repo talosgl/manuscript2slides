@@ -64,9 +64,11 @@ Advanced text formatting features adapted from techniques used in
 [md2pptx](https://github.com/MartinPacker/md2pptx) by Martin Packer (MIT License).
 
 Thanks to:
-- https://asciiflow.com/#/ for their ascii wireframing tool
-- https://plumberjack.blogspot.com/2019/11/a-qt-gui-for-logging.html for showing how to use Py's logging library with PySide6/Qt
-- https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx and https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130 for solutions to field-code hyperlink issues
+- [ASCIIFlow](https://asciiflow.com/#/) for their ascii wireframing tool
+- Blog post: [A Qt GUI for Logging](https://plumberjack.blogspot.com/2019/11/a-qt-gui-for-logging.html) for showing how to use Py's logging library with PySide6/Qt
+- [StackOverflow answer](https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx) and [GitHub discussion](https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130) for guidance on advanced techniques to add hyperlinks to docx runs
+
+For full licensing details, see [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).
 
 ## Known Limitations
 
