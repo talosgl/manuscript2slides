@@ -29,9 +29,6 @@ def run() -> None:
     # Build config from args (with proper prioritization CLI args > config file > defaults)
     cfg = build_config_from_args(args)
 
-    # Validate config
-    cfg.validate()
-
     if args.demo_round_trip:
         log.info("Running round-trip test with sample files.")
 
@@ -298,7 +295,9 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
         )
         cfg = UserConfig().with_defaults()
         cfg.enable_all_options()
-        log.debug(f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}")
+        log.debug(
+            f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}"
+        )
         # Early return for demos
         return cfg
     elif args.demo_docx2pptx:
@@ -359,6 +358,9 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
         cfg.preserve_docx_metadata_in_speaker_notes = (
             args.preserve_docx_metadata_in_speaker_notes
         )
+
+    # Validate config
+    cfg.validate()
 
     return cfg
 
