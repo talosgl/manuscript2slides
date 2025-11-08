@@ -747,7 +747,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     # region on_load_config_click
     def on_load_config_click(self) -> None:
         """Handle load config button click."""
-        # load the last-used directory from QSettings, if it's there
+        # Load the last-used directory from QSettings, if it's there
         last_dir = get_last_browse_directory()
         path, _ = QFileDialog.getOpenFileName(
             self.view, "Load Config", last_dir, "TOML Config (*.toml)"
@@ -942,17 +942,34 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         self.start_conversion(cfg, run_pipeline)
 
     def on_roundtrip_demo(self) -> None:
-        """Handle Load & Run Config button click."""
+        """Handle Roundtrip demo button click."""
         log.debug("Round-trip Demo clicked!")
         cfg = UserConfig().with_defaults()
         cfg.enable_all_options()
-        log.debug(f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}")
+        log.debug(
+            f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}"
+        )
         self.start_conversion(cfg, run_roundtrip_test)
 
     def on_load_demo(self) -> None:
-        """Handle Roundtrip demo button click."""
+        """Handle Load & Run Config button click."""
         log.debug("Load & Run Config clicked!")
-        # TODO
+
+        # Load the last-used directory from QSettings, if it's there
+        last_dir = get_last_browse_directory()
+        path, _ = QFileDialog.getOpenFileName(
+            self.view, "Load Config", last_dir, "TOML Config (*.toml)"
+        )
+        if path:
+            # Save the selected path to QSettings so we can load it next session.
+            save_last_browse_directory(path)
+
+            # Load from disk and populate into a cfg
+            cfg = self._load_config(Path(path))
+
+            if cfg:
+                # No specific validation in this tab's version
+                self.start_conversion(cfg, run_pipeline)
 
     # In DemoTabPresenter:
     def on_force_error(self) -> None:

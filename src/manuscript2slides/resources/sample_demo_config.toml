@@ -1,0 +1,12 @@
+input_docx = "input/sample_doc.docx"
+output_folder = "output"
+template_pptx = "templates/blank_template.pptx"
+chunk_type = "heading_flat"
+direction = "docx2pptx"
+experimental_formatting_on = true
+display_comments = true
+comments_sort_by_date = true
+comments_keep_author_and_date = true
+display_footnotes = true
+display_endnotes = true
+preserve_docx_metadata_in_speaker_notes = true
