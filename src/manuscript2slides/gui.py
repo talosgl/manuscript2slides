@@ -41,6 +41,7 @@ from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
 from manuscript2slides.utils import open_folder_in_os_explorer
+from manuscript2slides.internals.paths import user_log_dir_path
 
 log = logging.getLogger("manuscript2slides")
 # endregion
@@ -433,7 +434,7 @@ class BaseConversionTabPresenter(QObject):
 
         # Get log folder from config
         cfg = self.last_run_config if self.last_run_config else UserConfig()
-        log_folder = cfg.get_log_folder()
+        log_folder = user_log_dir_path()
 
         # Pop message box with error information and option to open logs folder
         result = self._show_question_dialog(

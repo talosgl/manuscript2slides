@@ -11,6 +11,8 @@ from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.templates import create_empty_slide_deck
 from manuscript2slides.internals.run_context import get_pipeline_run_id
 from pathlib import Path
+from manuscript2slides.internals.paths import user_log_dir_path
+
 
 log = logging.getLogger("manuscript2slides")
 
@@ -53,5 +55,5 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> Path:
     saved_output_path = io.save_output(output_prs, cfg)
 
     log.info(f"docx2pptx pipeline complete [pipeline:{pipeline_id}]")
-    log.info(f"See log: {cfg.get_log_folder()}")
+    log.info(f"See log: {user_log_dir_path()}")
     return saved_output_path

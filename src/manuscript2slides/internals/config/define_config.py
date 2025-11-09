@@ -175,9 +175,15 @@ class UserConfig:
 
         return None
 
-    def get_log_folder(self) -> Path:
-        """Get the log folder path."""
-        return user_log_dir_path()
+    def get_input_file(self) -> Path | None:
+        """Get the input file path as a Path."""
+        if self.direction == PipelineDirection.DOCX_TO_PPTX:
+            path = self.get_input_docx_file()
+        elif self.direction == PipelineDirection.PPTX_TO_DOCX:
+            path = self.get_input_pptx_file()
+        else:
+            path = None
+        return path if path else None
 
     # endregion
 

@@ -20,6 +20,7 @@ from manuscript2slides.internals.config.define_config import (
 from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
+from manuscript2slides.internals.paths import user_log_dir_path
 
 log = logging.getLogger("manuscript2slides")
 # endregion
@@ -331,7 +332,7 @@ class BaseConversionTabPresenter:
 
         if result:
             # Get log folder from config
-            log_folder = UserConfig().get_log_folder()
+            log_folder = user_log_dir_path()
             open_folder_in_os_explorer(log_folder)
 
     # endregion
