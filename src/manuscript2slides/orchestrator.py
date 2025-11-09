@@ -15,7 +15,9 @@ log = logging.getLogger("manuscript2slides")
 
 
 def run_pipeline(cfg: UserConfig) -> None:
-    """Route to the appropriate pipeline based on config."""
+    """Run validation and then route to the appropriate pipeline based on config."""
+
+    cfg.pre_run_check()
 
     # Start pipeline run and get a fresh ID
     pipeline_id = start_pipeline_run()
@@ -93,6 +95,7 @@ def _find_most_recent_file(folder: Path, pattern: str) -> Path:
 
 
 def log_pipeline_info(cfg: UserConfig) -> None:
+    """Print this pipeline run's run ID, session ID, and general config info to the log."""
     log.info(f"=== Pipeline Run Started ===")
     log.info(f"Run ID: {get_pipeline_run_id()}")
     log.info(f"Session ID: {get_session_id()}")

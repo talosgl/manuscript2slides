@@ -18,9 +18,6 @@ log = logging.getLogger("manuscript2slides")
 def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     """Orchestrates the docx2pptx pipeline."""
 
-    # Validate we have what we need to run
-    cfg.validate_docx2pptx_pipeline_requirements()
-
     # Get the pipeline_id for logging
     pipeline_id = get_pipeline_run_id()
     log.info(f"Starting docx2pptx pipeline. [pipeline:{pipeline_id}]")
@@ -35,23 +32,8 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
             "If you are trying to test something, use UserConfig.with_defaults() or UserConfig.for_demo() to create a test config."
         )
 
-    # Validate it's a real path of the correct type. If it's not, return the error.
-    try:
-        user_docx_validated = io.validate_docx_path(user_docx)
-    except FileNotFoundError:
-        log.error(f"File not found: {user_docx}. [pipeline:{pipeline_id}]")
-        sys.exit(1)
-    except ValueError as e:
-        log.error(f"{e} [pipeline:{pipeline_id}]")
-        sys.exit(1)
-    except PermissionError:
-        log.error(
-            f"I don't have permission to read that file ({user_docx})! [pipeline:{pipeline_id}]"
-        )
-        sys.exit(1)
-
     # Load the docx file at that path.
-    user_docx = io.load_and_validate_docx(user_docx_validated)
+    user_docx = io.load_and_validate_docx(user_docx)
 
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, cfg.chunk_type)
@@ -62,13 +44,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
         chunks = process_chunk_annotations(chunks, user_docx, cfg)
 
     # Create the presentation object from template
-    try:
-        output_prs = create_empty_slide_deck(cfg)
-    except Exception as e:
-        log.error(
-            f"Could not load template file (may be corrupted): {e} [pipeline:{pipeline_id}]"
-        )
-        sys.exit(1)
+    output_prs = create_empty_slide_deck(cfg)
 
     # Mutate the presentation object by adding slides
     slides_from_chunks(output_prs, chunks, cfg)

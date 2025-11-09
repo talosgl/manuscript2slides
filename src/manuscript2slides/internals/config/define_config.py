@@ -384,6 +384,23 @@ class UserConfig:
     # endregion
 
     # region Validation instance methods
+    def pre_run_check(self) -> None:
+        """
+        Validate everything needed for a pipeline run.
+        Combines intrinsic and external validation in one place.
+        """
+        # Intrinsic validation: This is likely to have already been done by a caller for UX reasons, but we repeat it here
+        # out of caution and for the sake of correctness.
+        self.validate()
+
+        # External validation based on pipeline direction
+        if self.direction == PipelineDirection.DOCX_TO_PPTX:
+            self.validate_docx2pptx_pipeline_requirements()
+        elif self.direction == PipelineDirection.PPTX_TO_DOCX:
+            self.validate_pptx2docx_pipeline_requirements()
+        else:
+            raise ValueError(f"Unknown pipeline direction: {self.direction}")
+
     def validate(self) -> None:
         """
         Validate intrinsic config values (no filesystem access).
