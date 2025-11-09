@@ -111,8 +111,11 @@ def _build_timestamped_output_filename(save_object: OUTPUT_TYPE) -> str:
 
 
 # region Disk I/O - Write
-def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> None:
-    """Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running."""
+def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> Path:
+    """
+    Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running.
+    Returns the path to which we save.
+    """
     pipeline_id = get_pipeline_run_id()
 
     # Get the output folder from the config object
@@ -142,6 +145,8 @@ def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> None:
     except Exception as e:
         log.error(f"Save failed in [pipeline:{pipeline_id}]: {e}")
         raise RuntimeError(f"Save failed with unexpected error: {e}")
+
+    return output_filepath
 
 
 # TODO, leafy: I'd really like `_validate_content_size()` to validate we're not about to save 100MB+ files. But that's not easy to

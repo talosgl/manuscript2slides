@@ -10,11 +10,12 @@ from manuscript2slides.processing.create_slides import slides_from_chunks
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.templates import create_empty_slide_deck
 from manuscript2slides.internals.run_context import get_pipeline_run_id
+from pathlib import Path
 
 log = logging.getLogger("manuscript2slides")
 
 
-def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
+def run_docx2pptx_pipeline(cfg: UserConfig) -> Path:
     """Orchestrates the docx2pptx pipeline."""
 
     # Get the pipeline_id for logging
@@ -49,7 +50,8 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> None:
     slides_from_chunks(output_prs, chunks, cfg)
 
     # Save the presentation to an actual pptx on disk
-    io.save_output(output_prs, cfg)
+    saved_output_path = io.save_output(output_prs, cfg)
 
     log.info(f"docx2pptx pipeline complete [pipeline:{pipeline_id}]")
     log.info(f"See log: {cfg.get_log_folder()}")
+    return saved_output_path

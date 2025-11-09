@@ -345,6 +345,30 @@ class UserConfig:
         path.parent.mkdir(parents=True, exist_ok=True)
 
         # Convert config to dict
+        data = self.config_to_dict()
+
+        # Filter out None values (TOML can't serialize None)
+        data = {k: v for k, v in data.items() if v is not None}
+        log.debug(f"Data to be written to toml file is: \n{data}")
+
+        # Write to TOML file
+        try:
+            log.info(f"Attempting to save to {path}")
+            with open(path, "wb") as f:
+                tomli_w.dump(data, f)
+            log.info(f"Saved toml config file at {path}")
+        except PermissionError as e:
+            error_msg = f"Permission denied writing to: {path}"
+            log.error(error_msg)
+            raise PermissionError(error_msg) from e
+        except OSError as e:
+            error_msg = f"Failed to write config file to {path}"
+            log.error(error_msg)
+            raise OSError(error_msg) from e
+
+    def config_to_dict(self) -> dict:
+        """Convert config to a JSON-serializable dict."""
+
         data = {
             "input_docx": self._make_path_relative(self.input_docx),
             "input_pptx": self._make_path_relative(self.input_pptx),
@@ -362,24 +386,9 @@ class UserConfig:
             "preserve_docx_metadata_in_speaker_notes": self.preserve_docx_metadata_in_speaker_notes,
         }
 
-        # Filter out None values (TOML can't serialize None)
-        data = {k: v for k, v in data.items() if v is not None}
         log.debug(f"Data to be written is: \n{data}")
 
-        # Write to TOML file
-        try:
-            log.info(f"Attempting to save to {path}")
-            with open(path, "wb") as f:
-                tomli_w.dump(data, f)
-            log.info(f"Saved toml config file at {path}")
-        except PermissionError as e:
-            error_msg = f"Permission denied writing to: {path}"
-            log.error(error_msg)
-            raise PermissionError(error_msg) from e
-        except OSError as e:
-            error_msg = f"Failed to write config file to {path}"
-            log.error(error_msg)
-            raise OSError(error_msg) from e
+        return data
 
     # endregion
 
