@@ -326,14 +326,6 @@ class BaseConversionTabPresenter(QObject):
                 "No pipeline_func was passed into start_conversion(), so we'll use run_pipeline."
             )
             pipeline_func = run_pipeline  # Resolved at runtime
-        # Validate FIRST
-        try:
-            log.info("Running configuration validation.")
-            cfg.validate()
-        except Exception as e:
-            log.error(f"Validation failed: {e}")
-            QMessageBox.critical(self.view, "Invalid Config", str(e))
-            return
 
         self.view.disable_buttons()
         self.last_run_config = cfg
@@ -798,9 +790,16 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate input before conversion. Child must implement."""
-        raise NotImplementedError
+        # Fast intrinsic validation first
+        try:
+            log.info("Running configuration validation.")
+            cfg.validate()
+        except Exception as e:
+            log.error(f"Validation failed: {e}")
+            QMessageBox.critical(self.view, "Invalid Config", str(e))
+            return False
 
-    # endregion
+        return True
 
 
 # endregion
@@ -1094,6 +1093,10 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     # region p2d _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate pptx-specific input."""
+        # Call parent's validation first (includes cfg.validate())
+        if not super()._validate_input(cfg):
+            return False
+
         if not cfg.input_pptx or cfg.input_pptx == NO_SELECTION:
             log.error(f"Invalid input file selected: {cfg.input_pptx}")
             QMessageBox.critical(
@@ -1478,6 +1481,11 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     # region d2p _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate input before conversion. Child must implement."""
+
+        # Call parent's validation first (includes cfg.validate())
+        if not super()._validate_input(cfg):
+            return False
+
         if not cfg.input_docx or cfg.input_docx == NO_SELECTION:
             log.error(f"Invalid File selected: {cfg.input_docx}")
             QMessageBox.critical(
