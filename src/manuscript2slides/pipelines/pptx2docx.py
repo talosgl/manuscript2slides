@@ -2,7 +2,6 @@
 """PowerPoint to Word conversion pipeline."""
 
 import logging
-import sys
 
 from pptx import presentation
 from manuscript2slides.templates import create_empty_document
@@ -10,7 +9,6 @@ from manuscript2slides.templates import create_empty_document
 from manuscript2slides import io
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.processing.populate_docx import copy_slides_to_docx_body
-from manuscript2slides.internals.run_context import start_pipeline_run
 from manuscript2slides.internals.run_context import get_pipeline_run_id
 
 log = logging.getLogger("manuscript2slides")

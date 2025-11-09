@@ -2,14 +2,13 @@
 """Word to PowerPoint conversion pipeline."""
 
 import logging
-import sys
+
 from manuscript2slides import io
 from manuscript2slides.annotations.extract import process_chunk_annotations
 from manuscript2slides.processing.chunking import create_docx_chunks
 from manuscript2slides.processing.create_slides import slides_from_chunks
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.templates import create_empty_slide_deck
-from manuscript2slides.internals.run_context import start_pipeline_run
 from manuscript2slides.internals.run_context import get_pipeline_run_id
 
 log = logging.getLogger("manuscript2slides")
