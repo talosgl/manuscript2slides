@@ -79,6 +79,7 @@ def user_templates_dir() -> Path:
     templates_dir.mkdir(parents=True, exist_ok=True)
     return templates_dir
 
+
 def user_configs_dir() -> Path:
     """
     Directory for saved configuration files.
@@ -90,6 +91,7 @@ def user_configs_dir() -> Path:
     configs_dir.mkdir(parents=True, exist_ok=True)
     return configs_dir
 
+
 def user_manifests_dir() -> Path:
     """
     Directory for saved manifest files.
@@ -100,3 +102,19 @@ def user_manifests_dir() -> Path:
     configs_dir = user_base_dir() / "manifests"
     configs_dir.mkdir(parents=True, exist_ok=True)
     return configs_dir
+
+
+def get_default_docx_template_path() -> Path:
+    """The default path used for the docx template in the ppt2docx pipeline if none is provided by the user.
+    This file is created by scaffold.py's _copy_templates_if_missing() function if it doesn't exist already.
+    """
+    base = user_templates_dir()
+    return base / "docx_template.docx"
+
+
+def get_default_pptx_template_path() -> Path:
+    """The default path used for the pptx template in the docx2pptx pipeline if none is provided by the user.
+    This file is created by scaffold.py's _copy_templates_if_missing() function if it doesn't exist already.
+    """
+    base = user_templates_dir()
+    return base / "blank_template.pptx"

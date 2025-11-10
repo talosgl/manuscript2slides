@@ -41,7 +41,12 @@ from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
 from manuscript2slides.utils import open_folder_in_os_explorer
-from manuscript2slides.internals.paths import user_log_dir_path
+from manuscript2slides.internals.paths import (
+    user_log_dir_path,
+    user_output_dir,
+    get_default_docx_template_path,
+    get_default_pptx_template_path,
+)
 
 log = logging.getLogger("manuscript2slides")
 # endregion
@@ -522,7 +527,7 @@ class ConfigurableConversionTabView(BaseConversionTabView):
             parent=self.advanced_io.content_frame,
             label_text="Output Folder:",
             is_dir=True,
-            default_path=str(self.cfg_defaults.get_output_folder()),
+            default_path=str(user_output_dir()),
         )
 
         self.template_selector = PathSelector(
@@ -1029,7 +1034,7 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         self.input_typenames = "PowerPoint"
         self.template_filetypes = ["*.docx"]
         self.template_typenames = "Word Document"
-        self.template_default = str(self.cfg_defaults.get_template_docx_path())
+        self.template_default = str(get_default_docx_template_path())
 
         # Call parent's method
         super()._create_io_widgets()
@@ -1190,7 +1195,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.input_typenames = "Word Document"
         self.template_filetypes = ["*.pptx"]
         self.template_typenames = "PowerPoint"
-        self.template_default = str(self.cfg_defaults.get_template_pptx_path())
+        self.template_default = str(get_default_pptx_template_path())
 
         # Call parent's method
         super()._create_io_widgets()

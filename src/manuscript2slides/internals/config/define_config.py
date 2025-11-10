@@ -21,7 +21,8 @@ from manuscript2slides.internals.paths import (
     user_base_dir,
     user_input_dir,
     user_output_dir,
-    user_templates_dir,
+    get_default_docx_template_path,
+    get_default_pptx_template_path,
 )
 import logging
 
@@ -139,8 +140,7 @@ class UserConfig:
             return self._resolve_path(self.template_pptx)
 
         # Default
-        base = user_templates_dir()
-        return base / "blank_template.pptx"
+        return get_default_pptx_template_path()
 
     def get_template_docx_path(self) -> Path:
         """Get the pptx2docx template docx path with fallback to a default."""
@@ -148,8 +148,7 @@ class UserConfig:
             return self._resolve_path(self.template_docx)
 
         # Default
-        base = user_templates_dir()
-        return base / "docx_template.docx"
+        return get_default_docx_template_path()
 
     def get_input_docx_file(self) -> Path | None:
         """Get the docx2pptx input docx file path, or None if not specified."""
