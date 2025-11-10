@@ -24,6 +24,7 @@ from manuscript2slides.internals.paths import (
     user_log_dir_path,
     user_templates_dir,
     user_configs_dir,
+    user_manifests_dir,
 )
 from manuscript2slides.internals.constants import RESOURCES_DIR
 
@@ -51,6 +52,7 @@ def ensure_user_scaffold() -> None:
     user_log_dir_path()
     templates = user_templates_dir()
     configs_dir = user_configs_dir()
+    user_manifests_dir()
 
     readme_path = base / "README.md"
     if not readme_path.exists():

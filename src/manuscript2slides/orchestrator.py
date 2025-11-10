@@ -10,6 +10,7 @@ from manuscript2slides.internals.config.define_config import (
 )
 from manuscript2slides.internals.run_context import get_session_id, get_pipeline_run_id
 from manuscript2slides.internals.run_context import start_pipeline_run
+from manuscript2slides.internals.manifest import RunManifest
 
 log = logging.getLogger("manuscript2slides")
 
@@ -23,15 +24,26 @@ def run_pipeline(cfg: UserConfig) -> None:
     pipeline_id = start_pipeline_run()
     log.info(f"Initializing pipeline run. [pipeline:{pipeline_id}]")
 
+    # Create run manifest object
+    run_manifest = RunManifest(cfg, run_id=pipeline_id)
+    run_manifest.start()
+
     # Dump pipeline run info to log
     log_pipeline_info(cfg)
 
-    if cfg.direction == PipelineDirection.DOCX_TO_PPTX:
-        docx2pptx.run_docx2pptx_pipeline(cfg)
-    elif cfg.direction == PipelineDirection.PPTX_TO_DOCX:
-        pptx2docx.run_pptx2docx_pipeline(cfg)
-    else:
-        raise ValueError(f"Unknown pipeline direction: {cfg.direction}")
+    try:
+        if cfg.direction == PipelineDirection.DOCX_TO_PPTX:
+            output_path = docx2pptx.run_docx2pptx_pipeline(cfg)
+        elif cfg.direction == PipelineDirection.PPTX_TO_DOCX:
+            output_path = pptx2docx.run_pptx2docx_pipeline(cfg)
+        else:
+            raise ValueError(f"Unknown pipeline direction: {cfg.direction}")
+
+        run_manifest.complete(output_path)  # Mark success
+
+    except Exception as e:
+        run_manifest.fail(e)  # Mark failure
+        raise  # Re-raise so GUI/CLI still see the error
 
 
 def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:

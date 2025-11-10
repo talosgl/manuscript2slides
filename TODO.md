@@ -5,11 +5,12 @@ Epic: Bucket o' Fixes & Features pre-v1:
 
 - GUI-only Feature:
   - [ ]  Wire up auto-save/load for preference persistence across sessions (call the save_toml/load_toml methods on UserConfig)
+    - Actually, I'm not sure I'd really want this as a user. Should there be a QSettings file on disk a user can edit?
 
 - GUI/CLI + Backend Features: 
   - [ ] Add feature to allow page ranges
-  - [ ] Add Provenance feature
-    - Minimum: at the start of a pipeline call, dump the run_id/session_id + cfg (UserConfig) object's fields to log and/or file 
+  - [x] ~~Add Provenance feature~~
+    - ~~Minimum: at the start of a pipeline call, dump the run_id/session_id + cfg (UserConfig) object's fields to log and/or file ~~
 
 Epic: Add tests & pytest
     - Test config validation
@@ -34,6 +35,6 @@ Epic: Document the program thoroughly
 - Investigate if we can insert pptx sections safely enough (to allow for docx headings -> pptx sections, or other section-chunking); if not, investigate if/when we want to mimic the same type of behavior with "segue slides"
 - Investigate how impossible non-local file input/output (OneDrive/SharePoint) would be; add to known limitations if not supportable.
 - Investigate linking slides or sections-of-slides or file chunks back to their source "place" in the original docx (og file if possible, or a copy where we insert the anchor)
-- Add support to export to .md (1 file per chunk)
-- Add support to break chunks (of any type) at a word count threshold.- 
+- Add support to export to .md (1 file per chunk) to support docx -> zettelkasten workflows (Notion, Obsidian) (Consider supporting metadata -> YAML frontmatter)
+- Add support to break chunks (of any type) at a word count threshold.
 - Add support for importing .md and .txt; split by whitespaces or newline characters.

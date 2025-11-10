@@ -89,3 +89,14 @@ def user_configs_dir() -> Path:
     configs_dir = user_base_dir() / "configs"
     configs_dir.mkdir(parents=True, exist_ok=True)
     return configs_dir
+
+def user_manifests_dir() -> Path:
+    """
+    Directory for saved manifest files.
+
+    Returns:
+        Path to ~/Documents/manuscript2slides/manifests/
+    """
+    configs_dir = user_base_dir() / "manifests"
+    configs_dir.mkdir(parents=True, exist_ok=True)
+    return configs_dir
