@@ -16,6 +16,7 @@ from manuscript2slides.internals.config.define_config import (
 )
 from manuscript2slides.internals.run_context import get_session_id
 from manuscript2slides.internals.paths import user_manifests_dir, user_log_dir_path
+from typing import Any
 
 log = logging.getLogger("manuscript2slides")
 
@@ -32,7 +33,7 @@ class RunManifest:
         self.run_id = run_id
         self.start_time: datetime = datetime.now()
         self.manifest_path = user_manifests_dir() / f"run_{self.run_id}_manifest.json"
-        self.manifest = self._build_manifest()
+        self.manifest: dict[str, Any] = self._build_manifest()
 
         # Initialize end_time and duration attributes (they are None until completed/failed)
         # We do that for these, but not for "status", because we'll be using these for runtime operations later,
@@ -83,10 +84,10 @@ class RunManifest:
         log.error(f"Updated manifest ({self.manifest_path}): failed - {error}")
 
     # Private methods
-    def _build_manifest(self) -> dict:
+    def _build_manifest(self) -> dict[str, Any]:
         """Build manifest structure. Separating into its own method in case we want to extend in a v2 later."""
 
-        manifest = {
+        manifest: dict[str, Any] = {
             "manifest_version": MANIFEST_VERSION,
             "run_id": self.run_id,
             "session_id": get_session_id(),
@@ -130,7 +131,7 @@ class RunManifest:
         else:
             return "unknown_pipeline"
 
-    def _get_environment_info(self) -> dict:
+    def _get_environment_info(self) -> dict[str, Any]:
         """Get execution environment information."""
         return {
             "python_version": sys.version.split()[0],

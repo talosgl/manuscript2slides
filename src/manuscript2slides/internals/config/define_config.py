@@ -15,16 +15,14 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 from manuscript2slides.internals.paths import (
     user_base_dir,
     user_input_dir,
     user_output_dir,
     user_templates_dir,
-    user_log_dir_path,
 )
-from manuscript2slides.internals.run_context import get_pipeline_run_id
 import logging
 
 log = logging.getLogger("manuscript2slides")
@@ -351,10 +349,10 @@ class UserConfig:
         path.parent.mkdir(parents=True, exist_ok=True)
 
         # Convert config to dict
-        data = self.config_to_dict()
+        data: dict[str, Any] = self.config_to_dict()
 
         # Filter out None values (TOML can't serialize None)
-        data = {k: v for k, v in data.items() if v is not None}
+        data: dict[str, Any] = {k: v for k, v in data.items() if v is not None}
         log.debug(f"Data to be written to toml file is: \n{data}")
 
         # Write to TOML file
@@ -372,10 +370,10 @@ class UserConfig:
             log.error(error_msg)
             raise OSError(error_msg) from e
 
-    def config_to_dict(self) -> dict:
+    def config_to_dict(self) -> dict[str, Any]:
         """Convert config to a JSON-serializable dict."""
 
-        data = {
+        data: dict[str, Any] = {
             "input_docx": self._make_path_relative(self.input_docx),
             "input_pptx": self._make_path_relative(self.input_pptx),
             "output_folder": self._make_path_relative(self.output_folder),

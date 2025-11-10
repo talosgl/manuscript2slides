@@ -1,13 +1,17 @@
 ## Major TODOs Ordered by priority/dependency
-Epic: Bucket o' Fixes & Features pre-v1: 
+Epic: Bucket o' Fixes & Features pre-v1:
+
 - GUI-only Feature:
   - [ ]  Preference Persistence: Wire up auto-save/load for preference persistence across sessions; use QtSettings to let users decide if preferences / app state should persist across sessions or be cleared every time.    
     - Default this behavior to remember/persist: "Users generally prefer software that restores the state they were last in. It minimizes friction and assumes a typical workflow where users iterate on a small set of inputs rather than starting from a blank slate every single time. The vast majority of well-known software (browsers, IDEs, office suites) remember window size, recent files, and input fields. Your users will expect this behavior."
     - Use QMenuBar + QSettings to offer a preference persistence option for the user; place the access to this feature in a standard Menubar location (`Edit` -> `Preferences`), not a Toolbar.
     - Additionally, provide a way for the users to quickly clear options/reset fields to defaults in the main UI.
 
-- Backend-only:
+- Backend-only Features:
   - [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
+  - [ ] Incorporate Pydantic into the project for better automatic validation, type-checking, etc.
+    - Pylance strict reports some issues with over-validation define_config. One suggested fix/path forward is to be using Pydantic instead of doing manual checks in my code. Additionally, it's a low-impact library and will be useful to learn in general because it is an industry-standard library.
+
   
 - GUI/CLI + Backend Features: 
   - [ ] Add feature to allow page ranges
