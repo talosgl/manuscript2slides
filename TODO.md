@@ -1,18 +1,18 @@
 ## Major TODOs Ordered by priority/dependency
 Epic: Bucket o' Fixes & Features pre-v1: 
+- GUI-only Feature:
+  - [ ]  Preference Persistence: Wire up auto-save/load for preference persistence across sessions; use QtSettings to let users decide if preferences / app state should persist across sessions or be cleared every time.    
+    - Default this behavior to remember/persist: "Users generally prefer software that restores the state they were last in. It minimizes friction and assumes a typical workflow where users iterate on a small set of inputs rather than starting from a blank slate every single time. The vast majority of well-known software (browsers, IDEs, office suites) remember window size, recent files, and input fields. Your users will expect this behavior."
+    - Use QMenuBar + QSettings to offer a preference persistence option for the user; place the access to this feature in a standard Menubar location (`Edit` -> `Preferences`), not a Toolbar.
+    - Additionally, provide a way for the users to quickly clear options/reset fields to defaults in the main UI.
+
 - Backend-only:
   - [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
-
-- GUI-only Feature:
-  - [ ]  Wire up auto-save/load for preference persistence across sessions (call the save_toml/load_toml methods on UserConfig)
-    - Actually, I'm not sure I'd really want this as a user. Should there be a QSettings file on disk a user can edit?
-
+  
 - GUI/CLI + Backend Features: 
   - [ ] Add feature to allow page ranges
-  - [x] ~~Add Provenance feature~~
-    - ~~Minimum: at the start of a pipeline call, dump the run_id/session_id + cfg (UserConfig) object's fields to log and/or file ~~
 
-Epic: Add tests & pytest
+### Epic: Add tests & pytest
     - Test config validation
     - Test path resolution across platforms
     - Test scaffolding (does it create folders? not overwrite files?)
@@ -20,11 +20,11 @@ Epic: Add tests & pytest
     - Test edge cases (empty docs, huge docs, corrupted files)
     - Maybe set up CI/CD? (GitHub Actions is free for public repos)
 
-Epic: Package/Distribution
+### Epic: Package/Distribution
     - Figure out how to package it into an installer for each non-mobile platform (Win 11, MacOS, Linux)
     - Make sure to update the resources/.. source inside of scaffold.py to use the packaged version
 
-Epic: Document the program thoroughly
+### Epic: Document the program thoroughly
     - [ ] Add "how to launch/run from vs code" into the docs/dev-guide.md 
     - for non-tech-savvy users
     - for future contributors
