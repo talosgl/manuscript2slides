@@ -117,4 +117,4 @@ def get_default_pptx_template_path() -> Path:
     This file is created by scaffold.py's _copy_templates_if_missing() function if it doesn't exist already.
     """
     base = user_templates_dir()
-    return base / "blank_template.pptx"
+    return base / "pptx_template.pptx"

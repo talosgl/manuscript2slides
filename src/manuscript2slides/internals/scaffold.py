@@ -8,7 +8,7 @@ On first run, this creates:
   ├── output/             (converted files land here)
   ├── logs/               (manuscript2slides.log lives here)
   ├── configs/            (saved configuration files)
-  └── templates/          (blank_template.pptx, docx_template.docx)
+  └── templates/          (pptx_template.pptx, docx_template.docx)
 
 Safe to call repeatedly - won't overwrite existing user files.
 """
@@ -110,7 +110,7 @@ def _copy_templates_if_missing(templates_dir: Path) -> None:
     """Copy template files from resources/ to user templates folder."""
 
     templates_to_copy = [
-        "blank_template.pptx",
+        "pptx_template.pptx",
         "docx_template.docx",
     ]
 

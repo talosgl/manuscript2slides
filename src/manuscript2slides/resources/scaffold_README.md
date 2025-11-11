@@ -18,7 +18,7 @@ Where your converted PowerPoint files are saved.
 
 ### 📁 templates/
 PowerPoint and Word template files used for conversions.
-- `blank_template.pptx` - The slide deck template (customize fonts/colors if you want)
+- `pptx_template.pptx` - The slide deck template (customize fonts/colors if you want)
 - `docx_template.docx` - The document template for reverse conversions
 - Feel free to modify these; the program will use your customized versions. However, it *must* still contain a master slide template named "manuscript2slides".
 

@@ -1,6 +1,6 @@
 input_docx = "input/sample_doc.docx"
 output_folder = "output"
-template_pptx = "templates/blank_template.pptx"
+template_pptx = "templates/pptx_template.pptx"
 chunk_type = "heading_flat"
 direction = "docx2pptx"
 experimental_formatting_on = true
