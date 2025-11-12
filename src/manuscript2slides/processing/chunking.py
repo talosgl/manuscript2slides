@@ -50,6 +50,7 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
 
         # Skip empty paragraphs (but keep those that are new-lines to respect intentional whitespace newlines)
         if para.text == "":
+            log.debug("Skipping empty paragraph.")
             continue
 
         log.debug(f"Paragraph begins: {para.text[:30]}... [pipeline:{pipeline_id}]")
@@ -58,7 +59,7 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
         paragraph_chunks.append(new_chunk)
 
     log.info(
-        f"This document has {len(paragraph_chunks)} page chunks. [pipeline:{pipeline_id}]"
+        f"We processed {len(paragraph_chunks)} paragraph chunks. [pipeline:{pipeline_id}]"
     )
 
     return paragraph_chunks
@@ -83,6 +84,7 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     for para in doc.paragraphs:
         # Skip empty paragraphs (keep intentional whitespace newlines)
         if para.text == "":
+            log.debug("Skipping empty paragraph.")
             continue
 
         log.debug(f"Paragraph begins: {para.text[:30]}... [pipeline:{pipeline_id}]")
@@ -110,9 +112,7 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     if current_page_chunk:
         all_chunks.append(current_page_chunk)
 
-    log.info(
-        f"This document has {len(all_chunks)} page chunks. [pipeline:{pipeline_id}]"
-    )
+    log.info(f"We processed {len(all_chunks)} page chunks. [pipeline:{pipeline_id}]")
     return all_chunks
 
 
@@ -174,6 +174,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
 
         # Skip empty paragraphs
         if para.text == "":
+            log.debug("Skipping empty paragraph.")
             continue
 
         # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.style_name later)
@@ -227,7 +228,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
         all_chunks.append(current_chunk)
 
     log.info(
-        f"This document has {len(all_chunks)} nested heading chunks. [pipeline:{pipeline_id}]"
+        f"We processed {len(all_chunks)} nested heading chunks. [pipeline:{pipeline_id}]"
     )
     return all_chunks
 
@@ -323,7 +324,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
         all_chunks.append(current_chunk)
 
     log.info(
-        f"This document has {len(all_chunks)} flat heading chunks. [pipeline:{pipeline_id}]"
+        f"We processed {len(all_chunks)} flat heading chunks. [pipeline:{pipeline_id}]"
     )
     return all_chunks
 
