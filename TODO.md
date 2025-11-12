@@ -8,7 +8,7 @@ Epic: Bucket o' Fixes & Features pre-v1:
     - Additionally, provide a way for the users to quickly clear options/reset fields to defaults in the main UI.
 
 - Backend-only Features:
-  - [ ] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
+  - [x] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
   - [ ] Incorporate Pydantic into the project for better automatic validation, type-checking, etc.
     - Pylance strict reports some issues with over-validation define_config. One suggested fix/path forward is to be using Pydantic instead of doing manual checks in my code. Additionally, it's a low-impact library and will be useful to learn in general because it is an industry-standard library.
 - [ ] Make DEBUG_MODE not just a source code const
@@ -42,3 +42,4 @@ Epic: Bucket o' Fixes & Features pre-v1:
 - Add support to export to .md (1 file per chunk) to support docx -> zettelkasten workflows (Notion, Obsidian) (Consider supporting metadata -> YAML frontmatter)
 - Add support to break chunks (of any type) at a word count threshold.
 - Add support for importing .md and .txt; split by whitespaces or newline characters.
+- Investigate Paragraph(docx).style.paragraph_format.keep_together / keep_with_next for chunking vs headings/page break
