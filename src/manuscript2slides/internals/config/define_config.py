@@ -380,6 +380,8 @@ class UserConfig:
             "output_folder": self._make_path_relative(self.output_folder),
             "template_pptx": self._make_path_relative(self.template_pptx),
             "template_docx": self._make_path_relative(self.template_docx),
+            "range_start": self.range_start,
+            "range_end": self.range_end,
             "chunk_type": self.chunk_type.value,
             "direction": self.direction.value,
             "experimental_formatting_on": self.experimental_formatting_on,
@@ -490,6 +492,40 @@ class UserConfig:
             log.error("output_folder cannot be empty string; use None for default")
             raise ValueError(
                 "output_folder cannot be empty string; use None for default"
+            )
+
+        if self.range_start is not None:
+            if not isinstance(self.range_start, int):
+                log.error(
+                    f"range_start must be an integer, got {type(self.range_start).__name__}"
+                )
+                raise ValueError(
+                    f"range_start must be an integer, got {type(self.range_start).__name__}"
+                )
+            if self.range_start < 1:
+                log.error(f"range_start must be >= 1, got {self.range_start}")
+                raise ValueError(f"range_start must be >= 1, got {self.range_start}")
+
+        if self.range_end is not None:
+            if not isinstance(self.range_end, int):
+                log.error(
+                    f"range_end must be an integer, got {type(self.range_end).__name__}"
+                )
+                raise ValueError(
+                    f"range_end must be an integer, got {type(self.range_end).__name__}"
+                )
+            if self.range_end < 1:
+                log.error(f"range_end must be >= 1, got {self.range_end}")
+                raise ValueError(f"range_end must be >= 1, got {self.range_end}")
+
+        # Validate start + end range logic
+        if self.range_start is not None and self.range_end is not None:
+            if self.range_start > self.range_end:
+                log.error(
+                    f"range_start ({self.range_start}) cannot be greater than range_end ({self.range_end})"
+                )
+            raise ValueError(
+                f"range_start ({self.range_start}) cannot be greater than range_end ({self.range_end})"
             )
 
     # =======

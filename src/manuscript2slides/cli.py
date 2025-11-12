@@ -350,38 +350,10 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     if args.template_docx is not None:
         cfg.template_docx = args.template_docx
 
-    # TODO put this validation where it belongs
     if args.range_start is not None:
-        try:
-            int_range_start = int(args.range_start)
-            if int_range_start > 0:
-                cfg.range_start = int_range_start
-            else:
-                log.warning(
-                    f"args.range_start cannot be less than 1. (Got: {args.range_start})."
-                )
-                raise ArgumentError(
-                    args.range_start,
-                    f"args.range_start cannot be less than 1. (Got: {args.range_start}).",
-                )
-        except ArgumentTypeError as e:
-            log.warning(
-                f"Warning: {e}.\n Couldn't parse args.range_start, {args.range_start}, as an integer. Proceeding as if no range start was provided."
-            )
-
+        cfg.range_start = args.range_start  # argparse already validated it's an int
     if args.range_end is not None:
-        try:
-            int_range_end = int(args.range_end)
-            if int_range_end > 0:
-                cfg.range_end = int_range_end
-            else:
-                log.warning(
-                    f"args.range_end cannot be less than 1. (Provided: {args.range_end})."
-                )
-        except ValueError as e:
-            log.warning(
-                f"Couldn't parse args.range_end, {args.range_end}, as an integer. Proceeding as if no range start was provided."
-            )
+        cfg.range_end = args.range_end
 
     # For enums, check if they're not None
     if args.chunk_type is not None:
