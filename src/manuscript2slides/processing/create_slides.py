@@ -46,6 +46,15 @@ def slides_from_chunks(
         )
 
     for chunk in chunks:
+        # Skip chunks whose page range is outside the user-specified start/end range
+        if (cfg.range_start and chunk.original_sequence_number < cfg.range_start) or (
+            cfg.range_end and chunk.original_sequence_number > cfg.range_end
+        ):
+            log.info(
+                f"Skipping chunk from page {chunk.original_sequence_number} as user-specified."
+            )
+            continue
+
         # Create a new slide for this chunk.
         new_slide, text_frame = create_blank_slide_for_chunk(prs, slide_layout)
 

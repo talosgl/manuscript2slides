@@ -77,6 +77,8 @@ class UserConfig:
     template_docx: Optional[str] = (
         None  # The docx file to use as the template for the new docx
     )
+    range_start: Optional[int] = None
+    range_end: Optional[int] = None
 
     # Processing
     chunk_type: ChunkType = (

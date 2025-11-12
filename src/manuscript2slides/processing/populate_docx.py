@@ -25,7 +25,10 @@ from manuscript2slides.annotations.restore_from_slides import split_speaker_note
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
 from manuscript2slides.processing.run_processing import process_pptx_run
-from manuscript2slides.processing.formatting import copy_paragraph_formatting_pptx2docx
+from manuscript2slides.processing.formatting import (
+    copy_paragraph_formatting_pptx2docx,
+    get_effective_font_name_pptx,
+)
 
 log = logging.getLogger("manuscript2slides")
 
@@ -44,7 +47,14 @@ def copy_slides_to_docx_body(
     slide_list = list(prs.slides)
 
     # For each slide...
-    for slide in slide_list:
+    for i, slide in enumerate(slide_list):
+        # Skip slides whose range is outside the user-specified start/end range
+        slide_number = i + 1
+        if (cfg.range_start and slide_number < cfg.range_start) or (
+            cfg.range_end and slide_number > cfg.range_end
+        ):
+            log.info(f"Skipping slide {slide_number} as user-specified.")
+            continue
 
         # If there's slide notes, process them into a SlideNotes object; otherwise, make an empty one.
         if slide.has_notes_slide and slide.notes_slide.notes_text_frame is not None:

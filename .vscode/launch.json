@@ -45,7 +45,11 @@
             "console": "integratedTerminal",
             // Pass in an arg so that we launch into CLI. TODO: Remove this later to have it auto-launch into GUI.
             "args": [
-                "--demo-round-trip"
+                //"--demo-round-trip"
+                // TODO: feels like it should know what direction based on the input file arg
+                "--input-pptx=C:\\Users\\zig-cube\\Documents\\manuscript2slides\\input\\sample_slides_output.pptx",
+                "--range-start=3",
+                "--range-end=4",
             ],
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
