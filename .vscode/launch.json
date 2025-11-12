@@ -38,7 +38,7 @@
         },
         // launches main() from ./src/manuscript2slides/__main__.py
         {
-            "name": "manuscript2slides",
+            "name": "manuscript2slides round trip",
             "type": "debugpy",
             "request": "launch",
             "module": "manuscript2slides",
