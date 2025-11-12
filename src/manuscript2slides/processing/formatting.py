@@ -2,7 +2,7 @@
 """Formatting functions for both pipelines."""
 import logging
 import xml.etree.ElementTree as ET
-from typing import Union
+from typing import Union, cast
 
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
 from docx.shared import RGBColor as RGBColor_docx
@@ -14,9 +14,8 @@ from docx.text.run import Run as Run_docx
 from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.enum.text import PP_ALIGN
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
-from pptx.slide import SlideMaster
 from pptx.text.text import Font as Font_pptx
-from pptx.text.text import _Paragraph as Paragraph_pptx
+from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
 from pptx.text.text import _Run as Run_pptx  # type: ignore
 from pptx.util import Pt
 
@@ -76,7 +75,7 @@ def _copy_basic_font_formatting(
     """Extract common formatting logic for Runs (or Paragraphs)."""
 
     # If this font lives on a Paragraph_docx instead of a run, this might duplicate a step that
-    # just happened in _copy_paragraph_font_name_docx2pptx, but it's okay,that duplication
+    # just happened in _copy_paragraph_font_name_docx2pptx, but it's okay, that duplication
     # on the paragraph-level is worth it to have this function be polymorphic
     if source_font.name is not None:
         target_font.name = source_font.name
@@ -364,29 +363,18 @@ def copy_paragraph_formatting_docx2pptx(
         # _copy_paragraph_format_docx2pptx(source_para, target_para)
         _copy_basic_font_formatting(source_para.style.font, target_para.font)
         _copy_font_color_formatting(source_para.style.font, target_para.font)
-        _copy_font_size_formatting(source_para.style.font, target_para.font)
 
 
 def _copy_paragraph_font_name_docx2pptx(
     source_para: Paragraph_docx, target_para: Paragraph_pptx
 ) -> None:
 
-    # If there is a base style from which the paragraph inherits, apply that font name first
-    if (
-        source_para.style
-        and source_para.style.base_style
-        and source_para.style.base_style.font  # type: ignore
-        and source_para.style.base_style.font.name  # type: ignore
-    ):
-        log.debug(
-            f"source_para.style.base_style.font.name: {source_para.style.base_style.font.name}"  # type: ignore
-        )
-        target_para.font.name = source_para.style.base_style.font.name  # type: ignore
+    name = None
+    if source_para.style:
+        name = resolve_effective_font_name(source_para.style)
 
-    # If this paragraph has its own defined style and font, apply its font name. (Later, we'll do the same at the run-level)
-    if source_para.style and source_para.style.font and source_para.style.font.name:
-        log.debug(f"source_para.style.font: {source_para.style.font.name}")
-        target_para.font.name = source_para.style.font.name
+    if name:
+        target_para.font.name = name
 
 
 def _copy_paragraph_alignment_docx2ppt(
@@ -488,6 +476,28 @@ def copy_paragraph_format_metadata(
 
 
 # region pptx2docx-specific formatting
+
+
+# region pptx para
+def copy_paragraph_formatting_pptx2docx(
+    source_para: Paragraph_pptx, target_para: Paragraph_docx
+) -> None:
+    """Copy pptx paragraph font name, alignment, and basics like bold, italics, etc. to a pptx paragraph."""
+    if (
+        source_para.alignment
+        and ALIGNMENT_MAP_PP2WD.get(source_para.alignment) is not None
+    ):
+        alignment_value = ALIGNMENT_MAP_PP2WD.get(source_para.alignment)
+        if alignment_value is not None:
+            target_para.alignment = alignment_value
+
+    if source_para.font and target_para.style:
+        target_para.style.font.name = source_para.font.name
+
+
+# endregion
+
+
 def copy_run_formatting_pptx2docx(
     source_run: Run_pptx, target_run: Run_docx, cfg: UserConfig
 ) -> None:
@@ -642,3 +652,21 @@ def apply_experimental_formatting_from_metadata(
 
 
 # endregion
+
+
+def resolve_effective_font_name(style: ParagraphStyle_docx) -> str | None:
+    """
+    Traverses the style hierarchy (base_style chain) to find the
+    explicit font name. Returns None if nothing found.
+    """
+    current_style = style
+    while current_style is not None:
+        if current_style.font.name:
+            # Found an explicit font name in this style or a base style
+            return current_style.font.name
+
+        # Move up to the base style (cast helps Pylance here if it complains)
+        current_style = cast(ParagraphStyle_docx, current_style.base_style)
+
+    # If the entire chain returns None, we return None so as to keep whatever the theme default is in place
+    return None

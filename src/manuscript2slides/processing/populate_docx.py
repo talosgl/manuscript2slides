@@ -25,6 +25,7 @@ from manuscript2slides.annotations.restore_from_slides import split_speaker_note
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
 from manuscript2slides.processing.run_processing import process_pptx_run
+from manuscript2slides.processing.formatting import copy_paragraph_formatting_pptx2docx
 
 log = logging.getLogger("manuscript2slides")
 
@@ -81,6 +82,7 @@ def process_slide_paragraphs(
 
         # Make a new docx para
         new_para = new_doc.add_paragraph()
+        copy_paragraph_formatting_pptx2docx(pptx_para, new_para)
 
         # If the text of this paragraph exactly matches a previous heading's text, apply that heading style
         if slide_notes and slide_notes.has_metadata and slide_notes.headings:
