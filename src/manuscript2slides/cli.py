@@ -365,6 +365,7 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     return cfg
 
 
+# TODO: This should never impact users. We need to gate this with DEBUG_MODE
 def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
     """
     Ensure all UserConfig fields have corresponding CLI arguments.
@@ -381,7 +382,14 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
     # Get all arg destination names from parser
     # (argparse converts --input-docx to input_docx via arg.dest instead of using arg aliases)
     arg_names = set()
-    excluded_args = ["help", "config", "demo_run", "demo_round_trip"]
+    excluded_args = [
+        "help",
+        "config",
+        "demo_run",
+        "demo_round_trip",
+        "demo_pptx2docx",
+        "demo_docx2pptx",
+    ]
     for action in parser._actions:
         # Skip special argparse actions
         if action.dest not in excluded_args:  # exclude --config, --help, etc.
