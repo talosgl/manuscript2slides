@@ -207,9 +207,9 @@ def add_metadata_to_slide_notes(
         ]
 
     if slide_body_metadata or comments or footnotes or endnotes:
-        header_para = notes_text_frame.add_paragraph()
-        header_run = header_para.add_run()
-        header_run.text = f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
+        metadata_para = notes_text_frame.add_paragraph()
+        metadata_run = metadata_para.add_run()
+        metadata_run.text = f"\n\n\n\n\n\n\n{METADATA_MARKER_HEADER}\n" + "=" * 40
 
         notes_text_frame.add_paragraph()  # blank paragraph to ensure separation for JSON block
 
