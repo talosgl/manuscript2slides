@@ -371,7 +371,7 @@ def _copy_paragraph_font_name_docx2pptx(
 
     name = None
     if source_para.style:
-        name = resolve_effective_font_name(source_para.style)
+        name = get_effective_font_name_docx(source_para.style)
 
     if name:
         target_para.font.name = name
@@ -414,8 +414,12 @@ def copy_paragraph_formatting_pptx2docx(
         if alignment_value is not None:
             target_para.alignment = alignment_value
 
-    if source_para.font and target_para.style:
-        target_para.style.font.name = source_para.font.name
+    if source_para.font.name:
+        target_para.style.font.name = source_para.font.name  # type: ignore
+    else:
+        slide_layout_first_font = get_effective_font_name_pptx(source_para)
+        if slide_layout_first_font:
+            target_para.style.font.name = slide_layout_first_font  # type: ignore
 
 
 # endregion
@@ -577,7 +581,7 @@ def apply_experimental_formatting_from_metadata(
 # endregion
 
 
-def resolve_effective_font_name(style: ParagraphStyle_docx) -> str | None:
+def get_effective_font_name_docx(style: ParagraphStyle_docx) -> str | None:
     """
     Traverses the style hierarchy (base_style chain) to find the
     explicit font name. Returns None if nothing found.
@@ -592,4 +596,34 @@ def resolve_effective_font_name(style: ParagraphStyle_docx) -> str | None:
         current_style = cast(ParagraphStyle_docx, current_style.base_style)
 
     # If the entire chain returns None, we return None so as to keep whatever the theme default is in place
+    return None
+
+
+def get_effective_font_name_pptx(paragraph: Paragraph_pptx):
+    """
+    Try to access this pptx Paragraph's slide_layout's XML for a 'typeface' attribute;
+    return the first found, or None.
+    """
+    if paragraph.font.name is not None:
+        return paragraph.font.name
+
+    try:
+        typefaces = set()
+
+        slide_layouts = (
+            paragraph.part.package.presentation_part.presentation.slide_layouts
+        )
+        for slide_layout in slide_layouts:
+            xpath_query = ".//a:latin[@typeface]"
+            matching_elements = slide_layout.element.xpath(xpath_query)
+            if matching_elements:
+                for el in matching_elements:
+                    typefaces.add(el.typeface)
+        if typefaces:
+            return typefaces.pop()
+    except Exception as e:
+        log.warning(
+            f"Something went wrong when we tried to traverse XML to find a font name for a pptx paragraph (against our better judgment). \nException: {e}"
+        )
+
     return None
