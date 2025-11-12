@@ -428,7 +428,10 @@ class UserConfig:
         """
 
         # Validate chunk_type is a valid ChunkType enum member
-        if not isinstance(self.chunk_type, ChunkType):
+        assert isinstance(
+            self.chunk_type, ChunkType
+        ), f"chunk_type must be ChunkType, got {type(self.chunk_type).__name__}"
+        if not isinstance(self.chunk_type, ChunkType):  # type: ignore[unreachable]
             log.error("Invalid value in chunk_type; must be enum.")
             raise ValueError(
                 f"chunk_type must be a ChunkType enum, got {type(self.chunk_type).__name__}. "
@@ -436,7 +439,7 @@ class UserConfig:
             )
 
         # Validate direction is a valid PipelineDirection enum member
-        if not isinstance(self.direction, PipelineDirection):
+        if not isinstance(self.direction, PipelineDirection):  # type: ignore[unreachable]
             log.error("Invalid value in direction; must be enum.")
             raise ValueError(
                 f"direction must be a PipelineDirection enum, got {type(self.direction).__name__}. "
@@ -463,7 +466,7 @@ class UserConfig:
                 )
 
         # Path strings should be strings, if provided
-        if self.input_docx is not None and not isinstance(self.input_docx, str):
+        if self.input_docx is not None and not isinstance(self.input_docx, str):  # type: ignore[unreachable]
             log.error(
                 f"input_docx must be a string, got {type(self.input_docx).__name__}"
             )
@@ -471,7 +474,7 @@ class UserConfig:
                 f"input_docx must be a string, got {type(self.input_docx).__name__}"
             )
 
-        if self.input_pptx is not None and not isinstance(self.input_pptx, str):
+        if self.input_pptx is not None and not isinstance(self.input_pptx, str):  # type: ignore[unreachable]
             log.error(
                 f"input_pptx must be a string, got {type(self.input_pptx).__name__}"
             )
@@ -479,7 +482,7 @@ class UserConfig:
                 f"input_pptx must be a string, got {type(self.input_pptx).__name__}"
             )
 
-        if self.output_folder is not None and not isinstance(self.output_folder, str):
+        if self.output_folder is not None and not isinstance(self.output_folder, str):  # type: ignore[unreachable]
             log.error(
                 f"output_folder must be a string, got {type(self.output_folder).__name__}"
             )
@@ -495,7 +498,7 @@ class UserConfig:
             )
 
         if self.range_start is not None:
-            if not isinstance(self.range_start, int):
+            if not isinstance(self.range_start, int):  # type: ignore[unreachable]
                 log.error(
                     f"range_start must be an integer, got {type(self.range_start).__name__}"
                 )
@@ -507,7 +510,7 @@ class UserConfig:
                 raise ValueError(f"range_start must be >= 1, got {self.range_start}")
 
         if self.range_end is not None:
-            if not isinstance(self.range_end, int):
+            if not isinstance(self.range_end, int):  # type: ignore[unreachable]
                 log.error(
                     f"range_end must be an integer, got {type(self.range_end).__name__}"
                 )
