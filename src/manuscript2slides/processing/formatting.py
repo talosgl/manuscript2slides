@@ -1,18 +1,25 @@
 # formatting.py
 """Formatting functions for both pipelines."""
-
 import logging
-from docx.shared import RGBColor as RGBColor_docx
-from docx.text.run import Run as Run_docx
-from docx.text.font import Font as Font_docx
-from pptx.text.text import Font as Font_pptx
-from typing import Union
 import xml.etree.ElementTree as ET
-from pptx.util import Pt
-from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
+from typing import Union
+
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
+from docx.shared import RGBColor as RGBColor_docx
+from docx.styles.style import ParagraphStyle as ParagraphStyle_docx
+from docx.text.font import Font as Font_docx
+from docx.text.paragraph import Paragraph as Paragraph_docx
+from docx.text.parfmt import ParagraphFormat
+from docx.text.run import Run as Run_docx
 from pptx.dml.color import RGBColor as RGBColor_pptx
+from pptx.enum.text import PP_ALIGN
+from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
+from pptx.slide import SlideMaster
+from pptx.text.text import Font as Font_pptx
+from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx  # type: ignore
-from docx.enum.text import WD_COLOR_INDEX
+from pptx.util import Pt
+
 from manuscript2slides.internals.config.define_config import UserConfig
 
 log = logging.getLogger("manuscript2slides")
@@ -39,6 +46,22 @@ COLOR_MAP_HEX = {
 }
 
 COLOR_MAP_FROM_HEX = {v: k for k, v in COLOR_MAP_HEX.items()}
+
+ALIGNMENT_MAP_WD2PP = {
+    WD_ALIGN_PARAGRAPH.LEFT: PP_ALIGN.LEFT,
+    WD_ALIGN_PARAGRAPH.CENTER: PP_ALIGN.CENTER,
+    WD_ALIGN_PARAGRAPH.RIGHT: PP_ALIGN.RIGHT,
+    WD_ALIGN_PARAGRAPH.JUSTIFY: PP_ALIGN.JUSTIFY,
+    WD_ALIGN_PARAGRAPH.DISTRIBUTE: PP_ALIGN.DISTRIBUTE,
+    # I don't know Thai and I'm completely guessing that this is desired
+    WD_ALIGN_PARAGRAPH.THAI_JUSTIFY: PP_ALIGN.THAI_DISTRIBUTE,
+    WD_ALIGN_PARAGRAPH.JUSTIFY_HI: PP_ALIGN.JUSTIFY,
+    WD_ALIGN_PARAGRAPH.JUSTIFY_MED: PP_ALIGN.JUSTIFY,
+    WD_ALIGN_PARAGRAPH.JUSTIFY_LOW: PP_ALIGN.JUSTIFY_LOW,
+}
+
+ALIGNMENT_MAP_PP2WD = {v: k for k, v in ALIGNMENT_MAP_WD2PP.items()}
+
 BASELINE_SUBSCRIPT_SMALL_FONT = -25000
 BASELINE_SUBSCRIPT_LARGE_FONT = -50000
 BASELINE_SUPERSCRIPT_SMALL_FONT = 60000  # For fonts < 24pt
@@ -47,10 +70,16 @@ BASELINE_SUPERSCRIPT_LARGE_FONT = 30000  # For fonts >= 24pt
 
 
 # region shared formatting funcs
-def _copy_basic_run_formatting(
+def _copy_basic_font_formatting(
     source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
 ) -> None:
-    """Extract common formatting logic for Runs."""
+    """Extract common formatting logic for Runs (or Paragraphs)."""
+
+    # If this font lives on a Paragraph_docx instead of a run, this might duplicate a step that
+    # just happened in _copy_paragraph_font_name_docx2pptx, but it's okay,that duplication
+    # on the paragraph-level is worth it to have this function be polymorphic
+    if source_font.name is not None:
+        target_font.name = source_font.name
 
     # Bold/Italics: Only overwrite when explicitly set on the source (avoid clobbering inheritance)
     if source_font.bold is not None:
@@ -62,6 +91,10 @@ def _copy_basic_run_formatting(
     if source_font.underline is not None:
         target_font.underline = bool(source_font.underline)
 
+
+def _copy_font_size_formatting(
+    source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
+) -> None:
     if source_font.size is not None:
         target_font.size = Pt(source_font.size.pt)
         """
@@ -72,7 +105,7 @@ def _copy_basic_run_formatting(
         """
 
 
-def _copy_run_color_formatting(
+def _copy_font_color_formatting(
     source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
 ) -> None:
     # Color: copy only if source has an explicit RGB
@@ -84,7 +117,7 @@ def _copy_run_color_formatting(
             target_font.color.rgb = RGBColor_docx(*src_rgb)
 
 
-# region formatting docx2pptx specific
+# region docx2pptx-specific formatting
 def copy_run_formatting_docx2pptx(
     source_run: Run_docx,
     target_run: Run_pptx,
@@ -97,9 +130,11 @@ def copy_run_formatting_docx2pptx(
 
     target_run.text = source_run.text
 
-    _copy_basic_run_formatting(sfont, tfont)
+    _copy_basic_font_formatting(sfont, tfont)
 
-    _copy_run_color_formatting(sfont, tfont)
+    _copy_font_size_formatting(sfont, tfont)
+
+    _copy_font_color_formatting(sfont, tfont)
 
     if cfg.experimental_formatting_on:
         if source_run.text and source_run.text.strip():
@@ -315,10 +350,144 @@ def _copy_experimental_formatting_docx2pptx(
         """
 
 
+# region paragraph-specific formatting docx2pptx
+def copy_paragraph_formatting_docx2pptx(
+    source_para: Paragraph_docx, target_para: Paragraph_pptx
+) -> None:
+    """Copy docx paragraph font name, alignment, and basics like bold, italics, etc. to a pptx paragraph."""
+
+    _copy_paragraph_font_name_docx2pptx(source_para, target_para)
+
+    _copy_paragraph_alignment_docx2ppt(source_para, target_para)
+
+    if source_para.style:
+        # _copy_paragraph_format_docx2pptx(source_para, target_para)
+        _copy_basic_font_formatting(source_para.style.font, target_para.font)
+        _copy_font_color_formatting(source_para.style.font, target_para.font)
+        _copy_font_size_formatting(source_para.style.font, target_para.font)
+
+
+def _copy_paragraph_font_name_docx2pptx(
+    source_para: Paragraph_docx, target_para: Paragraph_pptx
+) -> None:
+
+    # If there is a base style from which the paragraph inherits, apply that font name first
+    if (
+        source_para.style
+        and source_para.style.base_style
+        and source_para.style.base_style.font  # type: ignore
+        and source_para.style.base_style.font.name  # type: ignore
+    ):
+        log.debug(
+            f"source_para.style.base_style.font.name: {source_para.style.base_style.font.name}"  # type: ignore
+        )
+        target_para.font.name = source_para.style.base_style.font.name  # type: ignore
+
+    # If this paragraph has its own defined style and font, apply its font name. (Later, we'll do the same at the run-level)
+    if source_para.style and source_para.style.font and source_para.style.font.name:
+        log.debug(f"source_para.style.font: {source_para.style.font.name}")
+        target_para.font.name = source_para.style.font.name
+
+
+def _copy_paragraph_alignment_docx2ppt(
+    source_para: Paragraph_docx, target_para: Paragraph_pptx
+) -> None:
+
+    # 1. Start by setting the alignment based on the STYLE's definition (Lower Priority/Default)
+    if source_para.style and source_para.style.paragraph_format.alignment:  # type: ignore
+        target_para.alignment = ALIGNMENT_MAP_WD2PP.get(
+            source_para.style.paragraph_format.alignment
+        )
+
+    # 2. OVERWRITE that value IF direct formatting was applied (Highest Priority)
+    if source_para.alignment:
+        # Use the map to get the correct PPTX enum for the DOCX value
+        target_para.alignment = ALIGNMENT_MAP_WD2PP.get(source_para.alignment)
+
+
+def _copy_paragraph_format_docx2pptx(
+    source_para: Paragraph_docx, target_para: Paragraph_pptx
+) -> None:
+    """Copy style.paragraph_format settings from docx to pptx."""
+
+    # TODO: Add a toggle in the UI & CLI Args to enable/disable? Unclear whether this stuff is desired;
+    # personally I don't like the line spacing getting carried over from docx to pptx, I'd rather the template
+    # handle it in both pipelines.
+
+    if not source_para.style:
+        return
+
+    s_fmt: ParagraphFormat = source_para.style.paragraph_format
+
+    if s_fmt.space_after:
+        target_para.space_after = s_fmt.space_after
+
+    if s_fmt.space_before:
+        target_para.space_before = s_fmt.space_before
+
+    if s_fmt.line_spacing:
+        target_para.line_spacing = s_fmt.line_spacing
+
+
+def copy_paragraph_format_metadata(
+    paragraph: Paragraph_docx, paragraph_format_props: list
+) -> list:
+    """
+    Copy style.paragraph_format settings from docx paragraph to slide notes metadata so it can be restored
+    in a round-trip pptx2docx run.
+    """
+    if not paragraph.style:
+        return []
+
+    fmt: ParagraphFormat = paragraph.style.paragraph_format
+
+    if fmt.alignment:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "alignment": fmt.alignment}
+        )
+    if fmt.left_indent:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "left_indent": fmt.left_indent}
+        )
+    if fmt.right_indent:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "right_indent": fmt.right_indent}
+        )
+
+    if fmt.space_after:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "space_after": fmt.space_after}
+        )
+
+    if fmt.space_before:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "space_before": fmt.space_before}
+        )
+
+    # Why both line_spacing and line_spacing_rule?
+    if fmt.line_spacing:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "line_spacing": fmt.line_spacing}
+        )
+
+    if fmt.line_spacing_rule:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "line_spacing_rule": fmt.line_spacing_rule}
+        )
+
+    if fmt.first_line_indent:
+        paragraph_format_props.append(
+            {"text": paragraph.text.strip(), "first_line_indent": fmt.first_line_indent}
+        )
+    return paragraph_format_props
+
+
+# endregion
+
 # endregion
 
 
-# region copy run formatting pptx2docx
+# region pptx2docx-specific formatting
 def copy_run_formatting_pptx2docx(
     source_run: Run_pptx, target_run: Run_docx, cfg: UserConfig
 ) -> None:
@@ -328,9 +497,9 @@ def copy_run_formatting_pptx2docx(
 
     target_run.text = source_run.text
 
-    _copy_basic_run_formatting(sfont, tfont)
+    _copy_basic_font_formatting(sfont, tfont)
 
-    _copy_run_color_formatting(sfont, tfont)
+    _copy_font_color_formatting(sfont, tfont)
 
     if source_run.text and source_run.text.strip() and cfg.experimental_formatting_on:
         _copy_experimental_formatting_pptx2docx(source_run, target_run)
@@ -412,6 +581,10 @@ def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
     """Construct error message string per experimental formatting type."""
     message = f"We found a {formatting_type} in the experimental formatting JSON from a previous docx2pptx run, but we couldn't apply it. \n Run text: {run_text[:50]}... \n Error: {e}"
     return message
+
+
+# def apply_paragraph_format_from_metadata():
+#     pass
 
 
 def apply_experimental_formatting_from_metadata(

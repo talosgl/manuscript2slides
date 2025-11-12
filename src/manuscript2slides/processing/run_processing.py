@@ -20,6 +20,7 @@ from manuscript2slides.processing.formatting import (
     apply_experimental_formatting_from_metadata,
     copy_run_formatting_docx2pptx,
     copy_run_formatting_pptx2docx,
+    copy_paragraph_formatting_docx2pptx,
 )
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
@@ -40,6 +41,10 @@ def process_docx_paragraph_inner_contents(
     """
     items_processed = False
     experimental_formatting_metadata = []
+
+    # Copy baseline paragraph-level font and basic formatting before processing runs
+    if paragraph.style and paragraph.style.font:
+        copy_paragraph_formatting_docx2pptx(paragraph, pptx_paragraph)
 
     for item in paragraph.iter_inner_content():
         items_processed = True
