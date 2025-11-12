@@ -14,7 +14,7 @@ Epic: Bucket o' Fixes & Features pre-v1:
 - [ ] Make DEBUG_MODE not just a source code const
   
 - GUI/CLI + Backend Features: 
-  - [ ] Add feature to allow page ranges
+  - [-] ~~Add feature to allow page ranges~~ CUT/WILL NOT SUPPORT: Pages are not easily detectable/usable from python-docx; we'd need to do something like the chunk-by-page algorithm anad then discard chunks before/after a range. It would be hacky and it'd be more reliable for the human user to simply prep a docx starting/ending where you actually want the pptx to start/end instead. Maybe more doable if we add a "meta chunk" or chunk-collection type item in future to allow breaking into multiple output files, etc., and integrate this feature.
 
 ### Epic: Add tests & pytest
     - Test config validation
