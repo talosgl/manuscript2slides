@@ -65,6 +65,11 @@ class Endnote_docx:
 class Chunk_docx:
     """Class for Chunk objects made from docx paragraphs and their associated annotations."""
 
+    from typing import Optional
+
+    # Page or slide where this chunk came from
+    original_sequence_number: int = 0
+
     # Use "default_factory" to ensure every chunk gets its own list.
     # (Lists are mutable; it is a common error/bug to accidentally assign one list
     # shared amongst every instance of a class, rather than one per instance.)

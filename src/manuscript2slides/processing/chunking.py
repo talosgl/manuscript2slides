@@ -46,7 +46,13 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
 
     paragraph_chunks: list[Chunk_docx] = []
 
+    # Start at page 1
+    current_page_number = 1
+
     for para in doc.paragraphs:
+        if para.contains_page_break:
+            # Increment page count
+            current_page_number = current_page_number + 1
 
         # Skip empty paragraphs (but keep those that are new-lines to respect intentional whitespace newlines)
         if para.text == "":
@@ -56,6 +62,7 @@ def chunk_by_paragraph(doc: document.Document) -> list[Chunk_docx]:
         log.debug(f"Paragraph begins: {para.text[:30]}... [pipeline:{pipeline_id}]")
 
         new_chunk = Chunk_docx.create_with_paragraph(para)
+        new_chunk.original_sequence_number = current_page_number
         paragraph_chunks.append(new_chunk)
 
     log.info(
@@ -78,10 +85,19 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
 
+    # Start at page 1
+    current_page_number = 1
+
     # Start with a current chunk ready-to-go
-    current_page_chunk: Chunk_docx = Chunk_docx()
+    current_page_chunk: Chunk_docx = Chunk_docx(
+        original_sequence_number=current_page_number
+    )
 
     for para in doc.paragraphs:
+        if para.contains_page_break:
+            # Increment page count
+            current_page_number = current_page_number + 1
+
         # Skip empty paragraphs (keep intentional whitespace newlines)
         if para.text == "":
             log.debug("Skipping empty paragraph.")
@@ -102,6 +118,7 @@ def chunk_by_page(doc: document.Document) -> list[Chunk_docx]:
 
             # Start new chunk with this paragraph
             current_page_chunk = Chunk_docx.create_with_paragraph(para)
+            current_page_chunk.original_sequence_number = current_page_number
 
             continue
 
@@ -162,15 +179,20 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
     log.info(
         f"Running the chunk by heading (nested) strategy. [pipeline:{pipeline_id}]"
     )
+    # Start at page 1
+    current_page_number = 1
 
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
-    current_chunk: Chunk_docx = Chunk_docx()
+    current_chunk: Chunk_docx = Chunk_docx(original_sequence_number=current_page_number)
 
     # Initialize current_heading_style_name
     current_heading_style_name = "Normal"  # Default for documents without headings
 
     for i, para in enumerate(doc.paragraphs):
+        if para.contains_page_break:
+            # Increment page number
+            current_page_number = current_page_number + 1
 
         # Skip empty paragraphs
         if para.text == "":
@@ -199,6 +221,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
 
             # Start new chunk with this paragraph
             current_chunk = Chunk_docx.create_with_paragraph(para)
+            current_chunk.original_sequence_number = current_page_number
 
             # Update heading depth if this paragraph is a heading
             if is_standard_heading(style_name):
@@ -215,6 +238,7 @@ def chunk_by_heading_nested(doc: document.Document) -> list[Chunk_docx]:
                 if current_chunk:
                     all_chunks.append(current_chunk)
                 current_chunk = Chunk_docx.create_with_paragraph(para)
+                current_chunk.original_sequence_number = current_page_number
                 current_heading_style_name = style_name
             else:
                 # This heading is deeper, add to current chunk
@@ -278,13 +302,21 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
     pipeline_id = get_pipeline_run_id()
     log.info(f"Running the chunk by heading (flat) strategy. [pipeline:{pipeline_id}]")
 
+    # Start at page 1
+    current_page_number = 1
+
     # Start building the chunks
     all_chunks: list[Chunk_docx] = []
-    current_chunk: Chunk_docx = Chunk_docx()
+    current_chunk: Chunk_docx = Chunk_docx(original_sequence_number=current_page_number)
 
     for para in doc.paragraphs:
+        if para.contains_page_break:
+            # Increment page count
+            current_page_number = current_page_number + 1
+
         # Skip empty paragraphs
         if para.text == "":
+            log.debug("Skipping empty paragraph.")
             continue
 
         # Set a style_name to make Pylance happy (it gets mad if we direct-check para.style.name later)
@@ -305,6 +337,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
 
             # Start new chunk with this paragraph
             current_chunk = Chunk_docx.create_with_paragraph(para)
+            current_chunk.original_sequence_number = current_page_number
             continue
 
         # If this paragraph is a heading, start a new chunk
@@ -315,6 +348,7 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
 
             # Start new chunk with this paragraph
             current_chunk = Chunk_docx.create_with_paragraph(para)
+            current_chunk.original_sequence_number = current_page_number
 
         else:
             # This is a normal paragraph - add it to current chunk

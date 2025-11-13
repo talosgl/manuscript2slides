@@ -1,6 +1,7 @@
 """CLI Interface Logic (argparse etc)"""
 
 import argparse
+from argparse import ArgumentError, ArgumentTypeError
 import sys
 from dataclasses import fields
 from pathlib import Path
@@ -158,6 +159,19 @@ Examples:
         type=str,
         choices=["docx2pptx", "pptx2docx"],
         help="Conversion direction (default: docx2pptx)",
+    )
+    # Page range integers
+    parser.add_argument(
+        "--range-start",
+        metavar="N",
+        type=int,
+        help="EXPERIMENTAL: Specify the page or slide from input to start with. Inclusive. Approximate. For finer control, make a copy of your input file that only includes the excerpt you want processed.",
+    )
+    parser.add_argument(
+        "--range-end",
+        metavar="N",
+        type=int,
+        help="EXPERIMENTAL: Specify the page or slide from input to end on. Inclusive. Approximate. For finer control, make a copy of your input file that only includes the excerpt you want processed.",
     )
 
     # Boolean flags - experimental formatting
@@ -325,14 +339,21 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     # For string args, check if they're not None
     if args.input_docx is not None:
         cfg.input_docx = args.input_docx
+        cfg.direction = PipelineDirection.DOCX_TO_PPTX
     if args.input_pptx is not None:
         cfg.input_pptx = args.input_pptx
+        cfg.direction = PipelineDirection.PPTX_TO_DOCX
     if args.output_folder is not None:
         cfg.output_folder = args.output_folder
     if args.template_pptx is not None:
         cfg.template_pptx = args.template_pptx
     if args.template_docx is not None:
         cfg.template_docx = args.template_docx
+
+    if args.range_start is not None:
+        cfg.range_start = args.range_start  # argparse already validated it's an int
+    if args.range_end is not None:
+        cfg.range_end = args.range_end
 
     # For enums, check if they're not None
     if args.chunk_type is not None:
