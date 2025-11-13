@@ -21,6 +21,20 @@ def setup_console_encoding() -> None:
 # endregion
 
 
+# region str_to_bool
+def str_to_bool(value: str) -> bool:
+    """Convert strings "True"/"False" to  booleans"""
+    if value.lower() in {"false", "f", "0", "no", "n"}:
+        return False
+    elif value.lower() in {"true", "t", "1", "yes", "y"}:
+        return True
+    else:
+        raise ValueError(f"{value} is not a valid boolean value.")
+
+
+# endregion
+
+
 # region open_folder_in_os_explorer
 def open_folder_in_os_explorer(folder_path: Path | str) -> None:
     """

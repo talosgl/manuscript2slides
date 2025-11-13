@@ -1,45 +1,54 @@
 """CLI Interface Logic (argparse etc)"""
 
+# region imports
 import argparse
-from argparse import ArgumentError, ArgumentTypeError
-import sys
+import logging
 from dataclasses import fields
 from pathlib import Path
 
-from manuscript2slides.utils import setup_console_encoding
 from manuscript2slides.internals.config.define_config import (
-    UserConfig,
     ChunkType,
     PipelineDirection,
+    UserConfig,
+    get_debug_mode,
 )
-
-# we'll need this later to replace run_roundtrip_test
-from manuscript2slides.orchestrator import run_pipeline
-
-import logging
+from manuscript2slides.internals.constants import SENTINEL
+from manuscript2slides.internals.logger import enable_trace_logging
+from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
+from manuscript2slides.utils import str_to_bool
 
 log = logging.getLogger("manuscript2slides")
 
+# endregion
 
+
+# region run
 def run() -> None:
     """Run CLI interface. Assumes startup.initialize_application() was already called."""
 
-    # Parse command line arguments
+    # (Define and) parse user-passed-in command line arguments for this app
     args = parse_args()
 
     # Build config from args (with proper prioritization CLI args > config file > defaults)
     cfg = build_config_from_args(args)
 
+    # Enable trace logging if debug mode is on
+    if cfg.debug_mode:
+        enable_trace_logging()
+        log.info("Debug mode enabled from CLI argument cfg.debug_mode.")
+
+    # If round-trip demo was enabled, run that special orchestrator
     if args.demo_round_trip:
         log.info("Running round-trip test with sample files.")
-
-        from manuscript2slides.orchestrator import run_roundtrip_test
-
         run_roundtrip_test(cfg)
     else:
         run_pipeline(cfg)
 
 
+# endregion
+
+
+# region parse_args()
 def parse_args() -> argparse.Namespace:
     """
     Parse command line arguments.
@@ -47,6 +56,8 @@ def parse_args() -> argparse.Namespace:
     Returns argparse.Namespace with all the UserConfig fields as attributes.
     Validates that all config fields hav corresponding CLI arguments.
     """
+
+    # Create the argparse object in memory
     parser = argparse.ArgumentParser(
         prog="manuscript2slides",
         description="Convert text content from Word docx to PowerPoint pptx slides and vice versa",
@@ -67,9 +78,26 @@ Examples:
         """,
     )
 
+    # Add all our arguments to the argparse object we just made
+
+    # Debug mode
+    parser.add_argument(
+        "--debug",
+        "-dbg",
+        "--dbg",
+        "--debug-mode",
+        "--debug_mode",
+        dest="debug_mode",
+        type=str_to_bool,
+        default=SENTINEL,
+        metavar="BOOL",
+        help="Enable/Disable the debug mode (True/False). If omitted, value is None.",
+    )
+
     # Args for running dry runs
     parser.add_argument(
         "--demo-docx2pptx",
+        "--demo_docx2pptx",
         action="store_true",
         dest="demo_docx2pptx",
         help=(
@@ -79,6 +107,7 @@ Examples:
     )
     parser.add_argument(
         "--demo-pptx2docx",
+        "--demo_pptx2docx",
         action="store_true",
         dest="demo_pptx2docx",
         help="Run a demonstration conversion from sample PowerPoint slides to a Word document. "
@@ -88,6 +117,7 @@ Examples:
     # Arg for running dry run
     parser.add_argument(
         "--demo-round-trip",
+        "--demo_round_trip",
         action="store_true",
         dest="demo_round_trip",
         help=(
@@ -107,6 +137,7 @@ Examples:
     # Input/Output files
     parser.add_argument(
         "--input-docx",
+        "--input_docx",
         type=str,
         dest="input_docx",
         metavar="PATH",
@@ -115,6 +146,7 @@ Examples:
 
     parser.add_argument(
         "--input-pptx",
+        "--input_pptx",
         type=str,
         dest="input_pptx",
         metavar="PATH",
@@ -122,6 +154,10 @@ Examples:
     )
     parser.add_argument(
         "--output-folder",
+        "--output_folder",
+        "--output",
+        "--output-dir",
+        "-o",
         type=str,
         dest="output_folder",
         metavar="PATH",
@@ -131,6 +167,7 @@ Examples:
     # Template files
     parser.add_argument(
         "--template-pptx",
+        "--template_pptx",
         type=str,
         dest="template_pptx",
         metavar="PATH",
@@ -139,6 +176,7 @@ Examples:
 
     parser.add_argument(
         "--template-docx",
+        "--template_docx",
         type=str,
         dest="template_docx",
         metavar="PATH",
@@ -148,6 +186,11 @@ Examples:
     # Processing options
     parser.add_argument(
         "--chunk-type",
+        "--chunk_type",
+        "--chunk",
+        "--chunk-by",
+        "--chunk_by",
+        "-c",
         type=str,
         dest="chunk_type",
         choices=["paragraph", "page", "heading_flat", "heading_nested"],
@@ -156,6 +199,8 @@ Examples:
 
     parser.add_argument(
         "--direction",
+        "--pipeline",
+        dest="direction",
         type=str,
         choices=["docx2pptx", "pptx2docx"],
         help="Conversion direction (default: docx2pptx)",
@@ -163,12 +208,21 @@ Examples:
     # Page range integers
     parser.add_argument(
         "--range-start",
+        "--range_start",
+        "--start",
+        dest="range_start",
         metavar="N",
         type=int,
         help="EXPERIMENTAL: Specify the page or slide from input to start with. Inclusive. Approximate. For finer control, make a copy of your input file that only includes the excerpt you want processed.",
     )
     parser.add_argument(
         "--range-end",
+        "--range_end",
+        "--end",
+        "--range-stop",
+        "--range_stop",
+        "--stop",
+        dest="range_end",
         metavar="N",
         type=int,
         help="EXPERIMENTAL: Specify the page or slide from input to end on. Inclusive. Approximate. For finer control, make a copy of your input file that only includes the excerpt you want processed.",
@@ -195,7 +249,7 @@ Examples:
         "--display-comments",
         action="store_true",
         dest="display_comments",
-        help="Display comments in speaker notes (default: enabled)",
+        help="Display comments in speaker notes (default: disabled)",
     )
     comments_group.add_argument(
         "--no-display-comments",
@@ -240,7 +294,7 @@ Examples:
         "--display-footnotes",
         action="store_true",
         dest="display_footnotes",
-        help="Display footnotes in speaker notes (default: enabled)",
+        help="Display footnotes in speaker notes (default: disabled)",
     )
     footnotes_group.add_argument(
         "--no-display-footnotes",
@@ -255,7 +309,7 @@ Examples:
         "--display-endnotes",
         action="store_true",
         dest="display_endnotes",
-        help="Display endnotes in speaker notes (default: enabled)",
+        help="Display endnotes in speaker notes (default: disabled)",
     )
     endnotes_group.add_argument(
         "--no-display-endnotes",
@@ -271,7 +325,7 @@ Examples:
         "--metadata",
         action="store_true",
         dest="preserve_docx_metadata_in_speaker_notes",  # dest is an argparse parameter that tells argparse what attribute name to use when storing the value
-        help="Preserve docx metadata in speaker notes (default: enabled)",
+        help="Preserve docx metadata in speaker notes (default: disabled)",
     )
     metadata_group.add_argument(
         "--no-preserve-metadata",
@@ -281,12 +335,17 @@ Examples:
         help="Do not preserve docx metadata",
     )
 
-    # Validate args match config fields
-    _validate_args_match_config(parser)
+    if get_debug_mode():
+        # Validate args match config fields
+        _validate_args_match_config(parser)
 
     return parser.parse_args()
 
 
+# endregion
+
+
+# region build_config_from_args
 def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     """
     Build UserConfig from parsed arguments with proper priority.
@@ -302,12 +361,19 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     Returns:
         UserConfig instance with all values set
     """
+    # Check debug mode first.
+    # We determine the user's explicit CLI intent immediately.
+    if args.debug_mode is not SENTINEL:
+        cli_debug_mode = args.debug_mode  # Will be True or False
+    else:
+        cli_debug_mode = None  # Will be None (user didn't specify)
+
     # Start with demo samples, config file, or defaults
     if args.demo_round_trip:
         log.info(
             "Roundtrip Demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().with_defaults()
+        cfg = UserConfig().with_defaults(debug_mode=cli_debug_mode)
         cfg.enable_all_options()
         log.debug(
             f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}"
@@ -318,13 +384,17 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
         log.info(
             "docx2pptx demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().for_demo(direction=PipelineDirection.DOCX_TO_PPTX)
+        cfg = UserConfig().for_demo(
+            direction=PipelineDirection.DOCX_TO_PPTX, debug_mode=cli_debug_mode
+        )
         return cfg
     elif args.demo_pptx2docx:
         log.info(
             "pptx2docx demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().for_demo(direction=PipelineDirection.PPTX_TO_DOCX)
+        cfg = UserConfig().for_demo(
+            direction=PipelineDirection.PPTX_TO_DOCX, debug_mode=cli_debug_mode
+        )
         return cfg
     elif args.config:
         config_path = Path(args.config)
@@ -335,6 +405,8 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
 
     # Override with CLI args (only if explicitly provided)
     # We need to check if the arg was actually provided vs just being the default
+    if cli_debug_mode is not None:
+        cfg.debug_mode = cli_debug_mode
 
     # For string args, check if they're not None
     if args.input_docx is not None:
@@ -386,7 +458,10 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     return cfg
 
 
-# TODO: This should never impact users. We need to gate this with DEBUG_MODE
+# endregion
+
+
+# region _validate_args_match_config
 def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
     """
     Ensure all UserConfig fields have corresponding CLI arguments.
@@ -397,6 +472,12 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
     Raises:
         RuntimeError: If there's a mismatch between config fields and CLI args
     """
+
+    if not get_debug_mode():
+        # Return early if debug_mode is turned off.
+        # This function should never crash the app for users.
+        return
+
     # Get all config field names
     config_fields = {f.name for f in fields(UserConfig)}
 
@@ -442,6 +523,10 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
         )
 
 
+# endregion
+
+
+# region main
 def main() -> None:
     """Development entry point - run CLI directly with `python -m manuscript2slides.cli`"""
     from manuscript2slides import startup
@@ -456,3 +541,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+# endregion

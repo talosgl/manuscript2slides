@@ -9,22 +9,24 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib  # Python 3.10
 
-import tomli_w  # For writing (no stdlib equivalent yet)
-
+import logging
 import os
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any, Optional
 
+import tomli_w  # For writing (no stdlib equivalent yet)
+
+from manuscript2slides.internals import constants
 from manuscript2slides.internals.paths import (
+    get_default_docx_template_path,
+    get_default_pptx_template_path,
     user_base_dir,
     user_input_dir,
     user_output_dir,
-    get_default_docx_template_path,
-    get_default_pptx_template_path,
 )
-import logging
+from manuscript2slides.utils import str_to_bool
 
 log = logging.getLogger("manuscript2slides")
 # endregion
@@ -56,13 +58,11 @@ class PipelineDirection(Enum):
 class UserConfig:
     """All user-configurable settings for manuscript2slides."""
 
-    # endregion
+    # region class fields
+    debug_mode: Optional[bool] = None
 
-    # region define fields
-    # Input/Output
-
+    # region Input/Output
     # Input file to process
-    # TODO: why did I use Optional here, instead of str | None?
     input_docx: Optional[str] = (
         None  # Use strings in the dataclass, convert to Path when you need to use them.
     )
@@ -70,7 +70,7 @@ class UserConfig:
 
     output_folder: Optional[str] = None  # Desired output directory/folder to save in
 
-    # ==> Templates I/O
+    # Templates for output file
     template_pptx: Optional[str] = (
         None  # The pptx file to use as the template for the slide deck
     )
@@ -79,8 +79,9 @@ class UserConfig:
     )
     range_start: Optional[int] = None
     range_end: Optional[int] = None
+    # endregion
 
-    # Processing
+    # region Processing options
     chunk_type: ChunkType = (
         ChunkType.PARAGRAPH
     )  # Which chunking method to use to divide the docx into slides.
@@ -102,40 +103,147 @@ class UserConfig:
 
     # endregion
 
-    # region baseline instance methods
-    def _resolve_path(self, raw: str) -> Path:
-        """Expand ~ and ${VARS}; resolve relative to config_base_dir if present."""
-        expanded = os.path.expandvars(raw)
-        p = Path(expanded).expanduser()
+    # endregion
 
-        if p.is_absolute():
-            return p.resolve()
+    # region class methods (populate a new instance)
 
-        base = user_base_dir()
-        return (base / p).resolve()
-
-    def _make_path_relative(self, path_str: str | None) -> str | None:
+    # region .with_defaults
+    @classmethod
+    def with_defaults(cls, debug_mode: bool | None = None) -> UserConfig:
         """
-        Convert absolute paths under user_base_dir to relative paths for readability.
+        Create a config object in memory with sample files for quick CLI demo.
 
-        Paths outside user_base_dir are kept as absolute paths.
-        Uses forward slashes for cross-platform compatibility.
+        Provides sensible defaults for everything so users can run
+        `python -m manuscript2slides` and see it work immediately.
+
+        Returns:
+            UserConfig: Fully populated config using sample files
         """
-        if path_str is None:
-            return None
 
-        abs_path = self._resolve_path(path_str)
-        base = user_base_dir()
+        cfg = cls()
 
+        if debug_mode is not None:
+            cfg.debug_mode = debug_mode
+
+        # Point to sample files for demo
+        cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
+
+        # All other fields already have defaults from the dataclass
+        # (chunk_type, direction, bools, templates, output_folder)
+        return cfg
+
+    # endregion
+
+    # region .for_demo
+    @classmethod
+    def for_demo(
+        cls, direction: PipelineDirection, debug_mode: bool | None = None
+    ) -> UserConfig:
+        """
+        Create a config with sample files for GUI demo tab.
+
+        User picks the direction (docx2pptx or pptx2docx), we fill in
+        the appropriate sample files and sensible defaults.
+
+        Args:
+            direction: Which pipeline direction to demo
+
+        Returns:
+            UserConfig: Fully populated config using sample files
+        """
+        cfg = cls()
+        cfg.direction = direction
+
+        if debug_mode is not None:
+            cfg.debug_mode = debug_mode
+
+        # Set the appropriate input file based on direction
+        if direction == PipelineDirection.DOCX_TO_PPTX:
+            cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
+        elif direction == PipelineDirection.PPTX_TO_DOCX:
+            cfg.input_pptx = str(user_input_dir() / "sample_slides_output.pptx")
+
+        # All other fields use their dataclass defaults
+        # (output_folder, templates, bools, etc.)
+
+        return cfg
+
+    # endregion
+
+    # region .from_toml
+    @classmethod
+    def from_toml(cls, path: Path) -> UserConfig:
+        """
+        Load configuration from a TOML file.
+
+        The TOML file should have flat key-value pairs matching the UserConfig field names.
+
+        Example TOML:
+            input_docx = "~/my-manuscript.docx"
+            chunk_type = "heading_flat"
+            direction = "docx2pptx"
+            experimental_formatting_on = true
+
+        Args:
+            path: Path to the .toml config file
+
+        Returns:
+            UserConfig: Populated configuration object
+
+        Raises:
+            FileNotFoundError: If config file doesn't exist
+            ValueError: If TOML is invalid or contains invalid enum values
+        """
+        if not path.exists():
+            log.error(f"Config file not found: {path}")
+            raise FileNotFoundError(f"Config file not found: {path}")
+
+        # Read in the TOML file; raise if there are syntax errors.
         try:
-            # Try to make it relative to base
-            rel_path = abs_path.relative_to(base)
-            # Use forward slashes (work on Windows too, cleaner in TOML)
-            return str(rel_path).replace("\\", "/")
-        except ValueError:
-            # Path is outside base dir, keep it absolute with forward slashes
-            return str(abs_path).replace("\\", "/")
+            with open(path, "rb") as f:
+                data = tomllib.load(f)
+        except tomllib.TOMLDecodeError as e:
+            error_msg = f"Invalid TOML syntax in {path}"
+            log.error(error_msg)
+            raise ValueError(error_msg) from e
 
+        # Warn the user if the data was read-in as empty, but only warn-- keep going.
+        if not data:
+            log.warning(f"Config toml file is empty: {path}. Using all defaults.")
+
+        # Convert string enum values to actual enums
+        if "chunk_type" in data:
+            try:
+                data["chunk_type"] = ChunkType(data["chunk_type"])
+            except ValueError as e:
+                error_msg = (
+                    f"Invalid chunk_type: '{data['chunk_type']}'. "
+                    f"Valid options: {[c.value for c in ChunkType]}"
+                )
+                log.error(error_msg)
+                raise ValueError(error_msg) from e
+
+        if "direction" in data:
+            try:
+                data["direction"] = PipelineDirection(data["direction"])
+            except ValueError as e:
+                error_msg = (
+                    f"Invalid direction: '{data['direction']}'. "
+                    f"Valid options: {[d.value for d in PipelineDirection]}"
+                )
+                log.error(error_msg)
+                raise ValueError(error_msg) from e
+
+        # Create and return UserConfig object from the dict by unpacking all the key-value pairs as kwargs
+        return cls(**data)
+
+    # endregion
+
+    # endregion
+
+    # region instance getters/setters/helpers
+
+    # region get real paths from stored cfg values
     def get_template_pptx_path(self) -> Path:
         """Get the docx2pptx template pptx path, with fallback to default."""
         if self.template_pptx:
@@ -183,125 +291,6 @@ class UserConfig:
         else:
             path = None
         return path if path else None
-
-    # endregion
-
-    # region class methods to populate an instance
-    @classmethod
-    def with_defaults(cls) -> UserConfig:
-        """
-        Create a config object in memory with sample files for quick CLI demo.
-
-        Provides sensible defaults for everything so users can run
-        `python -m manuscript2slides` and see it work immediately.
-
-        Returns:
-            UserConfig: Fully populated config using sample files
-        """
-
-        cfg = cls()
-
-        # Point to sample files for demo
-        cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
-
-        # All other fields already have defaults from the dataclass
-        # (chunk_type, direction, bools, templates, output_folder)
-        return cfg
-
-    @classmethod
-    def for_demo(cls, direction: PipelineDirection) -> UserConfig:
-        """
-        Create a config with sample files for GUI demo tab.
-
-        User picks the direction (docx2pptx or pptx2docx), we fill in
-        the appropriate sample files and sensible defaults.
-
-        Args:
-            direction: Which pipeline direction to demo
-
-        Returns:
-            UserConfig: Fully populated config using sample files
-        """
-        cfg = cls()
-        cfg.direction = direction
-
-        # Set the appropriate input file based on direction
-        if direction == PipelineDirection.DOCX_TO_PPTX:
-            cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
-        elif direction == PipelineDirection.PPTX_TO_DOCX:
-            cfg.input_pptx = str(user_input_dir() / "sample_slides_output.pptx")
-
-        # All other fields use their dataclass defaults
-        # (output_folder, templates, bools, etc.)
-
-        return cfg
-
-    @classmethod
-    def from_toml(cls, path: Path) -> UserConfig:
-        """
-        Load configuration from a TOML file.
-
-        The TOML file should have flat key-value pairs matching the UserConfig field names.
-
-        Example TOML:
-            input_docx = "~/my-manuscript.docx"
-            chunk_type = "heading_flat"
-            direction = "docx2pptx"
-            experimental_formatting_on = true
-
-        Args:
-            path: Path to the .toml config file
-
-        Returns:
-            UserConfig: Populated configuration object
-
-        Raises:
-            FileNotFoundError: If config file doesn't exist
-            ValueError: If TOML is invalid or contains invalid enum values
-        """
-        if not path.exists():
-            log.error(f"Config file not found: {path}")
-            raise FileNotFoundError(f"Config file not found: {path}")
-
-        # Read in the TOML file; raise if there are syntax errors.
-        try:
-            with open(path, "rb") as f:
-                data = tomllib.load(f)
-        except tomllib.TOMLDecodeError as e:
-            error_msg = f"Invalid TOML syntax in {path}"
-            log.error(error_msg)
-            raise ValueError(error_msg) from e
-
-        # Warn the user if the data was read-in as empty, but only warn-- keep going.
-        if not data:
-            log.warning(f"Config toml file is empty: {path}. Using all defaults.")
-
-        # Convert string enum values to actual enums
-        # Convert string enum values to actual enums
-        if "chunk_type" in data:
-            try:
-                data["chunk_type"] = ChunkType(data["chunk_type"])
-            except ValueError as e:
-                error_msg = (
-                    f"Invalid chunk_type: '{data['chunk_type']}'. "
-                    f"Valid options: {[c.value for c in ChunkType]}"
-                )
-                log.error(error_msg)
-                raise ValueError(error_msg) from e
-
-        if "direction" in data:
-            try:
-                data["direction"] = PipelineDirection(data["direction"])
-            except ValueError as e:
-                error_msg = (
-                    f"Invalid direction: '{data['direction']}'. "
-                    f"Valid options: {[d.value for d in PipelineDirection]}"
-                )
-                log.error(error_msg)
-                raise ValueError(error_msg) from e
-
-        # Create and return UserConfig object from the dict by unpacking all the key-value pairs as kwargs
-        return cls(**data)
 
     # endregion
 
@@ -399,7 +388,9 @@ class UserConfig:
 
     # endregion
 
-    # region Validation instance methods
+    # endregion
+
+    # region instance validation methods
     def pre_run_check(self) -> None:
         """
         Validate everything needed for a pipeline run.
@@ -616,3 +607,100 @@ class UserConfig:
         self._validate_output_folder()  # Shared check
 
     # endregion
+
+    # region instance methods that should probably not live in this class
+    # TODO move.. where? paths?
+    def _resolve_path(self, raw: str) -> Path:
+        """Expand ~ and ${VARS}; resolve relative to user_base_dir if present."""
+        expanded = os.path.expandvars(raw)
+        p = Path(expanded).expanduser()
+
+        if p.is_absolute():
+            return p.resolve()
+
+        base = user_base_dir()
+        return (base / p).resolve()
+
+    def _make_path_relative(self, path_str: str | None) -> str | None:
+        """
+        Convert absolute paths under user_base_dir to relative paths for readability.
+
+        Paths outside user_base_dir are kept as absolute paths.
+        Uses forward slashes for cross-platform compatibility.
+        """
+        if path_str is None:
+            return None
+
+        abs_path = self._resolve_path(path_str)
+        base = user_base_dir()
+
+        try:
+            # Try to make it relative to base
+            rel_path = abs_path.relative_to(base)
+            # Use forward slashes (work on Windows too, cleaner in TOML)
+            return str(rel_path).replace("\\", "/")
+        except ValueError:
+            # Path is outside base dir, keep it absolute with forward slashes
+            return str(abs_path).replace("\\", "/")
+
+    # endregion
+
+
+# region get_debug_mode
+# I really cannot tell where is the right place for this function but since it's about getting & respecting user
+# intent, we'll put it here for now. Maybe if we had a config_utils.py it'd go there, but we don't.
+def get_debug_mode(
+    cfg: UserConfig | None = None, interface_flag: bool | None = None
+) -> bool:
+    """
+    Determine debug mode from multiple sources.
+    Priority: just-passed interface arg > existing in-use config (from file, cli, gui) > env var > DEBUG_MODE_DEFAULT (constants.py)
+
+    Priority order (highest to lowest):
+    1. CLI argument (--debug true/false)
+    2. Config file (debug_mode = true/false)
+    3. GUI preference (QSettings)
+    4. Environment variable (MANUSCRIPT2SLIDES_DEBUG)
+    5. internals/constants.py DEBUG_MODE_DEFAULT
+
+    Args, both optional and will be read as None if not provided:
+        cfg: Configuration object (may contain debug_mode setting)
+        interface_flag: Explicit CLI arg or GUI arg value passed in
+
+    Returns:
+        bool: Whether debug mode should be enabled from this point on
+    """
+
+    # 1. Highest Priority: ad-hoc CLI/GUI argument (explicit user override)
+    if interface_flag is not None:
+        return interface_flag
+
+    # 2. Second Priority: Config object value (built from gui, loaded from file, built from argparse)
+    if cfg is not None and cfg.debug_mode is not None:
+        return cfg.debug_mode
+
+    # 3. GUI preference (QSettings) - NEW
+    from manuscript2slides.gui import APP_SETTINGS
+
+    gui_pref = APP_SETTINGS.value("debug_mode")
+    if gui_pref is not None:
+        # QSettings returns strings, need to convert
+        return str_to_bool(gui_pref.lower())
+
+    # 4. Check env variable
+    env_debug_str = os.environ.get("MANUSCRIPT2SLIDES_DEBUG")
+    if env_debug_str is not None:
+        try:
+            # If a valid value is found, return it immediately
+            return str_to_bool(env_debug_str)
+        except ValueError:
+            # If the env var is set but invalid ("bob"), log a warning and fall through to default
+            print(
+                f"Warning: Invalid value for MANUSCRIPT2SLIDES_DEBUG env var: '{env_debug_str}'. Using default."
+            )
+
+    # 5. Lowest Priority / Fallback: The system default constant
+    return constants.DEBUG_MODE_DEFAULT
+
+
+# endregion

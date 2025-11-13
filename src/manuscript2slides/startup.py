@@ -8,13 +8,14 @@ Handles common setup tasks required by both CLI and GUI interfaces:
 
 import logging
 
-from manuscript2slides.internals.constants import DEBUG_MODE
 from manuscript2slides.internals.logger import setup_logger
 from manuscript2slides.internals.scaffold import ensure_user_scaffold
+from manuscript2slides.internals.config.define_config import get_debug_mode
 
 from manuscript2slides.utils import setup_console_encoding
 
 
+# region initialize_application
 def initialize_application() -> logging.Logger:
     """Common startup tasks for both CLI and GUI."""
 
@@ -23,8 +24,8 @@ def initialize_application() -> logging.Logger:
     # and we need to call this prior to setting up the logger.
     setup_console_encoding()
 
-    # Start up logging
-    log = setup_logger(enable_trace=DEBUG_MODE)
+    # Start up logging.
+    log = setup_logger(enable_trace=_should_enable_trace_on_startup())
     log.info("Starting manuscript2slides Log.")
 
     # Ensure user folders exist and templates are copied
@@ -34,3 +35,27 @@ def initialize_application() -> logging.Logger:
     ensure_user_scaffold()
 
     return log
+
+
+# endregion
+
+
+# region _should_enable_trace_on_startup
+def _should_enable_trace_on_startup() -> bool:
+    """
+    Determine if trace logging should start immediately.
+
+    At startup, only checks:
+    - Environment variable (MANUSCRIPT2SLIDES_DEBUG)
+    - System default (DEBUG_MODE_DEFAULT in constants.py)
+    (CLI args, config files, and GUI preferences are not available yet at this point.)
+
+    Note: Once trace logging is enabled, it remains active for the entire session.
+    Later changes to debug_mode via CLI/config/GUI won't disable already-active
+    trace logging. This is intentonal. We do not want to turn off trace logging midway
+    through a session.
+    """
+    return get_debug_mode()
+
+
+# endregion
