@@ -11,8 +11,9 @@ from manuscript2slides import io
 from manuscript2slides.internals import constants
 from manuscript2slides.internals.config.define_config import UserConfig
 
-# import logging
-# log = logging.getLogger("manuscript2slides")
+import logging
+
+log = logging.getLogger("manuscript2slides")
 
 
 def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
@@ -29,6 +30,9 @@ def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
     # Validate it has the required slide layout for the pipeline
     layout_names = [layout.name for layout in prs.slide_layouts]
     if constants.SLD_LAYOUT_CUSTOM_NAME not in layout_names:
+        log.error(
+            f"Could not find required slide layout {constants.SLD_LAYOUT_CUSTOM_NAME} in template."
+        )
         raise ValueError(
             f"Template is missing the required layout: '{constants.SLD_LAYOUT_CUSTOM_NAME}'. "
             f"Available layouts: {', '.join(layout_names)}"
@@ -56,6 +60,22 @@ def create_empty_document(cfg: UserConfig) -> document.Document:
     except Exception as e:
         raise ValueError(f"Could not load docx template (may be corrupted): {e}")
 
-    # TODO, v1 required: Add validation here if needed (e.g., check for required styles)
+    required_styles = {"Normal"}
+
+    # Get a list of all style names in the document
+    template_styles = [style.name for style in doc.styles]
+    log.debug(f"Available styles in document: {template_styles}")
+
+    missing_styles = []
+    for style_name in required_styles:
+        if style_name not in template_styles:
+            missing_styles.append(style_name)
+
+    if missing_styles:
+        raise ValueError(
+            f"Template is missing required styles: '{required_styles}'. "
+            f"Available layouts: {template_styles}"
+            f"If error persists, try renaming the Documents/manuscript2slides/templates/ folder to templates_old/ or deleting it."
+        )
 
     return doc
