@@ -8,13 +8,10 @@ Epic: Bucket o' Fixes & Features pre-v1:
     - Additionally, provide a way for the users to quickly clear options/reset fields to defaults in the main UI.
 
 - Backend-only Features:
-  - [x] .docx Runs that are also Headings don't have their other formatting preserved when copied into the pptx _Run; just the fact it is a heading into the metadata. Perhaps we need to "get" the formatting details from the document's heading styles, rather than from the run's XML.
-  - [--] CUT: ~~Incorporate Pydantic into the project for better automatic validation, type-checking, etc.~~
-    - ~~Pylance strict reports some issues with over-validation define_config. One suggested fix/path forward is to be using Pydantic instead of doing manual checks in my code. Additionally, it's a low-impact library and will be useful to learn in general because it is an industry-standard library.~~
 - [ ] Make DEBUG_MODE not just a source code const
   
 - GUI/CLI + Backend Features: 
-  - [-] ~~Add feature to allow page ranges~~ CUT/WILL NOT SUPPORT: Pages are not easily detectable/usable from python-docx; we'd need to do something like the chunk-by-page algorithm anad then discard chunks before/after a range. It would be hacky and it'd be more reliable for the human user to simply prep a docx starting/ending where you actually want the pptx to start/end instead. Maybe more doable if we add a "meta chunk" or chunk-collection type item in future to allow breaking into multiple output files, etc., and integrate this feature.
+  - [x] ~~Add feature to allow page ranges~~ ~~CUT/WILL NOT SUPPORT: Pages are not easily detectable/usable from python-docx; we'd need to do something like the chunk-by-page algorithm anad then discard chunks before/after a range. It would be hacky and it'd be more reliable for the human user to simply prep a docx starting/ending where you actually want the pptx to start/end instead. Maybe more doable if we add a "meta chunk" or chunk-collection type item in future to allow breaking into multiple output files, etc., and integrate this feature.~~ JK I figured it out and added it to CLI and GUI
 
 ### Epic: Add tests & pytest
     - Test config validation
@@ -38,8 +35,7 @@ Epic: Bucket o' Fixes & Features pre-v1:
 - Split the output pptx or docx into multiple output files based on slide or page count. Add default counts and allow user overrides for the default.
 - Investigate if we can insert pptx sections safely enough (to allow for docx headings -> pptx sections, or other section-chunking); if not, investigate if/when we want to mimic the same type of behavior with "segue slides"
 - Investigate how impossible non-local file input/output (OneDrive/SharePoint) would be; add to known limitations if not supportable.
-- Investigate linking slides or sections-of-slides or file chunks back to their source "place" in the original docx (og file if possible, or a copy where we insert the anchor)
+- Investigate linking slides or sections-of-slides or file chunks back to their source "place" in the original docx (og file if possible, or a copy where we insert the anchor) (Maybe can just point to page of input file's abs path)
 - Add support to export to .md (1 file per chunk) to support docx -> zettelkasten workflows (Notion, Obsidian) (Consider supporting metadata -> YAML frontmatter)
 - Add support to break chunks (of any type) at a word count threshold.
 - Add support for importing .md and .txt; split by whitespaces or newline characters.
-- Investigate Paragraph(docx).style.paragraph_format.keep_together / keep_with_next for chunking vs headings/page break
