@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from PySide6.QtCore import QObject, QSettings, Qt, QThread, Signal
-from PySide6.QtGui import QColor, QKeySequence, QPalette, QShortcut
+from PySide6.QtGui import QColor, QKeySequence, QPalette, QShortcut, QIntValidator
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -473,12 +473,15 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         # Get defaults from UserConfig
         self.cfg_defaults = UserConfig()
 
-        # Subclasses must define these attributes in their own _create_io_widgets()
+        # Subclasses should override these attributes in their own _create_io_widgets()
         self.input_label = "Input File:"
         self.input_filetypes = self.template_filetypes = ["*.*"]
         self.input_typenames = self.template_typenames = "Files"
         self.template_default = NO_SELECTION  # This is a bit gross but is there another option? None, with checks?
 
+        # Subclasses should override these attributes in their own _create_range_widgets()
+        self.range_item = ""
+        self.sequence_type = "input"
         # children must call _create_widgets(), _create_layouts(), _connect_internal_signals()
 
     # endregion
@@ -578,6 +581,40 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.io_section.setLayout(io_layout)
 
     # endregion
+
+    def _create_range_widgets(self) -> None:
+        self.range_label = QLabel("Process a specific range (experimental):")
+        self.range_label.setWordWrap(True)
+
+        validator = QIntValidator(1, 9999)  # Min 1, max 9999
+
+        self.range_layout = QHBoxLayout()
+        range_start_label = QLabel(f"From {self.range_item}:")
+        self.range_start_input = QLineEdit()
+        self.range_start_input.setPlaceholderText("1")
+        self.range_start_input.setMaximumWidth(80)
+        self.range_start_input.setValidator(validator)
+
+        range_end_label = QLabel(f"To {self.range_item}:")
+        self.range_end_input = QLineEdit()
+        self.range_end_input.setPlaceholderText("Last")
+        self.range_end_input.setMaximumWidth(80)
+        self.range_end_input.setValidator(validator)
+
+        self.range_layout.addWidget(range_start_label)
+        self.range_layout.addWidget(self.range_start_input)
+        self.range_layout.addSpacing(20)
+        self.range_layout.addWidget(range_end_label)
+        self.range_layout.addWidget(self.range_end_input)
+        self.range_layout.addStretch()
+
+        self.range_tip = QLabel(
+            f"Tip: Leave blank to process entire {self.sequence_type}. Ranges are approximate."
+        )
+        self.range_tip.setWordWrap(True)
+        self.range_tip.setContentsMargins(25, 0, 0, 0)
+        soft_color = get_soft_text_color(self.range_tip, ratio=0.6)
+        self.range_tip.setStyleSheet(f"color: {soft_color.name()};")
 
     # region _get_input_path (concrete/shared)
     def _get_input_path(self) -> str:
@@ -1021,6 +1058,7 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         # behavior is all inferred from the available data in the .docx.
         # Eventually we might want to; this is where it would be long in the UI.
         # self._create_basic_options()
+        self._create_advanced_options()
 
         self._create_convert_section()
 
@@ -1041,13 +1079,45 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
     # endregion
 
+    # region p2d _create_range_widgets()
+    def _create_range_widgets(self) -> None:
+        self.range_item = "slide"
+        self.sequence_type = "presentation"
+
+        super()._create_range_widgets()
+
+    # endregion
+
     # region (UNUSED) create basic options
     def _create_basic_options(self) -> None:
         """UNUSED. Create pipeline options widget(s)."""
-        self.options_frame = QGroupBox("Basic Options")
+        self.basic_options = QGroupBox("Basic Options")
 
         # NOTE: Here is where we could add user-configurable options widgets to the pptx2docx UI.
         # If things get complex, split this into _create_options_widgets() and _create_options_layouts()
+
+    # endregion
+
+    # region p2d _create_advanced_options
+    def _create_advanced_options(self) -> None:
+        """Create collapsible advanced options section."""
+
+        self.advanced_options = CollapsibleFrame(
+            title="Advanced Options", start_collapsed=True
+        )
+
+        range_group = QGroupBox("Range (Experimental)")
+        self._create_range_widgets()
+
+        # Create the groupbox's internal layout
+        range_groupbox_layout = QVBoxLayout()
+        range_groupbox_layout.addWidget(self.range_label)
+        range_groupbox_layout.addLayout(self.range_layout)
+        range_groupbox_layout.addWidget(self.range_tip)
+
+        # Set the layout on the groupbox
+        range_group.setLayout(range_groupbox_layout)
+        self.advanced_options.content_layout.addWidget(range_group)
 
     # endregion
 
@@ -1056,7 +1126,8 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         """Arrange sections into main layout."""
         layout = QVBoxLayout()
         layout.addWidget(self.io_section)
-        # layout.addWidget(self.options_frame)
+        # layout.addWidget(self.basic_options)
+        layout.addWidget(self.advanced_options)
         layout.addWidget(self.convert_section)
         layout.addStretch()
         self.setLayout(layout)
@@ -1077,6 +1148,17 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         self.input_selector.set_path(cfg.input_pptx or NO_SELECTION)
         self.output_selector.set_path(cfg.output_folder or NO_SELECTION)
         self.template_selector.set_path(cfg.template_docx or NO_SELECTION)
+
+        # Set range
+        if cfg.range_start is not None:
+            self.range_start_input.setText(str(cfg.range_start))
+        else:
+            self.range_start_input.clear()
+
+        if cfg.range_end is not None:
+            self.range_end_input.setText(str(cfg.range_end))
+        else:
+            self.range_end_input.clear()
 
     # endregion
 
@@ -1140,6 +1222,11 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 
         # Only update fields that have UI controls
         cfg.input_pptx = self.view.input_selector.get_path()
+
+        range_start_text = self.view.range_start_input.text().strip()
+        range_end_text = self.view.range_end_input.text().strip()
+        cfg.range_start = int(range_start_text) if range_start_text else None
+        cfg.range_end = int(range_end_text) if range_end_text else None
 
         # Handle optional paths (might be "No Selection")
         output = self.view.output_selector.get_path()
@@ -1274,6 +1361,15 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
     # endregion
 
+    # region d2p _create_range_widgets
+    def _create_range_widgets(self) -> None:
+        self.range_item = "page"
+        self.sequence_type = "document"
+
+        super()._create_range_widgets()
+
+    # endregion
+
     # region _create_advanced_options
     def _create_advanced_options(self) -> None:
         """Create advanced options (collapsible)."""
@@ -1325,13 +1421,22 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         child_layout.addWidget(self.keep_footnotes_chk)
         child_layout.addWidget(self.keep_endnotes_chk)
 
+        # Add range section
+        self._create_range_widgets()
+
         # Add everything to layout
         self.advanced_options.content_layout.addWidget(self.keep_metadata_chk)
-
         self.advanced_options.content_layout.addWidget(tip_label)
+
+        self.advanced_options.content_layout.addSpacing(10)
         self.advanced_options.content_layout.addWidget(annotations_label)
         self.advanced_options.content_layout.addWidget(self.keep_all_annotations_chk)
         self.advanced_options.content_layout.addLayout(child_layout)
+
+        self.advanced_options.content_layout.addSpacing(10)
+        self.advanced_options.content_layout.addWidget(self.range_label)
+        self.advanced_options.content_layout.addLayout(self.range_layout)
+        self.advanced_options.content_layout.addWidget(self.range_tip)
 
         # Connect signals
         self._setup_annotation_observers()
@@ -1436,6 +1541,17 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.keep_footnotes_chk.setChecked(cfg.display_footnotes)
         self.keep_endnotes_chk.setChecked(cfg.display_endnotes)
 
+        # Set range
+        if cfg.range_start is not None:
+            self.range_start_input.setText(str(cfg.range_start))
+        else:
+            self.range_start_input.clear()
+
+        if cfg.range_end is not None:
+            self.range_end_input.setText(str(cfg.range_end))
+        else:
+            self.range_end_input.clear()
+
     # endregion
 
 
@@ -1473,6 +1589,11 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
         cfg.display_comments = self.view.keep_comments_chk.isChecked()
         cfg.display_footnotes = self.view.keep_footnotes_chk.isChecked()
         cfg.display_endnotes = self.view.keep_endnotes_chk.isChecked()
+
+        range_start_text = self.view.range_start_input.text().strip()
+        range_end_text = self.view.range_end_input.text().strip()
+        cfg.range_start = int(range_start_text) if range_start_text else None
+        cfg.range_end = int(range_end_text) if range_end_text else None
 
         # Handle optional paths (might be "No selection")
         output = self.view.output_selector.get_path()
