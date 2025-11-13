@@ -599,7 +599,7 @@ def get_effective_font_name_docx(style: ParagraphStyle_docx) -> str | None:
     return None
 
 
-def get_effective_font_name_pptx(paragraph: Paragraph_pptx):
+def get_effective_font_name_pptx(paragraph: Paragraph_pptx) -> str | None:
     """
     Try to access this pptx Paragraph's slide_layout's XML for a 'typeface' attribute;
     return the first found, or None.
