@@ -52,6 +52,13 @@ def get_session_id() -> str:
     Resolution order:
     1. Already-seeded value (via `seed_session_id()`).
     2. Environment variable `MANUSCRIPT2SLIDES_SESSION_ID`.
+        - Allows tests to set a predictable session ID for assertions
+        and log correlation without modifying code or calling
+        seed_session_id()
+        - Allows external systems (CI/CD pipelines, orchestration tools,
+        containerized environments) to set a known session ID rather
+        than having a random one generated.
+
     3. Fresh random 8-character hex string.
 
     Returns:
