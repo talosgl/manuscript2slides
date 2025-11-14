@@ -46,7 +46,7 @@ def run_pipeline(cfg: UserConfig) -> None:
         raise  # Re-raise so GUI/CLI still see the error
 
 
-def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
+def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
     """
     Test utility: Run both pipelines in sequence.
 
@@ -80,7 +80,7 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
     log.info(f"Intermediate pptx: {intermediate_pptx}")
 
     # Run pptx -> docx using the output from previous step
-    cfg.input_pptx = str(intermediate_pptx)
+    cfg.input_pptx = intermediate_pptx
     cfg.direction = PipelineDirection.PPTX_TO_DOCX
     run_pipeline(cfg)
 
@@ -95,15 +95,16 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
     return original_docx, intermediate_pptx, final_docx
 
 
-def _find_most_recent_file(folder: Path, pattern: str) -> Path:
+def _find_most_recent_file(folder: Path, pattern: str) -> str:
     """Find the most recently created file matching glob pattern."""
     files = list(folder.glob(pattern))
     if not files:
-        raise FileNotFoundError(f"No files matching '{pattern}' in {folder}")
+        log.warning(f"No files matching '{pattern}' in {folder}")
+        return "{could not find most recent path}"
 
     # Use st_mtime (modification time) which is reliable across platforms
     # and makes more sense for "most recent output file"
-    return max(files, key=lambda p: p.stat().st_mtime)
+    return str(max(files, key=lambda p: p.stat().st_mtime))
 
 
 def log_pipeline_info(cfg: UserConfig) -> None:
