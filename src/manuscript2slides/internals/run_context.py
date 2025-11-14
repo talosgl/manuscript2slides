@@ -103,9 +103,13 @@ def get_pipeline_run_id() -> str:
         str: the pipeline run ID for the current execution.
     """
     if _pipeline_run_id is None:
-        raise RuntimeError(
-            "No active pipeline run id hs been generated. Call start_pipeline_run() at the beginning of pipeline execution."
+        import logging
+
+        log = logging.getLogger("manuscript2slides")
+        log.debug(
+            "There is no _pipeline_run_id set yet; returning Unknown. Call start_pipeline_run() at the beginning of pipeline execution."
         )
+        return "Unknown"
     return _pipeline_run_id
 
 

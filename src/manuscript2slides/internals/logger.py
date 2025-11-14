@@ -5,7 +5,7 @@ Basic logging setup; creates console and file handlers with session_id in every 
 import logging
 
 from manuscript2slides.internals.paths import user_log_dir_path
-from manuscript2slides.internals.run_context import get_session_id, get_pipeline_run_id
+from manuscript2slides.internals.run_context import get_session_id
 
 
 # region setup_logger
