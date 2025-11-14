@@ -530,12 +530,9 @@ class UserConfig:
         # Validate start + end range logic
         if self.range_start is not None and self.range_end is not None:
             if self.range_start > self.range_end:
-                log.error(
-                    f"range_start ({self.range_start}) cannot be greater than range_end ({self.range_end})"
-                )
-            raise ValueError(
-                f"range_start ({self.range_start}) cannot be greater than range_end ({self.range_end})"
-            )
+                error_msg = f"range_start ({self.range_start}) cannot be greater than range_end ({self.range_end})"
+                log.error(error_msg)
+                raise ValueError(error_msg)
 
     # =======
     # Methods below validate pipeline requirements, and check:

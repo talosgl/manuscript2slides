@@ -18,17 +18,24 @@ NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)
 # region parse_xml_blob
 def parse_xml_blob(xml_blob: bytes | str) -> ET.Element:
     """Parse an XML blob into a string, from bytes."""
-    if isinstance(xml_blob, str):
-        xml_string = xml_blob
-    else:
-        # If footnote_blob is in bytes, or is bytes-like,
-        # convert it to a string
-        xml_string = bytes(xml_blob).decode("utf-8")
+    try:
+        if isinstance(xml_blob, str):
+            xml_string = xml_blob
+        else:
+            # If footnote_blob is in bytes, or is bytes-like,
+            # convert it to a string
+            xml_string = bytes(xml_blob).decode("utf-8")
 
-    # Create an ElementTree object by deserializing the footnotes.xml contents into a Python object
-    root: ET.Element = ET.fromstring(xml_string)
+        # Create an ElementTree object by deserializing the footnotes.xml contents into a Python object
+        root: ET.Element = ET.fromstring(xml_string)
 
-    return root
+        return root
+    except UnicodeDecodeError as e:
+        log.error(f"Invalid encoding in XML blob: {e}")
+        raise ValueError(f"XML has invalid encoding: {e}") from e
+    except ET.ParseError as e:
+        log.error(f"Malformed XML: {e}")
+        raise ValueError(f"XML is malformed: {e}") from e
 
 
 # endregion

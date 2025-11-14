@@ -261,16 +261,31 @@ def clear_user_preferences() -> None:
 # region QSettings save/load_last_browse_directory
 def save_last_browse_directory(path: Path | str) -> None:
     """Save the directory of the given path to settings for next session."""
-    path_obj = Path(path)
+    try:
+        path_obj = Path(path)
 
-    selected_dir = str(path_obj.parent if path_obj.is_file() else path_obj)
-    log.debug(f"Saving last browse directory: {selected_dir}")
-    APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+        selected_dir = str(path_obj.parent if path_obj.is_file() else path_obj)
+        log.debug(f"Saving last browse directory: {selected_dir}")
+        APP_SETTINGS.setValue("last_browse_directory", selected_dir)
+    except Exception as e:
+        log.warning(f"QSettings: Failed to save last browse directory: {e}")
+        # Don't raise - this is non-critical convenience feature
 
 
 def get_last_browse_directory() -> str:
     """Get the last used browse directory from settings."""
-    return str(APP_SETTINGS.value("last_browse_directory", ""))
+    try:
+        last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
+        # Validate it still exists
+        if last_dir and not Path(last_dir).exists():
+            log.debug(f"Last browse directory no longer exists: {last_dir}, clearing")
+            APP_SETTINGS.setValue("last_browse_directory", "")
+            return ""
+        
+        return last_dir
+    except Exception as e:
+        log.warning(f"QSettings:  Failed to load last browse directory: {e}")
+        return ""  # Fallback to empty string (current dir)
 
 
 # endregion
@@ -2059,49 +2074,72 @@ class PathSelector(QWidget):
         extensions = " ".join(f"{ext}" for ext in self.filetypes)
         return f"{self.typenames} ({extensions});;All Files (*)"
 
+    # Probably need one around trying to get from QSetings (maybe inside the func call) & one around just returning
     def browse(self) -> None:
         """Open file/folder dialog."""
-        # load the last-used directory from QSettings, if it's there
-        last_dir = get_last_browse_directory()
+        try:
+            # load the last-used directory from QSettings, if it's there
+            last_dir = get_last_browse_directory()  # try/except handled in function
 
-        if self.is_dir:
-            path = QFileDialog.getExistingDirectory(
-                parent=self, caption="Select Folder", dir=last_dir
-            )
-        else:
-            filter_str = self._build_qtfilter_str()
-            path, _ = QFileDialog.getOpenFileName(
-                parent=self, caption="Select File", filter=filter_str, dir=last_dir
-            )
+            # File dialog - could fail
+            if self.is_dir:
+                path = QFileDialog.getExistingDirectory(
+                    parent=self, caption="Select Folder", dir=last_dir
+                )
+            else:
+                filter_str = self._build_qtfilter_str()
+                path, _ = QFileDialog.getOpenFileName(
+                    parent=self, caption="Select File", filter=filter_str, dir=last_dir
+                )
 
-        if path:  # if the user picked something and did not cancel...
-            save_last_browse_directory(path)
-            self.line_edit.setText(path)
+            if path:  # if the user picked something and did not cancel...
+                save_last_browse_directory(path)  # try/except handled
+                self.line_edit.setText(path)
+
+        except Exception as e:
+            log.error(f"File browser failed: {e}")
+            QMessageBox.warning(
+                self, "Browse Failed", f"Could not open file browser:\n{str(e)}"
+            )
 
     def _validate_path(self, path: str) -> None:
         """Validate path and change line_edit color accordingly"""
+
+        # Quick checks that can't fail
         if not path or path == NO_SELECTION:
             # Empty or "No Selection" is OK
             self._set_line_edit_color(None)
             return
 
         try:
+            # Path construction - could fail on invalid characters
             path_obj = Path(path)
-        except (ValueError, TypeError):
-            log.warning("Selected Path couldn't be parsed as a path.")
-            self._set_line_edit_color("lightcoral")
-            return
 
-        if self.is_dir:
-            is_valid = path_obj.is_dir()
-        else:
-            is_valid = path_obj.is_file()
+            # Filesystem access - could fail on permissions, network issues, etc.
+            if self.is_dir:
+                is_valid = path_obj.is_dir()
+            else:
+                is_valid = path_obj.is_file()
 
-        # Set color based on validity
-        if is_valid:
-            self._set_line_edit_color("green")
-        else:
+            # Set color based on validity
+            if is_valid:
+                self._set_line_edit_color("green")
+            else:
+                self._set_line_edit_color("lightcoral")
+        except (ValueError, TypeError) as e:
+            # Path construction failed - invalid characters, etc.
+            log.debug(f"Invalid path string: {path[:50]}... - {e}")
             self._set_line_edit_color("lightcoral")
+
+        except (OSError, PermissionError) as e:
+            # Filesystem access failed - network issues, permissions, etc.
+            log.debug(f"Cannot access path: {path[:50]}... - {e}")
+            self._set_line_edit_color("lightcoral")
+
+        except Exception as e:
+            # Something else went wrong - be defensive
+            log.warning(f"Unexpected error validating path: {path[:50]}... - {e}")
+            self._set_line_edit_color(None)  # Reset to default
 
     def _set_line_edit_color(self, color: str | None) -> None:
         """Set background color of line edit."""

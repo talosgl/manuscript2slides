@@ -203,192 +203,195 @@ def _copy_experimental_formatting_docx2pptx(
     # Original source: https://github.com/MartinPacker/md2pptx
     # Author: Martin Packer
     # License: MIT
-    if sfont.highlight_color is not None:
-        experimental_formatting_metadata.append(
-            {
-                "ref_text": source_run.text,
-                "highlight_color_enum": sfont.highlight_color.name,
-                "formatting_type": "highlight",
-            }
-        )
-        try:
-            # Convert the docx run highlight color to a hex string
-            tfont_hex_str = COLOR_MAP_HEX.get(sfont.highlight_color)
-
-            # Create an object to represent this run in memory
-            rPr = target_run._r.get_or_add_rPr()  # type: ignore[reportPrivateUsage]
-
-            # Create a highlight Oxml object in memory
-            hl = OxmlElement_pptx("a:highlight")
-
-            # Create a srgbClr Oxml object in memory
-            srgbClr = OxmlElement_pptx("a:srgbClr")
-
-            # Set the attribute val of the srgbClr Oxml object in memory to the desired color
-            setattr(srgbClr, "val", tfont_hex_str)
-
-            # Add srgbClr object inside the hl Oxml object
-            hl.append(srgbClr)  # type: ignore[reportPrivateUsage]
-
-            # Add the hl object to the run representation object, which will add all our Oxml elements inside it
-            rPr.append(hl)  # type: ignore[reportPrivateUsage]
-
-        except Exception as e:
-
-            log.warning(
-                f"We found a highlight in a docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
+    try:
+        if sfont.highlight_color is not None:
+            experimental_formatting_metadata.append(
+                {
+                    "ref_text": source_run.text,
+                    "highlight_color_enum": sfont.highlight_color.name,
+                    "formatting_type": "highlight",
+                }
             )
-        """
-        Reference pptx XML for highlighting:
-        <a:r>
-            <a:rPr>
-                <a:highlight>
-                    <a:srgbClr val="FFFF00"/>
-                </a:highlight>
-            </a:rPr>
-            <a:t>Highlight this text.</a:t>
-        </a:r>
-        """
+            try:
+                # Convert the docx run highlight color to a hex string
+                tfont_hex_str = COLOR_MAP_HEX.get(sfont.highlight_color)
 
-    if sfont.strike:
-        experimental_formatting_metadata.append(
-            {"ref_text": source_run.text, "formatting_type": "strike"}
-        )
-        try:
-            tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
-        except Exception as e:
-            log.warning(
-                f"Failed to apply single-strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
-            )
+                # Create an object to represent this run in memory
+                rPr = target_run._r.get_or_add_rPr()  # type: ignore[reportPrivateUsage]
 
-        """
-        Reference pptx XML for single strikethrough:
-        <a:p>
+                # Create a highlight Oxml object in memory
+                hl = OxmlElement_pptx("a:highlight")
+
+                # Create a srgbClr Oxml object in memory
+                srgbClr = OxmlElement_pptx("a:srgbClr")
+
+                # Set the attribute val of the srgbClr Oxml object in memory to the desired color
+                setattr(srgbClr, "val", tfont_hex_str)
+
+                # Add srgbClr object inside the hl Oxml object
+                hl.append(srgbClr)  # type: ignore[reportPrivateUsage]
+
+                # Add the hl object to the run representation object, which will add all our Oxml elements inside it
+                rPr.append(hl)  # type: ignore[reportPrivateUsage]
+
+            except Exception as e:
+
+                log.warning(
+                    f"We found a highlight in a docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
+                )
+            """
+            Reference pptx XML for highlighting:
             <a:r>
-                <a:rPr lang="en-US" strike="sngStrike" dirty="0"/>
-                <a:t>Strike this text.</a:t>
+                <a:rPr>
+                    <a:highlight>
+                        <a:srgbClr val="FFFF00"/>
+                    </a:highlight>
+                </a:rPr>
+                <a:t>Highlight this text.</a:t>
             </a:r>
-        </a:p>        
-        """
+            """
 
-    if sfont.double_strike:
-        experimental_formatting_metadata.append(
-            {"ref_text": source_run.text, "formatting_type": "double_strike"}
-        )
-        try:
-            tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
-        except Exception as e:
-            log.warning(
-                f"""
-                        Failed to apply double-strikthrough.
-                        \nRun text: {source_run.text[:50]}... \n Error: {e}
-                        \nWe'll attempt single strikethrough."""
+        if sfont.strike:
+            experimental_formatting_metadata.append(
+                {"ref_text": source_run.text, "formatting_type": "strike"}
             )
-            tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
-        """
-        Reference pptx XML for double strikethrough:
-        <a:p>
+            try:
+                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                log.warning(
+                    f"Failed to apply single-strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
+                )
+
+            """
+            Reference pptx XML for single strikethrough:
+            <a:p>
+                <a:r>
+                    <a:rPr lang="en-US" strike="sngStrike" dirty="0"/>
+                    <a:t>Strike this text.</a:t>
+                </a:r>
+            </a:p>        
+            """
+
+        if sfont.double_strike:
+            experimental_formatting_metadata.append(
+                {"ref_text": source_run.text, "formatting_type": "double_strike"}
+            )
+            try:
+                tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                log.warning(
+                    f"""
+                            Failed to apply double-strikthrough.
+                            \nRun text: {source_run.text[:50]}... \n Error: {e}
+                            \nWe'll attempt single strikethrough."""
+                )
+                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+            """
+            Reference pptx XML for double strikethrough:
+            <a:p>
+                <a:r>
+                    <a:rPr lang="en-US" strike="dblStrike" dirty="0" err="1"/>
+                    <a:t>Double strike this text.</a:t>
+                </a:r>        
+            </a:p>
+            """
+
+        if sfont.subscript:
+            experimental_formatting_metadata.append(
+                {"ref_text": source_run.text, "formatting_type": "subscript"}
+            )
+            try:
+                if tfont.size is None or tfont.size < Pt(24):
+                    # Cast to string on set; if we store the const as a string, the negative sign gets lost for some reason.
+                    tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
+                else:
+                    tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
+
+            except Exception as e:
+                log.warning(
+                    f"""
+                            Failed to apply subscript. 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference pptx XML for subscript:
             <a:r>
-                <a:rPr lang="en-US" strike="dblStrike" dirty="0" err="1"/>
-                <a:t>Double strike this text.</a:t>
-            </a:r>        
-        </a:p>
-        """
+                <a:rPr lang="en-US" baseline="-25000" dirty="0" err="1"/>
+                <a:t>Subscripted text</a:t>
+            </a:r>
+            """
 
-    if sfont.subscript:
-        experimental_formatting_metadata.append(
-            {"ref_text": source_run.text, "formatting_type": "subscript"}
-        )
-        try:
-            if tfont.size is None or tfont.size < Pt(24):
-                # Cast to string on set; if we store the const as a string, the negative sign gets lost for some reason.
-                tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
-            else:
-                tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
-
-        except Exception as e:
-            log.warning(
-                f"""
-                        Failed to apply subscript. 
-                        \nRun text: {source_run.text[:50]}... 
-                        \n Error: {e}"""
+        if sfont.superscript:
+            experimental_formatting_metadata.append(
+                {"ref_text": source_run.text, "formatting_type": "superscript"}
             )
-        """
-        Reference pptx XML for subscript:
-        <a:r>
-            <a:rPr lang="en-US" baseline="-25000" dirty="0" err="1"/>
-            <a:t>Subscripted text</a:t>
-        </a:r>
-        """
+            try:
+                if tfont.size is None or tfont.size < Pt(24):
+                    tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
+                else:
+                    tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
 
-    if sfont.superscript:
-        experimental_formatting_metadata.append(
-            {"ref_text": source_run.text, "formatting_type": "superscript"}
-        )
-        try:
-            if tfont.size is None or tfont.size < Pt(24):
-                tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
-            else:
-                tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                log.warning(
+                    f"""
+                            Failed to apply superscript. 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference pptx XML for superscript
+            <a:r>
+                <a:rPr lang="en-US" baseline="30000" dirty="0" err="1"/>
+                <a:t>Superscript this text.</a:t>
+            </a:r>
+            """
 
-        except Exception as e:
-            log.warning(
-                f"""
-                        Failed to apply superscript. 
-                        \nRun text: {source_run.text[:50]}... 
-                        \n Error: {e}"""
+        # The below caps-handling code is not directly from md2pptx,
+        # but is heavily influenced by it.
+        if sfont.all_caps:
+            experimental_formatting_metadata.append(
+                {"ref_text": source_run.text, "formatting_type": "all_caps"}
             )
-        """
-        Reference pptx XML for superscript
-        <a:r>
-            <a:rPr lang="en-US" baseline="30000" dirty="0" err="1"/>
-            <a:t>Superscript this text.</a:t>
-        </a:r>
-        """
+            try:
+                tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                log.warning(
+                    f"""
+                            Failed to apply all caps. 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference XML for all caps:
+            <a:r>
+                <a:rPr lang="en-US" cap="all" dirty="0" err="1"/>
+                <a:t>Put this text in all caps.</a:t>
+            </a:r>
+            """
 
-    # The below caps-handling code is not directly from md2pptx,
-    # but is heavily influenced by it.
-    if sfont.all_caps:
-        experimental_formatting_metadata.append(
-            {"ref_text": source_run.text, "formatting_type": "all_caps"}
-        )
-        try:
-            tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
-        except Exception as e:
-            log.warning(
-                f"""
-                        Failed to apply all caps. 
-                        \nRun text: {source_run.text[:50]}... 
-                        \n Error: {e}"""
+        if sfont.small_caps:
+            experimental_formatting_metadata.append(
+                {"ref_text": source_run.text, "formatting_type": "small_caps"}
             )
-        """
-        Reference XML for all caps:
-        <a:r>
-            <a:rPr lang="en-US" cap="all" dirty="0" err="1"/>
-            <a:t>Put this text in all caps.</a:t>
-        </a:r>
-        """
-
-    if sfont.small_caps:
-        experimental_formatting_metadata.append(
-            {"ref_text": source_run.text, "formatting_type": "small_caps"}
-        )
-        try:
-            tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
-        except Exception as e:
-            log.warning(
-                f"""
-                        Failed to apply small caps on run with text body: 
-                        \nRun text: {source_run.text[:50]}... 
-                        \n Error: {e}"""
-            )
-        """
-        Reference pptx XML for small caps:
-        <a:r>
-            <a:rPr lang="en-US" cap="small" dirty="0" err="1"/>
-            <a:t>Put this text in small caps.</a:t>
-        </a:r>
-        """
+            try:
+                tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
+            except Exception as e:
+                log.warning(
+                    f"""
+                            Failed to apply small caps on run with text body: 
+                            \nRun text: {source_run.text[:50]}... 
+                            \n Error: {e}"""
+                )
+            """
+            Reference pptx XML for small caps:
+            <a:r>
+                <a:rPr lang="en-US" cap="small" dirty="0" err="1"/>
+                <a:t>Put this text in small caps.</a:t>
+            </a:r>
+            """
+    except Exception as e:
+        log.error(f"Unexpected error in experimental formatting: {e}")
 
 
 # endregion

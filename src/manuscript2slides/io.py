@@ -22,7 +22,6 @@ log = logging.getLogger("manuscript2slides")
 
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
-
 # region validate path/extension helpers (Read I/O)
 
 
@@ -57,7 +56,7 @@ def validate_pptx_path(user_path: str | Path) -> Path:
     if path.suffix.lower() == ".ppt":
         log.error(f"Unsupported .ppt file: {path} [pipeline:{pipeline_id}]")
         raise ValueError(
-            "This tool only supports .pptx files right now. Please convert your .ppt file to .pptx format first."
+            "This tool only supports .pptx files. Please convert your .ppt file to .pptx format first."
         )
     if path.suffix.lower() != ".pptx":
         log.error(
@@ -82,7 +81,7 @@ def validate_docx_path(user_path: str | Path) -> Path:
     if path.suffix.lower() == ".doc":
         log.error(f"Unsupported .doc file: {path} [pipeline:{pipeline_id}]")
         raise ValueError(
-            "This tool only supports .docx files right now. Please convert your .doc file to .docx format first."
+            "This tool only supports .docx files. Please convert your .doc file to .docx format first."
         )
     if path.suffix.lower() != ".docx":
         log.error(
@@ -108,11 +107,23 @@ def load_and_validate_docx(input_filepath: Path) -> document.Document:
     # Try to load the docx
     try:
         doc = docx.Document(input_filepath)  # type: ignore
-    except Exception as e:
+    except FileNotFoundError:
+        # Should never happen (validated earlier), but be defensive
+        log.error(f"File not found: {input_filepath} [pipeline:{pipeline_id}]")
+        raise FileNotFoundError(f"File not found: {input_filepath}")
+    except PermissionError as e:
         log.error(
-            f"Could not load document {str(input_filepath)} [pipeline:{pipeline_id}]. Error: {e} "
+            f"Permission denied reading {input_filepath} [pipeline:{pipeline_id}]: {e}"
         )
-        raise ValueError(f"Document appears to be corrupted: {e}")
+        raise PermissionError(
+            f"Permission denied reading file. Is it open in another program?\n{input_filepath}"
+        )
+    except Exception as e:
+        # Corrupted file, wrong format, etc.
+        log.error(
+            f"Could not load document {input_filepath} [pipeline:{pipeline_id}]: {e}"
+        )
+        raise ValueError(f"Document may be corrupted or in wrong format:\n{e}")
 
     # Validate it contains content
     if not doc.paragraphs:
@@ -154,14 +165,25 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
     Read in input pptx file contents, validate minimum content is present, and store to a runtime object. (pptx2docx-text pipeline)
     """
     pipeline_id = get_pipeline_run_id()
+
     # Try to load the pptx
     try:
         prs = pptx.Presentation(str(pptx_path))
+    except FileNotFoundError:
+        log.error(f"File not found: {pptx_path} [pipeline:{pipeline_id}]")
+        raise FileNotFoundError(f"File not found: {pptx_path}")
+    except PermissionError as e:
+        log.error(
+            f"Permission denied reading {pptx_path} [pipeline:{pipeline_id}]: {e}"
+        )
+        raise PermissionError(
+            f"Permission denied reading file. Is it open in another program?\n{pptx_path}"
+        )
     except Exception as e:
         log.error(
-            f"Could not load PowerPoint file {str(pptx_path)} [pipeline:{pipeline_id}]. Error: {e} "
+            f"Could not load PowerPoint file {pptx_path} [pipeline:{pipeline_id}]: {e}"
         )
-        raise ValueError(f"Presentation appears to be corrupted: {e}")
+        raise ValueError(f"Presentation may be corrupted or in wrong format:\n{e}")
 
     # Validate the pptx contains slides, and at least one contains content.
     if not prs.slides:
@@ -265,14 +287,26 @@ def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> Path:
         save_object.save(str(output_filepath))
         log.info(f"Successfully saved to {output_filepath}. [pipeline:{pipeline_id}]")
     except PermissionError as e:
-        log.error(f"Save failed due to permission error [pipeline:{pipeline_id}]: {e}")
-        raise PermissionError("Save failed: File may be open in another program")
+        log.error(f"Save failed - permission denied [pipeline:{pipeline_id}]: {e}")
+        raise PermissionError(
+            f"Could not save file. It may be open in another program or you lack write permissions.\n"
+            f"Location: {output_filepath}\n"
+            f"Error: {e}"
+        )
     except OSError as e:
-        log.error(f"Save failed in [pipeline:{pipeline_id}]: {e}")
-        raise OSError(f"Save failed (disk space or IO issue): {e}")
+        log.error(f"Save failed - OS error [pipeline:{pipeline_id}]: {e}")
+        raise OSError(
+            f"Could not save file. Check disk space and that the path is accessible.\n"
+            f"Location: {output_filepath}\n"
+            f"Error: {e}"
+        )
     except Exception as e:
-        log.error(f"Save failed in [pipeline:{pipeline_id}]: {e}")
-        raise RuntimeError(f"Save failed with unexpected error: {e}")
+        log.error(f"Save failed - unexpected error [pipeline:{pipeline_id}]: {e}")
+        raise RuntimeError(
+            f"Save failed with unexpected error.\n"
+            f"Location: {output_filepath}\n"
+            f"Error: {e}"
+        )
 
     return output_filepath
 
