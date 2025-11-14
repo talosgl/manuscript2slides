@@ -60,7 +60,205 @@ NO_SELECTION = "No Selection"
 APP_SETTINGS = QSettings("manuscript2slides", "manuscript2slides")
 
 
-# region QSettings helpers
+# region QSettings Stuff
+
+
+# region save_user_preferences
+def save_user_preferences(cfg: UserConfig) -> None:
+    """Save user's last-used settings to QSettings."""
+
+    try:
+        # Name the group
+        APP_SETTINGS.beginGroup("preferences")
+
+        # Save each field - only if not None
+        if cfg.chunk_type is not None and cfg.chunk_type.value is not None:
+            APP_SETTINGS.setValue("chunk_type", cfg.chunk_type.value)
+        if cfg.experimental_formatting_on is not None:
+            APP_SETTINGS.setValue(
+                "experimental_formatting", cfg.experimental_formatting_on
+            )
+        if cfg.preserve_docx_metadata_in_speaker_notes is not None:
+            APP_SETTINGS.setValue(
+                "preserve_metadata", cfg.preserve_docx_metadata_in_speaker_notes
+            )
+        if cfg.display_comments is not None:
+            APP_SETTINGS.setValue("display_comments", cfg.display_comments)
+        if cfg.display_footnotes is not None:
+            APP_SETTINGS.setValue("display_footnotes", cfg.display_footnotes)
+        if cfg.display_endnotes is not None:
+            APP_SETTINGS.setValue("display_endnotes", cfg.display_endnotes)
+
+        # Paths
+
+        # region cut fields
+        # Consider if it's desirable to save input file path or not. For now we assume
+        # not really, but leaving the code here, commented out, in case that changes later.
+
+        # if cfg.input_docx is not None:
+        #     APP_SETTINGS.setValue("input_docx", cfg.input_docx)
+        # if cfg.input_pptx is not None:
+        #     APP_SETTINGS.setValue("input_pptx", cfg.input_pptx)
+
+        # only save range if we also save input
+        # if cfg.range_start is not None:
+        #     APP_SETTINGS.setValue("range_start", cfg.range_start)
+        # if cfg.range_end is not None:
+        #     APP_SETTINGS.setValue("range_end", cfg.range_end)
+        # endregion
+
+        if cfg.output_folder is not None:
+            APP_SETTINGS.setValue("output_folder", cfg.output_folder)
+        if cfg.template_docx is not None:
+            APP_SETTINGS.setValue("template_docx", cfg.template_docx)
+        if cfg.template_pptx is not None:
+            APP_SETTINGS.setValue("template_pptx", cfg.template_pptx)
+
+        APP_SETTINGS.endGroup()
+        log.debug("Saved user preferences to QSettings.")
+    except Exception as e:
+        log.error(f"Failed to save preferences: {e}")
+        # Don't raise - preferences failing shouldn't crash the app
+
+
+# endregion
+
+
+# region load_user_preferences
+def load_user_preferences() -> UserConfig:
+    """Load user's last-used settings from QSettings."""
+
+    # Start with default
+    cfg = UserConfig()
+    try:
+        APP_SETTINGS.beginGroup("preferences")
+
+        # Load each field if it exists
+        if APP_SETTINGS.contains("chunk_type"):
+            raw_val = APP_SETTINGS.value("chunk_type")
+
+            # Check for QSettings' special quirks
+            if raw_val not in (None, "", "None"):
+                try:
+                    cfg.chunk_type = ChunkType(raw_val)
+                except (ValueError, KeyError):
+                    log.debug("Invalid chunk_type in preferences, using default")
+
+        if APP_SETTINGS.contains("experimental_formatting"):
+            raw_val = APP_SETTINGS.value("experimental_formatting")
+            if raw_val not in (None, "", "None"):
+                cfg.experimental_formatting_on = _get_qsettings_bool(raw_val)
+
+        if APP_SETTINGS.contains("preserve_metadata"):
+            raw_val = APP_SETTINGS.value("preserve_metadata")
+            if raw_val not in (None, "", "None"):
+                cfg.preserve_docx_metadata_in_speaker_notes = _get_qsettings_bool(
+                    raw_val
+                )
+
+        if APP_SETTINGS.contains("display_comments"):
+            raw_val = APP_SETTINGS.value("display_comments")
+            if raw_val not in (None, "", "None"):
+                cfg.display_comments = _get_qsettings_bool(raw_val)
+
+        if APP_SETTINGS.contains("display_footnotes"):
+            raw_val = APP_SETTINGS.value("display_footnotes")
+            if raw_val not in (None, "", "None"):
+                cfg.display_footnotes = _get_qsettings_bool(raw_val)
+
+        if APP_SETTINGS.contains("display_endnotes"):
+            raw_val = APP_SETTINGS.value("display_endnotes")
+            if raw_val not in (None, "", "None"):
+                cfg.display_endnotes = _get_qsettings_bool(raw_val)
+
+        # region cut fields
+        # if APP_SETTINGS.contains("input_docx"):
+        #     raw_val = APP_SETTINGS.value("input_docx")
+        #     if raw_val not in (None, "", "None"):
+        #         cfg.input_docx = raw_val
+
+        # if APP_SETTINGS.contains("input_pptx"):
+        #     raw_val = APP_SETTINGS.value("input_pptx")
+        #     if raw_val not in (None, "", "None"):
+        #         cfg.input_pptx = raw_val
+
+        # if APP_SETTINGS.contains("range_start"):
+        #     raw_val = APP_SETTINGS.value("range_start")
+        #     if raw_val not in (None, "", "None"):
+        #         try:
+        #             cfg.range_start = int(str(raw_val))
+        #         except (ValueError, TypeError):
+        #             # Catches if raw_val was something like "abc" or another uncastable type
+        #             log.warning(
+        #                 f"Invalid integer value found for key range_start in QSettings: {raw_val!r}"
+        #             )
+
+        # if APP_SETTINGS.contains("range_end"):
+        #     raw_val = APP_SETTINGS.value("range_end")
+        #     if raw_val not in (None, "", "None"):
+        #         try:
+        #             cfg.range_end = int(str(raw_val))
+        #         except (ValueError, TypeError):
+        #             log.warning(
+        #                 f"Invalid integer value found for key range_end in QSettings: {raw_val!r}"
+        #             )
+        # endregion
+
+        if APP_SETTINGS.contains("output_folder"):
+            raw_val = APP_SETTINGS.value("output_folder")
+            if raw_val not in (None, "", "None"):
+                cfg.output_folder = raw_val
+
+        if APP_SETTINGS.contains("template_docx"):
+            raw_val = APP_SETTINGS.value("template_docx")
+            if raw_val not in (None, "", "None"):
+                cfg.template_docx = raw_val
+
+        if APP_SETTINGS.contains("template_pptx"):
+            raw_val = APP_SETTINGS.value("template_pptx")
+            if raw_val not in (None, "", "None"):
+                cfg.template_pptx = raw_val
+
+        APP_SETTINGS.endGroup()
+        log.debug("Loaded user preferences")
+    except Exception as e:
+        log.warning(f"Failed to load preferences, using defaults: {e}")
+
+    return cfg
+
+
+def _get_qsettings_bool(app_settings_value_str: str) -> bool:
+    """Explicitly compare the string to get a true Python boolean.
+    If it is exactly the string literal "true", it'll return true here.
+    Anything else will return false. (I think.)
+
+    This is here because without it Pylance complains about not being able
+    to assign QSettings' object to bool.
+    """
+
+    return app_settings_value_str.lower() == "true"
+
+
+# endregion
+
+
+# region clear_user_preferences
+def clear_user_preferences() -> None:
+    """Clear all saved preferences."""
+    try:
+        APP_SETTINGS.beginGroup("preferences")
+        APP_SETTINGS.remove("")  # Removes all keys in this group
+        APP_SETTINGS.endGroup()
+        log.info("Cleared user preferences")
+    except Exception as e:
+        log.error(f"Failed to clear preferences: {e}. Sorry! Try relaunching.")
+        # Don't raise - failing to clear shouldn't crash
+
+
+# endregion
+
+
+# region QSettings save/load_last_browse_directory
 def save_last_browse_directory(path: Path | str) -> None:
     """Save the directory of the given path to settings for next session."""
     path_obj = Path(path)
@@ -74,6 +272,8 @@ def get_last_browse_directory() -> str:
     """Get the last used browse directory from settings."""
     return str(APP_SETTINGS.value("last_browse_directory", ""))
 
+
+# endregion
 
 # endregion
 
@@ -135,6 +335,7 @@ class MainWindow(QMainWindow):
         self.resize(500, 800)  # Initial size, but resizable
 
         # Build the UI
+        self._create_menu_bar()
         self._create_widgets()
         self._create_layout()
 
@@ -143,6 +344,43 @@ class MainWindow(QMainWindow):
         save_shortcut.activated.connect(self.d2p_tab_presenter.on_save_config_click)
 
     # endregion
+
+    # region _create_menu_bar()
+    def _create_menu_bar(self) -> None:
+        """Create the menu bar."""
+        menubar = self.menuBar()
+
+        # File menu (optional, for later)
+        # file_menu = menubar.addMenu("&File")
+
+        # Preferences menu
+        prefs_menu = menubar.addMenu("&Preferences")
+
+        # Reset action
+        reset_action = prefs_menu.addAction("Reset to Defaults")
+        reset_action.triggered.connect(self._on_reset_preferences)
+
+        # Optional: Add the "save across sessions" checkbox here if you want
+        # For now, auto-save is simpler
+
+    # endregion
+
+    def _on_reset_preferences(self) -> None:
+        """Reset all preferences to defaults."""
+        reply = QMessageBox.question(
+            self,
+            "Reset Preferences",
+            "Reset all saved preferences to defaults?\n\nThis will clear your saved settings but won't affect the current tab until you restart.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            clear_user_preferences()
+            QMessageBox.information(
+                self,
+                "Preferences Reset",
+                "Preferences cleared. Restart the app to see defaults.",
+            )
 
     # region _create_widgets()
     def _create_widgets(self) -> None:
@@ -441,8 +679,7 @@ class BaseConversionTabPresenter(QObject):
         self.view.enable_buttons()
         log.error(f"Conversion failed: {error}")
 
-        # Get log folder from config
-        cfg = self.last_run_config if self.last_run_config else UserConfig()
+        # Get log folder from paths
         log_folder = user_log_dir_path()
 
         # Pop message box with error information and option to open logs folder
@@ -475,7 +712,7 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         super().__init__(parent)
 
         # Get defaults from UserConfig
-        self.cfg_defaults = UserConfig()
+        self.cfg_defaults = load_user_preferences()
 
         # Subclasses should override these attributes in their own _create_io_widgets()
         self.input_label = "Input File:"
@@ -728,12 +965,15 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     # region on_convert_click
     def on_convert_click(self) -> None:
         """Handle convert button click with validation."""
-        cfg = self.loaded_config if self.loaded_config else UserConfig()
+        cfg = self.loaded_config if self.loaded_config else load_user_preferences()
         cfg = self.ui_to_config(cfg)
 
         # Call child's validation (they implement specifics)
         if not self._validate_input(cfg):
             return  # Validation failed, error already shown
+
+        # Save preferences before converting
+        save_user_preferences(cfg)
 
         self.start_conversion(cfg)
 
@@ -848,6 +1088,8 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
         return True
 
+
+# endregion
 
 # endregion
 
