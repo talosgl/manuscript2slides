@@ -11,6 +11,7 @@ from pathlib import Path
 from platformdirs import (
     user_documents_dir,
 )  # Gives us the "right" place for files on each OS
+import os
 
 PACKAGE_NAME = "manuscript2slides"
 
@@ -118,3 +119,13 @@ def get_default_pptx_template_path() -> Path:
     """
     base = user_templates_dir()
     return base / "pptx_template.pptx"
+
+
+def resolve_path(raw: str) -> Path:
+    """
+    Expand ~ and ${VARS}; resolve to absolute path.
+
+    Relative paths resolve relative to current working directory.
+    """
+    expanded = os.path.expandvars(raw)
+    return Path(expanded).expanduser().resolve()
