@@ -15,6 +15,8 @@ Epic: Bucket o' Fixes & Features pre-v1:
 
 ### Epic: Add tests & pytest
     - Test config validation
+    - Test logging
+    - Test debug_mode
     - Test path resolution across platforms
     - Test scaffolding (does it create folders? not overwrite files?)
     - Test the actual pipelines (docx->pptx, pptx->docx)

@@ -18,15 +18,15 @@ from typing import Any, Optional
 
 import tomli_w  # For writing (no stdlib equivalent yet)
 
-from manuscript2slides.internals import constants
+
 from manuscript2slides.internals.paths import (
     get_default_docx_template_path,
     get_default_pptx_template_path,
-    user_base_dir,
     user_input_dir,
     user_output_dir,
+    resolve_path,
+    normalize_path,
 )
-from manuscript2slides.utils import str_to_bool
 
 log = logging.getLogger("manuscript2slides")
 # endregion
@@ -107,7 +107,7 @@ class UserConfig:
 
     # region class methods (populate a new instance)
 
-    # region .with_defaults
+    # region with_defaults
     @classmethod
     def with_defaults(cls, debug_mode: bool | None = None) -> UserConfig:
         """
@@ -134,7 +134,7 @@ class UserConfig:
 
     # endregion
 
-    # region .for_demo
+    # region for_demo
     @classmethod
     def for_demo(
         cls, direction: PipelineDirection, debug_mode: bool | None = None
@@ -170,7 +170,7 @@ class UserConfig:
 
     # endregion
 
-    # region .from_toml
+    # region from_toml
     @classmethod
     def from_toml(cls, path: Path) -> UserConfig:
         """
@@ -234,6 +234,20 @@ class UserConfig:
                 log.error(error_msg)
                 raise ValueError(error_msg) from e
 
+        # Normalize path separators for Windows compatibility
+        path_fields = [
+            "input_docx",
+            "input_pptx",
+            "output_folder",
+            "template_pptx",
+            "template_docx",
+        ]
+
+        for field in path_fields:
+            if field in data and data[field]:
+                # Convert backslashes to forward slashes
+                data[field] = normalize_path(field)
+
         # Create and return UserConfig object from the dict by unpacking all the key-value pairs as kwargs
         return cls(**data)
 
@@ -243,11 +257,11 @@ class UserConfig:
 
     # region instance getters/setters/helpers
 
-    # region get real paths from stored cfg values
+    # region get real Path objects from stored cfg str values
     def get_template_pptx_path(self) -> Path:
         """Get the docx2pptx template pptx path, with fallback to default."""
         if self.template_pptx:
-            return self._resolve_path(self.template_pptx)
+            return resolve_path(self.template_pptx)
 
         # Default
         return get_default_pptx_template_path()
@@ -255,7 +269,7 @@ class UserConfig:
     def get_template_docx_path(self) -> Path:
         """Get the pptx2docx template docx path with fallback to a default."""
         if self.template_docx:
-            return self._resolve_path(self.template_docx)
+            return resolve_path(self.template_docx)
 
         # Default
         return get_default_docx_template_path()
@@ -263,14 +277,14 @@ class UserConfig:
     def get_input_docx_file(self) -> Path | None:
         """Get the docx2pptx input docx file path, or None if not specified."""
         if self.input_docx:
-            return self._resolve_path(self.input_docx)
+            return resolve_path(self.input_docx)
 
         return None
 
     def get_output_folder(self) -> Path:
         """Get the docx2pptx pipeline output pptx path, with fallback to default."""
         if self.output_folder:
-            return self._resolve_path(self.output_folder)
+            return resolve_path(self.output_folder)
 
         # Default
         return user_output_dir()
@@ -278,7 +292,7 @@ class UserConfig:
     def get_input_pptx_file(self) -> Path | None:
         """Get the pptx2docx input pptx file path, or None if not specified."""
         if self.input_pptx:
-            return self._resolve_path(self.input_pptx)
+            return resolve_path(self.input_pptx)
 
         return None
 
@@ -297,11 +311,14 @@ class UserConfig:
     # region enable_all_options
     def enable_all_options(self) -> UserConfig:
         """
-        Enable all options by mutating an existing config. Use for demos, testing, and
-        preserving as much as possible during roundtrip pipeline runs.
-        Returns the mutated object.
+        Enable all processing options by mutating an existing config.
+        Use for demos, testing, and preserving as much as possible during
+        roundtrip pipeline runs. Returns the mutated object.
+
+        NOTE: DOES NOT ALTER DEBUG MODE
         """
-        log.info("Enabling all bool options on existing config.")
+        log.info("Enabling all processing bool options on existing config.")
+
         # Defaults should already set these to True, but just in case.
         self.experimental_formatting_on = True
         self.comments_keep_author_and_date = True
@@ -360,15 +377,22 @@ class UserConfig:
             log.error(error_msg)
             raise OSError(error_msg) from e
 
+    # endregion
+
+    # region config_to_dict
     def config_to_dict(self) -> dict[str, Any]:
-        """Convert config to a JSON-serializable dict."""
+        """Convert config to a TOML-serializable dict.
+        Path separators are normalized to forward slashes for cross-platform
+        patibility and to avoid TOML escape sequence issues.
+        """
 
         data: dict[str, Any] = {
-            "input_docx": self._make_path_relative(self.input_docx),
-            "input_pptx": self._make_path_relative(self.input_pptx),
-            "output_folder": self._make_path_relative(self.output_folder),
-            "template_pptx": self._make_path_relative(self.template_pptx),
-            "template_docx": self._make_path_relative(self.template_docx),
+            "debug_mode": self.debug_mode,
+            "input_docx": normalize_path(self.input_docx),
+            "input_pptx": normalize_path(self.input_pptx),
+            "output_folder": normalize_path(self.output_folder),
+            "template_pptx": normalize_path(self.template_pptx),
+            "template_docx": normalize_path(self.template_docx),
             "range_start": self.range_start,
             "range_end": self.range_end,
             "chunk_type": self.chunk_type.value,
@@ -446,6 +470,7 @@ class UserConfig:
             "preserve_docx_metadata_in_speaker_notes",
             "comments_sort_by_date",
             "comments_keep_author_and_date",
+            "debug_mode",
         ]
 
         for field_name in bool_fields:
@@ -608,40 +633,5 @@ class UserConfig:
 
     # endregion
 
-    # region instance methods that should probably not live in this class
-    # TODO move.. where? paths?
-    def _resolve_path(self, raw: str) -> Path:
-        """Expand ~ and ${VARS}; resolve relative to user_base_dir if present."""
-        expanded = os.path.expandvars(raw)
-        p = Path(expanded).expanduser()
 
-        if p.is_absolute():
-            return p.resolve()
-
-        base = user_base_dir()
-        return (base / p).resolve()
-
-    def _make_path_relative(self, path_str: str | None) -> str | None:
-        """
-        Convert absolute paths under user_base_dir to relative paths for readability.
-
-        Paths outside user_base_dir are kept as absolute paths.
-        Uses forward slashes for cross-platform compatibility.
-        """
-        if path_str is None:
-            return None
-
-        abs_path = self._resolve_path(path_str)
-        base = user_base_dir()
-
-        try:
-            # Try to make it relative to base
-            rel_path = abs_path.relative_to(base)
-            # Use forward slashes (work on Windows too, cleaner in TOML)
-            return str(rel_path).replace("\\", "/")
-        except ValueError:
-            # Path is outside base dir, keep it absolute with forward slashes
-            return str(abs_path).replace("\\", "/")
-
-    # endregion
-
+# endregion
