@@ -2,16 +2,16 @@
 Epic: Bucket o' Fixes & Features pre-v1:
 
 - GUI-only Feature:
-  - [ ]  Preference Persistence: Wire up auto-save/load for preference persistence across sessions; use QtSettings to let users decide if preferences / app state should persist across sessions or be cleared every time.    
+  - [ ] Add Debug Mode toggle to GUI
+  - [ ] Move page range up to be with input file; it's weird to separate
+  - [ ] Preference Persistence: Wire up auto-save/load for preference persistence across sessions; use QtSettings to let users decide if preferences / app state should persist across sessions or be cleared every time.    
     - Default this behavior to remember/persist: "Users generally prefer software that restores the state they were last in. It minimizes friction and assumes a typical workflow where users iterate on a small set of inputs rather than starting from a blank slate every single time. The vast majority of well-known software (browsers, IDEs, office suites) remember window size, recent files, and input fields. Your users will expect this behavior."
     - Use QMenuBar + QSettings to offer a preference persistence option for the user; place the access to this feature in a standard Menubar location (`Edit` -> `Preferences`), not a Toolbar.
     - Additionally, provide a way for the users to quickly clear options/reset fields to defaults in the main UI.
 
 - Backend-only Features:
-- [ ] Make DEBUG_MODE not just a source code const
-  
-- GUI/CLI + Backend Features: 
-  - [x] ~~Add feature to allow page ranges~~ ~~CUT/WILL NOT SUPPORT: Pages are not easily detectable/usable from python-docx; we'd need to do something like the chunk-by-page algorithm anad then discard chunks before/after a range. It would be hacky and it'd be more reliable for the human user to simply prep a docx starting/ending where you actually want the pptx to start/end instead. Maybe more doable if we add a "meta chunk" or chunk-collection type item in future to allow breaking into multiple output files, etc., and integrate this feature.~~ JK I figured it out and added it to CLI and GUI
+- [x] Make DEBUG_MODE not just a source code const
+
 
 ### Epic: Add tests & pytest
     - Test config validation
