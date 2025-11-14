@@ -88,6 +88,9 @@ see the documentation.
 ------------------------------------------------------------------
 """,
     )
+    parser.add_argument(
+        "--cli", action="store_true", dest="cli_mode", help="Run the cli mode."
+    )
 
     # Add all our arguments to the argparse object we just made
 
@@ -358,7 +361,7 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     Returns:
         UserConfig instance with all values set
     """
-    # Check debug mode first.
+    # Check debug mode first
     debug_mode = (
         get_debug_mode()
     )  # This will properly prioritize CLI > Env Var > default
@@ -473,8 +476,15 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
         # This function should never crash the app for users.
         return
 
-    # Get all config field names
-    config_fields = {f.name for f in fields(UserConfig)}
+    # Get all config field names, except those we want to exclude
+    config_fields = set()
+    excluded_fields = [
+        "debug_mode",  # We build this elsewhere so it's an exception
+    ]
+    # {f.name for f in fields(UserConfig)}
+    for field in fields(UserConfig):
+        if field.name not in excluded_fields:
+            config_fields.add(field.name)
 
     # Get all arg destination names from parser
     # (argparse converts --input-docx to input_docx via arg.dest instead of using arg aliases)
@@ -482,11 +492,11 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
     excluded_args = [
         "help",
         "config",
+        "cli_mode",
         "demo_run",
         "demo_round_trip",
         "demo_pptx2docx",
         "demo_docx2pptx",
-        "debug_mode",  # We build this elsewhere so it's an exception
     ]
     for action in parser._actions:
         # Skip special argparse actions
