@@ -31,6 +31,7 @@ from manuscript2slides.internals.constants import RESOURCES_DIR
 log = logging.getLogger("manuscript2slides")
 
 
+# region ensure_user_scaffold
 def ensure_user_scaffold() -> None:
     """
     Create folder structure and copy templates on first run.
@@ -71,7 +72,12 @@ def ensure_user_scaffold() -> None:
     log.debug(f"User scaffold ready at {base}")
 
 
-# from importlib.resources import files # TODO: uncomment when packaging
+# endregion
+
+# from importlib.resources import files # TODO, v1: uncomment when packaging
+
+
+# region _get_resource_path
 def _get_resource_path(filename: str) -> Path:
     """
     Get path to a packaged resource file used as the source for copying into scaffolded destination subfolders.
@@ -88,6 +94,10 @@ def _get_resource_path(filename: str) -> Path:
     # return Path(str(resource))
 
 
+# endregion
+
+
+# region _create_readme
 def _create_readme(path: Path) -> None:
     """Write a friendly README explaining the folder structure."""
 
@@ -106,6 +116,10 @@ def _create_readme(path: Path) -> None:
         )
 
 
+# endregion
+
+
+# region _copy_templates_if_missing
 def _copy_templates_if_missing(templates_dir: Path) -> None:
     """Copy template files from resources/ to user templates folder."""
 
@@ -131,6 +145,10 @@ def _copy_templates_if_missing(templates_dir: Path) -> None:
             log.debug(f"Template already exists (not overwriting): {template_name}")
 
 
+# endregion
+
+
+# region _copy_samples_if_missing
 def _copy_samples_if_missing(input_dir: Path) -> None:
     """Copy sample input files from package resources to user input folder."""
 
@@ -154,6 +172,10 @@ def _copy_samples_if_missing(input_dir: Path) -> None:
             log.debug(f"Sample already exists (not overwriting): {sample_name}")
 
 
+# endregion
+
+
+# region _copy_sample_config_if_missing
 def _copy_sample_config_if_missing(configs_dir: Path) -> None:
     """Copy sample config from package resources to user configs folder."""
 
@@ -169,3 +191,6 @@ def _copy_sample_config_if_missing(configs_dir: Path) -> None:
             log.warning(f"Sample config not found in resources: {sample_name}")
     else:
         log.debug(f"Sample config already exists (not overwriting): {sample_name}")
+
+
+# endregion

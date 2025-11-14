@@ -11,7 +11,7 @@ import logging
 log = logging.getLogger("manuscript2slides")
 
 
-# region Orchestrator
+# region create_docx_chunks Orchestrator
 def create_docx_chunks(
     doc: document.Document, chunk_type: ChunkType
 ) -> list[Chunk_docx]:
@@ -369,11 +369,16 @@ def chunk_by_heading_flat(doc: document.Document) -> list[Chunk_docx]:
 # region heading helpers
 
 
+# region _is_standard_heading
 def is_standard_heading(style_name: str) -> bool:
     """Check if paragraph.style.name is a standard Word Heading (Heading 1, Heading 2, ..., Heading 6)"""
     return style_name.startswith("Heading") and style_name[8:].isdigit()
 
 
+# endregion
+
+
+# region get_heading_level
 def get_heading_level(style_name: str) -> int | float:
     """
     Extract the numeric level from a heading style name (e.g., 'Heading 2' -> 2),
@@ -384,5 +389,7 @@ def get_heading_level(style_name: str) -> int | float:
     except (ValueError, IndexError):
         return float("inf")  # Treat non-headings as "deepest possible"
 
+
+# endregion
 
 # endregion

@@ -23,8 +23,11 @@ log = logging.getLogger("manuscript2slides")
 OUTPUT_TYPE = TypeVar("OUTPUT_TYPE", document.Document, presentation.Presentation)
 
 
-# region Path Helpers
-def validate_path(user_path: str | Path) -> Path:
+# region validate path/extension helpers (Read I/O)
+
+
+# region _validate_path
+def _validate_path(user_path: str | Path) -> Path:
     """Ensure filepath exists and is a file."""
     path = Path(user_path)
     pipeline_id = get_pipeline_run_id()
@@ -39,9 +42,13 @@ def validate_path(user_path: str | Path) -> Path:
     return path
 
 
+# endregion
+
+
+# region validate_pptx_path
 def validate_pptx_path(user_path: str | Path) -> Path:
     """Validates the pptx template filepath exists and is actually a pptx file."""
-    path = validate_path(user_path)
+    path = _validate_path(user_path)
 
     # Get pipeline ID for logs.
     pipeline_id = get_pipeline_run_id()
@@ -60,9 +67,13 @@ def validate_pptx_path(user_path: str | Path) -> Path:
     return path
 
 
+# endregion
+
+
+# region validate_docx_path
 def validate_docx_path(user_path: str | Path) -> Path:
     """Validates the user-provided filepath exists and is actually a docx file."""
-    path = validate_path(user_path)
+    path = _validate_path(user_path)
 
     # Get pipeline ID for logs.
     pipeline_id = get_pipeline_run_id()
@@ -81,102 +92,17 @@ def validate_docx_path(user_path: str | Path) -> Path:
     return path
 
 
-def _build_timestamped_output_filename(save_object: OUTPUT_TYPE) -> str:
-    """Apply a per-run timestamp to the output's base filename."""
-    # Get pipeline ID for logs.
-    pipeline_id = get_pipeline_run_id()
-
-    # Get the base filename string
-    if isinstance(save_object, document.Document):
-        save_filename = constants.OUTPUT_DOCX_FILENAME
-    elif isinstance(save_object, presentation.Presentation):
-        save_filename = constants.OUTPUT_PPTX_FILENAME
-    else:
-        log.error(
-            f"Unexpected output object type passed to _build_timestamped_output_filename(): {save_object}. Only document.Document or presentation.Presentation objects are supported. [pipeline:{pipeline_id}]"
-        )
-        raise RuntimeError(f"Unexpected output object type: {save_object}")
-
-    # Add a timestamp to the filename
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    name, ext = save_filename.rsplit(
-        ".", 1
-    )  # The 1 is telling rsplit() to split from the right side and do a maximum of 1 split.
-    timestamped_filename = f"{name}_{timestamp}.{ext}"
-
-    return timestamped_filename
-
+# endregion
 
 # endregion
 
 
-# region Disk I/O - Write
-def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> Path:
-    """
-    Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running.
-    Returns the path to which we save.
-    """
-    pipeline_id = get_pipeline_run_id()
-
-    # Get the output folder from the config object
-    save_folder = cfg.get_output_folder()
-
-    # Apply a timestamp to the base filename
-    timestamped_filename = _build_timestamped_output_filename(save_object)
-
-    # Report if the content we're about to save is excessively huge
-    _validate_content_size(save_object)
-
-    # Create the output folder if we need to
-    save_folder.mkdir(parents=True, exist_ok=True)
-
-    output_filepath = save_folder / timestamped_filename
-
-    # Attempt to save
-    try:
-        save_object.save(str(output_filepath))
-        log.info(f"Successfully saved to {output_filepath}. [pipeline:{pipeline_id}]")
-    except PermissionError as e:
-        log.error(f"Save failed due to permission error [pipeline:{pipeline_id}]: {e}")
-        raise PermissionError("Save failed: File may be open in another program")
-    except OSError as e:
-        log.error(f"Save failed in [pipeline:{pipeline_id}]: {e}")
-        raise OSError(f"Save failed (disk space or IO issue): {e}")
-    except Exception as e:
-        log.error(f"Save failed in [pipeline:{pipeline_id}]: {e}")
-        raise RuntimeError(f"Save failed with unexpected error: {e}")
-
-    return output_filepath
+# region validate file content helpers (read I/O)
 
 
-# TODO, leafy: I'd really like `_validate_content_size()` to validate we're not about to save 100MB+ files. But that's not easy to
-# estimate from the runtime object.
-# For now we'll check for absolutely insane slide or paragraph counts, and just report it to the
-# debug/logger.
-
-
-def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
-    """Report if the output content we're about to save is excessively large."""
-    if isinstance(save_object, document.Document):
-        max_p_count = 10000
-        if len(save_object.paragraphs) > max_p_count:
-            log.warning(
-                f"This is about to save a docx file with over {max_p_count} paragraphs ... that seems a bit long!"
-            )
-    elif isinstance(save_object, presentation.Presentation):
-        max_s_count = 1000
-        if len(list(save_object.slides)) > max_s_count:
-            log.warning(
-                f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!"
-            )
-
-
-# endregion
-
-
-# region Disk I/O - Read & Validate
+# region load_and_validate_docx
 def load_and_validate_docx(input_filepath: Path) -> document.Document:
-    """Use python-docx to read in the docx file contents and store to a runtime variable."""
+    """Use python-docx to read in the (input) docx file contents and store to a runtime variable."""
     pipeline_id = get_pipeline_run_id()
 
     # Try to load the docx
@@ -219,9 +145,13 @@ def load_and_validate_docx(input_filepath: Path) -> document.Document:
     return doc
 
 
+# endregion
+
+
+# region load_and_validate_pptx
 def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
     """
-    Read in pptx file contents, validate minimum content is present, and store to a runtime object. (pptx2docx-text pipeline)
+    Read in input pptx file contents, validate minimum content is present, and store to a runtime object. (pptx2docx-text pipeline)
     """
     pipeline_id = get_pipeline_run_id()
     # Try to load the pptx
@@ -278,7 +208,7 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
 # endregion
 
 
-# region load & validate helpers
+# region _find_first_docx_paragraph_with_text
 def _find_first_docx_paragraph_with_text(
     paragraphs: list[Paragraph_docx],
 ) -> Paragraph_docx | None:
@@ -289,6 +219,10 @@ def _find_first_docx_paragraph_with_text(
     return None
 
 
+# endregion
+
+
+# region _find_first_slide_with_text
 def _find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
     """Find the first slide that contains any paragraphs with text content."""
     for slide in slides:
@@ -296,5 +230,107 @@ def _find_first_slide_with_text(slides: list[Slide]) -> Slide | None:
             return slide
     return None
 
+
+# endregion
+# endregion
+
+
+# region Save file helpers (write I/O)
+
+
+# region save_output
+def save_output(save_object: OUTPUT_TYPE, cfg: UserConfig) -> Path:
+    """
+    Save the generated output object to disk as a file. Genericized to output either docx or pptx depending on which pipeline is running.
+    Returns the path to which we save.
+    """
+    pipeline_id = get_pipeline_run_id()
+
+    # Get the output folder from the config object
+    save_folder = cfg.get_output_folder()
+
+    # Apply a timestamp to the base filename
+    timestamped_filename = _build_timestamped_output_filename(save_object)
+
+    # Report if the content we're about to save is excessively huge
+    _validate_content_size(save_object)
+
+    # Create the output folder if we need to
+    save_folder.mkdir(parents=True, exist_ok=True)
+
+    output_filepath = save_folder / timestamped_filename
+
+    # Attempt to save
+    try:
+        save_object.save(str(output_filepath))
+        log.info(f"Successfully saved to {output_filepath}. [pipeline:{pipeline_id}]")
+    except PermissionError as e:
+        log.error(f"Save failed due to permission error [pipeline:{pipeline_id}]: {e}")
+        raise PermissionError("Save failed: File may be open in another program")
+    except OSError as e:
+        log.error(f"Save failed in [pipeline:{pipeline_id}]: {e}")
+        raise OSError(f"Save failed (disk space or IO issue): {e}")
+    except Exception as e:
+        log.error(f"Save failed in [pipeline:{pipeline_id}]: {e}")
+        raise RuntimeError(f"Save failed with unexpected error: {e}")
+
+    return output_filepath
+
+
+# endregion
+
+
+# region _build_timestamped_output_filename
+def _build_timestamped_output_filename(save_object: OUTPUT_TYPE) -> str:
+    """Apply a per-run timestamp to the output's base filename."""
+    # Get pipeline ID for logs.
+    pipeline_id = get_pipeline_run_id()
+
+    # Get the base filename string
+    if isinstance(save_object, document.Document):
+        save_filename = constants.OUTPUT_DOCX_FILENAME
+    elif isinstance(save_object, presentation.Presentation):
+        save_filename = constants.OUTPUT_PPTX_FILENAME
+    else:
+        log.error(
+            f"Unexpected output object type passed to _build_timestamped_output_filename(): {save_object}. Only document.Document or presentation.Presentation objects are supported. [pipeline:{pipeline_id}]"
+        )
+        raise RuntimeError(f"Unexpected output object type: {save_object}")
+
+    # Add a timestamp to the filename
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    name, ext = save_filename.rsplit(
+        ".", 1
+    )  # The 1 is telling rsplit() to split from the right side and do a maximum of 1 split.
+    timestamped_filename = f"{name}_{timestamp}.{ext}"
+
+    return timestamped_filename
+
+
+# endregion
+
+# region _validate_content_size
+# TODO, leafy: I'd really like `_validate_content_size()` to validate we're not about to save 100MB+ files.
+# But that's not easy to estimate from the runtime object. For now we'll check for absolutely insane slide
+# or paragraph counts, and just report it to the debug/logger.
+
+
+def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
+    """Report if the output content we're about to save is excessively large."""
+    if isinstance(save_object, document.Document):
+        max_p_count = 10000
+        if len(save_object.paragraphs) > max_p_count:
+            log.warning(
+                f"This is about to save a docx file with over {max_p_count} paragraphs ... that seems a bit long!"
+            )
+    elif isinstance(save_object, presentation.Presentation):
+        max_s_count = 1000
+        if len(list(save_object.slides)) > max_s_count:
+            log.warning(
+                f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!"
+            )
+
+
+# endregion
 
 # endregion

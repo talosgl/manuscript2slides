@@ -20,6 +20,7 @@ from manuscript2slides.models import (
 log = logging.getLogger("manuscript2slides")
 
 
+# region process_chunk_annotations
 def process_chunk_annotations(
     chunks: list[Chunk_docx], doc: document.Document, cfg: UserConfig
 ) -> list[Chunk_docx]:
@@ -63,6 +64,10 @@ def process_chunk_annotations(
     return chunks
 
 
+# endregion
+
+
+# region process_run_annotations
 def process_run_annotations(
     chunk: Chunk_docx,
     paragraph: Paragraph_docx,
@@ -119,6 +124,10 @@ def process_run_annotations(
         log.warning(f"Could not parse run XML for references: {e}")
 
 
+# endregion
+
+
+# region get_ref_text
 def get_ref_text(run: Run_docx, paragraph: Paragraph_docx) -> str | None:
     """
     Get the Run or Paragraph text with which a piece of metadata is associated in the docx so that we can store that in
@@ -135,7 +144,10 @@ def get_ref_text(run: Run_docx, paragraph: Paragraph_docx) -> str | None:
     return ref_text
 
 
-# region Get all notes in this docx
+# endregion
+
+
+# region get_all_docx_comments
 def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
     """
     Get all the comments in this document as a dictionary.
@@ -154,6 +166,10 @@ def get_all_docx_comments(doc: document.Document) -> dict[str, Comment_docx]:
     return all_comments_dict
 
 
+# endregion
+
+
+# region get_all_docx_footnotes
 def get_all_docx_footnotes(
     doc: document.Document, cfg: UserConfig
 ) -> dict[str, Footnote_docx]:
@@ -180,6 +196,10 @@ def get_all_docx_footnotes(
         return {}
 
 
+# endregion
+
+
+# region get_all_docx_endnotes
 def get_all_docx_endnotes(
     doc: document.Document, cfg: UserConfig
 ) -> dict[str, Endnote_docx]:

@@ -1,11 +1,14 @@
 # models.py
 """Data models for document chunks and annotations."""
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from docx.comments import Comment as Comment_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 
 
+# region Docx Annotation custom classes
+# region Comment_docx_custom
 @dataclass
 class Comment_docx_custom:
     """A custom wrapper for the python-docx Comment class, allowing us to capture reference text."""
@@ -19,6 +22,10 @@ class Comment_docx_custom:
         return self.comment_obj.comment_id
 
 
+# endregion
+
+
+# region Footnote_docx
 @dataclass
 class Footnote_docx:
     """
@@ -40,6 +47,10 @@ class Footnote_docx:
         return self.footnote_id
 
 
+# endregion
+
+
+# region Endnote_docx
 @dataclass
 class Endnote_docx:
     """
@@ -61,6 +72,11 @@ class Endnote_docx:
         return self.endnote_id
 
 
+# endregion
+# endregion
+
+
+# region Chunk_docx
 @dataclass
 class Chunk_docx:
     """Class for Chunk objects made from docx paragraphs and their associated annotations."""
@@ -107,6 +123,10 @@ class Chunk_docx:
         self.endnotes.append(endnote)
 
 
+# endregion
+
+
+# region SlideNotes
 @dataclass
 class SlideNotes:
     """User notes and metadata extracted from a slide's speaker notes."""
@@ -131,3 +151,6 @@ class SlideNotes:
         copied annotations from earlier docx2pptx pipeline runs) from these SlideNotes.
         """
         return bool(self.user_notes.strip())
+
+
+# endregion

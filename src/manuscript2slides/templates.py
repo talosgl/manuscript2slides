@@ -75,7 +75,7 @@ def create_empty_document(cfg: UserConfig) -> document.Document:
         raise ValueError(
             f"Template is missing required styles: '{required_styles}'. "
             f"Available layouts: {template_styles}"
-            f"If error persists, try renaming the Documents/manuscript2slides/templates/ folder to templates_old/ or deleting it."
+            f"If error persists, try renaming the Documents/manuscript2slides/templates/ folder to templates_old/ or deleting it, then re-running the program."
         )
 
     return doc

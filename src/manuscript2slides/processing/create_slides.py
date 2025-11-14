@@ -24,9 +24,8 @@ from manuscript2slides.internals.run_context import get_pipeline_run_id
 
 log = logging.getLogger("manuscript2slides")
 
-# region create slides from chunks
 
-
+# region slides_from_chunks
 def slides_from_chunks(
     prs: presentation.Presentation, chunks: list[Chunk_docx], cfg: UserConfig
 ) -> None:
@@ -122,6 +121,10 @@ def slides_from_chunks(
             add_metadata_to_slide_notes(notes_text_frame, chunk, slide_metadata)
 
 
+# endregion
+
+
+# region create_blank_slide_for_chunk
 def create_blank_slide_for_chunk(
     prs: presentation.Presentation, slide_layout: SlideLayout
 ) -> tuple[Slide, TextFrame]:

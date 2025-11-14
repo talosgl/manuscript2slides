@@ -1,5 +1,7 @@
 """Add annotations we pulled from the docx to PowerPoint slide notes."""
 
+# region imports
+import logging
 import json
 from datetime import datetime
 
@@ -20,17 +22,22 @@ from manuscript2slides.models import (
     Footnote_docx,
 )
 
-from manuscript2slides.processing.run_processing import process_docx_paragraph_inner_contents
+from manuscript2slides.processing.run_processing import (
+    process_docx_paragraph_inner_contents,
+)
+
+# endregion
+log = logging.getLogger("manuscript2slides")
 
 
-# region annotate_slides - copied notes + metadata
+# region annotate_slide
 def annotate_slide(
     chunk: Chunk_docx, notes_text_frame: TextFrame, cfg: UserConfig
 ) -> None:
     """
     Pull a chunk's preserved annotations and copy them into the slide's speaker notes text frame.
 
-    NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't preserve
+    NOTE: We DO NOT PRESERVE any anchoring to the slide's body for annotations. That means we don't replicate
     comments' selected text ranges, nor do we preserve footnote or endnote numbering.
     """
     # Check if there's anything to annotate first
@@ -63,6 +70,10 @@ def annotate_slide(
     footer_run.text = "=" * 40 + f"\n{NOTES_MARKER_FOOTER}"
 
 
+# endregion
+
+
+# region add_comments_to_speaker_notes
 def add_comments_to_speaker_notes(
     comments_list: list[Comment_docx_custom],
     notes_text_frame: TextFrame,
@@ -117,6 +128,10 @@ def add_comments_to_speaker_notes(
                         process_docx_paragraph_inner_contents(para, notes_para, cfg)
 
 
+# endregion
+
+
+# region add_notes_to_speaker_notes
 def add_notes_to_speaker_notes(
     notes_list: list[NOTE_TYPE],
     notes_text_frame: TextFrame,
@@ -152,6 +167,10 @@ def add_notes_to_speaker_notes(
             note_run.text = note_text
 
 
+# endregion
+
+
+# region add_metadata_to_slide_notes
 def add_metadata_to_slide_notes(
     notes_text_frame: TextFrame, chunk: Chunk_docx, slide_body_metadata: dict
 ) -> None:

@@ -16,6 +16,7 @@ import os
 PACKAGE_NAME = "manuscript2slides"
 
 
+# region user_base_dir
 def user_base_dir() -> Path:
     """
     Base directory for all manuscript2slides user files.
@@ -33,6 +34,10 @@ def user_base_dir() -> Path:
     return base
 
 
+# endregion
+
+
+# region user_log_dir_path
 def user_log_dir_path() -> Path:
     """
     Directory for log files.
@@ -45,6 +50,10 @@ def user_log_dir_path() -> Path:
     return log_dir
 
 
+# endregion
+
+
+# region user_output_dir
 def user_output_dir() -> Path:
     """
     Default output directory for converted files.
@@ -57,6 +66,10 @@ def user_output_dir() -> Path:
     return output_dir
 
 
+# endregion
+
+
+# region user_input_dir
 def user_input_dir() -> Path:
     """
     Optional staging directory for input files.
@@ -69,6 +82,10 @@ def user_input_dir() -> Path:
     return input_dir
 
 
+# endregion
+
+
+# region user_templates_dir
 def user_templates_dir() -> Path:
     """
     Directory for custom template files.
@@ -81,6 +98,10 @@ def user_templates_dir() -> Path:
     return templates_dir
 
 
+# endregion
+
+
+# region user_configs_dir
 def user_configs_dir() -> Path:
     """
     Directory for saved configuration files.
@@ -93,6 +114,10 @@ def user_configs_dir() -> Path:
     return configs_dir
 
 
+# endregion
+
+
+# region user_manifests_dir
 def user_manifests_dir() -> Path:
     """
     Directory for saved manifest files.
@@ -105,6 +130,10 @@ def user_manifests_dir() -> Path:
     return configs_dir
 
 
+# endregion
+
+
+# region get_default_docx_template_path
 def get_default_docx_template_path() -> Path:
     """The default path used for the docx template in the ppt2docx pipeline if none is provided by the user.
     This file is created by scaffold.py's _copy_templates_if_missing() function if it doesn't exist already.
@@ -113,6 +142,10 @@ def get_default_docx_template_path() -> Path:
     return base / "docx_template.docx"
 
 
+# endregion
+
+
+# region get_default_pptx_template_path
 def get_default_pptx_template_path() -> Path:
     """The default path used for the pptx template in the docx2pptx pipeline if none is provided by the user.
     This file is created by scaffold.py's _copy_templates_if_missing() function if it doesn't exist already.
@@ -121,6 +154,10 @@ def get_default_pptx_template_path() -> Path:
     return base / "pptx_template.pptx"
 
 
+# endregion
+
+
+# region resolve_path
 def resolve_path(raw: str) -> Path:
     """
     Expand ~ and ${VARS}; resolve to absolute path.
@@ -131,6 +168,10 @@ def resolve_path(raw: str) -> Path:
     return Path(expanded).expanduser().resolve()
 
 
+# endregion
+
+
+# region normalize_path
 def normalize_path(path_str: str | None) -> str | None:
     """
     Normalize path separators to forward slashes for cross-platform compatibility.
@@ -145,3 +186,6 @@ def normalize_path(path_str: str | None) -> str | None:
         Path with forward slashes, or None if input was None
     """
     return path_str.replace("\\", "/") if path_str else None
+
+
+# endregion

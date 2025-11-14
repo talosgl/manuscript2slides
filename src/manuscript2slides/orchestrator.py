@@ -15,6 +15,7 @@ from manuscript2slides.internals.manifest import RunManifest
 log = logging.getLogger("manuscript2slides")
 
 
+# region run_pipeline
 def run_pipeline(cfg: UserConfig) -> None:
     """Run validation and then route to the appropriate pipeline based on config."""
 
@@ -46,6 +47,10 @@ def run_pipeline(cfg: UserConfig) -> None:
         raise  # Re-raise so GUI/CLI still see the error
 
 
+# endregion
+
+
+# region run_round_trip_test
 def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
     """
     Test utility: Run both pipelines in sequence.
@@ -95,6 +100,10 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
     return original_docx, intermediate_pptx, final_docx
 
 
+# endregion
+
+
+# region _find_most_recent_file
 def _find_most_recent_file(folder: Path, pattern: str) -> str:
     """Find the most recently created file matching glob pattern."""
     files = list(folder.glob(pattern))
@@ -107,6 +116,10 @@ def _find_most_recent_file(folder: Path, pattern: str) -> str:
     return str(max(files, key=lambda p: p.stat().st_mtime))
 
 
+# endregion
+
+
+# region log_pipeline_info
 def log_pipeline_info(cfg: UserConfig) -> None:
     """Print this pipeline run's run ID, session ID, and general config info to the log."""
     log.info(f"=== Pipeline Run Started ===")
@@ -115,3 +128,6 @@ def log_pipeline_info(cfg: UserConfig) -> None:
     log.info(f"Direction: {cfg.direction.value}")
     log.info(f"Input: {cfg.input_docx or cfg.input_pptx}")
     log.info(f"Configuration: {cfg}")  # This will use the dataclass __repr__
+
+
+# endregion

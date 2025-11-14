@@ -37,7 +37,7 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.internals.logger import enable_trace_logging
+
 from manuscript2slides.internals.paths import (
     get_default_docx_template_path,
     get_default_pptx_template_path,
@@ -48,8 +48,9 @@ from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
 from manuscript2slides.utils import get_debug_mode, open_folder_in_os_explorer
 
-log = logging.getLogger("manuscript2slides")
 # endregion
+
+log = logging.getLogger("manuscript2slides")
 
 
 # region Module-level constants and helpers
@@ -1952,6 +1953,11 @@ class LogViewer(QGroupBox):
         )
         text_handler.setFormatter(formatter)
 
+        if get_debug_mode():
+            text_handler.setLevel(logging.DEBUG)
+        else:
+            text_handler.setLevel(logging.INFO)  # match stdout
+
         # Add handler to logger
         logger.addHandler(text_handler)
 
@@ -2041,7 +2047,7 @@ def run() -> None:
 def main() -> None:
     """Development entry point - run GUI directly with `python -m manuscript2slides.gui`"""
     initialize_application()  # configure the log & other startup tasks
-    
+
     run()
 
 

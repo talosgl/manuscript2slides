@@ -1,5 +1,7 @@
 # formatting.py
 """Formatting functions for both pipelines."""
+
+# region imports
 import logging
 import xml.etree.ElementTree as ET
 from typing import Union, cast
@@ -21,8 +23,12 @@ from pptx.util import Pt
 
 from manuscript2slides.internals.config.define_config import UserConfig
 
+# endregion
+
 log = logging.getLogger("manuscript2slides")
 
+
+# region consts
 # region colormap
 
 COLOR_MAP_HEX = {
@@ -45,7 +51,9 @@ COLOR_MAP_HEX = {
 }
 
 COLOR_MAP_FROM_HEX = {v: k for k, v in COLOR_MAP_HEX.items()}
+# endregion
 
+# region alignment map
 ALIGNMENT_MAP_WD2PP = {
     WD_ALIGN_PARAGRAPH.LEFT: PP_ALIGN.LEFT,
     WD_ALIGN_PARAGRAPH.CENTER: PP_ALIGN.CENTER,
@@ -60,15 +68,19 @@ ALIGNMENT_MAP_WD2PP = {
 }
 
 ALIGNMENT_MAP_PP2WD = {v: k for k, v in ALIGNMENT_MAP_WD2PP.items()}
+# endregion
 
 BASELINE_SUBSCRIPT_SMALL_FONT = -25000
 BASELINE_SUBSCRIPT_LARGE_FONT = -50000
 BASELINE_SUPERSCRIPT_SMALL_FONT = 60000  # For fonts < 24pt
 BASELINE_SUPERSCRIPT_LARGE_FONT = 30000  # For fonts >= 24pt
-#
+# endregion
 
 
 # region shared formatting funcs
+
+
+# region _copy_basic_font_formatting
 def _copy_basic_font_formatting(
     source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
 ) -> None:
@@ -91,6 +103,10 @@ def _copy_basic_font_formatting(
         target_font.underline = bool(source_font.underline)
 
 
+# endregion
+
+
+# region _copy_font_size_formatting
 def _copy_font_size_formatting(
     source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
 ) -> None:
@@ -104,6 +120,10 @@ def _copy_font_size_formatting(
         """
 
 
+# endregion
+
+
+# region _copy_font_color_formatting
 def _copy_font_color_formatting(
     source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
 ) -> None:
@@ -116,7 +136,25 @@ def _copy_font_color_formatting(
             target_font.color.rgb = RGBColor_docx(*src_rgb)
 
 
-# region docx2pptx-specific formatting
+# endregion
+
+
+# region _exp_fmt_issue helper
+def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
+    """Construct error message string per experimental formatting type."""
+    message = f"We found a {formatting_type} in the experimental formatting JSON from a previous docx2pptx run, but we couldn't apply it. \n Run text: {run_text[:50]}... \n Error: {e}"
+    return message
+
+
+# endregion
+
+# endregion
+
+
+# region get docx2pptx formatting
+
+
+# region copy_run_formatting_docx2pptx
 def copy_run_formatting_docx2pptx(
     source_run: Run_docx,
     target_run: Run_pptx,
@@ -142,6 +180,10 @@ def copy_run_formatting_docx2pptx(
             )
 
 
+# endregion
+
+
+# region _copy_experimental_formatting_docx2pptx
 def _copy_experimental_formatting_docx2pptx(
     source_run: Run_docx,
     target_run: Run_pptx,
@@ -349,7 +391,32 @@ def _copy_experimental_formatting_docx2pptx(
         """
 
 
-# region paragraph-specific formatting docx2pptx
+# endregion
+
+
+# region get_effective_font_name_docx
+def get_effective_font_name_docx(style: ParagraphStyle_docx) -> str | None:
+    """
+    Traverses the style hierarchy (base_style chain) to find the
+    explicit font name. Returns None if nothing found.
+    """
+    current_style = style
+    while current_style is not None:
+        if current_style.font.name:
+            # Found an explicit font name in this style or a base style
+            return current_style.font.name
+
+        # Move up to the base style (cast helps Pylance here if it complains)
+        current_style = cast(ParagraphStyle_docx, current_style.base_style)
+
+    # If the entire chain returns None, we return None so as to keep whatever the theme default is in place
+    return None
+
+
+# endregion
+
+
+# region copy_paragraph_formatting_docx2pptx
 def copy_paragraph_formatting_docx2pptx(
     source_para: Paragraph_docx, target_para: Paragraph_pptx
 ) -> None:
@@ -365,6 +432,10 @@ def copy_paragraph_formatting_docx2pptx(
         _copy_font_color_formatting(source_para.style.font, target_para.font)
 
 
+# endregion
+
+
+# region _copy_paragraph_font_name_docx2pptx
 def _copy_paragraph_font_name_docx2pptx(
     source_para: Paragraph_docx, target_para: Paragraph_pptx
 ) -> None:
@@ -377,6 +448,10 @@ def _copy_paragraph_font_name_docx2pptx(
         target_para.font.name = name
 
 
+# endregion
+
+
+# region _copy_paragraph_alignment_docx2ppt
 def _copy_paragraph_alignment_docx2ppt(
     source_para: Paragraph_docx, target_para: Paragraph_pptx
 ) -> None:
@@ -398,10 +473,10 @@ def _copy_paragraph_alignment_docx2ppt(
 # endregion
 
 
-# region pptx2docx-specific formatting
+# region get pptx2docx formatting
 
 
-# region pptx para
+# region copy_paragraph_formatting_pptx2docx
 def copy_paragraph_formatting_pptx2docx(
     source_para: Paragraph_pptx, target_para: Paragraph_docx
 ) -> None:
@@ -425,6 +500,7 @@ def copy_paragraph_formatting_pptx2docx(
 # endregion
 
 
+# region copy_run_formatting_pptx2docx
 def copy_run_formatting_pptx2docx(
     source_run: Run_pptx, target_run: Run_docx, cfg: UserConfig
 ) -> None:
@@ -442,6 +518,10 @@ def copy_run_formatting_pptx2docx(
         _copy_experimental_formatting_pptx2docx(source_run, target_run)
 
 
+# endregion
+
+
+# region _copy_experimental_formatting_pptx2docx
 def _copy_experimental_formatting_pptx2docx(
     source_run: Run_pptx, target_run: Run_docx
 ) -> None:
@@ -513,17 +593,43 @@ def _copy_experimental_formatting_pptx2docx(
 # endregion
 
 
-# region pptx2docx apply experimental formatting from metadata
-def _exp_fmt_issue(formatting_type: str, run_text: str, e: Exception) -> str:
-    """Construct error message string per experimental formatting type."""
-    message = f"We found a {formatting_type} in the experimental formatting JSON from a previous docx2pptx run, but we couldn't apply it. \n Run text: {run_text[:50]}... \n Error: {e}"
-    return message
+# region get_effective_font_name_pptx
+def get_effective_font_name_pptx(paragraph: Paragraph_pptx) -> str | None:
+    """
+    Try to access this pptx Paragraph's slide_layout's XML for a 'typeface' attribute;
+    return the first found, or None.
+    """
+    if paragraph.font.name is not None:
+        return paragraph.font.name
+
+    try:
+        typefaces = set()
+
+        slide_layouts = (
+            paragraph.part.package.presentation_part.presentation.slide_layouts
+        )
+        for slide_layout in slide_layouts:
+            xpath_query = ".//a:latin[@typeface]"
+            matching_elements = slide_layout.element.xpath(xpath_query)
+            if matching_elements:
+                for el in matching_elements:
+                    typefaces.add(el.typeface)
+        if typefaces:
+            return typefaces.pop()
+    except Exception as e:
+        log.warning(
+            f"Something went wrong when we tried to traverse XML to find a font name for a pptx paragraph (against our better judgment). \nException: {e}"
+        )
+
+    return None
 
 
-# def apply_paragraph_format_from_metadata():
-#     pass
+# endregion
+
+# endregion
 
 
+# region apply_experimental_formatting_from_metadata
 def apply_experimental_formatting_from_metadata(
     target_run: Run_docx, format_info: dict
 ) -> None:
@@ -579,51 +685,3 @@ def apply_experimental_formatting_from_metadata(
 
 
 # endregion
-
-
-def get_effective_font_name_docx(style: ParagraphStyle_docx) -> str | None:
-    """
-    Traverses the style hierarchy (base_style chain) to find the
-    explicit font name. Returns None if nothing found.
-    """
-    current_style = style
-    while current_style is not None:
-        if current_style.font.name:
-            # Found an explicit font name in this style or a base style
-            return current_style.font.name
-
-        # Move up to the base style (cast helps Pylance here if it complains)
-        current_style = cast(ParagraphStyle_docx, current_style.base_style)
-
-    # If the entire chain returns None, we return None so as to keep whatever the theme default is in place
-    return None
-
-
-def get_effective_font_name_pptx(paragraph: Paragraph_pptx) -> str | None:
-    """
-    Try to access this pptx Paragraph's slide_layout's XML for a 'typeface' attribute;
-    return the first found, or None.
-    """
-    if paragraph.font.name is not None:
-        return paragraph.font.name
-
-    try:
-        typefaces = set()
-
-        slide_layouts = (
-            paragraph.part.package.presentation_part.presentation.slide_layouts
-        )
-        for slide_layout in slide_layouts:
-            xpath_query = ".//a:latin[@typeface]"
-            matching_elements = slide_layout.element.xpath(xpath_query)
-            if matching_elements:
-                for el in matching_elements:
-                    typefaces.add(el.typeface)
-        if typefaces:
-            return typefaces.pop()
-    except Exception as e:
-        log.warning(
-            f"Something went wrong when we tried to traverse XML to find a font name for a pptx paragraph (against our better judgment). \nException: {e}"
-        )
-
-    return None

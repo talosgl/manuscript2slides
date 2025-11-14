@@ -7,14 +7,13 @@ from manuscript2slides.cli import run as run_cli
 import logging
 
 
-
 def main() -> None:
     """Application entry point - handles initialization and interface routing.
 
     Call like:
     ```
-    python -m manuscript2slides # GUI will launch if no args passed in
-    python -m manuscript2slides --help # CLI because an arg is passed in
+    python -m manuscript2slides # GUI will launch by default
+    python -m manuscript2slides --cli # CLI will launch
     ```
 
     """
@@ -26,7 +25,7 @@ def main() -> None:
     log.info("Hello, manuscript parser!")
 
     try:
-        # Route to the appropriate interface  
+        # Route to the appropriate interface
         if "--cli" in sys.argv:
             run_cli()
         else:

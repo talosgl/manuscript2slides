@@ -15,6 +15,7 @@ log = logging.getLogger("manuscript2slides")
 NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)
 
 
+# region parse_xml_blob
 def parse_xml_blob(xml_blob: bytes | str) -> ET.Element:
     """Parse an XML blob into a string, from bytes."""
     if isinstance(xml_blob, str):
@@ -30,6 +31,10 @@ def parse_xml_blob(xml_blob: bytes | str) -> ET.Element:
     return root
 
 
+# endregion
+
+
+# region find_xml_parts
 def find_xml_parts(doc: document.Document, part_name: str) -> list[Part]:
     """Find XML parts matching the given name (e.g., 'footnotes.xml')"""
     # The zip package inspection logic
@@ -49,6 +54,10 @@ def find_xml_parts(doc: document.Document, part_name: str) -> list[Part]:
     return part_name_parts
 
 
+# endregion
+
+
+# region extract_notes_from_xml
 def extract_notes_from_xml(
     root: ET.Element, note_class: type[NOTE_TYPE]
 ) -> dict[str, NOTE_TYPE]:
@@ -93,6 +102,10 @@ def extract_notes_from_xml(
     return notes_dict
 
 
+# endregion
+
+
+# region extract_hyperlinks_from_note
 def extract_hyperlinks_from_note(element: ET.Element) -> list[str]:
     """Extract all hyperlinks from a docx footnote element."""
     hyperlinks: list[str] = []
@@ -107,6 +120,10 @@ def extract_hyperlinks_from_note(element: ET.Element) -> list[str]:
     return hyperlinks
 
 
+# endregion
+
+
+# region detect_field_code_hyperlinks
 def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
     """
     Detect if this docx Run has a field code for instrText and it begins with HYPERLINK.

@@ -71,6 +71,10 @@ def split_speaker_notes(speaker_notes_text: str) -> SlideNotes:
     return slide_notes
 
 
+# endregion
+
+
+# region remove_ranges_from_text
 def remove_ranges_from_text(text: str, ranges: list) -> str:
     """Remove multiple ranges from text, working backwards to preserve positions."""
 
@@ -87,6 +91,10 @@ def remove_ranges_from_text(text: str, ranges: list) -> str:
     return result
 
 
+# endregion
+
+
+# region merge_overlapping_ranges
 def merge_overlapping_ranges(ranges: list) -> list:
     """If any (int, int) index ranges overlap, merge them."""
     if not ranges:
@@ -177,6 +185,10 @@ def extract_slide_metadata(json_metadata: dict, slide_notes: SlideNotes) -> Slid
     return slide_notes
 
 
+# endregion
+
+
+# region safely_extract_comment_data
 def safely_extract_comment_data(comment: dict) -> dict | None:
     """
     Extract comment data with validation. Returns None if invalid.
@@ -223,6 +235,10 @@ def safely_extract_comment_data(comment: dict) -> dict | None:
     }
 
 
+# endregion
+
+
+# region safely_extract_heading_data
 def safely_extract_heading_data(heading: dict) -> dict | None:
     """Extract heading data with validation."""
     if not isinstance(heading, dict):
@@ -246,6 +262,10 @@ def safely_extract_heading_data(heading: dict) -> dict | None:
     }
 
 
+# endregion
+
+
+# region safely_extract_experimental_formatting_data
 def safely_extract_experimental_formatting_data(exp_fmt: dict) -> dict | None:
     """Extract experimental formatting data with validation."""
     if not isinstance(exp_fmt, dict):

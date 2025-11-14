@@ -24,9 +24,11 @@ log = logging.getLogger("manuscript2slides")
 MANIFEST_VERSION = "1.0"
 
 
+# region RunManifest
 class RunManifest:
     """Tracks and records metadata for a pipeline run."""
 
+    # region init
     def __init__(self, cfg: UserConfig, run_id: str) -> None:
         """Creates a run manifest object in memory with initial fields. Caller must immediately call .start()."""
         self.cfg = cfg
@@ -41,6 +43,9 @@ class RunManifest:
         self.end_time: datetime | None = None
         self.duration: float | None = None
 
+    # endregion
+
+    # region start
     def start(self) -> None:
         """Write initial manifest to disk"""
         # By common  Python convention, __init__ shouldn't do I/O, so we separate this step from the constructor.
@@ -55,6 +60,9 @@ class RunManifest:
         )
         self._write_manifest()
 
+    # endregion
+
+    # region complete
     def complete(self, output_path: Path) -> None:
         """Update manifest on success"""
         self._get_time_stats()
@@ -68,6 +76,9 @@ class RunManifest:
         self._write_manifest()
         log.info(f"Updated manifest: success, at {self.manifest_path}")
 
+    # endregion
+
+    # region fail
     def fail(self, error: Exception) -> None:
         """Update manifest on failure with error information."""
         self._get_time_stats()
@@ -83,7 +94,9 @@ class RunManifest:
         self._write_manifest()
         log.error(f"Updated manifest ({self.manifest_path}): failed - {error}")
 
-    # Private methods
+    # endregion
+
+    # region _build_manifest
     def _build_manifest(self) -> dict[str, Any]:
         """Build manifest structure. Separating into its own method in case we want to extend in a v2 later."""
 
@@ -107,7 +120,9 @@ class RunManifest:
 
         return manifest
 
-    # Helpers
+    # endregion
+
+    # region _write_manifest
     def _write_manifest(self) -> None:
         """Write manifest to disk."""
         if not self.manifest_path:
@@ -119,10 +134,16 @@ class RunManifest:
         except OSError as e:
             log.error(f"Failed to write manifest to {self.manifest_path}: {e}")
 
+    # endregion
+
+    # region _get_time_stats
     def _get_time_stats(self) -> None:
         self.end_time = datetime.now()
         self.duration = (self.end_time - self.start_time).total_seconds()
 
+    # endregion
+
+    # region _get_pipeline_name
     def _get_pipeline_name(self) -> str:
         if self.cfg.direction == PipelineDirection.DOCX_TO_PPTX:
             return "run_docx2pptx_pipeline"
@@ -131,6 +152,9 @@ class RunManifest:
         else:
             return "unknown_pipeline"
 
+    # endregion
+
+    # region _get_environment_info
     def _get_environment_info(self) -> dict[str, Any]:
         """Get execution environment information."""
         return {
@@ -140,6 +164,9 @@ class RunManifest:
             "app_version": self._get_app_version(),
         }
 
+    # endregion
+
+    # region _get_app_version
     def _get_app_version(self) -> str:
         """Get manuscript2slides version."""
         try:
@@ -148,3 +175,8 @@ class RunManifest:
             return __version__
         except (ImportError, AttributeError):
             return "unknown"
+
+    # endregion
+
+
+# endregion

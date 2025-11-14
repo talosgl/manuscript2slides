@@ -28,8 +28,9 @@ from manuscript2slides.internals.paths import (
     normalize_path,
 )
 
-log = logging.getLogger("manuscript2slides")
 # endregion
+
+log = logging.getLogger("manuscript2slides")
 
 
 # region Enums

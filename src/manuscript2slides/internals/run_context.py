@@ -22,6 +22,7 @@ _session_lock = threading.Lock()
 _pipeline_lock = threading.Lock()
 
 
+# region seed_session_id
 def seed_session_id(value: str) -> None:
     """
     Seed the process-global session ID before it is generated.
@@ -45,6 +46,10 @@ def seed_session_id(value: str) -> None:
             _session_id = value
 
 
+# endregion
+
+
+# region get_session_id
 def get_session_id() -> str:
     """
     Return the process-global session ID, generating it if necessary.
@@ -79,6 +84,10 @@ def get_session_id() -> str:
     return _session_id
 
 
+# endregion
+
+
+# region start_pipeline_run
 def start_pipeline_run() -> str:
     """
     Generate and set a fresh pipeline run ID.
@@ -99,6 +108,10 @@ def start_pipeline_run() -> str:
     return _pipeline_run_id
 
 
+# endregion
+
+
+# region get_pipeline_run_id
 def get_pipeline_run_id() -> str:
     """
     Return the current pipeline run ID.
@@ -120,6 +133,10 @@ def get_pipeline_run_id() -> str:
     return _pipeline_run_id
 
 
+# endregion
+
+
+# region seed_pipeline_run_id
 def seed_pipeline_run_id(value: str) -> None:
     """
     Seed the pipeline run ID (primarily for testing).
@@ -132,3 +149,6 @@ def seed_pipeline_run_id(value: str) -> None:
     global _pipeline_run_id
     with _pipeline_lock:
         _pipeline_run_id = value
+
+
+# endregion

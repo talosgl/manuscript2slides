@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-# region Actual CONSTs
 # Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
 PACKAGE_DIR = Path(__file__).parent.parent
 RESOURCES_DIR = PACKAGE_DIR / "resources"
@@ -30,4 +29,3 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 
 # Toggle on/off whether to print debug_prints() to the console
 DEBUG_MODE_DEFAULT = False  # Hard-coded default
-# endregion

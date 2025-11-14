@@ -11,13 +11,13 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.internals.logger import enable_trace_logging
+
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.utils import get_debug_mode
 
-log = logging.getLogger("manuscript2slides")
-
 # endregion
+
+log = logging.getLogger("manuscript2slides")
 
 
 # region run

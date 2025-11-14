@@ -79,21 +79,6 @@ def setup_logger(
 # endregion
 
 
-# region enable_trace_logging()
-def enable_trace_logging() -> None:
-    """Enable trace logging on the already-initialized logger.
-
-    Call this after determining debug mode from CLI args / config / env vars.
-    Safe to call multiple times (won't create duplicate handlers).
-    """
-    log = logging.getLogger("manuscript2slides")
-    setup_logger(enable_trace=True)  # Will add trace handler if not present
-    log.info("Trace logging enabled via debug mode")
-
-
-# endregion
-
-
 # region _has_trace_handler
 def _has_trace_handler(logger: logging.Logger) -> bool:
     """Check if the logger already has a trace handler."""

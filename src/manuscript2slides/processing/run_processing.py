@@ -1,6 +1,7 @@
 # run_processing.py
 """Processes inner-paragraph contents (runs, hyperlinks) for both pipeline directions."""
 
+# region imports
 import logging
 
 from docx import document
@@ -26,10 +27,12 @@ from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
 from manuscript2slides.annotations.docx_xml import detect_field_code_hyperlinks
 
+# endregion
+
 log = logging.getLogger("manuscript2slides")
 
 
-# region docx2pptx pipeline
+# region process_docx_paragraph_inner_contents
 def process_docx_paragraph_inner_contents(
     paragraph: Paragraph_docx, pptx_paragraph: Paragraph_pptx, cfg: UserConfig
 ) -> list[dict]:
@@ -96,6 +99,10 @@ def process_docx_paragraph_inner_contents(
     return experimental_formatting_metadata
 
 
+# endregion
+
+
+# region process_docx_run
 def process_docx_run(
     run: Run_docx,
     pptx_paragraph: Paragraph_pptx,
@@ -119,7 +126,7 @@ def process_docx_run(
 # endregion
 
 
-# region pptx2docx pipeline
+# region process_pptx_run
 def process_pptx_run(
     run: Run_pptx,
     new_para: Paragraph_docx,
@@ -180,6 +187,10 @@ def process_pptx_run(
     return last_run
 
 
+# endregion
+
+
+# region add_hyperlink_to_docx_paragraph
 def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_docx:
     """
     Custom function to add Hyperlink objects to docx paragraphs using XML manipulation.

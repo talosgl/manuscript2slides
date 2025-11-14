@@ -6,7 +6,7 @@ from slide paragraphs, restoring formatting and annotations from speaker notes m
 and creating comments for user notes and unmatched annotations.
 """
 
-
+# region imports
 import logging
 import re
 from typing import Union
@@ -20,20 +20,18 @@ from pptx.slide import NotesSlide, Slide
 from pptx.text.text import TextFrame
 from pptx.text.text import _Paragraph as Paragraph_pptx
 
-from manuscript2slides import utils
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
 from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
 from manuscript2slides.processing.run_processing import process_pptx_run
-from manuscript2slides.processing.formatting import (
-    copy_paragraph_formatting_pptx2docx,
-    get_effective_font_name_pptx,
-)
+from manuscript2slides.processing.formatting import copy_paragraph_formatting_pptx2docx
+
+# endregion
 
 log = logging.getLogger("manuscript2slides")
 
 
-# region copy slides to docx body orchestrator
+# region copy_slides_to_docx_body orchestrator
 def copy_slides_to_docx_body(
     prs: presentation.Presentation, new_doc: document.Document, cfg: UserConfig
 ) -> None:
@@ -145,7 +143,7 @@ def process_slide_paragraphs(
 # endregion
 
 
-# region copy speaker notes items into new docx comments
+# region copy_user_notes_to_new_comment
 def copy_user_notes_to_new_comment(
     slide_notes: SlideNotes, last_run: Run_docx, new_doc: document.Document
 ) -> Comment_docx | None:
@@ -167,6 +165,10 @@ def copy_user_notes_to_new_comment(
     return new_comment
 
 
+# endregion
+
+
+# region copy_unmatched_comments_to_new_comment
 def copy_unmatched_comments_to_new_comment(
     last_run: Run_docx, unmatched_annotations: list, new_doc: document.Document
 ) -> Comment_docx | None:
@@ -207,6 +209,10 @@ def copy_unmatched_comments_to_new_comment(
     return new_comment
 
 
+# endregion
+
+
+# region _sanitize_xml_text
 def _sanitize_xml_text(text: str) -> str:
     """Remove characters that aren't valid in XML."""
     if not text:
@@ -217,6 +223,9 @@ def _sanitize_xml_text(text: str) -> str:
 
     # Ensure it's a proper string
     return str(sanitized)
+
+
+# endregion
 
 
 # region get_slide_paragraphs
@@ -238,4 +247,4 @@ def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx
     return paragraphs
 
 
-#
+# endregion
