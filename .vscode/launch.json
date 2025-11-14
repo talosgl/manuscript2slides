@@ -22,7 +22,8 @@
                 "--demo-run"
             ],
             "env": {
-                "PYTHONPATH": "${workspaceRoot}"
+                "PYTHONPATH": "${workspaceRoot}",
+                "MANUSCRIPT2SLIDES_DEBUG": "true" // set the env variable per venv run
             }
         },
         // launches main() from ./src/manuscript2slides/gui.py
@@ -33,7 +34,8 @@
             "module": "manuscript2slides.gui",
             "console": "integratedTerminal",
             "env": {
-                "PYTHONPATH": "${workspaceRoot}"
+                "PYTHONPATH": "${workspaceRoot}",
+                "MANUSCRIPT2SLIDES_DEBUG": "true"
             }
         },
         // launches main() from ./src/manuscript2slides/__main__.py
@@ -52,7 +54,8 @@
                 "--range-end=4",
             ],
             "env": {
-                "PYTHONPATH": "${workspaceRoot}"
+                "PYTHONPATH": "${workspaceRoot}",
+                "MANUSCRIPT2SLIDES_DEBUG": "true"
             }
         },
     ]
