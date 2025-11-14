@@ -11,9 +11,9 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.internals.config.config_utils import get_debug_mode
 from manuscript2slides.internals.logger import enable_trace_logging
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
+from manuscript2slides.utils import get_debug_mode
 
 log = logging.getLogger("manuscript2slides")
 
@@ -24,16 +24,16 @@ log = logging.getLogger("manuscript2slides")
 def run() -> None:
     """Run CLI interface. Assumes startup.initialize_application() was already called."""
 
+    # Enable trace logging if debug mode is on
+    if get_debug_mode():
+        enable_trace_logging()
+        log.info("Debug mode enabled in manuscript2slides.cli.run().")
+
     # (Define and) parse user-passed-in command line arguments for this app
     args = parse_args()
 
     # Build config from args (with proper prioritization CLI args > config file > defaults)
     cfg = build_config_from_args(args)
-
-    # Enable trace logging if debug mode is on
-    if cfg.debug_mode:
-        enable_trace_logging()
-        log.info("Debug mode enabled from CLI argument cfg.debug_mode.")
 
     # If round-trip demo was enabled, run that special orchestrator
     if args.demo_round_trip:
@@ -358,18 +358,13 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
 
     Returns:
         UserConfig instance with all values set
-    """
-    # Check debug mode first
-    debug_mode = (
-        get_debug_mode()
-    )  # This will properly prioritize CLI > Env Var > default
-
+    #"""
     # Start with demo samples, config file, or defaults
     if args.demo_round_trip:
         log.info(
             "Roundtrip Demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().with_defaults(debug_mode=debug_mode)
+        cfg = UserConfig().with_defaults()
         cfg.enable_all_options()
         log.debug(
             f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}"
@@ -380,17 +375,13 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
         log.info(
             "docx2pptx demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().for_demo(
-            direction=PipelineDirection.DOCX_TO_PPTX, debug_mode=debug_mode
-        )
+        cfg = UserConfig().for_demo(direction=PipelineDirection.DOCX_TO_PPTX)
         return cfg
     elif args.demo_pptx2docx:
         log.info(
             "pptx2docx demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().for_demo(
-            direction=PipelineDirection.PPTX_TO_DOCX, debug_mode=debug_mode
-        )
+        cfg = UserConfig().for_demo(direction=PipelineDirection.PPTX_TO_DOCX)
         return cfg
     elif args.config:
         config_path = Path(args.config)
@@ -401,8 +392,6 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
 
     # Override with CLI args (only if explicitly provided)
     # We need to check if the arg was actually provided vs just being the default
-    if debug_mode is not None:
-        cfg.debug_mode = debug_mode
 
     # For string args, check if they're not None
     if args.input_docx is not None:
@@ -475,14 +464,7 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
         return
 
     # Get all config field names, except those we want to exclude
-    config_fields = set()
-    excluded_fields = [
-        "debug_mode",  # We build this elsewhere so it's an exception
-    ]
-    # {f.name for f in fields(UserConfig)}
-    for field in fields(UserConfig):
-        if field.name not in excluded_fields:
-            config_fields.add(field.name)
+    config_fields = {f.name for f in fields(UserConfig)}
 
     # Get all arg destination names from parser
     # (argparse converts --input-docx to input_docx via arg.dest instead of using arg aliases)

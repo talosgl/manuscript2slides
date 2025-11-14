@@ -19,7 +19,7 @@
             "console": "integratedTerminal",
             "module": "manuscript2slides.cli",
             "args": [
-                "--demo-run"
+                "--demo-round-trip",
             ],
             "env": {
                 "PYTHONPATH": "${workspaceRoot}",
@@ -45,14 +45,9 @@
             "request": "launch",
             "module": "manuscript2slides",
             "console": "integratedTerminal",
-            // Pass in an arg so that we launch into CLI. TODO: Remove this later to have it auto-launch into GUI.
             "args": [
-                "--demo-round-trip",
                 "--cli",
-                // TODO: feels like it should know what direction based on the input file arg
-                "--input-pptx=C:\\Users\\zig-cube\\Documents\\manuscript2slides\\input\\sample_slides_output.pptx",
-                "--range-start=3",
-                "--range-end=4",
+                "--demo-round-trip"
             ],
             "env": {
                 "PYTHONPATH": "${workspaceRoot}",

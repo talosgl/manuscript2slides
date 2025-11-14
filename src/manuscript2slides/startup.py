@@ -10,9 +10,7 @@ import logging
 
 from manuscript2slides.internals.logger import setup_logger
 from manuscript2slides.internals.scaffold import ensure_user_scaffold
-from manuscript2slides.internals.config.config_utils import get_debug_mode
-
-from manuscript2slides.utils import setup_console_encoding
+from manuscript2slides.utils import get_debug_mode, setup_console_encoding
 
 
 # region initialize_application
@@ -43,17 +41,13 @@ def initialize_application() -> logging.Logger:
 # region _should_enable_trace_on_startup
 def _should_enable_trace_on_startup() -> bool:
     """
-    Determine if trace logging should start immediately.
+    Determine if trace logging should start immediately based on Debug Mode switch.
 
-    At startup, only checks:
+    Checks:
     - Environment variable (MANUSCRIPT2SLIDES_DEBUG)
     - System default (DEBUG_MODE_DEFAULT in constants.py)
-    (CLI args, config files, and GUI preferences are not available yet at this point.)
 
-    Note: Once trace logging is enabled, it remains active for the entire session.
-    Later changes to debug_mode via CLI/config/GUI won't disable already-active
-    trace logging. This is intentonal. We do not want to turn off trace logging midway
-    through a session.
+    Later we may add other ways to enable this like a --verbose CLI arg.
     """
     return get_debug_mode()
 

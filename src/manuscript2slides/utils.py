@@ -1,12 +1,14 @@
 """Utilities for use across the entire program."""
 
 import io
-
 import logging
+import os
 import platform
+import subprocess
 import sys
 from pathlib import Path
-import subprocess
+
+from manuscript2slides.internals import constants
 
 log = logging.getLogger("manuscript2slides")
 
@@ -21,6 +23,29 @@ def setup_console_encoding() -> None:
 # endregion
 
 
+# region get_debug_mode
+def get_debug_mode() -> bool:
+    """Determine debug mode by checking whether there's an env variable set; otherwise fallback to bool constant."""
+
+    # 1. Check env variable
+    env_debug_str = os.environ.get("MANUSCRIPT2SLIDES_DEBUG")
+    if env_debug_str is not None:
+        try:
+            # If a valid value is found, return it immediately
+            return str_to_bool(env_debug_str)
+        except ValueError:
+            # If the env var is set but invalid ("bob"), log a warning and fall through to default
+            log.warning(
+                f"Warning: Invalid value for MANUSCRIPT2SLIDES_DEBUG env var: '{env_debug_str}'. Using default."
+            )
+
+    # 2. Lowest Priority / Fallback: The system default constant
+    return constants.DEBUG_MODE_DEFAULT
+
+
+# endregion
+
+
 # region str_to_bool
 def str_to_bool(value: str) -> bool:
     """Convert strings "True"/"False" to  booleans"""
@@ -29,6 +54,7 @@ def str_to_bool(value: str) -> bool:
     elif value.lower() in {"true", "t", "1", "yes", "y"}:
         return True
     else:
+        log.warning(f"{value} is not a valid boolean value.")
         raise ValueError(f"{value} is not a valid boolean value.")
 
 

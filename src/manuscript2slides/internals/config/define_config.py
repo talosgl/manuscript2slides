@@ -59,7 +59,6 @@ class UserConfig:
     """All user-configurable settings for manuscript2slides."""
 
     # region class fields
-    debug_mode: Optional[bool] = None
 
     # region Input/Output
     # Input file to process
@@ -109,7 +108,7 @@ class UserConfig:
 
     # region with_defaults
     @classmethod
-    def with_defaults(cls, debug_mode: bool | None = None) -> UserConfig:
+    def with_defaults(cls) -> UserConfig:
         """
         Create a config object in memory with sample files for quick CLI demo.
 
@@ -122,9 +121,6 @@ class UserConfig:
 
         cfg = cls()
 
-        if debug_mode is not None:
-            cfg.debug_mode = debug_mode
-
         # Point to sample files for demo
         cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
 
@@ -136,9 +132,7 @@ class UserConfig:
 
     # region for_demo
     @classmethod
-    def for_demo(
-        cls, direction: PipelineDirection, debug_mode: bool | None = None
-    ) -> UserConfig:
+    def for_demo(cls, direction: PipelineDirection) -> UserConfig:
         """
         Create a config with sample files for GUI demo tab.
 
@@ -153,9 +147,6 @@ class UserConfig:
         """
         cfg = cls()
         cfg.direction = direction
-
-        if debug_mode is not None:
-            cfg.debug_mode = debug_mode
 
         # Set the appropriate input file based on direction
         if direction == PipelineDirection.DOCX_TO_PPTX:
@@ -387,7 +378,6 @@ class UserConfig:
         """
 
         data: dict[str, Any] = {
-            "debug_mode": self.debug_mode,
             "input_docx": normalize_path(self.input_docx),
             "input_pptx": normalize_path(self.input_pptx),
             "output_folder": normalize_path(self.output_folder),
@@ -470,7 +460,6 @@ class UserConfig:
             "preserve_docx_metadata_in_speaker_notes",
             "comments_sort_by_date",
             "comments_keep_author_and_date",
-            "debug_mode",
         ]
 
         for field_name in bool_fields:

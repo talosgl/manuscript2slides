@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from PySide6.QtCore import QObject, QSettings, Qt, QThread, Signal
-from PySide6.QtGui import QColor, QKeySequence, QPalette, QShortcut, QIntValidator
+from PySide6.QtGui import QColor, QIntValidator, QKeySequence, QPalette, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -37,17 +37,16 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.internals.config.config_utils import get_debug_mode
 from manuscript2slides.internals.logger import enable_trace_logging
-from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
-from manuscript2slides.startup import initialize_application
-from manuscript2slides.utils import open_folder_in_os_explorer
 from manuscript2slides.internals.paths import (
-    user_log_dir_path,
-    user_output_dir,
     get_default_docx_template_path,
     get_default_pptx_template_path,
+    user_log_dir_path,
+    user_output_dir,
 )
+from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
+from manuscript2slides.startup import initialize_application
+from manuscript2slides.utils import get_debug_mode, open_folder_in_os_explorer
 
 log = logging.getLogger("manuscript2slides")
 # endregion
@@ -255,6 +254,9 @@ class ConversionWorker(QObject):
         # == DEBUGGING == #
         # Pause the UI for a few seconds so we can verify button disable/enable
         if get_debug_mode():
+            log.debug(
+                "Debug mode enabled; sleeping for 2 seconds on conversion run start."
+            )
             import time
 
             time.sleep(2)
@@ -796,11 +798,6 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
             if cfg:
                 self._validate_loaded_config(cfg)
 
-                # Check and enable trace logging
-                if get_debug_mode(cfg):
-                    enable_trace_logging()
-                    log.info("Debug mode enabled from loaded config.")
-
     # endregion
 
     # region p2d _validate_loaded_config
@@ -931,6 +928,7 @@ class DemoTabView(BaseConversionTabView):
         layout.addStretch()
 
         if get_debug_mode():
+            log.debug("Enabling 'test error handling' button per debug mode switch.")
             layout.addWidget(self.force_error_btn)
 
         # Actually apply the layout to this widget
@@ -2044,9 +2042,9 @@ def main() -> None:
     """Development entry point - run GUI directly with `python -m manuscript2slides.gui`"""
     initialize_application()  # configure the log & other startup tasks
     # Check if we should enable trace based on available sources
-    if get_debug_mode():  # No cfg yet, checks CLI/env/default
+    if get_debug_mode():
         enable_trace_logging()
-        log.info("Debug mode enabled at GUI startup")
+        log.info("Ensured trace logging is enabled at GUI startup per Debug Mode.")
     run()
 
 
