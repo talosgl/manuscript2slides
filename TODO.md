@@ -2,21 +2,17 @@
 Epic: Bucket o' Fixes & Features pre-v1:
 
 - GUI-only Feature:
-  - [ ] Add Debug Mode toggle to GUI
   - [ ] Move page range up to be with input file; it's weird to separate
   - [ ] Preference Persistence: Wire up auto-save/load for preference persistence across sessions; use QtSettings to let users decide if preferences / app state should persist across sessions or be cleared every time.    
     - Default this behavior to remember/persist: "Users generally prefer software that restores the state they were last in. It minimizes friction and assumes a typical workflow where users iterate on a small set of inputs rather than starting from a blank slate every single time. The vast majority of well-known software (browsers, IDEs, office suites) remember window size, recent files, and input fields. Your users will expect this behavior."
     - Use QMenuBar + QSettings to offer a preference persistence option for the user; place the access to this feature in a standard Menubar location (`Edit` -> `Preferences`), not a Toolbar.
     - Additionally, provide a way for the users to quickly clear options/reset fields to defaults in the main UI.
 
-- Backend-only Features:
-- [x] Make DEBUG_MODE not just a source code const
-
-
 ### Epic: Add tests & pytest
     - Test config validation
     - Test logging
     - Test debug_mode
+    - Ensure we "catch" every possible UX-impacting raise/exception: for every "raise" possible to hit from the GUI, ensure we're popping message boxes and not crashing the app.
     - Test path resolution across platforms
     - Test scaffolding (does it create folders? not overwrite files?)
     - Test the actual pipelines (docx->pptx, pptx->docx)
@@ -26,6 +22,7 @@ Epic: Bucket o' Fixes & Features pre-v1:
 ### Epic: Package/Distribution
     - Figure out how to package it into an installer for each non-mobile platform (Win 11, MacOS, Linux)
     - Make sure to update the resources/.. source inside of scaffold.py to use the packaged version
+      - How do I support both the distro flow/file source + development using the source code resources/ folder? A const?
 
 ### Epic: Document the program thoroughly
     - [ ] Add "how to launch/run from vs code" into the docs/dev-guide.md 
