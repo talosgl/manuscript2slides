@@ -281,7 +281,7 @@ def get_last_browse_directory() -> str:
             log.debug(f"Last browse directory no longer exists: {last_dir}, clearing")
             APP_SETTINGS.setValue("last_browse_directory", "")
             return ""
-        
+
         return last_dir
     except Exception as e:
         log.warning(f"QSettings:  Failed to load last browse directory: {e}")
@@ -736,8 +736,8 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.template_default = NO_SELECTION  # This is a bit gross but is there another option? None, with checks?
 
         # Subclasses should override these attributes in their own _create_range_widgets()
-        self.range_item = ""
-        self.sequence_type = "input"
+        self.range_item = "item"
+        self.sequence_type = "input file"
         # children must call _create_widgets(), _create_layouts(), _connect_internal_signals()
 
     # endregion
@@ -778,10 +778,10 @@ class ConfigurableConversionTabView(BaseConversionTabView):
             read_only=True,
         )
 
+        self._create_range_widgets()
+
         # Create Advanced I/O Collapsible Frame/Group
         self.advanced_io = CollapsibleFrame(title="Advanced", start_collapsed=True)
-
-        # Create items that'll go under the collapse
         self.output_selector = PathSelector(
             parent=self.advanced_io.content_frame,
             label_text="Output Folder:",
@@ -807,7 +807,9 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         """Arrange the I/O section's widgets & subsections."""
 
         # Arrange items in the the "Advanced" CollapsibleFrame subsection
-        # (NOTE: the advanced_io subsection creates it own layout)
+        # (NOTE: the advanced_io subsection creates it own layout,
+        # then we add it to a meta-layout after)
+
         self.advanced_io.content_layout.addWidget(self.output_selector)
 
         self.advanced_io.content_layout.addWidget(self.template_selector)
@@ -832,6 +834,12 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
         # Add the input_selector to it
         io_layout.addWidget(self.input_selector)
+
+        # Add range widgets
+        # io_layout.addWidget(self.range_label)
+        io_layout.addLayout(self.range_layout)
+        io_layout.addWidget(self.range_tip)
+
         io_layout.addWidget(self.advanced_io)
 
         self.io_section.setLayout(io_layout)
@@ -839,12 +847,16 @@ class ConfigurableConversionTabView(BaseConversionTabView):
     # endregion
 
     def _create_range_widgets(self) -> None:
-        self.range_label = QLabel("Process a specific range (experimental):")
-        self.range_label.setWordWrap(True)
+        # self.range_label = QLabel(
+        #     f"Process a range of {self.range_item}s. Leave blank to process entire {self.sequence_type}."
+        # )
+        # self.range_label.setWordWrap(True)
 
         validator = QIntValidator(1, 9999)  # Min 1, max 9999
 
         self.range_layout = QHBoxLayout()
+
+        self.range_layout.setContentsMargins(25, 0, 0, 0)
         range_start_label = QLabel(f"From {self.range_item}:")
         self.range_start_input = QLineEdit()
         self.range_start_input.setPlaceholderText("1")
@@ -863,12 +875,15 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.range_layout.addWidget(range_end_label)
         self.range_layout.addWidget(self.range_end_input)
         self.range_layout.addStretch()
+        # self.range_layout.setAlignment(
+        #     Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop
+        # )
 
         self.range_tip = QLabel(
-            f"Tip: Leave blank to process entire {self.sequence_type}. Ranges are approximate."
+            f"Tip: EXPERIMENTAL. Leave blank to process entire {self.sequence_type}. Ranges are approximate."
         )
         self.range_tip.setWordWrap(True)
-        self.range_tip.setContentsMargins(25, 0, 0, 0)
+        self.range_tip.setContentsMargins(50, 0, 0, 0)
         soft_color = get_soft_text_color(self.range_tip, ratio=0.6)
         self.range_tip.setStyleSheet(f"color: {soft_color.name()};")
 
@@ -1320,7 +1335,7 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         # behavior is all inferred from the available data in the .docx.
         # Eventually we might want to; this is where it would be long in the UI.
         # self._create_basic_options()
-        self._create_advanced_options()
+        # self._create_advanced_options()
 
         self._create_convert_section()
 
@@ -1368,19 +1383,6 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
             title="Advanced Options", start_collapsed=True
         )
 
-        range_group = QGroupBox("Range (Experimental)")
-        self._create_range_widgets()
-
-        # Create the groupbox's internal layout
-        range_groupbox_layout = QVBoxLayout()
-        range_groupbox_layout.addWidget(self.range_label)
-        range_groupbox_layout.addLayout(self.range_layout)
-        range_groupbox_layout.addWidget(self.range_tip)
-
-        # Set the layout on the groupbox
-        range_group.setLayout(range_groupbox_layout)
-        self.advanced_options.content_layout.addWidget(range_group)
-
     # endregion
 
     # region _create_layout
@@ -1389,7 +1391,7 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
         layout = QVBoxLayout()
         layout.addWidget(self.io_section)
         # layout.addWidget(self.basic_options)
-        layout.addWidget(self.advanced_options)
+        # layout.addWidget(self.advanced_options)
         layout.addWidget(self.convert_section)
         layout.addStretch()
         self.setLayout(layout)
@@ -1683,9 +1685,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         child_layout.addWidget(self.keep_footnotes_chk)
         child_layout.addWidget(self.keep_endnotes_chk)
 
-        # Add range section
-        self._create_range_widgets()
-
         # Add everything to layout
         self.advanced_options.content_layout.addWidget(self.keep_metadata_chk)
         self.advanced_options.content_layout.addWidget(tip_label)
@@ -1694,11 +1693,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.advanced_options.content_layout.addWidget(annotations_label)
         self.advanced_options.content_layout.addWidget(self.keep_all_annotations_chk)
         self.advanced_options.content_layout.addLayout(child_layout)
-
-        self.advanced_options.content_layout.addSpacing(10)
-        self.advanced_options.content_layout.addWidget(self.range_label)
-        self.advanced_options.content_layout.addLayout(self.range_layout)
-        self.advanced_options.content_layout.addWidget(self.range_tip)
 
         # Connect signals
         self._setup_annotation_observers()
