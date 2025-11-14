@@ -2041,10 +2041,7 @@ def run() -> None:
 def main() -> None:
     """Development entry point - run GUI directly with `python -m manuscript2slides.gui`"""
     initialize_application()  # configure the log & other startup tasks
-    # Check if we should enable trace based on available sources
-    if get_debug_mode():
-        enable_trace_logging()
-        log.info("Ensured trace logging is enabled at GUI startup per Debug Mode.")
+    
     run()
 
 

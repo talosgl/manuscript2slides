@@ -24,11 +24,6 @@ log = logging.getLogger("manuscript2slides")
 def run() -> None:
     """Run CLI interface. Assumes startup.initialize_application() was already called."""
 
-    # Enable trace logging if debug mode is on
-    if get_debug_mode():
-        enable_trace_logging()
-        log.info("Debug mode enabled in manuscript2slides.cli.run().")
-
     # (Define and) parse user-passed-in command line arguments for this app
     args = parse_args()
 
