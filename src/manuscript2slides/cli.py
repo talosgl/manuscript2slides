@@ -10,8 +10,8 @@ from manuscript2slides.internals.config.define_config import (
     ChunkType,
     PipelineDirection,
     UserConfig,
-    get_debug_mode,
 )
+from manuscript2slides.internals.config.config_utils import get_debug_mode
 from manuscript2slides.internals.constants import SENTINEL
 from manuscript2slides.internals.logger import enable_trace_logging
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
@@ -75,24 +75,21 @@ Examples:
   
   # Override config file settings
   manuscript2slides --config settings.toml --direction pptx2docx
-        """,
+
+------------------------------------------------------------------
+GLOBAL OPTIONS:
+The following flags can be passed anywhere in the command line 
+and are checked immediately upon startup (early exit/validation):
+
+  --debug, --dbg, --debug-mode [BOOL] : Enable/Disable debug mode.
+
+For full configuration precedence (CLI > config file > env var), 
+see the documentation.
+------------------------------------------------------------------
+""",
     )
 
     # Add all our arguments to the argparse object we just made
-
-    # Debug mode
-    parser.add_argument(
-        "--debug",
-        "-dbg",
-        "--dbg",
-        "--debug-mode",
-        "--debug_mode",
-        dest="debug_mode",
-        type=str_to_bool,
-        default=SENTINEL,
-        metavar="BOOL",
-        help="Enable/Disable the debug mode (True/False). If omitted, value is None.",
-    )
 
     # Args for running dry runs
     parser.add_argument(
@@ -362,18 +359,16 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
         UserConfig instance with all values set
     """
     # Check debug mode first.
-    # We determine the user's explicit CLI intent immediately.
-    if args.debug_mode is not SENTINEL:
-        cli_debug_mode = args.debug_mode  # Will be True or False
-    else:
-        cli_debug_mode = None  # Will be None (user didn't specify)
+    debug_mode = (
+        get_debug_mode()
+    )  # This will properly prioritize CLI > Env Var > default
 
     # Start with demo samples, config file, or defaults
     if args.demo_round_trip:
         log.info(
             "Roundtrip Demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().with_defaults(debug_mode=cli_debug_mode)
+        cfg = UserConfig().with_defaults(debug_mode=debug_mode)
         cfg.enable_all_options()
         log.debug(
             f"Is Preserve Metadata enabled? {cfg.preserve_docx_metadata_in_speaker_notes}"
@@ -385,7 +380,7 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
             "docx2pptx demo requested; populating input fields with sample defaults."
         )
         cfg = UserConfig().for_demo(
-            direction=PipelineDirection.DOCX_TO_PPTX, debug_mode=cli_debug_mode
+            direction=PipelineDirection.DOCX_TO_PPTX, debug_mode=debug_mode
         )
         return cfg
     elif args.demo_pptx2docx:
@@ -393,7 +388,7 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
             "pptx2docx demo requested; populating input fields with sample defaults."
         )
         cfg = UserConfig().for_demo(
-            direction=PipelineDirection.PPTX_TO_DOCX, debug_mode=cli_debug_mode
+            direction=PipelineDirection.PPTX_TO_DOCX, debug_mode=debug_mode
         )
         return cfg
     elif args.config:
@@ -405,8 +400,8 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
 
     # Override with CLI args (only if explicitly provided)
     # We need to check if the arg was actually provided vs just being the default
-    if cli_debug_mode is not None:
-        cfg.debug_mode = cli_debug_mode
+    if debug_mode is not None:
+        cfg.debug_mode = debug_mode
 
     # For string args, check if they're not None
     if args.input_docx is not None:
@@ -491,6 +486,7 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
         "demo_round_trip",
         "demo_pptx2docx",
         "demo_docx2pptx",
+        "debug_mode",  # We build this elsewhere so it's an exception
     ]
     for action in parser._actions:
         # Skip special argparse actions

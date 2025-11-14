@@ -10,7 +10,7 @@ import logging
 
 from manuscript2slides.internals.logger import setup_logger
 from manuscript2slides.internals.scaffold import ensure_user_scaffold
-from manuscript2slides.internals.config.define_config import get_debug_mode
+from manuscript2slides.internals.config.config_utils import get_debug_mode
 
 from manuscript2slides.utils import setup_console_encoding
 
