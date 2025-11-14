@@ -37,7 +37,11 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.internals.constants import DEBUG_MODE
+from manuscript2slides.internals.config.config_utils import get_debug_mode
+from manuscript2slides.internals.logger import enable_trace_logging
+from manuscript2slides.internals.constants import (
+    DEBUG_MODE,
+)  # TODO: remove this dependency!
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
 from manuscript2slides.utils import open_folder_in_os_explorer
@@ -794,6 +798,11 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
             cfg = self._load_config(Path(path))
             if cfg:
                 self._validate_loaded_config(cfg)
+
+                # Check and enable trace logging
+                if get_debug_mode(cfg):
+                    enable_trace_logging()
+                    log.info("Debug mode enabled from loaded config.")
 
     # endregion
 
@@ -2037,6 +2046,10 @@ def run() -> None:
 def main() -> None:
     """Development entry point - run GUI directly with `python -m manuscript2slides.gui`"""
     initialize_application()  # configure the log & other startup tasks
+    # Check if we should enable trace based on available sources
+    if get_debug_mode():  # No cfg yet, checks CLI/env/default
+        enable_trace_logging()
+        log.info("Debug mode enabled at GUI startup")
     run()
 
 

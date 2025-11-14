@@ -56,13 +56,17 @@ def get_debug_mode(
     if cfg is not None and cfg.debug_mode is not None:
         return cfg.debug_mode
 
-    # 4. GUI preference (QSettings)
-    from manuscript2slides.gui import APP_SETTINGS
+    # 4. GUI preference (QSettings) - only available when GUI module is loaded
+    try:
+        # Wrap in try to prevent circular import
+        from manuscript2slides.gui import APP_SETTINGS
 
-    gui_pref = APP_SETTINGS.value("debug_mode")
-    if gui_pref is not None:
-        # QSettings returns strings, need to convert
-        return str_to_bool(gui_pref.lower())
+        gui_pref = APP_SETTINGS.value("debug_mode")
+        if gui_pref is not None:
+            return str_to_bool(gui_pref.lower())
+    except ImportError:
+        # GUI not imported yet (normal in CLI-only usage)
+        pass
 
     # 5. Check env variable
     env_debug_str = os.environ.get("MANUSCRIPT2SLIDES_DEBUG")
