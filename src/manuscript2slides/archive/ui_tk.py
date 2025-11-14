@@ -17,7 +17,7 @@ from manuscript2slides.internals.config.define_config import (
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.internals.constants import DEBUG_MODE
+from manuscript2slides.internals.config.config_utils import get_debug_mode
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
 from manuscript2slides.internals.paths import user_log_dir_path
@@ -273,7 +273,7 @@ class BaseConversionTabPresenter:
 
         # == DEBUGGING == #
         # Pause the UI for a few seconds so we can verify button disable/enable
-        if DEBUG_MODE:
+        if get_debug_mode():
             import time
 
             time.sleep(3)

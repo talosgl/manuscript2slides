@@ -39,9 +39,6 @@ from manuscript2slides.internals.config.define_config import (
 )
 from manuscript2slides.internals.config.config_utils import get_debug_mode
 from manuscript2slides.internals.logger import enable_trace_logging
-from manuscript2slides.internals.constants import (
-    DEBUG_MODE,
-)  # TODO: remove this dependency!
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 from manuscript2slides.startup import initialize_application
 from manuscript2slides.utils import open_folder_in_os_explorer
@@ -257,7 +254,7 @@ class ConversionWorker(QObject):
         """Run the conversion (called in a background thread)."""
         # == DEBUGGING == #
         # Pause the UI for a few seconds so we can verify button disable/enable
-        if DEBUG_MODE:
+        if get_debug_mode():
             import time
 
             time.sleep(2)
@@ -933,7 +930,7 @@ class DemoTabView(BaseConversionTabView):
         # Add stretch at bottom to push everything up
         layout.addStretch()
 
-        if DEBUG_MODE:
+        if get_debug_mode():
             layout.addWidget(self.force_error_btn)
 
         # Actually apply the layout to this widget
