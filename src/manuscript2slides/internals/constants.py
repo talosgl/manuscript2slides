@@ -7,12 +7,12 @@ PACKAGE_DIR = Path(__file__).parent.parent
 RESOURCES_DIR = PACKAGE_DIR / "resources"
 
 # Slide layout used by docx2pptx pipeline when creating new slides from chunks.
-# All slides use the same layout.
-# ~~TODO~~, future: Allow the user to override this name? This could still be the fallback.
-# There's still a lot of dependency on the structure of this layout matching what's expected
-# so it may be diminishing returns to bother with a robust replacement, when they can just
-# edit the existing template in pptx themselves and rename the file itself. I'll leave this
-# comment here to record the possibility and reasoning for now.
+# NOTE: We don't allow this to be overridden by users because of the dependency on
+# the structure of the layout during the slide creation and content injection
+# process. I actually question the wisdom of allowing template overrides at all;
+# however, if they copy-paste the reference template and change formatting, etc.,
+# that should be fine.
+# TODO, v1: Document template editing thoroughly in the user guide!
 SLD_LAYOUT_CUSTOM_NAME = "manuscript2slides"
 
 # Metadata headers/footers used in both pipelines when writing to/reading from slide speaker notes
@@ -26,6 +26,5 @@ OUTPUT_PPTX_FILENAME = r"manuscript2slides_output.pptx"
 
 OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 
-
-# Toggle on/off whether to print debug_prints() to the console
+# Fallback for get_debug_mode() in utils
 DEBUG_MODE_DEFAULT = False  # Hard-coded default
