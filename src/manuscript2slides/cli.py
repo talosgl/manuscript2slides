@@ -12,10 +12,8 @@ from manuscript2slides.internals.config.define_config import (
     UserConfig,
 )
 from manuscript2slides.internals.config.config_utils import get_debug_mode
-from manuscript2slides.internals.constants import SENTINEL
 from manuscript2slides.internals.logger import enable_trace_logging
 from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
-from manuscript2slides.utils import str_to_bool
 
 log = logging.getLogger("manuscript2slides")
 

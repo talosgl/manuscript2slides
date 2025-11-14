@@ -1,20 +1,17 @@
 # region imports
 from __future__ import annotations
 
-
 import logging
 import os
-from typing import Optional
-from manuscript2slides.internals.config.define_config import UserConfig
+
 from manuscript2slides.internals import constants
+from manuscript2slides.internals.config.define_config import UserConfig
 from manuscript2slides.utils import str_to_bool
 
 log = logging.getLogger("manuscript2slides")
 
 import argparse
 import sys
-from typing import Optional
-from manuscript2slides.internals.constants import SENTINEL
 
 # endregion
 
@@ -88,10 +85,10 @@ def get_debug_mode(
 
 
 # region _check_for_cli_debug_arg
-def _check_for_cli_debug_arg() -> Optional[bool]:
+def _check_for_cli_debug_arg() -> bool | None:
     """
     Uses a dedicated ArgumentParser instance to safely extract only the debug flag value.
-    Returns the value (True/False) or None if the flag was the SENTINEL/not provided.
+    Returns the value (True/False) or None if the flag was not provided.
     """
 
     # Create a micro parser just for this purpose
@@ -102,22 +99,25 @@ def _check_for_cli_debug_arg() -> Optional[bool]:
         "--dbg",
         "--debug-mode",
         "--debug_mode",
+        action="store_true",  # Sets args.debug_mode to True if this flag is present
         dest="debug_mode",
-        type=str_to_bool,
-        metavar="BOOL",
-        default=SENTINEL,
+        default=None,  # Default is None IF THE FLAG IS ABSENT ENTIRELY
+    )
+
+    # We still need a corresponding way to disable it explicitly if we want to override to False
+    parser.add_argument(
+        "--no-debug",
+        "--dbg-off",
+        action="store_false",  # Sets args.debug_mode to False if this flag is present
+        dest="debug_mode",
+        # Do not put default here; default is already set above
     )
 
     # Parse ONLY the known arguments, ignoring everything else
     # This prevents errors if other, unrelated args are present
     args, _ = parser.parse_known_args(sys.argv)
 
-    if args.debug_mode is not SENTINEL:
-        # If the sentinel was overwritten, the user provided a value
-        return args.debug_mode
-    else:
-        # The user did not provide the flag
-        return None
+    return args.debug_mode  # Returns True, False, or None
 
 
 # endregion

@@ -30,6 +30,4 @@ OUTPUT_DOCX_FILENAME = r"pptx2docx-text_output.docx"
 
 # Toggle on/off whether to print debug_prints() to the console
 DEBUG_MODE_DEFAULT = False  # Hard-coded default
-
-SENTINEL = object()
 # endregion

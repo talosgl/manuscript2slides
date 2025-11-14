@@ -253,7 +253,7 @@ class BaseConversionTabPresenter:
 
         NOTE: Child must handle cfg prep and any other unique prep.
         """
-        # "None sentinal pattern" to set the default pipeline
+        # "None sentinel pattern" to set the default pipeline
         if pipeline_func is None:
             pipeline_func = run_pipeline  # Resolved at runtime
 

@@ -327,7 +327,7 @@ class BaseConversionTabPresenter(QObject):
 
         NOTE: Subclasses must handle cfg prep and any other unique prep.
         """
-        # "None sentinal pattern" to set the default pipeline
+        # "None sentinel pattern" to set the default pipeline
         if pipeline_func is None:
             log.debug(
                 "No pipeline_func was passed into start_conversion(), so we'll use run_pipeline."
