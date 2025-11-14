@@ -847,11 +847,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
     # endregion
 
     def _create_range_widgets(self) -> None:
-        # self.range_label = QLabel(
-        #     f"Process a range of {self.range_item}s. Leave blank to process entire {self.sequence_type}."
-        # )
-        # self.range_label.setWordWrap(True)
-
         validator = QIntValidator(1, 9999)  # Min 1, max 9999
 
         self.range_layout = QHBoxLayout()
@@ -875,9 +870,6 @@ class ConfigurableConversionTabView(BaseConversionTabView):
         self.range_layout.addWidget(range_end_label)
         self.range_layout.addWidget(self.range_end_input)
         self.range_layout.addStretch()
-        # self.range_layout.setAlignment(
-        #     Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop
-        # )
 
         self.range_tip = QLabel(
             f"Tip: EXPERIMENTAL. Leave blank to process entire {self.sequence_type}. Ranges are approximate."

@@ -1,12 +1,4 @@
 ## Major TODOs Ordered by priority/dependency
-Epic: Bucket o' Fixes & Features pre-v1:
-
-- GUI-only Feature:
-  - [x] ~~Move page range up to be with input file; it's weird to separate~~ I still hate something about this but oh well
-  - [x] Preference Persistence: Wire up auto-save/load for preference persistence across sessions; use QtSettings to let users decide if preferences / app state should persist across sessions or be cleared every time.    
-    - Default this behavior to remember/persist: "Users generally prefer software that restores the state they were last in. It minimizes friction and assumes a typical workflow where users iterate on a small set of inputs rather than starting from a blank slate every single time. The vast majority of well-known software (browsers, IDEs, office suites) remember window size, recent files, and input fields. Your users will expect this behavior."
-    - Use QMenuBar + QSettings to offer a preference persistence option for the user; place the access to this feature in a standard Menubar location (`Edit` -> `Preferences`), not a Toolbar.
-    - Additionally, provide a way for the users to quickly clear options/reset fields to defaults in the main UI.
 
 ### Epic: Add tests & pytest
     - Test config validation

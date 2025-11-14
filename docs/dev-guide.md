@@ -18,8 +18,17 @@ pytest
 ### Run from Source
 
 ```bash
+# Launch GUI from terminal
 python -m manuscript2slides
+python -m manuscript2slides.gui
+
+# Launch CLI from terminal (from source directory)
+python -m manuscript2slides --cli --input-docx="input\sample_doc.docx"
+python -m manuscript2slides.cli --input-pptx="src\manuscript2slides\resources\sample_slides_output.pptx"
 ```
+
+If you're using VS Code, you can use the `launch.json` provided by the repo to run more easily.
+
 ## Contributing
 
 Contributions are welcome. Please feel free to:

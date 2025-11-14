@@ -42,6 +42,7 @@ manuscript2slides --config my-settings.toml
 manuscript2slides --input-docx manuscript.docx --chunk-type heading_flat
 ```
 
+## Save/Load Options
 ### Configuration Files
 
 Save your preferences to avoid re-entering settings:
@@ -57,13 +58,19 @@ display_footnotes = true
 preserve_docx_metadata_in_speaker_notes = true
 ```
 
-Then run:
+Then in the CLI, run:
 
 ```bash
 manuscript2slides --config my-config.toml
 ```
 
+Or in the GUI, click "Advanced" under the input-file selector, and the "Save Config"/"Load Config" button. 
+
 Sample configuration files are created automatically in `~/Documents/manuscript2slides/configs/` on first run.
+
+### Persistent Preferences in GUI
+In the GUI, we attempt to save/load selections across sessions automatically. You can clear saved selections from the Menu bar >  Preferences > Reset to Defaults, then relaunch the app.
+
 
 ## Chunking Strategies
 
@@ -112,3 +119,16 @@ sudo apt install libxcb-xinerama0 libxcb-cursor0
 ```bash
 sudo dnf install xcb-util-cursor
 ```
+
+## Getting Help
+TODO: Write this more thoroughly
+
+Things to provide if you're having issues with the conversion process:
+- input file you're trying to convert
+- output file (if any)
+- logs/
+- manifests/
+
+Post an issue on GitHub with these attached.
+
+(If we're buds IRL, you can just send me an email! But do try to attach these items if you can and it'll speed up the process.)
