@@ -24,10 +24,10 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> Path:
     pipeline_id = get_pipeline_run_id()
     log.info(f"Starting docx2pptx pipeline. [pipeline:{pipeline_id}]")
 
-    user_docx = cfg.get_input_docx_file()
+    user_docx_path = cfg.get_input_docx_file()
 
     # Safety check
-    if user_docx is None:
+    if user_docx_path is None:
         raise ValueError(
             "user_docx is None inside run_docx2pptx_pipeline(), somehow. This should never happen. "
             "Our Validation failed to catch missing input file. "
@@ -35,7 +35,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> Path:
         )
 
     # Load the docx file at that path.
-    user_docx = io.load_and_validate_docx(user_docx)
+    user_docx = io.load_and_validate_docx(user_docx_path)
 
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, cfg.chunk_type)
@@ -55,5 +55,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> Path:
     saved_output_path = io.save_output(output_prs, cfg)
 
     log.info(f"docx2pptx pipeline complete [pipeline:{pipeline_id}]")
+    log.info(f"  Original: {user_docx_path}")
+    log.info(f"  -> Final:  {saved_output_path}")
     log.info(f"See log: {user_log_dir_path()}")
     return saved_output_path

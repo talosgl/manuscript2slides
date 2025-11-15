@@ -19,7 +19,8 @@
             "console": "integratedTerminal",
             "module": "manuscript2slides.cli",
             "args": [
-                "--demo-round-trip",
+                //"--input-pptx=src/manuscript2slides/resources/sample_slides_output.pptx",
+                "--input-docx=src/manuscript2slides/resources/sample_doc.docx"
             ],
             "env": {
                 "PYTHONPATH": "${workspaceRoot}",
@@ -47,7 +48,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--cli",
-                "--demo-round-trip"
+                "--demo-round-trip",
             ],
             "env": {
                 "PYTHONPATH": "${workspaceRoot}",

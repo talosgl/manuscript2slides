@@ -75,8 +75,7 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
             "Use UserConfig.with_defaults() or UserConfig.for_demo() to create a test config."
         )
 
-    # Run docx -> pptx
-    cfg.direction = PipelineDirection.DOCX_TO_PPTX
+    # Run docx -> pptx (direction auto-inferred from input_docx)
     run_pipeline(cfg)
 
     # Find the output pptx
@@ -84,10 +83,15 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
     intermediate_pptx = _find_most_recent_file(output_folder, "*.pptx")
     log.info(f"Intermediate pptx: {intermediate_pptx}")
 
-    # Run pptx -> docx using the output from previous step
-    cfg.input_pptx = intermediate_pptx
-    cfg.direction = PipelineDirection.PPTX_TO_DOCX
-    run_pipeline(cfg)
+    # Create a NEW config for reverse direction
+    reverse_cfg = UserConfig()
+    reverse_cfg.input_pptx = intermediate_pptx
+    reverse_cfg.output_folder = cfg.output_folder  # Keep same output location
+    reverse_cfg.template_docx = cfg.template_docx  # Keep templates
+    # Copy other settings as needed
+    reverse_cfg.enable_all_options()  # Match the test settings
+
+    run_pipeline(reverse_cfg)
 
     # Find the final output
     final_docx = _find_most_recent_file(output_folder, "*.docx")

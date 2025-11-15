@@ -24,17 +24,17 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> Path:
     pipeline_id = get_pipeline_run_id()
     log.info(f"Starting pptx2docx pipeline [pipeline:{pipeline_id}]")
 
-    pptx_path = cfg.get_input_pptx_file()
+    user_pptx_path = cfg.get_input_pptx_file()
 
     # Safety check
-    if pptx_path is None:
+    if user_pptx_path is None:
         raise ValueError(
             "pptx_path is None inside run_docx2pptx_pipeline(), somehow. This should never happen. "
             "Our Validation failed to catch missing input file. "
             "If you are trying to test something, use UserConfig.with_defaults() or UserConfig.for_demo() to create a test config."
         )
 
-    user_prs: presentation.Presentation = io.load_and_validate_pptx(pptx_path)
+    user_prs: presentation.Presentation = io.load_and_validate_pptx(user_pptx_path)
 
     # Create an empty docx
     new_doc = create_empty_document(cfg)
@@ -46,5 +46,7 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> Path:
     saved_output_path = io.save_output(new_doc, cfg)
 
     log.info(f"pptx2docx pipeline complete [pipeline:{pipeline_id}]")
+    log.info(f"  Original: {user_pptx_path}")
+    log.info(f"  -> Final:  {saved_output_path}")
     log.info(f"See log: {user_log_dir_path()}")
     return saved_output_path

@@ -1473,9 +1473,6 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
 
-        # Set the direction based on what tab we're in.
-        cfg.direction = self.view.get_pipeline_direction()
-
         # Only update fields that have UI controls
         cfg.input_pptx = self.view.input_selector.get_path()
 
@@ -1824,8 +1821,6 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     # region d2p ui_to_config
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
-
-        cfg.direction = self.view.get_pipeline_direction()
 
         # Only update fields that have UI controls
         cfg.input_docx = self.view.input_selector.get_path()

@@ -10,8 +10,8 @@ except ModuleNotFoundError:
     import tomli as tomllib  # Python 3.10
 
 import logging
-import os
-from dataclasses import dataclass
+
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
@@ -86,7 +86,10 @@ class UserConfig:
         ChunkType.PARAGRAPH
     )  # Which chunking method to use to divide the docx into slides.
 
-    direction: PipelineDirection = PipelineDirection.DOCX_TO_PPTX
+    # direction: PipelineDirection = PipelineDirection.DOCX_TO_PPTX
+    _direction: Optional[PipelineDirection] = field(
+        default=None, repr=False
+    )  # Only for demo/fallback
 
     experimental_formatting_on: bool = True
 
@@ -216,15 +219,14 @@ class UserConfig:
                 raise ValueError(error_msg) from e
 
         if "direction" in data:
+            direction_value = data.pop("direction")  # Pop it once, outside try/except
             try:
-                data["direction"] = PipelineDirection(data["direction"])
+                data["_direction"] = PipelineDirection(direction_value)
             except ValueError as e:
-                error_msg = (
-                    f"Invalid direction: '{data['direction']}'. "
-                    f"Valid options: {[d.value for d in PipelineDirection]}"
+                log.warning(
+                    f"Invalid direction '{direction_value}' in config, "
+                    f"will infer from input files. Valid options: {[d.value for d in PipelineDirection]}"
                 )
-                log.error(error_msg)
-                raise ValueError(error_msg) from e
 
         # Normalize path separators for Windows compatibility
         path_fields = [
@@ -238,7 +240,7 @@ class UserConfig:
         for field in path_fields:
             if field in data and data[field]:
                 # Convert backslashes to forward slashes
-                data[field] = normalize_path(field)
+                data[field] = normalize_path(data[field])
 
         # Create and return UserConfig object from the dict by unpacking all the key-value pairs as kwargs
         return cls(**data)
@@ -248,6 +250,26 @@ class UserConfig:
     # endregion
 
     # region instance getters/setters/helpers
+
+    # region direction property
+    @property
+    def direction(self) -> PipelineDirection:
+        """Direction inferred from which input file is set."""
+        if self.input_docx:
+            return PipelineDirection.DOCX_TO_PPTX
+        elif self.input_pptx:
+            return PipelineDirection.PPTX_TO_DOCX
+        elif self._direction:
+            return self._direction  # Fallback for demo mode
+        else:
+            return PipelineDirection.DOCX_TO_PPTX  # Default
+
+    @direction.setter
+    def direction(self, value: PipelineDirection) -> None:
+        """Allow explicit setting for demo mode."""
+        self._direction = value
+
+    # endregion
 
     # region get real Path objects from stored cfg str values
     def get_template_pptx_path(self) -> Path:
@@ -432,6 +454,14 @@ class UserConfig:
             - Empty strings where None is expected
             - Enum values that shouldn't be possible (though the enum mostly handles this)
         """
+
+        # Can't have both inputs set simultaneously
+        if self.input_docx and self.input_pptx:
+            log.error("Cannot specify both input_docx and input_pptx")
+            raise ValueError(
+                "Cannot specify both input_docx and input_pptx. "
+                "Please specify only one input file."
+            )
 
         # Validate chunk_type is a valid ChunkType enum member
         assert isinstance(

@@ -67,7 +67,7 @@ Examples:
   manuscript2slides --input-docx manuscript.docx
   
   # Override config file settings
-  manuscript2slides --config settings.toml --direction pptx2docx
+  manuscript2slides --config settings.toml --input-pptx slides.pptx
 
 ------------------------------------------------------------------
 GLOBAL OPTIONS:
@@ -190,14 +190,6 @@ see the documentation.
         help="How to chunk the document into slides (default: paragraph)",
     )
 
-    parser.add_argument(
-        "--direction",
-        "--pipeline",
-        dest="direction",
-        type=str,
-        choices=["docx2pptx", "pptx2docx"],
-        help="Conversion direction (default: docx2pptx)",
-    )
     # Page range integers
     parser.add_argument(
         "--range-start",
@@ -391,10 +383,12 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     # For string args, check if they're not None
     if args.input_docx is not None:
         cfg.input_docx = args.input_docx
-        cfg.direction = PipelineDirection.DOCX_TO_PPTX
+        cfg.input_pptx = None  # Clear the opposite input
+
     if args.input_pptx is not None:
         cfg.input_pptx = args.input_pptx
-        cfg.direction = PipelineDirection.PPTX_TO_DOCX
+        cfg.input_docx = None  # Clear the opposite input
+
     if args.output_folder is not None:
         cfg.output_folder = args.output_folder
     if args.template_pptx is not None:
@@ -410,8 +404,6 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
     # For enums, check if they're not None
     if args.chunk_type is not None:
         cfg.chunk_type = ChunkType(args.chunk_type)
-    if args.direction is not None:
-        cfg.direction = PipelineDirection(args.direction)
 
     # For booleans, check if they were explicitly set
     # argparse sets these to None if not provided, or True/False if provided
@@ -459,12 +451,15 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
         return
 
     # Get all config field names, except those we want to exclude
-    config_fields = {f.name for f in fields(UserConfig)}
+    excluded_config_fields = {
+        "_direction",  # Private backing field for direction property
+    }
+    config_fields = {f.name for f in fields(UserConfig)} - excluded_config_fields
 
     # Get all arg destination names from parser
     # (argparse converts --input-docx to input_docx via arg.dest instead of using arg aliases)
     arg_names = set()
-    excluded_args = [
+    excluded_args = {
         "help",
         "config",
         "cli_mode",
@@ -472,7 +467,8 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
         "demo_round_trip",
         "demo_pptx2docx",
         "demo_docx2pptx",
-    ]
+    }
+
     for action in parser._actions:
         # Skip special argparse actions
         if action.dest not in excluded_args:  # exclude --config, --help, etc.
