@@ -49,9 +49,9 @@ def get_debug_mode() -> bool:
 # region str_to_bool
 def str_to_bool(value: str) -> bool:
     """Convert strings "True"/"False" to  booleans"""
-    if value.lower() in {"false", "f", "0", "no", "n"}:
+    if value.lower().strip() in {"false", "f", "0", "no", "n"}:
         return False
-    elif value.lower() in {"true", "t", "1", "yes", "y"}:
+    elif value.lower().strip() in {"true", "t", "1", "yes", "y"}:
         return True
     else:
         log.warning(f"{value} is not a valid boolean value.")
