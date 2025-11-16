@@ -273,19 +273,22 @@ def save_last_browse_directory(path: Path | str) -> None:
 
 
 def get_last_browse_directory() -> str:
-    """Get the last used browse directory from settings."""
+    """Get the last used browse directory from settings, falling back to home."""
     try:
         last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
-        # Validate it still exists
-        if last_dir and not Path(last_dir).exists():
-            log.debug(f"Last browse directory no longer exists: {last_dir}, clearing")
-            APP_SETTINGS.setValue("last_browse_directory", "")
-            return ""
-
-        return last_dir
+        
+        # Return it if it exists, otherwise fall back to home
+        if last_dir and Path(last_dir).exists():
+            return last_dir
+        
+        if last_dir:  # Was set but no longer exists
+            log.debug(f"Last browse directory no longer exists: {last_dir}, using home")
+        
+        return str(Path.home())
+        
     except Exception as e:
-        log.warning(f"QSettings:  Failed to load last browse directory: {e}")
-        return ""  # Fallback to empty string (current dir)
+        log.warning(f"QSettings: Failed to load last browse directory: {e}")
+        return str(Path.home())
 
 
 # endregion
