@@ -1,6 +1,12 @@
 # formatting.py
 """Formatting functions for both pipelines."""
 
+# For python-pptx's private _Run and _Paragraph classes:
+# pyright: reportPrivateUsage=false 
+
+# For incomplete type stubs in python-pptx:
+# pyright: reportAttributeAccessIssue=false 
+
 # region imports
 import logging
 import xml.etree.ElementTree as ET
@@ -14,7 +20,7 @@ from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.parfmt import ParagraphFormat
 from docx.text.run import Run as Run_docx
 from pptx.dml.color import RGBColor as RGBColor_pptx
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.text.text import Font as Font_pptx
 from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
@@ -55,7 +61,7 @@ COLOR_MAP_FROM_HEX = {v: k for k, v in COLOR_MAP_HEX.items()}
 
 # region alignment map
 ALIGNMENT_MAP_WD2PP = {
-    WD_ALIGN_PARAGRAPH.LEFT: PP_ALIGN.LEFT,
+    WD_ALIGN_PARAGRAPH.LEFT: PP_ALIGN.LEFT,  
     WD_ALIGN_PARAGRAPH.CENTER: PP_ALIGN.CENTER,
     WD_ALIGN_PARAGRAPH.RIGHT: PP_ALIGN.RIGHT,
     WD_ALIGN_PARAGRAPH.JUSTIFY: PP_ALIGN.JUSTIFY,
@@ -217,7 +223,7 @@ def _copy_experimental_formatting_docx2pptx(
                 tfont_hex_str = COLOR_MAP_HEX.get(sfont.highlight_color)
 
                 # Create an object to represent this run in memory
-                rPr = target_run._r.get_or_add_rPr()  # type: ignore[reportPrivateUsage]
+                rPr = target_run._r.get_or_add_rPr()
 
                 # Create a highlight Oxml object in memory
                 hl = OxmlElement_pptx("a:highlight")
@@ -229,10 +235,10 @@ def _copy_experimental_formatting_docx2pptx(
                 setattr(srgbClr, "val", tfont_hex_str)
 
                 # Add srgbClr object inside the hl Oxml object
-                hl.append(srgbClr)  # type: ignore[reportPrivateUsage]
+                hl.append(srgbClr)
 
                 # Add the hl object to the run representation object, which will add all our Oxml elements inside it
-                rPr.append(hl)  # type: ignore[reportPrivateUsage]
+                rPr.append(hl)
 
             except Exception as e:
 
@@ -256,7 +262,7 @@ def _copy_experimental_formatting_docx2pptx(
                 {"ref_text": source_run.text, "formatting_type": "strike"}
             )
             try:
-                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+                tfont._element.set("strike", "sngStrike")
             except Exception as e:
                 log.warning(
                     f"Failed to apply single-strikethrough. \nRun text: {source_run.text[:50]}... \n Error: {e}"
@@ -277,7 +283,7 @@ def _copy_experimental_formatting_docx2pptx(
                 {"ref_text": source_run.text, "formatting_type": "double_strike"}
             )
             try:
-                tfont._element.set("strike", "dblStrike")  # type: ignore[reportPrivateUsage]
+                tfont._element.set("strike", "dblStrike")
             except Exception as e:
                 log.warning(
                     f"""
@@ -285,7 +291,7 @@ def _copy_experimental_formatting_docx2pptx(
                             \nRun text: {source_run.text[:50]}... \n Error: {e}
                             \nWe'll attempt single strikethrough."""
                 )
-                tfont._element.set("strike", "sngStrike")  # type: ignore[reportPrivateUsage]
+                tfont._element.set("strike", "sngStrike")
             """
             Reference pptx XML for double strikethrough:
             <a:p>
@@ -303,9 +309,9 @@ def _copy_experimental_formatting_docx2pptx(
             try:
                 if tfont.size is None or tfont.size < Pt(24):
                     # Cast to string on set; if we store the const as a string, the negative sign gets lost for some reason.
-                    tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
+                    tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_SMALL_FONT))
                 else:
-                    tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
+                    tfont._element.set("baseline", str(BASELINE_SUBSCRIPT_LARGE_FONT))
 
             except Exception as e:
                 log.warning(
@@ -328,9 +334,9 @@ def _copy_experimental_formatting_docx2pptx(
             )
             try:
                 if tfont.size is None or tfont.size < Pt(24):
-                    tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_SMALL_FONT))  # type: ignore[reportPrivateUsage]
+                    tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_SMALL_FONT))
                 else:
-                    tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_LARGE_FONT))  # type: ignore[reportPrivateUsage]
+                    tfont._element.set("baseline", str(BASELINE_SUPERSCRIPT_LARGE_FONT))
 
             except Exception as e:
                 log.warning(
@@ -354,7 +360,7 @@ def _copy_experimental_formatting_docx2pptx(
                 {"ref_text": source_run.text, "formatting_type": "all_caps"}
             )
             try:
-                tfont._element.set("cap", "all")  # type: ignore[reportPrivateUsage]
+                tfont._element.set("cap", "all")
             except Exception as e:
                 log.warning(
                     f"""
@@ -375,7 +381,7 @@ def _copy_experimental_formatting_docx2pptx(
                 {"ref_text": source_run.text, "formatting_type": "small_caps"}
             )
             try:
-                tfont._element.set("cap", "small")  # type: ignore[reportPrivateUsage]
+                tfont._element.set("cap", "small")
             except Exception as e:
                 log.warning(
                     f"""
