@@ -40,6 +40,7 @@ class ChunkType(Enum):
 
     HEADING_NESTED = "heading_nested"
     HEADING_FLAT = "heading_flat"
+    HEADING = "heading_flat"  # eval "heading" same as "heading_flat"
     PARAGRAPH = "paragraph"
     PAGE = "page"
 
