@@ -100,6 +100,7 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
     log.info(f"  Original: {original_docx}")
     log.info(f"  -> PPTX:   {intermediate_pptx}")
     log.info(f"  -> Final:  {final_docx}")
+    log.info(f"  Output folder:  {output_folder}")
 
     return original_docx, intermediate_pptx, final_docx
 
