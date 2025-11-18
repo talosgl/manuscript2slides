@@ -3,7 +3,7 @@
 
 # === Input Files ===
 # Paths can be relative to ~/Documents/manuscript2slides/ or absolute
-# input_docx = "input/my-manuscript.docx"  # Relative path
+input_docx = "/sample_doc.docx"  # Relative path
 # input_docx = "~/Documents/my-manuscript.docx"  # Absolute with ~
 # input_docx = "C:/Users/YourName/Documents/my-manuscript.docx"  # Windows absolute
 
@@ -18,7 +18,6 @@
 
 # === Processing Options ===
 chunk_type = "paragraph"  # Options: paragraph, page, heading_flat, heading_nested
-direction = "docx2pptx"   # Options: docx2pptx, pptx2docx
 
 # === Formatting ===
 experimental_formatting_on = true
