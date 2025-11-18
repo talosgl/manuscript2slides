@@ -217,13 +217,15 @@ see the documentation.
     formatting_group = parser.add_mutually_exclusive_group()
     formatting_group.add_argument(
         "--experimental-formatting",
-        action="store_true",
+        action="store_const",
+        const=True,
         dest="experimental_formatting_on",
         help="Enable experimental formatting features (default: enabled)",
     )
     formatting_group.add_argument(
         "--no-experimental-formatting",
-        action="store_false",
+        action="store_const",
+        const=False,
         dest="experimental_formatting_on",
         help="Disable experimental formatting features",
     )
@@ -238,7 +240,8 @@ see the documentation.
     )
     comments_group.add_argument(
         "--no-display-comments",
-        action="store_false",
+        action="store_const",
+        const=False,
         dest="display_comments",
         help="Do not display comments",
     )
@@ -247,13 +250,15 @@ see the documentation.
     comments_sort_group = parser.add_mutually_exclusive_group()
     comments_sort_group.add_argument(
         "--comments-sort-by-date",
-        action="store_true",
+        action="store_const",
+        const=True,
         dest="comments_sort_by_date",
         help="Sort comments by date (default: enabled)",
     )
     comments_sort_group.add_argument(
         "--no-comments-sort-by-date",
-        action="store_false",
+        action="store_const",
+        const=False,
         dest="comments_sort_by_date",
         help="Do not sort comments by date",
     )
@@ -262,13 +267,15 @@ see the documentation.
     comments_metadata_group = parser.add_mutually_exclusive_group()
     comments_metadata_group.add_argument(
         "--comments-keep-author-and-date",
-        action="store_true",
+        action="store_const",
+        const=True,
         dest="comments_keep_author_and_date",
         help="Keep author and date in comments (default: enabled)",
     )
     comments_metadata_group.add_argument(
         "--no-comments-keep-author-and-date",
-        action="store_false",
+        action="store_const",
+        const=False,
         dest="comments_keep_author_and_date",
         help="Do not keep author and date in comments",
     )
@@ -277,13 +284,15 @@ see the documentation.
     footnotes_group = parser.add_mutually_exclusive_group()
     footnotes_group.add_argument(
         "--display-footnotes",
-        action="store_true",
+        action="store_const",
+        const=True,
         dest="display_footnotes",
         help="Display footnotes in speaker notes (default: disabled)",
     )
     footnotes_group.add_argument(
         "--no-display-footnotes",
-        action="store_false",
+        action="store_const",
+        const=False,
         dest="display_footnotes",
         help="Do not display footnotes",
     )
@@ -292,13 +301,15 @@ see the documentation.
     endnotes_group = parser.add_mutually_exclusive_group()
     endnotes_group.add_argument(
         "--display-endnotes",
-        action="store_true",
+        action="store_const",
+        const=True,
         dest="display_endnotes",
         help="Display endnotes in speaker notes (default: disabled)",
     )
     endnotes_group.add_argument(
         "--no-display-endnotes",
-        action="store_false",
+        action="store_const",
+        const=False,
         dest="display_endnotes",
         help="Do not display endnotes",
     )
@@ -308,14 +319,16 @@ see the documentation.
     metadata_group.add_argument(
         "--preserve-metadata",
         "--metadata",
-        action="store_true",
+        action="store_const",
+        const=True,
         dest="preserve_docx_metadata_in_speaker_notes",  # dest is an argparse parameter that tells argparse what attribute name to use when storing the value
         help="Preserve docx metadata in speaker notes (default: disabled)",
     )
     metadata_group.add_argument(
         "--no-preserve-metadata",
         "--no-metadata",
-        action="store_false",
+        action="store_const",
+        const=False,
         dest="preserve_docx_metadata_in_speaker_notes",
         help="Do not preserve docx metadata",
     )
