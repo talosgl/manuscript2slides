@@ -40,9 +40,32 @@ class ChunkType(Enum):
 
     HEADING_NESTED = "heading_nested"
     HEADING_FLAT = "heading_flat"
-    HEADING = "heading_flat"  # eval "heading" same as "heading_flat"
     PARAGRAPH = "paragraph"
     PAGE = "page"
+
+    @classmethod
+    def from_string(cls, value: str) -> "ChunkType":
+        """Convert string to ChunkType, with support for aliases."""
+        value = value.lower().strip()
+
+        # Alias mapping
+        aliases = {
+            "heading": cls.HEADING_FLAT,
+            # Think hard before adding more here. You'll also have to add them to the CLI argparser.
+        }
+
+        # Check aliases first
+        if value in aliases:
+            return aliases[value]
+
+        for member in cls:
+            if member.value == value:
+                return member
+
+        valid_values = [m.value for m in cls] + list(aliases.keys())
+        raise ValueError(
+            f"'{value}' is not a valid ChunkType. Valid options: {', '.join(valid_values)}"
+        )
 
 
 class PipelineDirection(Enum):
