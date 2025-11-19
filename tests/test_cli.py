@@ -1,4 +1,4 @@
-"""Tests for CLI entry point."""
+"""Tests for CLI argument parsing and config building."""
 
 import pytest
 from pathlib import Path
