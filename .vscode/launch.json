@@ -55,5 +55,35 @@
                 "MANUSCRIPT2SLIDES_DEBUG": "true"
             }
         },
+        {
+            "name": "Debug Current Pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "${file}",
+                "-v",
+                "-s",
+                "--log-file=pytest_debug.log", // This logs manuscript2slides's logs, not pytest's
+                "--log-file-level=DEBUG"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Debug All Pytests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/",
+                "-v",
+                "-s",
+                "--log-file=pytest_debug.log",
+                "--log-file-level=DEBUG"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
     ]
 }

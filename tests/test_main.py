@@ -1,4 +1,5 @@
-"""Test that calling `python manuscript2slides` (which enters execution at __main__.py) routes as we expect."""
+"""Tests for application entry point routing when calling `python manuscript2slides`
+(which enters execution at __main__.py)."""
 
 # tests/test_main.py
 
