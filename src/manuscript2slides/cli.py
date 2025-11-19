@@ -186,7 +186,13 @@ see the documentation.
         "-c",
         type=str,
         dest="chunk_type",
-        choices=["paragraph", "page", "heading_flat", "heading_nested"],
+        choices=[
+            "paragraph",
+            "page",
+            "heading_flat",
+            "heading_nested",
+            "heading",  # heading is an alias for heading_flat
+        ],
         help="How to chunk the document into slides (default: paragraph)",
     )
 
@@ -234,7 +240,8 @@ see the documentation.
     comments_group = parser.add_mutually_exclusive_group()
     comments_group.add_argument(
         "--display-comments",
-        action="store_true",
+        action="store_const",
+        const=True,
         dest="display_comments",
         help="Display comments in speaker notes (default: disabled)",
     )
@@ -416,7 +423,7 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
 
     # For enums, check if they're not None
     if args.chunk_type is not None:
-        cfg.chunk_type = ChunkType(args.chunk_type)
+        cfg.chunk_type = ChunkType.from_string(args.chunk_type)
 
     # For booleans, check if they were explicitly set
     # argparse sets these to None if not provided, or True/False if provided
