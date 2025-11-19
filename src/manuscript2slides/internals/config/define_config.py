@@ -233,7 +233,7 @@ class UserConfig:
         # Convert string enum values to actual enums
         if "chunk_type" in data:
             try:
-                data["chunk_type"] = ChunkType(data["chunk_type"])
+                data["chunk_type"] = ChunkType.from_string(data["chunk_type"])
             except ValueError as e:
                 error_msg = (
                     f"Invalid chunk_type: '{data['chunk_type']}'. "
