@@ -359,7 +359,7 @@ def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
             )
     elif isinstance(save_object, presentation.Presentation):
         max_s_count = 1000
-        if len(list(save_object.slides)) > max_s_count:
+        if len(list(save_object.slides)) > max_s_count:  # type: ignore[reportAttributeAccessIssue]
             log.warning(
                 f"This is about to save a pptx file with over {max_s_count} slides ... that seems a bit long!"
             )
