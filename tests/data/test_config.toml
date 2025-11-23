@@ -1,0 +1,10 @@
+input_docx = "../src/manuscript2slides/resources/sample_doc.docx"
+
+# === Processing Options ===
+chunk_type = "page" # Options: paragraph, page, heading_flat, heading_nested
+
+# === Formatting ===
+experimental_formatting_on = true
+
+# === Annotations ===
+preserve_docx_metadata_in_speaker_notes = true
