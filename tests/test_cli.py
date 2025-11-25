@@ -1,7 +1,7 @@
 """Tests for CLI argument parsing and config building."""
 
 import pytest
-from pathlib import Path
+from unittest.mock import Mock
 from manuscript2slides.cli import (
     parse_args,
     build_config_from_args,
@@ -206,17 +206,6 @@ class TestBuildConfigFromArgs:
 
 
 # endregion
-
-
-@pytest.fixture
-def clean_debug_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
-    """Ensure debug env var is not set before test"""
-    # Pytest will temporarily remove it from THIS test/caller's view of the environment
-    monkeypatch.delenv("MANUSCRIPT2SLIDES_DEBUG", raising=False)
-    return monkeypatch
-
-
-from unittest.mock import Mock
 
 
 # region test _validate_args_match_config

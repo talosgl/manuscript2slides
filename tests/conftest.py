@@ -1,3 +1,5 @@
+"""Shared fixtures"""
+
 # tests/conftest.py
 import pytest
 from pathlib import Path
@@ -33,6 +35,15 @@ def sample_d2p_cfg(
         chunk_type=ChunkType.HEADING_FLAT,
         experimental_formatting_on=True,
     )
+
+
+@pytest.fixture
+def clean_debug_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
+    """Ensure debug env var is not set before test.
+    Used by at least test_utils + test_cli."""
+    # Pytest will temporarily remove it from THIS test/caller's view of the environment
+    monkeypatch.delenv("MANUSCRIPT2SLIDES_DEBUG", raising=False)
+    return monkeypatch
 
 
 # TODO: Assess if this is really needed because I was just guessing while learning
