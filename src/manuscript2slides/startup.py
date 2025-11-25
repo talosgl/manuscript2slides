@@ -7,10 +7,12 @@ Handles common setup tasks required by both CLI and GUI interfaces:
 """
 
 import logging
-
+import sys
 from manuscript2slides.internals.logger import setup_logger
-from manuscript2slides.internals.scaffold import ensure_user_scaffold
+from manuscript2slides.internals.scaffold import ensure_user_scaffold, user_log_dir_path
+from manuscript2slides.internals.paths import user_base_dir
 from manuscript2slides.utils import get_debug_mode, setup_console_encoding
+from pathlib import Path
 
 
 # region initialize_application
@@ -23,14 +25,40 @@ def initialize_application() -> logging.Logger:
     setup_console_encoding()
 
     # Start up logging.
-    log = setup_logger(enable_trace=_should_enable_trace_on_startup())
+
+    # Compute expected log path for error messages (before trying to create it)
+    expected_log_dir = user_base_dir() / "logs"
+
+    try:
+        user_log_dir_path()  # Create the log directory silently
+        log = setup_logger(enable_trace=_should_enable_trace_on_startup())
+    except PermissionError as e:
+        print(
+            f"ERROR: Cannot create log files. Check permissions for:", file=sys.stderr
+        )
+        print(f"  {expected_log_dir}", file=sys.stderr)
+        raise SystemExit(1) from e
+    except OSError as e:
+        print(
+            f"ERROR: Cannot write log files (disk full or I/O error).", file=sys.stderr
+        )
+        raise SystemExit(1) from e
+
     log.info("Starting manuscript2slides Log.")
 
     # Ensure user folders exist and templates are copied
     log.debug(
         "Checking for existing manuscripts2slides user folders and scaffolding if needed."
     )
-    ensure_user_scaffold()
+
+    try:
+        ensure_user_scaffold()
+    except PermissionError as e:
+        log.error("Cannot create user directories. Check permissions.")
+        raise SystemExit(1) from e
+    except OSError as e:
+        log.error(f"Failed to create user scaffold: {e}")
+        raise SystemExit(1) from e
 
     return log
 
