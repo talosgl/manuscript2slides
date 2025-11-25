@@ -76,14 +76,6 @@ def test_str_to_bool_handles_whitespace() -> None:
 # region get_debug_mode tests
 
 
-@pytest.fixture
-def clean_debug_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
-    """Ensure debug env var is not set before test"""
-    # Pytest will temporarily remove it from THIS test/caller's view of the environment
-    monkeypatch.delenv("MANUSCRIPT2SLIDES_DEBUG", raising=False)
-    return monkeypatch
-
-
 def test_get_debug_mode_returns_true_when_env_var_is_true(
     clean_debug_env: pytest.MonkeyPatch,
 ) -> None:
