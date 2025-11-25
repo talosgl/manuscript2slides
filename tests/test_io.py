@@ -7,6 +7,12 @@ from docx import document
 from docx import Document
 from manuscript2slides.io import load_and_validate_docx, validate_docx_path
 
+# TODO:
+"""
+_validate_path edge case - Test what happens when path is a directory (not a file). Currently untested but it's in the code at io.py:36-40
+PermissionError in load_and_validate_docx - You test FileNotFoundError, but there's also a PermissionError handler at io.py:114-120. This is tricky to test but valuable.
+validate_pptx_path - You have NO tests for the pptx equivalent functions. If you want symmetry, test those too.
+"""
 
 # region test_validate_docx_path
 def test_validate_docx_path_accepts_valid_file(
