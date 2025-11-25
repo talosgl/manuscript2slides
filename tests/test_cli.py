@@ -2,7 +2,11 @@
 
 import pytest
 from pathlib import Path
-from manuscript2slides.cli import parse_args, build_config_from_args
+from manuscript2slides.cli import (
+    parse_args,
+    build_config_from_args,
+    _validate_args_match_config,
+)
 from manuscript2slides.internals.config.define_config import ChunkType, UserConfig
 import sys
 
@@ -199,6 +203,61 @@ class TestBuildConfigFromArgs:
         cfg = build_config_from_args(args)
 
         assert cfg.chunk_type == expected_enum
+
+
+# endregion
+
+
+@pytest.fixture
+def clean_debug_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
+    """Ensure debug env var is not set before test"""
+    # Pytest will temporarily remove it from THIS test/caller's view of the environment
+    monkeypatch.delenv("MANUSCRIPT2SLIDES_DEBUG", raising=False)
+    return monkeypatch
+
+
+from unittest.mock import Mock
+
+
+# region test _validate_args_match_config
+def test_validate_args_match_config_returns_early_when_debug_mode_false(
+    clean_debug_env: pytest.MonkeyPatch,
+) -> None:
+    """Verify that users will never mistakenly get app crashes because of config field/arg name misalignment."""
+
+    # Arrange: ensure get_debug_mode() will return FALSE when called inside _validate_args_match_config() (env var set to false)
+    clean_debug_env.setenv("MANUSCRIPT2SLIDES_DEBUG", "false")
+
+    # Arrange: prepare bad data to pass into the validator
+    fake_parser = Mock()
+    fake_action = Mock()
+    fake_action.dest = "fake_bad_field"  # Anything not in UserConfig class
+    fake_parser._actions = [fake_action]
+
+    # Action: Pass in a mock with obviously bad dest fields that WOULD cause an exception if debug mode was set to true
+    _validate_args_match_config(fake_parser)
+
+    # Test will fail if the above raises an exception; no additional assert needed.
+
+
+def test_validate_args_match_config_raises_exception_when_debug_mode_true_and_bad_data(
+    clean_debug_env: pytest.MonkeyPatch,
+) -> None:
+    """Verify that developers DO get an error in debug mode when there is config field/arg name misalignment."""
+
+    # Arrange: ensure get_debug_mode() will return TRUE when called inside _validate_args_match_config() (env var set to false)
+    clean_debug_env.setenv("MANUSCRIPT2SLIDES_DEBUG", "true")
+
+    # Arrange: prepare bad data to pass into the validator
+    fake_parser = Mock()
+    fake_action = Mock()
+    fake_action.dest = "fake_bad_field"  # Anything not in UserConfig class
+    fake_parser._actions = [fake_action]
+
+    # Action: call _validate_args_match_config with bad data
+    # Should raise RuntimeError in debug mode
+    with pytest.raises(RuntimeError):
+        _validate_args_match_config(fake_parser)
 
 
 # endregion
