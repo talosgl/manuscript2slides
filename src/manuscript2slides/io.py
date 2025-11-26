@@ -44,6 +44,31 @@ def _validate_path(user_path: str | Path) -> Path:
 # endregion
 
 
+# region validate_docx_path
+def validate_docx_path(user_path: str | Path) -> Path:
+    """Validates the user-provided filepath exists and is actually a docx file."""
+    path = _validate_path(user_path)
+
+    # Get pipeline ID for logs.
+    pipeline_id = get_pipeline_run_id()
+
+    # Verify it's the right extension:
+    if path.suffix.lower() == ".doc":
+        log.error(f"Unsupported .doc file: {path} [pipeline:{pipeline_id}]")
+        raise ValueError(
+            "This tool only supports .docx files. Please convert your .doc file to .docx format first."
+        )
+    if path.suffix.lower() != ".docx":
+        log.error(
+            f"Wrong file extension: expected .docx, got {path.suffix} [pipeline:{pipeline_id}]"
+        )
+        raise ValueError(f"Expected a .docx file, but got: {path.suffix}")
+    return path
+
+
+# endregion
+
+
 # region validate_pptx_path
 def validate_pptx_path(user_path: str | Path) -> Path:
     """Validates the pptx template filepath exists and is actually a pptx file."""
@@ -68,30 +93,6 @@ def validate_pptx_path(user_path: str | Path) -> Path:
 
 # endregion
 
-
-# region validate_docx_path
-def validate_docx_path(user_path: str | Path) -> Path:
-    """Validates the user-provided filepath exists and is actually a docx file."""
-    path = _validate_path(user_path)
-
-    # Get pipeline ID for logs.
-    pipeline_id = get_pipeline_run_id()
-
-    # Verify it's the right extension:
-    if path.suffix.lower() == ".doc":
-        log.error(f"Unsupported .doc file: {path} [pipeline:{pipeline_id}]")
-        raise ValueError(
-            "This tool only supports .docx files. Please convert your .doc file to .docx format first."
-        )
-    if path.suffix.lower() != ".docx":
-        log.error(
-            f"Wrong file extension: expected .docx, got {path.suffix} [pipeline:{pipeline_id}]"
-        )
-        raise ValueError(f"Expected a .docx file, but got: {path.suffix}")
-    return path
-
-
-# endregion
 
 # endregion
 
@@ -168,7 +169,7 @@ def load_and_validate_pptx(pptx_path: Path | str) -> presentation.Presentation:
 
     # Try to load the pptx
     try:
-        prs = pptx.Presentation(str(pptx_path))
+        prs = pptx.Presentation(pptx_path)
     except FileNotFoundError:
         log.error(f"File not found: {pptx_path} [pipeline:{pipeline_id}]")
         raise FileNotFoundError(f"File not found: {pptx_path}")
