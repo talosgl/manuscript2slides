@@ -17,7 +17,7 @@ def temp_output_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def sample_docx_with_formatting() -> Path:
+def path_to_sample_docx_with_formatting() -> Path:
     """Path to test docx with various formatting examples"""
     path = Path("tests/data/test_formatting.docx")
     assert path.exists(), f"Test file not found: {path}"
@@ -25,12 +25,20 @@ def sample_docx_with_formatting() -> Path:
 
 
 @pytest.fixture
+def path_to_sample_pptx_with_formatting() -> Path:
+    """Path to test pptx with various formatting examples"""
+    path = Path("tests/data/test_slides.pptx")
+    assert path.exists(), f"Test file not found: {path}"
+    return path
+
+
+@pytest.fixture
 def sample_d2p_cfg(
-    sample_docx_with_formatting: Path, temp_output_dir: Path
+    path_to_sample_docx_with_formatting: Path, temp_output_dir: Path
 ) -> UserConfig:
     """Sample config object for docx2pptx testing"""
     return UserConfig(
-        input_docx=str(sample_docx_with_formatting),  # Use real test file
+        input_docx=str(path_to_sample_docx_with_formatting),  # Use real test file
         output_folder=str(temp_output_dir),
         chunk_type=ChunkType.HEADING_FLAT,
         experimental_formatting_on=True,
