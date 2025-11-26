@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from docx import Document, document
+from pptx import Presentation, presentation
 
 from manuscript2slides.io import (
     _validate_path,
@@ -14,12 +15,6 @@ from manuscript2slides.io import (
     validate_pptx_path,
     load_and_validate_pptx,
 )
-
-# TODO:
-"""
-
-validate_pptx_path - You have NO tests for the pptx equivalent functions. If you want symmetry, test those too.
-"""
 
 
 # region test _validate_path
@@ -35,72 +30,6 @@ def test_validate_path_raises_when_path_is_dir(
     assert "Path is not a file" in caplog.text
 
 
-# endregion
-
-
-# region test_validate_pptx_path
-def test_validate_pptx_path_accepts_valid_file(
-    path_to_sample_pptx_with_formatting: Path,
-) -> None:
-    """Test that a valid file path passed in passes validation and is passed onward to caller."""
-    result = validate_pptx_path(path_to_sample_pptx_with_formatting)
-    assert result == path_to_sample_pptx_with_formatting
-
-
-def test_validate_pptx_path_rejects_wrong_extension(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    """Verify we reject bad extensions and provide helpful error and logging messages."""
-    wrong_ext = tmp_path / "my_slides.txt"
-    wrong_ext.touch()  # make this a readable path
-
-    with pytest.raises(ValueError, match="Expected a .pptx"):
-        validate_pptx_path(wrong_ext)
-
-    assert "expected .pptx, got" in caplog.text
-
-
-def test_validate_pptx_path_rejects_old_ppt_format(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    """Verify we catch old file type .ppt as a special case and provide helpful error and logging messaging."""
-    wrong_ext = tmp_path / "my_slides.ppt"
-    wrong_ext.touch()  # make this a readable path
-
-    with pytest.raises(ValueError, match="only supports .pptx files. Please convert"):
-        validate_pptx_path(wrong_ext)
-
-    assert "Unsupported .ppt file" in caplog.text
-
-
-# endregion
-
-# region test_load_and_validate_pptx
-# TODO:
-"""
-1. Test that a valid pptx that is non-empty returns a pptx object
-
-def test_load_pptx_returns_non_empty_document_object(
-    path_to_sample_pptx_with_formatting: Path
-) -> None:
-
-2. test file not found raises PermsError + FileNotFound + logging
-def test_load_pptx_rejects_missing_file() -> None:
-
-
-3. Test Perms error + logging
-
-def test_load_pptx_raises_on_perms_error(
-    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
-) -> None:
-
-4. test that we reject empty slide deck (no slides)
-def test_load_docx_rejects_pptx_with_no_slides(tmp_path: Path) -> None:
-
-5. test that we reject if no slides contain any text content (slides exist but no text)
-def test_load_docx_rejects_pptx_with_slides_but_no_text(tmp_path: Path) -> None:
-
-"""
 # endregion
 
 
@@ -144,6 +73,44 @@ def test_validate_docx_path_rejects_old_doc_format(
 # endregion
 
 
+# region test_validate_pptx_path
+def test_validate_pptx_path_accepts_valid_file(
+    path_to_sample_pptx_with_formatting: Path,
+) -> None:
+    """Test that a valid file path passed in passes validation and is passed onward to caller."""
+    result = validate_pptx_path(path_to_sample_pptx_with_formatting)
+    assert result == path_to_sample_pptx_with_formatting
+
+
+def test_validate_pptx_path_rejects_wrong_extension(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Verify we reject bad extensions and provide helpful error and logging messages."""
+    wrong_ext = tmp_path / "my_slides.txt"
+    wrong_ext.touch()  # make this a readable path
+
+    with pytest.raises(ValueError, match="Expected a .pptx"):
+        validate_pptx_path(wrong_ext)
+
+    assert "expected .pptx, got" in caplog.text
+
+
+def test_validate_pptx_path_rejects_old_ppt_format(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Verify we catch old file type .ppt as a special case and provide helpful error and logging messaging."""
+    wrong_ext = tmp_path / "my_slides.ppt"
+    wrong_ext.touch()  # make this a readable path
+
+    with pytest.raises(ValueError, match="only supports .pptx files. Please convert"):
+        validate_pptx_path(wrong_ext)
+
+    assert "Unsupported .ppt file" in caplog.text
+
+
+# endregion
+
+
 # region test_load_and_validate_docx
 
 
@@ -155,6 +122,14 @@ def test_load_docx_returns_non_empty_document_object(
 
     assert isinstance(doc, document.Document)
     assert len(doc.paragraphs) > 0  # Should have some content
+
+
+def test_load_docx_rejects_missing_file() -> None:
+    """Test that a missing file passed in raises FileNotFoundError and it's bubbled up through load_and_validate_docx"""
+    fake_path = Path("i_dont_exist.docx")
+
+    with pytest.raises(FileNotFoundError, match="File not found"):
+        load_and_validate_docx(fake_path)
 
 
 def test_load_docx_raises_on_perms_error(
@@ -182,14 +157,6 @@ def test_load_docx_raises_on_perms_error(
     assert "Permission denied" in caplog.text
 
 
-def test_load_docx_rejects_missing_file() -> None:
-    """Test that a missing file passed in raises FileNotFoundError and it's bubbled up through load_and_validate_docx"""
-    fake_path = Path("i_dont_exist.docx")
-
-    with pytest.raises(FileNotFoundError, match="File not found"):
-        load_and_validate_docx(fake_path)
-
-
 def test_load_docx_rejects_empty_docx(tmp_path: Path) -> None:
     """Test that document with no content raises ValueError"""
     empty = tmp_path / "empty.docx"
@@ -205,6 +172,71 @@ def test_load_docx_rejects_empty_docx(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="no text content"):
         load_and_validate_docx(empty)
+
+
+# endregion
+
+
+# region test_load_and_validate_pptx
+def test_load_pptx_returns_non_empty_document_object(
+    path_to_sample_pptx_with_formatting: Path,
+) -> None:
+    """Test that a valid pptx that is non-empty returns a pptx object"""
+    prs = load_and_validate_pptx(path_to_sample_pptx_with_formatting)
+
+    assert isinstance(prs, presentation.Presentation)
+    assert prs.slides  # Verify presentation has at least one slide
+
+
+def test_load_pptx_rejects_missing_file(caplog: pytest.LogCaptureFixture) -> None:
+    """Test file not found raises FileNotFound error and adds helpful message to log."""
+    fake_path = Path("i_dont_exist.pptx")
+
+    with pytest.raises(FileNotFoundError, match="File not found"):
+        load_and_validate_pptx(fake_path)
+
+    assert "not found" in caplog.text
+
+
+def test_load_pptx_raises_on_perms_error(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Test that PermissionsError is properly raised, bubbled up, and logged for unreachable files during pptx flow."""
+
+    def mock_presentation_raise(*args, **kwargs) -> None:  # noqa: ANN003, ANN002
+        raise PermissionError("ROAD CLOSED")
+
+    # Disguise our above mock function as the pptx.Presentation() constructor
+    monkeypatch.setattr("pptx.Presentation", mock_presentation_raise)
+
+    with pytest.raises(PermissionError, match="open in another program"):
+        # It doesn't matter what path we send, it's discarded.
+        load_and_validate_pptx(Path("fake_path.pptx"))
+
+    # Assert: Test error is captured in log
+    assert "Permission denied" in caplog.text
+
+
+def test_load_pptx_rejects_pptx_with_no_slides_or_no_text(
+    tmp_path: Path, path_to_empty_pptx: Path
+) -> None:
+    """Ensure we reject empty slide decks (no slides OR slides, but no text) in pptx2docx flow."""
+    no_slides = tmp_path / "no_slides.pptx"
+    # We can't directly create a presentation without a template, so we provide one that's empty.
+    prs: presentation.Presentation = Presentation(path_to_empty_pptx)
+    # Don't add any slides
+    prs.save(str(no_slides))
+
+    with pytest.raises(ValueError, match="no slides"):
+        load_and_validate_pptx(no_slides)
+
+    slide_layout = prs.slide_layouts[0]
+
+    prs.slides.add_slide(slide_layout)  # type: ignore
+    prs.save(str(no_slides))
+
+    with pytest.raises(ValueError, match="text content"):
+        load_and_validate_pptx(no_slides)
 
 
 # endregion
