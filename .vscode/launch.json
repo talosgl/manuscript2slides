@@ -56,7 +56,7 @@
             }
         },
         {
-            "name": "Debug Current Pytest",
+            "name": "pytest - Current File",
             "type": "debugpy",
             "request": "launch",
             "module": "pytest",
@@ -71,7 +71,7 @@
             "justMyCode": false
         },
         {
-            "name": "Debug All Pytests",
+            "name": "pytest all",
             "type": "debugpy",
             "request": "launch",
             "module": "pytest",
