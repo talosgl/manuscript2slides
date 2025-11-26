@@ -41,6 +41,7 @@ ENV/
 .coverage
 htmlcov/
 .logs/
+pytest_debug.log
 
 # OS
 .DS_Store

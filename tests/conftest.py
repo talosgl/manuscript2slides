@@ -33,6 +33,23 @@ def path_to_sample_pptx_with_formatting() -> Path:
 
 
 @pytest.fixture
+def path_to_empty_pptx() -> Path:
+    """Path to an empty slide deck (no slides) object for the purpose of instantiating
+    new decks with pptx.Presentation() constructor."""
+    path = Path("tests/data/pptx_template.pptx")
+    assert path.exists(), f"Test file not found: {path}"
+    return path
+
+
+@pytest.fixture
+def path_to_empty_docx() -> Path:
+    """Path to an empty word docx file. Currently unused"""
+    path = Path("tests/data/docx_template.docx")
+    assert path.exists(), f"Test file not found: {path}"
+    return path
+
+
+@pytest.fixture
 def sample_d2p_cfg(
     path_to_sample_docx_with_formatting: Path, temp_output_dir: Path
 ) -> UserConfig:
