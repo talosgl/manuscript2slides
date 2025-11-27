@@ -16,7 +16,7 @@ log = logging.getLogger("manuscript2slides")
 
 
 # region run_pipeline
-def run_pipeline(cfg: UserConfig) -> None:
+def run_pipeline(cfg: UserConfig) -> Path:
     """Run validation and then route to the appropriate pipeline based on config."""
 
     cfg.pre_run_check()
@@ -41,6 +41,7 @@ def run_pipeline(cfg: UserConfig) -> None:
             raise ValueError(f"Unknown pipeline direction: {cfg.direction}")
 
         run_manifest.complete(output_path)  # Mark success
+        return output_path
 
     except Exception as e:
         run_manifest.fail(e)  # Mark failure
