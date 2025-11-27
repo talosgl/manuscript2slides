@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from manuscript2slides.pipelines import docx2pptx, pptx2docx
-from manuscript2slides.internals.config.define_config import (
+from manuscript2slides.internals.define_config import (
     PipelineDirection,
     UserConfig,
 )

@@ -32,7 +32,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from manuscript2slides.internals.config.define_config import (
+from manuscript2slides.internals.define_config import (
     ChunkType,
     PipelineDirection,
     UserConfig,

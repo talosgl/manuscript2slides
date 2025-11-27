@@ -27,7 +27,7 @@ from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
 from pptx.text.text import _Run as Run_pptx  # type: ignore
 from pptx.util import Pt
 
-from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.define_config import UserConfig
 
 # endregion
 

@@ -9,7 +9,7 @@ from docx import document
 
 from manuscript2slides import io
 from manuscript2slides.internals import constants
-from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.define_config import UserConfig
 
 import logging
 

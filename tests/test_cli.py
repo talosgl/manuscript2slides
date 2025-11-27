@@ -7,7 +7,7 @@ from manuscript2slides.cli import (
     build_config_from_args,
     _validate_args_match_config,
 )
-from manuscript2slides.internals.config.define_config import ChunkType, UserConfig
+from manuscript2slides.internals.define_config import ChunkType, UserConfig
 import sys
 
 

@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 import tempfile
 import shutil
-from manuscript2slides.internals.config.define_config import UserConfig, ChunkType
+from manuscript2slides.internals.define_config import UserConfig, ChunkType
 
 
 @pytest.fixture

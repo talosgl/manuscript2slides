@@ -3,7 +3,7 @@
 All strategies break a new chunk on a docx page break to prevent slide text overflow."""
 
 from manuscript2slides.models import Chunk_docx
-from manuscript2slides.internals.config.define_config import ChunkType
+from manuscript2slides.internals.define_config import ChunkType
 from manuscript2slides.internals.run_context import get_pipeline_run_id
 from docx import document
 import logging
