@@ -35,3 +35,5 @@ def test_chunk_type_from_string_invalid() -> None:
     """Test ChunkType.from_string() raises ValueError for invalid input."""
     with pytest.raises(ValueError, match="'invalid' is not a valid ChunkType"):
         ChunkType.from_string("invalid")
+
+# TODO: a bunch more tests in here
