@@ -23,7 +23,7 @@ def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
     try:
         template_path = cfg.get_template_pptx_path()
         validated_template = io.validate_pptx_path(Path(template_path))
-        prs = pptx.Presentation(str(validated_template))
+        prs = pptx.Presentation(str(validated_template)) # pyright: ignore[reportPrivateImportUsage]
     except Exception as e:
         raise ValueError(f"Could not load template file (may be corrupted): {e}")
 
