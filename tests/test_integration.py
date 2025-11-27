@@ -43,3 +43,23 @@ def test_docx2pptx_creates_valid_output(
 def test_pptx2docx_creates_valid_output(tmp_path: Path) -> None:
     """Integration: pptx → docx works"""
     # TODO
+
+
+
+# def test_pipeline_fails_gracefully_on_missing_input():
+#     """Error path: missing input file raises, doesn't crash"""
+#     cfg = UserConfig.with_defaults()
+#     cfg.input_docx = "nonexistent.docx"
+    
+#     with pytest.raises(FileNotFoundError):
+#         run_pipeline(cfg)
+#     # Could add: check logs, check no partial files created, etc.
+
+
+# def test_pipeline_fails_gracefully_on_invalid_config():
+#     """Error path: invalid config caught before pipeline runs"""
+#     cfg = UserConfig()
+#     cfg.input_docx = None  # Invalid - no input
+    
+#     with pytest.raises(ValueError):
+#         run_pipeline(cfg)
