@@ -14,7 +14,7 @@ from manuscript2slides.annotations.apply_to_slides import (
 )
 from manuscript2slides.processing.chunking import is_standard_heading
 from manuscript2slides.internals import constants
-from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import Chunk_docx
 from manuscript2slides.processing.run_processing import (
     process_docx_paragraph_inner_contents,

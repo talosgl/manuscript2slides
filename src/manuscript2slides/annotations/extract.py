@@ -9,7 +9,7 @@ from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 
 from manuscript2slides.annotations import docx_xml
-from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import (
     Chunk_docx,
     Comment_docx_custom,

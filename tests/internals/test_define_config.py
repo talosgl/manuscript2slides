@@ -1,7 +1,7 @@
 """Tests for UserConfig class definition file and related items"""
 
 import pytest
-from manuscript2slides.internals.config.define_config import (
+from manuscript2slides.internals.define_config import (
     ChunkType,
     UserConfig,
     PipelineDirection,

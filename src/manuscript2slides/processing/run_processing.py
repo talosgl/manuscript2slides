@@ -23,7 +23,7 @@ from manuscript2slides.processing.formatting import (
     copy_run_formatting_pptx2docx,
     copy_paragraph_formatting_docx2pptx,
 )
-from manuscript2slides.internals.config.define_config import UserConfig
+from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
 from manuscript2slides.annotations.docx_xml import detect_field_code_hyperlinks
 

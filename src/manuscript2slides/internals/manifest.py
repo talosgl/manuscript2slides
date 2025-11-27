@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from manuscript2slides.internals.config.define_config import (
+from manuscript2slides.internals.define_config import (
     UserConfig,
     PipelineDirection,
 )

@@ -12,7 +12,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from typing import Callable
 
-from manuscript2slides.internals.config.define_config import (
+from manuscript2slides.internals.define_config import (
     ChunkType,
     PipelineDirection,
     UserConfig,
