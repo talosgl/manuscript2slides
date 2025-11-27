@@ -8,6 +8,12 @@ from manuscript2slides.orchestrator import run_roundtrip_test, run_pipeline
 from docx import Document
 from pptx import Presentation  # pyright: ignore[reportPrivateImportUsage]
 
+# TODO: Consider adding:
+"""
+A test that manifest files are created (since you modified run_pipeline to use manifest)
+A test for the range_start/range_end config options (if those are important features)
+"""
+
 
 # region test_round_trip
 def test_round_trip_preserves_basic_plaintext_content(
@@ -44,7 +50,6 @@ def test_round_trip_preserves_comments(
     """Integration test: docx -> pptx -> docx preserves comments"""
 
     # Arrange:
-    # Get the original docx's text to test against later
     original_docx = Document(str(path_to_sample_docx_with_everything))
 
     # Make a config to send to round_trip
