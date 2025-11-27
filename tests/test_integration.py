@@ -3,13 +3,15 @@
 # tests/test_integration.py
 import pytest
 from pathlib import Path
-from manuscript2slides.internals.define_config import UserConfig
-from manuscript2slides.orchestrator import run_roundtrip_test
+from manuscript2slides.internals.define_config import UserConfig, PipelineDirection
+from manuscript2slides.orchestrator import run_roundtrip_test, run_pipeline
 from docx import Document
+from pptx import Presentation  # pyright: ignore[reportPrivateImportUsage]
 
 
+# region test_round_trip
 def test_round_trip_preserves_basic_plaintext_content(
-    path_to_sample_docx_with_everything: Path,
+    path_to_sample_docx_with_everything: Path, path_to_empty_pptx: Path, tmp_path: Path
 ) -> None:
     """Integration test: docx -> pptx -> docx preserves content"""
 
@@ -21,8 +23,11 @@ def test_round_trip_preserves_basic_plaintext_content(
     )
 
     # Make a config to send to round_trip
-    test_cfg = UserConfig.with_defaults().enable_all_options()
-    test_cfg.input_docx = str(path_to_sample_docx_with_everything)
+    test_cfg = UserConfig(
+        input_docx=str(path_to_sample_docx_with_everything),
+        template_pptx=str(path_to_empty_pptx),
+        output_folder=str(tmp_path),
+    ).enable_all_options()
 
     _, _, final_docx = run_roundtrip_test(test_cfg)
 
@@ -32,34 +37,80 @@ def test_round_trip_preserves_basic_plaintext_content(
     # Basic check: did we keep most of the text?
     assert len(final_text) > (len(original_text) * 0.8), "Lost too much content"
 
+    # TODO: check if comment count before/after matches or is within 1~2
 
+
+# endregion
+
+
+# region test_docx2pptx
 def test_docx2pptx_creates_valid_output(
-    path_to_sample_docx_with_formatting: Path, tmp_path: Path
+    path_to_sample_docx_with_everything: Path, tmp_path: Path, path_to_empty_pptx: Path
 ) -> None:
-    """Integration: docx → pptx works"""
-    # TODO
+    """Integration: docx -> pptx works"""
+
+    # Arrange: Make a config and set the input doc to our tests/data copy of sample_doc.docx
+    test_cfg = UserConfig(
+        input_docx=str(path_to_sample_docx_with_everything),
+        template_pptx=str(path_to_empty_pptx),
+        output_folder=str(tmp_path),
+    ).enable_all_options()
+
+    # Verify the direction has been set correctly
+    assert test_cfg.direction == PipelineDirection.DOCX_TO_PPTX
+
+    # Action: Run the pipeline
+    output_path = run_pipeline(test_cfg)
+
+    # Assert: output generated/exists, has the right extension, has slides in it.
+    assert output_path.exists()
+    assert output_path.suffix == ".pptx"
+    pres = Presentation(output_path)
+    assert len(pres.slides) > 0
 
 
-def test_pptx2docx_creates_valid_output(tmp_path: Path) -> None:
-    """Integration: pptx → docx works"""
-    # TODO
+def test_pipeline_fails_gracefully_on_missing_input(
+    path_to_empty_pptx: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Test that if a bad path is passed into pipeline function, it raises without crashing/Traceback."""
+
+    test_cfg = UserConfig(
+        input_docx="bad_path.docx", template_pptx=str(path_to_empty_pptx)
+    )  # ensure the template won't be the failure cause for this test
+
+    with pytest.raises(FileNotFoundError):
+        run_pipeline(test_cfg)
+
+    assert "ERROR" in caplog.text
 
 
+def test_pipeline_fails_gracefully_on_invalid_config() -> None:
+    """Test we catch invalid config caught before pipeline runs"""
+    test_cfg = UserConfig(input_docx=None)
 
-# def test_pipeline_fails_gracefully_on_missing_input():
-#     """Error path: missing input file raises, doesn't crash"""
-#     cfg = UserConfig.with_defaults()
-#     cfg.input_docx = "nonexistent.docx"
-    
-#     with pytest.raises(FileNotFoundError):
-#         run_pipeline(cfg)
-#     # Could add: check logs, check no partial files created, etc.
+    with pytest.raises(ValueError):
+        run_pipeline(test_cfg)
 
 
-# def test_pipeline_fails_gracefully_on_invalid_config():
-#     """Error path: invalid config caught before pipeline runs"""
-#     cfg = UserConfig()
-#     cfg.input_docx = None  # Invalid - no input
-    
-#     with pytest.raises(ValueError):
-#         run_pipeline(cfg)
+# endregion
+
+
+# region test_pptx2docx
+def test_pptx2docx_creates_valid_output(
+    path_to_sample_pptx_with_formatting: Path, tmp_path: Path, path_to_empty_docx: Path
+) -> None:
+    """Integration: pptx -> docx works"""
+    test_cfg = UserConfig(
+        input_pptx=str(path_to_sample_pptx_with_formatting),
+        output_folder=str(tmp_path),
+        template_docx=str(path_to_empty_docx),
+    ).enable_all_options()
+
+    assert test_cfg.direction == PipelineDirection.PPTX_TO_DOCX
+
+    output_path = run_pipeline(test_cfg)
+
+    assert output_path.exists()
+    assert output_path.suffix == ".docx"
+    docu = Document(str(output_path))
+    assert len(docu.paragraphs) > 0
