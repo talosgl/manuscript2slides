@@ -37,7 +37,31 @@ def test_round_trip_preserves_basic_plaintext_content(
     # Basic check: did we keep most of the text?
     assert len(final_text) > (len(original_text) * 0.8), "Lost too much content"
 
-    # TODO: check if comment count before/after matches or is within 1~2
+
+def test_round_trip_preserves_comments(
+    path_to_sample_docx_with_everything: Path, path_to_empty_pptx: Path, tmp_path: Path
+) -> None:
+    """Integration test: docx -> pptx -> docx preserves comments"""
+
+    # Arrange:
+    # Get the original docx's text to test against later
+    original_docx = Document(str(path_to_sample_docx_with_everything))
+
+    # Make a config to send to round_trip
+    test_cfg = UserConfig(
+        input_docx=str(path_to_sample_docx_with_everything),
+        template_pptx=str(path_to_empty_pptx),
+        output_folder=str(tmp_path),
+    ).enable_all_options()
+
+    _, _, final_docx = run_roundtrip_test(test_cfg)
+
+    final_doc = Document(str(final_docx))
+
+    # Check if we preserved comments. We check to see if there is the same or MORE
+    # because annotations like footnotes and endnotes get converted to comments in the
+    # roundtrip flow.
+    assert len(final_doc.comments) >= len(original_docx.comments)
 
 
 # endregion
