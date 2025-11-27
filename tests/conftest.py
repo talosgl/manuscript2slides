@@ -50,6 +50,14 @@ def path_to_empty_docx() -> Path:
 
 
 @pytest.fixture
+def path_to_sample_docx_with_everything() -> Path:
+    """Path to a copy of the standard sample_doc.docx that lives in tests/data."""
+    path = Path("tests/data/sample_doc.docx")
+    assert path.exists(), f"Test file not found: {path}"
+    return path
+
+
+@pytest.fixture
 def sample_d2p_cfg(
     path_to_sample_docx_with_formatting: Path, temp_output_dir: Path
 ) -> UserConfig:
