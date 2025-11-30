@@ -1,6 +1,9 @@
 # run_processing.py
 """Processes inner-paragraph contents (runs, hyperlinks) for both pipeline directions."""
 
+# For incomplete type stubs in python-pptx:
+# pyright: reportAttributeAccessIssue=false
+
 # region imports
 import logging
 

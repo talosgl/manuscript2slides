@@ -1,4 +1,8 @@
-"""Tests for all chunking strategies as well as helpers that perform heading detection."""
+"""Tests for all chunking strategies as well as helpers that perform heading detection.
+
+Known untested: We don't test that page break detection works properly during the other chunking strategies.
+Is there an easy way to test that?
+"""
 
 import pytest
 from docx import Document
