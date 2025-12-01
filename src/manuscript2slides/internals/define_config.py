@@ -487,6 +487,19 @@ class UserConfig:
                 "Please specify only one input file."
             )
 
+        # Warn if the user accidentally passed the same file type for input + template (template will be ignored)
+        # TODO, post-release: Assess if this should raise/fail the pipeline rather than warn and just ignore the input.
+        if self.input_docx and self.template_docx:
+            log.warning(
+                "You provided a template_docx, but you passed an input_docx for the pipeline, which means the docx2pptx pipeline will run, and your template input will be ignored. (We will use the default template_pptx.)\n"
+                "If you're reading this in the log after a bunch of frustration of trying to get your template to work, we probably should have errored-out and failed rather than just logging a warning. Please let us know on the github if that's the behavior you would've preferred.",
+            )
+        if self.input_pptx and self.template_pptx:
+            log.warning(
+                "You provided a template_pptx, but you passed an input_pptx for the pipeline, which means the pptx2docx pipeline will run, and your template input will be ignored. (We will use the default template_docx)\n"
+                "If you're reading this in the log after a bunch of frustration of trying to get your template to work, we probably should have errored-out and failed rather than just logging a warning. Please let us know on the github if that's the behavior you would've preferred.",
+            )
+
         # Validate chunk_type is a valid ChunkType enum member
         assert isinstance(
             self.chunk_type, ChunkType
@@ -608,8 +621,8 @@ class UserConfig:
         Validate external dependencies required to run the docx2pptx pipeline.
 
         Checks external state:
-        - Verifies files exist
-        - Checks permissions
+        - Verifies files & directories exist
+        - Verifies expected file/folder type
         - Only runs right before you actually need those resources
         """
 
@@ -638,6 +651,10 @@ class UserConfig:
             error_msg = f"Template not found: {pptx_template_path}"
             log.error(error_msg)
             raise FileNotFoundError(error_msg)
+        elif pptx_template_path.is_dir():
+            error_msg = f"Template must be a file, not a folder: {pptx_template_path}"
+            log.error(error_msg)
+            raise ValueError(error_msg)
 
         self._validate_output_folder()
 
@@ -654,13 +671,13 @@ class UserConfig:
 
         # Check: does the file exist on disk?
         if not input_path.exists():
-            error_msg = f"Input pptx not found: {input_path}"
+            error_msg = f"Input pptx file not found: {input_path}"
             log.error(error_msg)
             raise FileNotFoundError(error_msg)
 
         # Check: is it actually a file (not a directory)?
         if not input_path.is_file():
-            error_msg = f"Not a file: {input_path}"
+            error_msg = f"Input pptx is not a file: {input_path}"
             log.error(error_msg)
             raise ValueError(error_msg)
 
@@ -669,6 +686,10 @@ class UserConfig:
             error_msg = f"Template not found: {docx_template_path}"
             log.error(error_msg)
             raise FileNotFoundError(error_msg)
+        elif docx_template_path.is_dir():
+            error_msg = f"Template must be a file, not a folder: {docx_template_path}"
+            log.error(error_msg)
+            raise ValueError(error_msg)
 
         self._validate_output_folder()  # Shared check
 
