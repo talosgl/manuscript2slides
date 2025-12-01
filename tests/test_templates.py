@@ -6,8 +6,6 @@ import logging
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import docx
-import pptx
 import pytest
 
 from manuscript2slides import templates
@@ -94,7 +92,7 @@ def test_create_empty_document_returns_empty_doc(
 def test_create_empty_document_fails_gracefully_on_missing_styles(
     path_to_sample_pptx_with_formatting: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
-
+    """Ensure we raise and log a helpful message if a docx is provided as template that is missing the 'Normal' style."""
     # Arrange:
     # Create a Mock object to simulate a document.Document
     mock_doc = Mock()
