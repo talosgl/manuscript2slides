@@ -59,14 +59,31 @@ def path_to_sample_docx_with_everything() -> Path:
 
 @pytest.fixture
 def sample_d2p_cfg(
-    path_to_sample_docx_with_formatting: Path, temp_output_dir: Path
+    path_to_sample_docx_with_formatting: Path,
+    temp_output_dir: Path,
+    path_to_empty_pptx: Path,
 ) -> UserConfig:
     """Sample config object for docx2pptx testing"""
     return UserConfig(
         input_docx=str(path_to_sample_docx_with_formatting),  # Use real test file
+        template_pptx=str(path_to_empty_pptx),
         output_folder=str(temp_output_dir),
         chunk_type=ChunkType.HEADING_FLAT,
         experimental_formatting_on=True,
+    )
+
+
+@pytest.fixture
+def sample_p2d_cfg(
+    path_to_sample_pptx_with_formatting: Path,
+    temp_output_dir: Path,
+    path_to_empty_docx: Path,
+) -> UserConfig:
+    """Sample config object for pptx2docx testing"""
+    return UserConfig(
+        input_pptx=str(path_to_sample_pptx_with_formatting),  # Use real test file
+        template_docx=str(path_to_empty_docx),
+        output_folder=str(temp_output_dir),
     )
 
 
