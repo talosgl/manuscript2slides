@@ -30,6 +30,7 @@ def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
             str(validated_template)
         )  # pyright: ignore[reportPrivateImportUsage]
     except Exception as e:
+        log.error(f"Could not load template file at path {e}")
         raise ValueError(f"Could not load template file (may be corrupted): {e}")
 
     # Validate it has the required slide layout for the pipeline
@@ -108,6 +109,9 @@ def create_empty_document(cfg: UserConfig) -> document.Document:
             missing_styles.append(style_name)
 
     if missing_styles:
+        log.error(
+            "Could not find required default Word style.name 'Normal' in provided template."
+        )
         raise ValueError(
             f"Template is missing required styles: '{required_styles}'. "
             f"Available layouts: {template_styles}"

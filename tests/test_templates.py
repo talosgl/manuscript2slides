@@ -2,11 +2,15 @@
 
 # pyright: reportArgumentType=false
 
-import pytest
-from manuscript2slides import templates
+import logging
 from pathlib import Path
-import pptx
+from unittest.mock import Mock, patch
+
 import docx
+import pptx
+import pytest
+
+from manuscript2slides import templates
 from manuscript2slides.internals.define_config import UserConfig
 
 
@@ -29,13 +33,38 @@ def test_create_empty_slide_deck_returns_empty_deck(
     assert len(prs.slides) == 0, f"prs.slides has {len(prs.slides)} slides in it."
 
 
-def test_create_empty_slide_deck_fails_gracefully_without_slide_layout():
-    # TODO/Strategy: I think we need to make a mock object with improper slide layout
-    # Then we need to use pytest.raises to catch the error
-    # and we need to make sure caplog contains helpful text.
+@pytest.fixture
+def path_to_missing_layout_pptx() -> Path:
+    """Path to a pptx file that lacks the expected slide layout."""
+    path = Path("tests/data/missing_layout.pptx")
+    assert path.exists(), f"Test file not found: {path}"
+    return path
 
-    # with pytest.raises(ValueError):
-    pass
+
+def test_create_empty_slide_deck_fails_gracefully_without_slide_layout(
+    path_to_missing_layout_pptx: Path,
+    caplog: pytest.LogCaptureFixture,
+    path_to_sample_docx_with_formatting: Path,
+) -> None:
+    """Ensure that if a pptx is passed in without the proper slide layout, we raise with a helpful message and log
+    a helpful message to the error log."""
+
+    # Arrange: Create a cfg whose template is pointing to a test fixture object that is missing our required slide layout
+
+    test_cfg = UserConfig(
+        input_docx=str(
+            path_to_sample_docx_with_formatting
+        ),  # We pass a real docx so that the validation doesn't fail earlier
+        template_pptx=str(path_to_missing_layout_pptx),
+    )
+
+    # Action: Capture logging at error level and pass our bad cfg into the func call
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(ValueError, match="layout"):
+            templates.create_empty_slide_deck(test_cfg)
+
+    # Assert: we should be catching the raise and we ought to be logging useful info
+    assert "Could not find required slide layout" in caplog.text
 
 
 # endregion
@@ -62,8 +91,29 @@ def test_create_empty_document_returns_empty_doc(
     ), f"docu.paragraphs has {len(docu.paragraphs)} paragraphs in it."
 
 
-def test_create_empty_document_fails_gracefully_on_missing_styles():
-    pass
+def test_create_empty_document_fails_gracefully_on_missing_styles(
+    path_to_sample_pptx_with_formatting: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+
+    # Arrange:
+    # Create a Mock object to simulate a document.Document
+    mock_doc = Mock()
+    mock_style = Mock()
+    mock_style.name = "Heading 1"
+    mock_doc.styles = [mock_style]  # No "Normal" style
+
+    # Action:
+    with caplog.at_level(logging.ERROR):
+        # Disguise our mock_doc as the return value for the docx.Document constructor
+        with patch("docx.Document", return_value=mock_doc):
+            test_cfg = UserConfig(input_pptx=str(path_to_sample_pptx_with_formatting))
+            with pytest.raises(
+                ValueError, match="styles"
+            ):  # Test will fail if we do not raise as expected.
+                templates.create_empty_document(test_cfg)
+
+    # Assert that we also find helpful text in the error log
+    assert "Could not find required default Word style.name 'Normal'" in caplog.text
 
 
 # endregion
