@@ -2,6 +2,33 @@
 """Smoke tests to ensure basic functionality works."""
 import pytest
 from manuscript2slides.internals.define_config import UserConfig
+from manuscript2slides.orchestrator import run_roundtrip_test
+from pathlib import Path
+import logging
+
+
+def test_roundtrip_works(
+    path_to_sample_docx_with_everything: Path,
+    path_to_empty_pptx: Path,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Run roundtrip as a quick smoke test for the pipeline, as I used to do manually, but
+    use test data."""
+    # Arrange a config to emulate how we run roundtrip from CLI and GUI,
+    # but use the test data fixtures intead of relying on user directories
+    test_cfg = UserConfig(
+        input_docx=str(path_to_sample_docx_with_everything),
+        template_pptx=str(path_to_empty_pptx),
+        output_folder=str(tmp_path),
+    ).enable_all_options()
+
+    with caplog.at_level(logging.DEBUG):
+        original_docx, intermediate_pptx, final_docx = run_roundtrip_test(test_cfg)
+    assert "success" in caplog.text
+    assert original_docx and original_docx.exists()
+    assert intermediate_pptx and intermediate_pptx.exists()
+    assert final_docx and final_docx.exists()
 
 
 def test_config_creation() -> None:
