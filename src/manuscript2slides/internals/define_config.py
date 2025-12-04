@@ -110,11 +110,6 @@ class UserConfig:
         ChunkType.PARAGRAPH
     )  # Which chunking method to use to divide the docx into slides.
 
-    # direction: PipelineDirection = PipelineDirection.DOCX_TO_PPTX
-    _direction: Optional[PipelineDirection] = field(
-        default=None, repr=False
-    )  # Only for demo/fallback
-
     experimental_formatting_on: bool = True
 
     display_comments: bool = False
@@ -160,7 +155,7 @@ class UserConfig:
 
     # region for_demo
     @classmethod
-    def for_demo(cls, direction: PipelineDirection) -> UserConfig:
+    def for_demo(cls, requested_direction: PipelineDirection) -> UserConfig:
         """
         Create a config with sample files for GUI demo tab.
 
@@ -174,12 +169,11 @@ class UserConfig:
             UserConfig: Fully populated config using sample files
         """
         cfg = cls()
-        cfg.direction = direction
 
         # Set the appropriate input file based on direction
-        if direction == PipelineDirection.DOCX_TO_PPTX:
+        if requested_direction == PipelineDirection.DOCX_TO_PPTX:
             cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
-        elif direction == PipelineDirection.PPTX_TO_DOCX:
+        elif requested_direction == PipelineDirection.PPTX_TO_DOCX:
             cfg.input_pptx = str(user_input_dir() / "sample_slides_output.pptx")
 
         # All other fields use their dataclass defaults
@@ -279,19 +273,20 @@ class UserConfig:
     @property
     def direction(self) -> PipelineDirection:
         """Direction inferred from which input file is set."""
-        if self.input_docx:
+        if self.input_docx and self.input_pptx:
+            log.error(
+                "We couldn't set the direction of the pipeline because both input_docx and input_pptx were provided. Only 1 input can be specified per run."
+            )
+            raise ValueError("Cannot determine direction: too many inputs provided")
+        elif self.input_docx:
             return PipelineDirection.DOCX_TO_PPTX
         elif self.input_pptx:
             return PipelineDirection.PPTX_TO_DOCX
-        elif self._direction:
-            return self._direction  # Fallback for demo mode
         else:
-            return PipelineDirection.DOCX_TO_PPTX  # Default
-
-    @direction.setter
-    def direction(self, value: PipelineDirection) -> None:
-        """Allow explicit setting for demo mode."""
-        self._direction = value
+            log.error(
+                "We couldn't set the direction of the pipeline because there was no input_docx or input_pptx path provided. You must provide at least one."
+            )
+            raise ValueError("Cannot determine direction: no input file specified")
 
     # endregion
 
