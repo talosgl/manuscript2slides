@@ -382,13 +382,13 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
         log.info(
             "docx2pptx demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().for_demo(direction=PipelineDirection.DOCX_TO_PPTX)
+        cfg = UserConfig().for_demo(requested_direction=PipelineDirection.DOCX_TO_PPTX)
         return cfg
     elif args.demo_pptx2docx:
         log.info(
             "pptx2docx demo requested; populating input fields with sample defaults."
         )
-        cfg = UserConfig().for_demo(direction=PipelineDirection.PPTX_TO_DOCX)
+        cfg = UserConfig().for_demo(requested_direction=PipelineDirection.PPTX_TO_DOCX)
         return cfg
     elif args.config:
         config_path = Path(args.config)
@@ -470,11 +470,8 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
         # This function should never crash the app for users.
         return
 
-    # Get all config field names, except those we want to exclude
-    excluded_config_fields = {
-        "_direction",  # Private backing field for direction property
-    }
-    config_fields = {f.name for f in fields(UserConfig)} - excluded_config_fields
+    # Get all config field names
+    config_fields = {f.name for f in fields(UserConfig)}
 
     # Get all arg destination names from parser
     # (argparse converts --input-docx to input_docx via arg.dest instead of using arg aliases)

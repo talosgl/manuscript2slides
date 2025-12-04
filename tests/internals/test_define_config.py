@@ -262,12 +262,51 @@ def test_validate_pptx2docx_pipeline_requirements_raises_if_output_is_file(
 # endregion
 
 
+# region test direction property
+@pytest.mark.parametrize(
+    argnames="input_cfg,expected_result",
+    argvalues=[
+        # Valid input
+        (UserConfig(input_docx="path/to/input.docx"), PipelineDirection.DOCX_TO_PPTX),
+        (UserConfig(input_pptx="path/to/input.pptx"), PipelineDirection.PPTX_TO_DOCX),
+    ],
+)
+def test_direction_property(
+    input_cfg: UserConfig, expected_result: PipelineDirection
+) -> None:
+    """Test we get expected results for expected input"""
+    result = input_cfg.direction
+    print(expected_result, result)
+    assert result == expected_result
+
+
+def test_direction_property_raises_when_neither_input_path_set(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Ensure we raise if we can't set direction because neither input field was set.
+    Not clear how we'd ever get to this situation in the current codebase, but, just in case.
+    """
+    test_cfg = UserConfig(input_docx=None, input_pptx=None)
+    with pytest.raises(ValueError, match="no input"):
+        result = test_cfg.direction
+    assert "no input_docx or input_pptx path" in caplog.text
+
+
+def test_direction_property_raises_when_both_inputs_set(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Ensure we raise if we we cannot set direction because both input fields were set."""
+    test_cfg = UserConfig(input_docx="a_docx_path.docx", input_pptx="a_pptx_path.pptx")
+    with pytest.raises(ValueError, match="too many inputs"):
+        result = test_cfg.direction
+    assert "Only 1 input can be specified" in caplog.text
+
+
+# endregion
+
 # region for later
-# TODO: a bunch more tests in here
 
 # TODO: test from_toml
-
-# TODO: test direction property...?
 
 # TODO: might be low value-to-effort, but, test all the get_*_path() ?
 
