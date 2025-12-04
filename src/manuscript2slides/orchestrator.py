@@ -52,7 +52,7 @@ def run_pipeline(cfg: UserConfig) -> Path:
 
 
 # region run_round_trip_test
-def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
+def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
     """
     Test utility: Run both pipelines in sequence.
 
@@ -86,11 +86,11 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
 
     # Create a NEW config for reverse direction
     reverse_cfg = UserConfig()
-    reverse_cfg.input_pptx = intermediate_pptx
+    reverse_cfg.input_pptx = str(intermediate_pptx)
     reverse_cfg.output_folder = cfg.output_folder  # Keep same output location
     reverse_cfg.template_docx = cfg.template_docx  # Keep templates
     # Copy other settings as needed
-    reverse_cfg.enable_all_options()  # Match the test settings
+    reverse_cfg.enable_all_options()  # Match the first-run bool settings
 
     run_pipeline(reverse_cfg)
 
@@ -110,16 +110,18 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, str, str]:
 
 
 # region _find_most_recent_file
-def _find_most_recent_file(folder: Path, pattern: str) -> str:
+def _find_most_recent_file(folder: Path, pattern: str) -> Path:
     """Find the most recently created file matching glob pattern."""
     files = list(folder.glob(pattern))
     if not files:
-        log.warning(f"No files matching '{pattern}' in {folder}")
-        return "{could not find most recent path}"
+        log.error(f"No files matching '{pattern}' in {folder}")
+        raise FileNotFoundError(
+            f"Cannot proceed: No files matching '{pattern}' in {folder}"
+        )
 
     # Use st_mtime (modification time) which is reliable across platforms
     # and makes more sense for "most recent output file"
-    return str(max(files, key=lambda p: p.stat().st_mtime))
+    return max(files, key=lambda p: p.stat().st_mtime)
 
 
 # endregion
