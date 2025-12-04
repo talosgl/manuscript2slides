@@ -132,16 +132,20 @@ class TestParseArgs:
 class TestBuildConfigFromArgs:
     """Test that build_config_from_args respects CLI > config file > defaults priority."""
 
-    def test_cli_overrides_nothing_when_nothing_provided(
+    def test_cli_uses_defaults_for_unspecified_fields(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Config defaults should be used when no overriding flags were provided."""
-        monkeypatch.setattr(sys, "argv", ["manuscript2slides", "--cli"])
+        monkeypatch.setattr(
+            sys, "argv", ["manuscript2slides", "--cli", "--input-docx", "dummy.docx"]
+        )  # Don't fail this particular test because no input was provided
         args = parse_args()
         cfg = build_config_from_args(args)
 
-        default_cfg = UserConfig.with_defaults()
+        default_cfg = UserConfig(
+            input_docx="dummy.docx"
+        )  # This doesn't really need to match but it's confusing when reading the test if it doesn't.
 
         assert cfg.experimental_formatting_on == default_cfg.experimental_formatting_on
         assert cfg.chunk_type == default_cfg.chunk_type
@@ -176,7 +180,11 @@ class TestBuildConfigFromArgs:
         expected: bool,
     ) -> None:
         """Setting an option to True or False in the CLI should override config default."""
-        monkeypatch.setattr(sys, "argv", ["manuscript2slides", "--cli", cli_flag])
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            ["manuscript2slides", "--cli", "--input-docx", "dummy.docx", cli_flag],
+        )
         args = parse_args()
         cfg = build_config_from_args(args)
 
@@ -197,7 +205,16 @@ class TestBuildConfigFromArgs:
     ) -> None:
         """Test that chunk_type string converts to enum."""
         monkeypatch.setattr(
-            sys, "argv", ["manuscript2slides", "--cli", "--chunk-type", cli_value]
+            sys,
+            "argv",
+            [
+                "manuscript2slides",
+                "--cli",
+                "--input-docx",
+                "dummy.docx",
+                "--chunk-type",
+                cli_value,
+            ],
         )
         args = parse_args()
         cfg = build_config_from_args(args)
