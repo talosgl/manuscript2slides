@@ -482,6 +482,13 @@ class UserConfig:
                 "Please specify only one input file."
             )
 
+        # Must have at least one input set:
+        if not self.input_docx and not self.input_pptx:
+            log.error("No input file specified")
+            raise ValueError(
+                "No input file provided: Must specify either input_docx or input_pptx."
+            )
+
         # Warn if the user accidentally passed the same file type for input + template (template will be ignored)
         # TODO, post-release: Assess if this should raise/fail the pipeline rather than warn and just ignore the input.
         if self.input_docx and self.template_docx:

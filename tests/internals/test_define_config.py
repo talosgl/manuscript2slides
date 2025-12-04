@@ -59,6 +59,12 @@ def test_validate_valid_config(sample_d2p_cfg: UserConfig) -> None:
             ValueError,
             "Cannot specify both",
         ),
+        # Must have at least one input set
+        (
+            UserConfig(input_docx=None, input_pptx=None),
+            ValueError,
+            "No input file",
+        ),
         # Output folder cannot be empty string
         (
             UserConfig(input_docx="input.docx", output_folder=""),
@@ -67,7 +73,7 @@ def test_validate_valid_config(sample_d2p_cfg: UserConfig) -> None:
         ),
         # Range checks
         (
-            UserConfig(range_start=5, range_end=2),
+            UserConfig(input_docx="input.docx", range_start=5, range_end=2),
             ValueError,
             "range_start .* cannot be greater than range_end",
         ),
