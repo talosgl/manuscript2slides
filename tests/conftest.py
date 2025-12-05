@@ -96,7 +96,6 @@ def clean_debug_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
     return monkeypatch
 
 
-# TODO: Assess if this is really needed because I was just guessing while learning
 @pytest.fixture
 def sample_config_toml() -> Path:
     """Path to test a config toml"""

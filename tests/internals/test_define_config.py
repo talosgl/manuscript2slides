@@ -42,8 +42,246 @@ def test_chunk_type_from_string_invalid() -> None:
 
 # endregion
 
+# region UserConfig class
 
-# region test validate()
+
+# region from_toml tests
+# Case: Happy paths - # Provide several valid toml configurations and ensure there's no raises.
+@pytest.mark.parametrize(
+    argnames="mock_toml",
+    argvalues=[
+        # basic docx config
+        """
+    input_docx = "./sample_doc.docx"
+
+# === Processing Options ===
+chunk_type = "page" # Options: paragraph, page, heading_flat, heading_nested
+
+# === Formatting ===
+experimental_formatting_on = true
+
+# === Annotations ===
+preserve_docx_metadata_in_speaker_notes = true
+
+    """,
+        # basic pptx config
+        """
+    input_pptx = "./test_slides.pptx"
+    template_docx = "./docx_template.docx"
+""",
+        # can add more cases below
+        # ...
+    ],
+)
+def test_from_toml_happy_paths(tmp_path: Path, mock_toml: str) -> None:
+    """Test that known-good toml config files do not raise when parsed with from_toml."""
+    toml_file = tmp_path / "config.toml"
+    toml_file.write_text(mock_toml)
+
+    # Test will fail if any errors are hit on this call
+    test_cfg = UserConfig.from_toml(toml_file)
+
+    # Case: if the file includes chunk_type as string, does it makes it out as an enum?
+    if "chunk_type" in mock_toml:
+        assert isinstance(test_cfg.chunk_type, ChunkType)
+
+
+def test_from_toml_real_path(sample_config_toml: Path) -> None:
+    """Ensure we load fine from a known good file."""
+    UserConfig.from_toml(sample_config_toml)
+
+
+@pytest.mark.parametrize(
+    argnames="mock_toml",
+    argvalues=[
+        # Case: Mismatched/unclosed quotes
+        """
+        input_pptx = ./test_slides.pptx"
+        template_docx = "./docx_template.docx"
+        """,
+        # Case: Missing quotes around string value
+        """
+        input_docx = ./sample_doc.docx
+        """,
+        # Case: Mixing quote types
+        """
+        input_docx = "./sample.docx'
+        """,
+        # Case: Unquoted path with special characters
+        r"""
+        input_docx = C:\Users\test.docx
+
+        """,
+    ],
+)
+def test_from_toml_bad_quotes(tmp_path: Path, mock_toml: str) -> None:
+    """Ensure we raise with a helpful message when encountering toml syntax parsing errors from quotation marks."""
+    toml_file = tmp_path / "config.toml"
+    toml_file.write_text(mock_toml)
+
+    with pytest.raises(ValueError, match="quote"):
+        test_cfg = UserConfig.from_toml(toml_file)
+
+
+def test_from_toml_raises_with_binary_file(path_to_empty_docx: Path) -> None:
+    """Test that passing a non-TOML file (like .docx) raises appropriately."""
+    with pytest.raises(ValueError, match="decode"):
+        UserConfig.from_toml(path_to_empty_docx)
+
+
+def test_from_toml_warns_if_empty(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Ensure we log a warning if ingested toml file is loaded as empty."""
+    toml_file = tmp_path / "config.toml"
+    toml_file.write_text("")
+
+    with caplog.at_level(logging.WARNING):
+        test_cfg = UserConfig.from_toml(toml_file)
+        assert "Config toml file loaded as empty" in caplog.text
+        assert "feedback" in caplog.text
+
+
+def test_from_toml_raises_helpfully_if_path_not_exist(tmp_path: Path) -> None:
+    """Ensure we raise if user passed in path to a file that doesn't exist"""
+
+    with pytest.raises(FileNotFoundError, match="file not found"):
+        test_cfg = UserConfig.from_toml(tmp_path / "fake.toml")
+
+
+def test_from_toml_raises_helpfully_if_path_is_dir(tmp_path: Path) -> None:
+    """Ensure we raise if user passed in path to a file that doesn't exist"""
+
+    with pytest.raises(ValueError, match="is a directory"):
+        test_cfg = UserConfig.from_toml(tmp_path)
+
+
+# Cases: Ensure we raise if:
+# Unable to parse/decode the [toml] file contents into a py dict
+def test_from_toml_raises_if_cannot_parse_to_dict(tmp_path: Path) -> None:
+    """Ensure we raise when encountering toml syntax parsing errors (generic)."""
+
+    mock_toml = """
+    What happens if this is just a bunch of normal text?
+    """
+
+    toml_file = tmp_path / "config.toml"
+    toml_file.write_text(mock_toml)
+
+    with pytest.raises(
+        Exception
+    ):  # Pretty weak check but this is kind of a bucket for anything we haven't thought of writing specific syntax tests for.
+        test_cfg = UserConfig.from_toml(toml_file)
+
+
+def test_from_toml_raises_helpfully_with_bad_chunk_type_data(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Ensure we raise with a helpful message if chunk_type has invalid value"""
+    toml_file = tmp_path / "config.toml"
+    toml_file.write_text(
+        """
+        input_docx = "./sample_doc.docx"
+        chunk_type = "not_a_real_chunk_type"
+        """
+    )
+
+    with pytest.raises(ValueError, match="Invalid chunk_type"):
+        test_cfg = UserConfig.from_toml(toml_file)
+
+
+def test_from_toml_unexpected_fields_warn_and_filter(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Test that unexpected fields in TOML raise ValueError."""
+    toml_file = tmp_path / "config.toml"
+    toml_file.write_text(
+        """
+        input_docx = "test.docx"
+        chunk_type = "paragraph"
+        invalid_field = "should not be here"
+        another_bad_field = 123
+        """
+    )
+    with caplog.at_level(logging.WARNING):
+        test_cfg = UserConfig.from_toml(toml_file)
+        assert "Ignoring unexpected fields" in caplog.text
+        assert "Check for typos" in caplog.text
+        assert "Filtering out unexpected fields" in caplog.text
+
+
+def test_from_toml_does_normalize_paths(tmp_path: Path) -> None:
+    """Test that paths with backslashes get normalized to forward slashes."""
+    toml_file = tmp_path / "config.toml"
+    toml_file.write_text('input_docx = "C:\\\\Users\\\\test\\\\file.docx"\n')
+
+    cfg = UserConfig.from_toml(toml_file)
+
+    assert cfg.input_docx == "C:/Users/test/file.docx"
+
+
+# end region
+
+
+# region direction property tests
+@pytest.mark.parametrize(
+    argnames="input_cfg,expected_result",
+    argvalues=[
+        # Valid input
+        (UserConfig(input_docx="path/to/input.docx"), PipelineDirection.DOCX_TO_PPTX),
+        (UserConfig(input_pptx="path/to/input.pptx"), PipelineDirection.PPTX_TO_DOCX),
+    ],
+)
+def test_direction_property(
+    input_cfg: UserConfig, expected_result: PipelineDirection
+) -> None:
+    """Test we get expected results for expected input"""
+    result = input_cfg.direction
+    print(expected_result, result)
+    assert result == expected_result
+
+
+def test_direction_property_raises_when_neither_input_path_set(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Ensure we raise if we can't set direction because neither input field was set.
+    Not clear how we'd ever get to this situation in the current codebase, but, just in case.
+    """
+    test_cfg = UserConfig(input_docx=None, input_pptx=None)
+    with pytest.raises(ValueError, match="no input"):
+        result = test_cfg.direction
+    assert "no input_docx or input_pptx path" in caplog.text
+
+
+def test_direction_property_raises_when_both_inputs_set(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Ensure we raise if we we cannot set direction because both input fields were set."""
+    test_cfg = UserConfig(input_docx="a_docx_path.docx", input_pptx="a_pptx_path.pptx")
+    with pytest.raises(ValueError, match="too many inputs"):
+        result = test_cfg.direction
+    assert "Only 1 input can be specified" in caplog.text
+
+
+# endregion
+
+# region pri3 TODOs
+
+
+# TODO: might be low value-to-effort, but, test all the get_*_path() ?
+
+# TODO: test enable_all_options
+
+
+# TODO: test save_toml
+#    Case: Test which takes a config from memory, saves with .save_toml to tmp_path/file.toml, then calls load_toml.
+
+
+# TODO: test config_to_dict
+# endregion
+
+
+# region validate() tests
 def test_validate_valid_config(sample_d2p_cfg: UserConfig) -> None:
     """Ensure validate() succeeds when passed a valid config"""
     cfg = sample_d2p_cfg
@@ -268,57 +506,4 @@ def test_validate_pptx2docx_pipeline_requirements_raises_if_output_is_file(
 # endregion
 
 
-# region test direction property
-@pytest.mark.parametrize(
-    argnames="input_cfg,expected_result",
-    argvalues=[
-        # Valid input
-        (UserConfig(input_docx="path/to/input.docx"), PipelineDirection.DOCX_TO_PPTX),
-        (UserConfig(input_pptx="path/to/input.pptx"), PipelineDirection.PPTX_TO_DOCX),
-    ],
-)
-def test_direction_property(
-    input_cfg: UserConfig, expected_result: PipelineDirection
-) -> None:
-    """Test we get expected results for expected input"""
-    result = input_cfg.direction
-    print(expected_result, result)
-    assert result == expected_result
-
-
-def test_direction_property_raises_when_neither_input_path_set(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """Ensure we raise if we can't set direction because neither input field was set.
-    Not clear how we'd ever get to this situation in the current codebase, but, just in case.
-    """
-    test_cfg = UserConfig(input_docx=None, input_pptx=None)
-    with pytest.raises(ValueError, match="no input"):
-        result = test_cfg.direction
-    assert "no input_docx or input_pptx path" in caplog.text
-
-
-def test_direction_property_raises_when_both_inputs_set(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """Ensure we raise if we we cannot set direction because both input fields were set."""
-    test_cfg = UserConfig(input_docx="a_docx_path.docx", input_pptx="a_pptx_path.pptx")
-    with pytest.raises(ValueError, match="too many inputs"):
-        result = test_cfg.direction
-    assert "Only 1 input can be specified" in caplog.text
-
-
-# endregion
-
-# region for later
-
-# TODO: test from_toml
-
-# TODO: might be low value-to-effort, but, test all the get_*_path() ?
-
-# TODO: test enable_all_options
-
-# TODO: test save_toml (?)
-
-# TODO: test config_to_dict
 # endregion
