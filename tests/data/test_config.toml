@@ -1,4 +1,4 @@
-input_docx = "../src/manuscript2slides/resources/sample_doc.docx"
+input_docx = "./sample_doc.docx"
 
 # === Processing Options ===
 chunk_type = "page" # Options: paragraph, page, heading_flat, heading_nested

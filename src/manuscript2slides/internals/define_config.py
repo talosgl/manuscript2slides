@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 
 import logging
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, fields
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
@@ -208,21 +208,50 @@ class UserConfig:
             ValueError: If TOML is invalid or contains invalid enum values
         """
         if not path.exists():
-            log.error(f"Config file not found: {path}")
-            raise FileNotFoundError(f"Config file not found: {path}")
+            error_msg = f"Config file not found: {path}"
+            log.error(error_msg)
+            raise FileNotFoundError(error_msg)
+        if path.is_dir():
+            error_msg = f"This is a directory (folder), not a toml file: {path}"
+            log.error(error_msg)
+            raise ValueError(error_msg)
 
         # Read in the TOML file; raise if there are syntax errors.
         try:
             with open(path, "rb") as f:
                 data = tomllib.load(f)
         except tomllib.TOMLDecodeError as e:
-            error_msg = f"Invalid TOML syntax in {path}"
+            error_msg = f"Invalid TOML syntax in {path}. Check for missing or mismatched quote marks."
+            log.error(error_msg)
+            raise ValueError(error_msg) from e
+        except PermissionError as e:
+            error_msg = f"We hit a permission error when trying to access {path}"
             log.error(error_msg)
             raise ValueError(error_msg) from e
 
         # Warn the user if the data was read-in as empty, but only warn-- keep going.
         if not data:
-            log.warning(f"Config toml file is empty: {path}. Using all defaults.")
+            log.warning(
+                f"Config toml file loaded as empty, so no UserConfig fields were set from: {path}."
+            )
+            log.warning(
+                f"If you're unhappy this was only logged as a warning and did not stop pipeline execution, please send us that UX feedback via a GitHub Issue."
+            )
+
+        # Check for invalid keys
+        # Filter out any unexpected fields and warn/error
+        valid_fields = {f.name for f in fields(cls)}
+        unexpected = set(data.keys()) - valid_fields
+
+        if unexpected:
+            log.warning(
+                f"Ignoring unexpected fields in TOML config: {', '.join(sorted(unexpected))}. "
+                f"Check for typos. Valid fields: {', '.join(sorted(valid_fields))}"
+            )
+
+            # Remove unexpected fields
+            log.warning("Filtering out unexpected fields before continuing.")
+            data = {k: v for k, v in data.items() if k in valid_fields}
 
         # Convert string enum values to actual enums
         if "chunk_type" in data:
@@ -235,16 +264,6 @@ class UserConfig:
                 )
                 log.error(error_msg)
                 raise ValueError(error_msg) from e
-
-        if "direction" in data:
-            direction_value = data.pop("direction")  # Pop it once, outside try/except
-            try:
-                data["_direction"] = PipelineDirection(direction_value)
-            except ValueError as e:
-                log.warning(
-                    f"Invalid direction '{direction_value}' in config, "
-                    f"will infer from input files. Valid options: {[d.value for d in PipelineDirection]}"
-                )
 
         # Normalize path separators for Windows compatibility
         path_fields = [
