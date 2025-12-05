@@ -269,15 +269,99 @@ def test_direction_property_raises_when_both_inputs_set(
 
 
 # TODO: might be low value-to-effort, but, test all the get_*_path() ?
+def test_get_input_docx_path_works(
+    path_to_sample_docx_with_everything: Path,
+) -> None:
 
-# TODO: test enable_all_options
+    test_cfg = UserConfig(input_docx=str(path_to_sample_docx_with_everything))
+    result = test_cfg.get_input_docx_file()
+
+    assert (
+        result is not None
+    ), f"Test result is evaluating to None: probably it is not able to access the real test data from disk."
+
+    # Compare resolved/absolute paths
+    assert result.resolve() == path_to_sample_docx_with_everything.resolve()
+
+    # Or just check the filename matches
+    assert result.name == path_to_sample_docx_with_everything.name
+
+
+def test_get_input_docx_file_returns_none_when_not_set() -> None:
+    """Test that get_input_docx_file returns None when input_docx is not set."""
+    test_cfg = UserConfig(input_pptx="something.pptx")  # Set other input instead
+    result = test_cfg.get_input_docx_file()
+    assert result is None
+
+
+def test_get_template_pptx_path_returns_default_when_not_set() -> None:
+    """Test that get_template_pptx_path falls back to default template."""
+    test_cfg = UserConfig(input_docx="test.docx")  # Don't set template_pptx
+    result = test_cfg.get_template_pptx_path()
+    # Check it returns the default (not None)
+    assert result is not None
+    assert result.exists()  # Default should exist
+
+
+def test_get_output_folder_returns_configured_path(tmp_path: Path) -> None:
+    """Test that get_output_folder returns configured path when set."""
+    test_cfg = UserConfig(input_docx="test.docx", output_folder=str(tmp_path))
+    result = test_cfg.get_output_folder()
+    assert result == tmp_path
+
+
+def test_get_output_folder_returns_default_when_not_set() -> None:
+    """Test that get_output_folder falls back to default output dir."""
+    test_cfg = UserConfig(input_docx="test.docx")
+    result = test_cfg.get_output_folder()
+    assert result is not None  # Should return default, not None
+
+
+@pytest.mark.parametrize(
+    argnames="bool_name",
+    argvalues=[
+        "experimental_formatting_on",
+        "display_comments",
+        "comments_sort_by_date",
+        "comments_keep_author_and_date",
+        "display_footnotes",
+        "display_endnotes",
+        "preserve_docx_metadata_in_speaker_notes",
+    ],
+)
+def test_enable_all_options(sample_d2p_cfg: UserConfig, bool_name: str) -> None:
+    """Ensure enable_all_options really sets everything to true."""
+    # Arrange: Set this specific bool to False
+    setattr(sample_d2p_cfg, bool_name, False)
+
+    # Act: Call the function
+    sample_d2p_cfg.enable_all_options()
+
+    # Assert: Check it's now True
+    assert getattr(sample_d2p_cfg, bool_name) is True
 
 
 # TODO: test save_toml
 #    Case: Test which takes a config from memory, saves with .save_toml to tmp_path/file.toml, then calls load_toml.
 
+"""
+Suggestions:
+Test the round-trip (create config → save → load → verify match)
+Test that None values are filtered out of the saved TOML
+Test that parent directories get created if they don't exist
+Test that it raises when path is a directory
+Test that enums are saved as strings in the TOML
+"""
+
 
 # TODO: test config_to_dict
+"""
+Suggestions:
+Test that all fields get converted to the dict
+Test that enums get converted to their string values (.value)
+Test that paths get normalized
+Test that None values are included in the dict (filtering happens in save_toml)
+"""
 # endregion
 
 

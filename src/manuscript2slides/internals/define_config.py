@@ -366,8 +366,6 @@ class UserConfig:
         Enable all processing options by mutating an existing config.
         Use for demos, testing, and preserving as much as possible during
         roundtrip pipeline runs. Returns the mutated object.
-
-        NOTE: DOES NOT ALTER DEBUG MODE
         """
         log.info("Enabling all processing bool options on existing config.")
 
