@@ -210,14 +210,14 @@ def test_from_toml_unexpected_fields_warn_and_filter(
         assert "Filtering out unexpected fields" in caplog.text
 
 
-def test_from_toml_does_normalize_paths(tmp_path: Path) -> None:
+def test_from_toml_does_normalize_path(tmp_path: Path) -> None:
     """Test that paths with backslashes get normalized to forward slashes."""
     toml_file = tmp_path / "config.toml"
     toml_file.write_text('input_docx = "C:\\\\Users\\\\test\\\\file.docx"\n')
 
     cfg = UserConfig.from_toml(toml_file)
 
-    assert cfg.input_docx == "C:/Users/test/file.docx"
+    assert cfg.input_docx == Path("C:/Users/test/file.docx")
 
 
 # end region
@@ -228,8 +228,14 @@ def test_from_toml_does_normalize_paths(tmp_path: Path) -> None:
     argnames="input_cfg,expected_result",
     argvalues=[
         # Valid input
-        (UserConfig(input_docx="path/to/input.docx"), PipelineDirection.DOCX_TO_PPTX),
-        (UserConfig(input_pptx="path/to/input.pptx"), PipelineDirection.PPTX_TO_DOCX),
+        (
+            UserConfig(input_docx=Path("path/to/input.docx")),
+            PipelineDirection.DOCX_TO_PPTX,
+        ),
+        (
+            UserConfig(input_pptx=Path("path/to/input.pptx")),
+            PipelineDirection.PPTX_TO_DOCX,
+        ),
     ],
 )
 def test_direction_property(
@@ -257,7 +263,9 @@ def test_direction_property_raises_when_both_inputs_set(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Ensure we raise if we we cannot set direction because both input fields were set."""
-    test_cfg = UserConfig(input_docx="a_docx_path.docx", input_pptx="a_pptx_path.pptx")
+    test_cfg = UserConfig(
+        input_docx=Path("a_docx_path.docx"), input_pptx=Path("a_pptx_path.pptx")
+    )
     with pytest.raises(ValueError, match="too many inputs"):
         result = test_cfg.direction
     assert "Only 1 input can be specified" in caplog.text
@@ -272,8 +280,8 @@ def test_direction_property_raises_when_both_inputs_set(
 def test_get_input_docx_path_works(
     path_to_sample_docx_with_everything: Path,
 ) -> None:
-
-    test_cfg = UserConfig(input_docx=str(path_to_sample_docx_with_everything))
+    """Test that we get the resolved version of the string path provided by a user."""
+    test_cfg = UserConfig(input_docx=path_to_sample_docx_with_everything)
     result = test_cfg.get_input_docx_file()
 
     assert (
@@ -289,14 +297,14 @@ def test_get_input_docx_path_works(
 
 def test_get_input_docx_file_returns_none_when_not_set() -> None:
     """Test that get_input_docx_file returns None when input_docx is not set."""
-    test_cfg = UserConfig(input_pptx="something.pptx")  # Set other input instead
+    test_cfg = UserConfig(input_pptx=Path("something.pptx"))  # Set other input instead
     result = test_cfg.get_input_docx_file()
     assert result is None
 
 
 def test_get_template_pptx_path_returns_default_when_not_set() -> None:
     """Test that get_template_pptx_path falls back to default template."""
-    test_cfg = UserConfig(input_docx="test.docx")  # Don't set template_pptx
+    test_cfg = UserConfig(input_docx=Path("test.docx"))  # Don't set template_pptx
     result = test_cfg.get_template_pptx_path()
     # Check it returns the default (not None)
     assert result is not None
@@ -305,14 +313,14 @@ def test_get_template_pptx_path_returns_default_when_not_set() -> None:
 
 def test_get_output_folder_returns_configured_path(tmp_path: Path) -> None:
     """Test that get_output_folder returns configured path when set."""
-    test_cfg = UserConfig(input_docx="test.docx", output_folder=str(tmp_path))
+    test_cfg = UserConfig(input_docx=Path("test.docx"), output_folder=tmp_path)
     result = test_cfg.get_output_folder()
     assert result == tmp_path
 
 
 def test_get_output_folder_returns_default_when_not_set() -> None:
     """Test that get_output_folder falls back to default output dir."""
-    test_cfg = UserConfig(input_docx="test.docx")
+    test_cfg = UserConfig(input_docx=Path("test.docx"))
     result = test_cfg.get_output_folder()
     assert result is not None  # Should return default, not None
 
@@ -341,8 +349,49 @@ def test_enable_all_options(sample_d2p_cfg: UserConfig, bool_name: str) -> None:
     assert getattr(sample_d2p_cfg, bool_name) is True
 
 
-# TODO: test save_toml
-#    Case: Test which takes a config from memory, saves with .save_toml to tmp_path/file.toml, then calls load_toml.
+# TODO: test save_toml#
+def test_save_toml_round_trip(
+    path_to_sample_docx_with_formatting: Path,
+    path_to_empty_pptx: Path,
+    tmp_path: Path,
+) -> None:
+    """Case: Test which builds a config in memory, saves with .save_toml to tmp_path/file.toml, then calls load_toml."""
+
+    # Set every field explicitly (for d2p), and don't use a fixture so that it's easier to read later.
+    starting_cfg = UserConfig(
+        input_docx=path_to_sample_docx_with_formatting,
+        template_pptx=path_to_empty_pptx,
+        output_folder=tmp_path,
+        chunk_type=ChunkType.HEADING_NESTED,
+        experimental_formatting_on=True,
+        range_start=1,
+        range_end=3,
+        display_comments=False,
+        comments_sort_by_date=False,
+        comments_keep_author_and_date=False,
+        display_endnotes=True,
+        display_footnotes=False,
+        preserve_docx_metadata_in_speaker_notes=True,
+    )
+
+    save_file_path = tmp_path / "test_saved_config.toml"
+
+    # Action: Call the function
+    starting_cfg.save_toml(save_file_path)
+
+    assert (
+        save_file_path.exists()
+    ), f"Something went wrong with the file system when we tried to save the test config, apparently"
+
+    load_config = UserConfig.from_toml(save_file_path)
+
+    # Assert: Check if these are equal.
+    # This works because UserConfig is a @dataclass and has a built in defined __eq__ method! Don't do this with non-dataclass objects in Py! Don't do it in C or JavaScript!
+
+    assert load_config == starting_cfg
+
+    pass
+
 
 """
 Suggestions:
@@ -365,6 +414,28 @@ Test that None values are included in the dict (filtering happens in save_toml)
 # endregion
 
 
+# region pre_run_check tests
+def test_pre_run_check_happy_path(
+    sample_d2p_cfg: UserConfig,
+    sample_p2d_cfg: UserConfig,
+) -> None:
+    """
+    Run happy path versions of this function with similar fixtures as the dedicated function tests
+    to help narrow where issues crop up later (orchestrator versus per-function). I can't imagine why
+    things would fail at this level right now (maybe direction isn't getting set properly...?) versus
+    deeper, but it's an extremely compact test, so why not?
+    """
+
+    # Check on the docx2pptx pipeline:
+    sample_d2p_cfg.pre_run_check()
+
+    # Check on the pptx2docx pipeline:
+    sample_p2d_cfg.pre_run_check()
+
+
+# endregion
+
+
 # region validate() tests
 def test_validate_valid_config(sample_d2p_cfg: UserConfig) -> None:
     """Ensure validate() succeeds when passed a valid config"""
@@ -377,7 +448,7 @@ def test_validate_valid_config(sample_d2p_cfg: UserConfig) -> None:
     argvalues=[
         # Only 1 input file allowed
         (
-            UserConfig(input_docx="file.docx", input_pptx="file.pptx"),
+            UserConfig(input_docx=Path("file.docx"), input_pptx=Path("file.pptx")),
             ValueError,
             "Cannot specify both",
         ),
@@ -387,15 +458,9 @@ def test_validate_valid_config(sample_d2p_cfg: UserConfig) -> None:
             ValueError,
             "No input file",
         ),
-        # Output folder cannot be empty string
-        (
-            UserConfig(input_docx="input.docx", output_folder=""),
-            ValueError,
-            "cannot be empty string; use None for default",
-        ),
         # Range checks
         (
-            UserConfig(input_docx="input.docx", range_start=5, range_end=2),
+            UserConfig(input_docx=Path("input.docx"), range_start=5, range_end=2),
             ValueError,
             "range_start .* cannot be greater than range_end",
         ),
@@ -421,8 +486,8 @@ def test_validate_catches_and_warns_for_input_and_template_passed_with_same_file
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Ensure we log a warning to the log if the user passes in both input_docx + template_docx or input_pptx + template_pptx, because we're going to ignore their template."""
-    sample_d2p_cfg.template_docx = str(path_to_empty_docx)
-    sample_p2d_cfg.template_pptx = str(path_to_empty_pptx)
+    sample_d2p_cfg.template_docx = path_to_empty_docx
+    sample_p2d_cfg.template_pptx = path_to_empty_pptx
 
     with caplog.at_level(logging.WARN):
         sample_d2p_cfg.validate()
@@ -458,7 +523,7 @@ def test_validate_docx2pptx_pipeline_requirements_valid_config(
         (UserConfig(input_docx=None), ValueError, "No input docx file specified"),
         # Input path does not exist on disk
         (
-            UserConfig(input_docx="this_file_doesn't_exist.docx"),
+            UserConfig(input_docx=Path("this_file_doesn't_exist.docx")),
             FileNotFoundError,
             "file not found",
         ),
@@ -481,7 +546,7 @@ def test_validate_docx2pptx_pipeline_requirements_raises_if_input_docx_is_dir(
     tmp_path: Path,
 ) -> None:
     """Test we raise gracefully if a directory, instead of file, is passed to input_docx."""
-    test_cfg = UserConfig(input_docx=str(tmp_path))
+    test_cfg = UserConfig(input_docx=tmp_path)
     with pytest.raises(expected_exception=ValueError, match="not a file"):
         test_cfg.validate_docx2pptx_pipeline_requirements()
 
@@ -490,7 +555,7 @@ def test_validate_docx2pptx_pipeline_requirements_raises_if_template_not_exist(
     sample_d2p_cfg: UserConfig,
 ) -> None:
     """Case: input_docx is good, but template path doesn't exist."""
-    sample_d2p_cfg.template_pptx = "bad/path.pptx"
+    sample_d2p_cfg.template_pptx = Path("bad/path.pptx")
     with pytest.raises(FileNotFoundError, match="not found"):
         sample_d2p_cfg.validate_docx2pptx_pipeline_requirements()
 
@@ -499,7 +564,7 @@ def test_validate_docx2pptx_pipeline_requirements_raises_if_template_is_dir(
     sample_d2p_cfg: UserConfig, tmp_path: Path
 ) -> None:
     """Case: Input is good, and template exists, but it's a directory."""
-    sample_d2p_cfg.template_pptx = str(tmp_path)
+    sample_d2p_cfg.template_pptx = tmp_path
     with pytest.raises(ValueError, match="must be a file, not a folder"):
         sample_d2p_cfg.validate_docx2pptx_pipeline_requirements()
 
@@ -508,7 +573,7 @@ def test_validate_docx2pptx_pipeline_requirements_raises_if_output_is_file(
     sample_d2p_cfg: UserConfig, path_to_empty_docx: Path
 ) -> None:
     """Case: Output folder is a file instead of a directory"""
-    sample_d2p_cfg.output_folder = str(path_to_empty_docx)
+    sample_d2p_cfg.output_folder = path_to_empty_docx
     with pytest.raises(ValueError, match="exists but is not a directory"):
         sample_d2p_cfg.validate_docx2pptx_pipeline_requirements()
 
@@ -532,7 +597,7 @@ def test_validate_pptx2docx_pipeline_requirements_valid_config(
         (UserConfig(input_pptx=None), ValueError, "No input pptx file specified"),
         # Case: Input pptx path does not exist on disk
         (
-            UserConfig(input_pptx="this_file_doesn't_exist.pptx"),
+            UserConfig(input_pptx=Path("this_file_doesn't_exist.pptx")),
             FileNotFoundError,
             "file not found",
         ),
@@ -554,7 +619,7 @@ def test_validate_pptx2docx_pipeline_requirements_raises_if_input_pptx_is_dir(
     tmp_path: Path,
 ) -> None:
     """Case: input_pptx is set to a (valid) directory, not a file."""
-    test_cfg = UserConfig(input_pptx=str(tmp_path))
+    test_cfg = UserConfig(input_pptx=tmp_path)
     with pytest.raises(expected_exception=ValueError, match="not a file"):
         test_cfg.validate_pptx2docx_pipeline_requirements()
 
@@ -563,7 +628,7 @@ def test_validate_pptx2docx_pipeline_requirements_raises_if_template_not_exist(
     sample_p2d_cfg: UserConfig,
 ) -> None:
     """Case: input_pptx is good, but template_docx file does not exist."""
-    sample_p2d_cfg.template_docx = "bad/path.docx"
+    sample_p2d_cfg.template_docx = Path("bad/path.docx")
     with pytest.raises(FileNotFoundError, match="not found"):
         sample_p2d_cfg.validate_pptx2docx_pipeline_requirements()
 
@@ -572,7 +637,7 @@ def test_validate_pptx2docx_pipeline_requirements_raises_if_template_is_dir(
     sample_p2d_cfg: UserConfig, tmp_path: Path
 ) -> None:
     """Case: Input is good, and template exists, but it's a directory."""
-    sample_p2d_cfg.template_docx = str(tmp_path)
+    sample_p2d_cfg.template_docx = tmp_path
     with pytest.raises(ValueError, match="must be a file, not a folder"):
         sample_p2d_cfg.validate_pptx2docx_pipeline_requirements()
 
@@ -582,7 +647,7 @@ def test_validate_pptx2docx_pipeline_requirements_raises_if_output_is_file(
     sample_p2d_cfg: UserConfig, path_to_empty_docx: Path
 ) -> None:
     """Case: Output folder is a file instead of a directory"""
-    sample_p2d_cfg.output_folder = str(path_to_empty_docx)
+    sample_p2d_cfg.output_folder = path_to_empty_docx
     with pytest.raises(ValueError, match="exists but is not a directory"):
         sample_p2d_cfg.validate_pptx2docx_pipeline_requirements()
 

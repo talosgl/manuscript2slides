@@ -3,10 +3,11 @@
 
 # For incomplete type stubs in python-pptx:
 # pyright: reportAttributeAccessIssue=false
+# mypy: disable-error-code="import-untyped"
 
 # region imports
 import logging
-
+from typing import Any
 from docx import document
 from docx.opc import constants
 from docx.oxml.ns import qn
@@ -46,7 +47,7 @@ def process_docx_paragraph_inner_contents(
         pptx objects
     """
     items_processed = False
-    experimental_formatting_metadata = []
+    experimental_formatting_metadata: list[dict[str, Any]] = []
 
     # Copy baseline paragraph-level font and basic formatting before processing runs
     if paragraph.style and paragraph.style.font:

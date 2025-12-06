@@ -1,6 +1,7 @@
 # templates.py
 """Load docx and pptx templates from disk, validate shape, and create in-memory python objects from them."""
 # pyright: reportArgumentType=false, reportIndexIssue=false,  reportAttributeAccessIssue=false
+# mypy: disable-error-code="import-untyped"
 
 from pathlib import Path
 
@@ -141,4 +142,4 @@ def delete_docx_paragraph(paragraph: Paragraph_docx) -> None:
     p.getparent().remove(p)
 
     # Optional: Clear internal references to prevent errors if the object is used later
-    paragraph._p = paragraph._element = None
+    paragraph._p = paragraph._element = None  # type: ignore[assignment]

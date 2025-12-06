@@ -9,6 +9,7 @@ from manuscript2slides.cli import (
 )
 from manuscript2slides.internals.define_config import ChunkType, UserConfig
 import sys
+from pathlib import Path
 
 
 # region TestParseArgs
@@ -144,7 +145,7 @@ class TestBuildConfigFromArgs:
         cfg = build_config_from_args(args)
 
         default_cfg = UserConfig(
-            input_docx="dummy.docx"
+            input_docx=Path("dummy.docx")
         )  # This doesn't really need to match but it's confusing when reading the test if it doesn't.
 
         assert cfg.experimental_formatting_on == default_cfg.experimental_formatting_on

@@ -89,30 +89,11 @@ def save_user_preferences(cfg: UserConfig) -> None:
         if cfg.display_endnotes is not None:
             APP_SETTINGS.setValue("display_endnotes", cfg.display_endnotes)
 
-        # Paths
-
-        # region cut fields
-        # Consider if it's desirable to save input file path or not. For now we assume
-        # not really, but leaving the code here, commented out, in case that changes later.
-
-        # if cfg.input_docx is not None:
-        #     APP_SETTINGS.setValue("input_docx", cfg.input_docx)
-        # if cfg.input_pptx is not None:
-        #     APP_SETTINGS.setValue("input_pptx", cfg.input_pptx)
-
-        # only save range if we also save input
-        # if cfg.range_start is not None:
-        #     APP_SETTINGS.setValue("range_start", cfg.range_start)
-        # if cfg.range_end is not None:
-        #     APP_SETTINGS.setValue("range_end", cfg.range_end)
-        # endregion
-
         if cfg.output_folder is not None:
-            APP_SETTINGS.setValue("output_folder", cfg.output_folder)
-        if cfg.template_docx is not None:
-            APP_SETTINGS.setValue("template_docx", cfg.template_docx)
-        if cfg.template_pptx is not None:
-            APP_SETTINGS.setValue("template_pptx", cfg.template_pptx)
+            APP_SETTINGS.setValue(
+                "output_folder", str(cfg.output_folder)
+            )  # Convert Path to string
+        # Do not save directional paths fields
 
         APP_SETTINGS.endGroup()
         log.debug("Saved user preferences to QSettings.")
@@ -171,53 +152,10 @@ def load_user_preferences() -> UserConfig:
             if raw_val not in (None, "", "None"):
                 cfg.display_endnotes = _get_qsettings_bool(raw_val)
 
-        # region cut fields
-        # if APP_SETTINGS.contains("input_docx"):
-        #     raw_val = APP_SETTINGS.value("input_docx")
-        #     if raw_val not in (None, "", "None"):
-        #         cfg.input_docx = raw_val
-
-        # if APP_SETTINGS.contains("input_pptx"):
-        #     raw_val = APP_SETTINGS.value("input_pptx")
-        #     if raw_val not in (None, "", "None"):
-        #         cfg.input_pptx = raw_val
-
-        # if APP_SETTINGS.contains("range_start"):
-        #     raw_val = APP_SETTINGS.value("range_start")
-        #     if raw_val not in (None, "", "None"):
-        #         try:
-        #             cfg.range_start = int(str(raw_val))
-        #         except (ValueError, TypeError):
-        #             # Catches if raw_val was something like "abc" or another uncastable type
-        #             log.warning(
-        #                 f"Invalid integer value found for key range_start in QSettings: {raw_val!r}"
-        #             )
-
-        # if APP_SETTINGS.contains("range_end"):
-        #     raw_val = APP_SETTINGS.value("range_end")
-        #     if raw_val not in (None, "", "None"):
-        #         try:
-        #             cfg.range_end = int(str(raw_val))
-        #         except (ValueError, TypeError):
-        #             log.warning(
-        #                 f"Invalid integer value found for key range_end in QSettings: {raw_val!r}"
-        #             )
-        # endregion
-
         if APP_SETTINGS.contains("output_folder"):
             raw_val = APP_SETTINGS.value("output_folder")
             if raw_val not in (None, "", "None"):
-                cfg.output_folder = raw_val
-
-        if APP_SETTINGS.contains("template_docx"):
-            raw_val = APP_SETTINGS.value("template_docx")
-            if raw_val not in (None, "", "None"):
-                cfg.template_docx = raw_val
-
-        if APP_SETTINGS.contains("template_pptx"):
-            raw_val = APP_SETTINGS.value("template_pptx")
-            if raw_val not in (None, "", "None"):
-                cfg.template_pptx = raw_val
+                cfg.output_folder = Path(raw_val)
 
         APP_SETTINGS.endGroup()
         log.debug("Loaded user preferences")
@@ -276,16 +214,16 @@ def get_last_browse_directory() -> str:
     """Get the last used browse directory from settings, falling back to home."""
     try:
         last_dir = str(APP_SETTINGS.value("last_browse_directory", ""))
-        
+
         # Return it if it exists, otherwise fall back to home
         if last_dir and Path(last_dir).exists():
             return last_dir
-        
+
         if last_dir:  # Was set but no longer exists
             log.debug(f"Last browse directory no longer exists: {last_dir}, using home")
-        
+
         return str(Path.home())
-        
+
     except Exception as e:
         log.warning(f"QSettings: Failed to load last browse directory: {e}")
         return str(Path.home())
@@ -443,6 +381,12 @@ class MainWindow(QMainWindow):
 class BaseConversionTabView(QWidget):
     """Base view for all conversion tabs."""
 
+    # TODO: Add abstract properties or type stubs for attributes that subclasses must define
+    #       (convert_btn, save_btn, load_btn, get_pipeline_direction, config_to_ui, etc.)
+    #       to eliminate mypy type: ignore comments and improve type safety.
+    #       See lines 985-987, 1073, 1086 for current type ignore usage.
+    # Run mypy on this file to see all errors.
+
     # region signals
     # endregion
 
@@ -545,12 +489,13 @@ class BaseConversionTabPresenter(QObject):
     def __init__(self, view: BaseConversionTabView) -> None:
         super().__init__()  # Initialize QObject
         self.view = view
-        self.last_run_config = None
+        self.last_run_config: UserConfig | None = None
 
         # Instance variables to prevent garbage collection; storing self.worker_thread
         # and self.worker keeps Python references alive during execution.
-        self.worker_thread = None
-        self.worker = None
+        self.worker_thread: QThread | None = None
+
+        self.worker: ConversionWorker | None = None
 
     # endregion
 
@@ -967,7 +912,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     def __init__(self, view: ConfigurableConversionTabView) -> None:
         super().__init__(view)
         self.view = view
-        self.loaded_config = None
+        self.loaded_config: UserConfig | None = None
 
         # subclasses must call self._connect_signals()
 
@@ -1175,6 +1120,10 @@ class DemoTabView(BaseConversionTabView):
         self.force_error_btn.setStyleSheet("color: lightcoral;")
         self.buttons.append(self.force_error_btn)
 
+        self.clear_settings_btn = QPushButton("🗑️ Clear QSettings")
+        self.clear_settings_btn.setStyleSheet("color: orange;")
+        self.buttons.append(self.clear_settings_btn)
+
     # endregion
 
     # region _create_layout
@@ -1196,8 +1145,9 @@ class DemoTabView(BaseConversionTabView):
         layout.addStretch()
 
         if get_debug_mode():
-            log.debug("Enabling 'test error handling' button per debug mode switch.")
+            log.debug("Enabling test button per debug mode switch.")
             layout.addWidget(self.force_error_btn)
+            layout.addWidget(self.clear_settings_btn)
 
         # Actually apply the layout to this widget
         self.setLayout(layout)
@@ -1235,6 +1185,7 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         self.view.load_demo_btn.clicked.connect(self.on_load_demo)
 
         self.view.force_error_btn.clicked.connect(self.on_force_error)
+        self.view.clear_settings_btn.clicked.connect(self.on_clear_settings)
 
         # `button.clicked` is a Signal (Qt emits it when button is clicked)
         # `.connect(method)` connects that signal to a Slot (your handler method)
@@ -1246,13 +1197,13 @@ class DemoTabPresenter(BaseConversionTabPresenter):
     def on_docx2pptx_demo(self) -> None:
         """Handle DOCX → PPTX Demo button click."""
         log.debug("DOCX → PPTX Demo clicked!")
-        cfg = UserConfig().for_demo(direction=PipelineDirection.DOCX_TO_PPTX)
+        cfg = UserConfig().for_demo(requested_direction=PipelineDirection.DOCX_TO_PPTX)
         self.start_conversion(cfg, run_pipeline)
 
     def on_pptx2docx_demo(self) -> None:
         """Handle PPTX → DOCX Demo button click."""
         log.debug("PPTX → DOCX Demo clicked!")
-        cfg = UserConfig().for_demo(direction=PipelineDirection.PPTX_TO_DOCX)
+        cfg = UserConfig().for_demo(requested_direction=PipelineDirection.PPTX_TO_DOCX)
         self.start_conversion(cfg, run_pipeline)
 
     def on_roundtrip_demo(self) -> None:
@@ -1285,17 +1236,27 @@ class DemoTabPresenter(BaseConversionTabPresenter):
                 # No specific validation in this tab's version
                 self.start_conversion(cfg, run_pipeline)
 
-    # In DemoTabPresenter:
+    # Debug Mode Button methods
     def on_force_error(self) -> None:
         """Trigger a test error."""
         log.debug("Forcing error for testing!")
-        cfg = UserConfig().for_demo(direction=PipelineDirection.DOCX_TO_PPTX)
+        cfg = UserConfig().for_demo(requested_direction=PipelineDirection.DOCX_TO_PPTX)
 
         # Use a lambda that raises an error
         def error_pipeline(cfg: UserConfig) -> None:
             raise ValueError("This is a test error with a really long message! " * 20)
 
         self.start_conversion(cfg, error_pipeline)
+
+    def on_clear_settings(self) -> None:
+        """Clear all QSettings."""
+        log.debug("Clearing all QSettings")
+        APP_SETTINGS.clear()
+        QMessageBox.information(
+            self.view,
+            "Settings Cleared",
+            "All saved preferences cleared. Restart to see defaults.",
+        )
 
     # endregion
 
@@ -1403,10 +1364,17 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
     # region p2d config_to_ui
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI values from a loaded UserConfig"""
+
         # Set Path selectors
-        self.input_selector.set_path(cfg.input_pptx or NO_SELECTION)
-        self.output_selector.set_path(cfg.output_folder or NO_SELECTION)
-        self.template_selector.set_path(cfg.template_docx or NO_SELECTION)
+        self.input_selector.set_path(
+            str(cfg.input_pptx) if cfg.input_pptx else NO_SELECTION
+        )
+        self.output_selector.set_path(
+            str(cfg.output_folder) if cfg.output_folder else NO_SELECTION
+        )
+        self.template_selector.set_path(
+            str(cfg.template_docx) if cfg.template_docx else NO_SELECTION
+        )
 
         # Set range
         if cfg.range_start is not None:
@@ -1444,7 +1412,7 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
         if not super()._validate_input(cfg):
             return False
 
-        if not cfg.input_pptx or cfg.input_pptx == NO_SELECTION:
+        if not cfg.input_pptx:
             log.error(f"Invalid input file selected: {cfg.input_pptx}")
             QMessageBox.critical(
                 self.view, "Missing Input", "Please select a valid .pptx input file."
@@ -1461,7 +1429,7 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
             return False
 
         # Validate it's actually a .pptx
-        if not cfg.input_pptx.endswith(".pptx"):
+        if cfg.input_pptx.suffix != ".pptx":
             log.error(f"Invalid input file selected: {cfg.input_pptx}")
             QMessageBox.critical(
                 self.view, "Invalid File", "Input file must be a .pptx file."
@@ -1477,7 +1445,10 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
         """Gather UI-selected values and update the UserConfig object"""
 
         # Only update fields that have UI controls
-        cfg.input_pptx = self.view.input_selector.get_path()
+        path = self.view.input_selector.get_path()
+        cfg.input_pptx = (
+            Path(path) if path else None
+        )  # TODO: should it be NO_SELECTION instead of none?
 
         range_start_text = self.view.range_start_input.text().strip()
         range_end_text = self.view.range_end_input.text().strip()
@@ -1486,10 +1457,10 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 
         # Handle optional paths (might be "No Selection")
         output = self.view.output_selector.get_path()
-        cfg.output_folder = output if output != NO_SELECTION else None
+        cfg.output_folder = Path(output) if output != NO_SELECTION else None
 
         template = self.view.template_selector.get_path()
-        cfg.template_docx = template if template != NO_SELECTION else None
+        cfg.template_docx = Path(template) if template != NO_SELECTION else None
         return cfg
 
     # endregion
@@ -1773,9 +1744,15 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         # Only populate fields that have UI controls
 
         # Set Path selectors
-        self.input_selector.set_path(cfg.input_docx or NO_SELECTION)
-        self.output_selector.set_path(cfg.output_folder or NO_SELECTION)
-        self.template_selector.set_path(cfg.template_pptx or NO_SELECTION)
+        self.input_selector.set_path(
+            str(cfg.input_docx) if cfg.input_docx else NO_SELECTION
+        )
+        self.output_selector.set_path(
+            str(cfg.output_folder) if cfg.output_folder else NO_SELECTION
+        )
+        self.template_selector.set_path(
+            str(cfg.template_pptx) if cfg.template_pptx else NO_SELECTION
+        )
 
         # Set dropdown
         self.chunk_dropdown.setCurrentText(cfg.chunk_type.value)
@@ -1826,7 +1803,11 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
         """Gather UI-selected values and update the UserConfig object"""
 
         # Only update fields that have UI controls
-        cfg.input_docx = self.view.input_selector.get_path()
+        input_path = self.view.input_selector.get_path()
+        cfg.input_docx = (
+            Path(input_path) if input_path else None
+        )  # TODO: should it be NO_SELECTION instead of none?
+
         cfg.chunk_type = ChunkType(self.view.chunk_dropdown.currentText())
         cfg.experimental_formatting_on = self.view.experimental_fmt_chk.isChecked()
         cfg.preserve_docx_metadata_in_speaker_notes = (
@@ -1843,10 +1824,10 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
         # Handle optional paths (might be "No selection")
         output = self.view.output_selector.get_path()
-        cfg.output_folder = output if output != NO_SELECTION else None
+        cfg.output_folder = Path(output) if output != NO_SELECTION else None
 
         template = self.view.template_selector.get_path()
-        cfg.template_pptx = template if template != NO_SELECTION else None
+        cfg.template_pptx = Path(template) if template != NO_SELECTION else None
         return cfg
 
     # endregion
@@ -1859,7 +1840,7 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
         if not super()._validate_input(cfg):
             return False
 
-        if not cfg.input_docx or cfg.input_docx == NO_SELECTION:
+        if not cfg.input_docx:
             log.error(f"Invalid File selected: {cfg.input_docx}")
             QMessageBox.critical(
                 self.view, "Missing Input", "Please select a valid .docx input file."
@@ -1876,7 +1857,7 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
             return False
 
         # Validate it's actually a .docx
-        if not cfg.input_docx.endswith(".docx"):
+        if cfg.input_docx.suffix != ".docx":
             log.error(f"Invalid File selected: {cfg.input_docx}; must be .docx")
             QMessageBox.critical(
                 self.view, "Invalid File", "Input file must be a .docx file."

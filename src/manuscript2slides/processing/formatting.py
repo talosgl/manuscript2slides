@@ -2,10 +2,11 @@
 """Formatting functions for both pipelines."""
 
 # For python-pptx's private _Run and _Paragraph classes:
-# pyright: reportPrivateUsage=false 
+# pyright: reportPrivateUsage=false
 
 # For incomplete type stubs in python-pptx:
-# pyright: reportAttributeAccessIssue=false 
+# pyright: reportAttributeAccessIssue=false
+# mypy: disable-error-code="import-untyped"
 
 # region imports
 import logging
@@ -61,7 +62,7 @@ COLOR_MAP_FROM_HEX = {v: k for k, v in COLOR_MAP_HEX.items()}
 
 # region alignment map
 ALIGNMENT_MAP_WD2PP = {
-    WD_ALIGN_PARAGRAPH.LEFT: PP_ALIGN.LEFT,  
+    WD_ALIGN_PARAGRAPH.LEFT: PP_ALIGN.LEFT,
     WD_ALIGN_PARAGRAPH.CENTER: PP_ALIGN.CENTER,
     WD_ALIGN_PARAGRAPH.RIGHT: PP_ALIGN.RIGHT,
     WD_ALIGN_PARAGRAPH.JUSTIFY: PP_ALIGN.JUSTIFY,

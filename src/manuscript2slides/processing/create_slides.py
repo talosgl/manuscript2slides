@@ -1,5 +1,6 @@
 # create_slides.py
 """Take chunks we built from the input docx file and turn them into slide body content."""
+# mypy: disable-error-code="import-untyped"
 
 import logging
 
@@ -129,7 +130,9 @@ def create_blank_slide_for_chunk(
     prs: presentation.Presentation, slide_layout: SlideLayout
 ) -> tuple[Slide, TextFrame]:
     """Initialize an empty slide so that we can populate it with a chunk."""
-    new_slide = prs.slides.add_slide(slide_layout)
+    new_slide = prs.slides.add_slide(  # pyright: ignore[reportAttributeAccessIssue]
+        slide_layout
+    )
     content = new_slide.placeholders[1]
 
     if not isinstance(content, SlidePlaceholder):

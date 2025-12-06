@@ -7,7 +7,8 @@ from __future__ import annotations
 try:
     import tomllib  # Python 3.11+
 except ModuleNotFoundError:
-    import tomli as tomllib  # Python 3.10
+    # Python 3.10
+    import tomli as tomllib  # type: ignore[no-redef]
 
 import logging
 
@@ -25,7 +26,6 @@ from manuscript2slides.internals.paths import (
     user_input_dir,
     user_output_dir,
     resolve_path,
-    normalize_path,
 )
 
 # endregion
@@ -87,18 +87,16 @@ class UserConfig:
 
     # region Input/Output
     # Input file to process
-    input_docx: Optional[str] = (
-        None  # Use strings in the dataclass, convert to Path when you need to use them.
-    )
-    input_pptx: Optional[str] = None
+    input_docx: Optional[Path] = None
+    input_pptx: Optional[Path] = None
 
-    output_folder: Optional[str] = None  # Desired output directory/folder to save in
+    output_folder: Optional[Path] = None  # Desired output directory/folder to save in
 
     # Templates for output file
-    template_pptx: Optional[str] = (
+    template_pptx: Optional[Path] = (
         None  # The pptx file to use as the template for the slide deck
     )
-    template_docx: Optional[str] = (
+    template_docx: Optional[Path] = (
         None  # The docx file to use as the template for the new docx
     )
     range_start: Optional[int] = None
@@ -127,6 +125,22 @@ class UserConfig:
 
     # endregion
 
+    # region post_init
+    def __post_init__(self) -> None:
+        """Convert string inputs of path fields into Path objects."""
+        if self.input_docx is not None:
+            self.input_docx = Path(self.input_docx)
+        if self.input_pptx is not None:
+            self.input_pptx = Path(self.input_pptx)
+        if self.output_folder is not None:
+            self.output_folder = Path(self.output_folder)
+        if self.template_pptx is not None:
+            self.template_pptx = Path(self.template_pptx)
+        if self.template_docx is not None:
+            self.template_docx = Path(self.template_docx)
+
+    # endregion
+
     # region class methods (populate a new instance)
 
     # region with_defaults
@@ -145,7 +159,7 @@ class UserConfig:
         cfg = cls()
 
         # Point to sample files for demo
-        cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
+        cfg.input_docx = user_input_dir() / "sample_doc.docx"
 
         # All other fields already have defaults from the dataclass
         # (chunk_type, direction, bools, templates, output_folder)
@@ -172,9 +186,9 @@ class UserConfig:
 
         # Set the appropriate input file based on direction
         if requested_direction == PipelineDirection.DOCX_TO_PPTX:
-            cfg.input_docx = str(user_input_dir() / "sample_doc.docx")
+            cfg.input_docx = user_input_dir() / "sample_doc.docx"
         elif requested_direction == PipelineDirection.PPTX_TO_DOCX:
-            cfg.input_pptx = str(user_input_dir() / "sample_slides_output.pptx")
+            cfg.input_pptx = user_input_dir() / "sample_slides_output.pptx"
 
         # All other fields use their dataclass defaults
         # (output_folder, templates, bools, etc.)
@@ -264,20 +278,6 @@ class UserConfig:
                 )
                 log.error(error_msg)
                 raise ValueError(error_msg) from e
-
-        # Normalize path separators for Windows compatibility
-        path_fields = [
-            "input_docx",
-            "input_pptx",
-            "output_folder",
-            "template_pptx",
-            "template_docx",
-        ]
-
-        for field in path_fields:
-            if field in data and data[field]:
-                # Convert backslashes to forward slashes
-                data[field] = normalize_path(data[field])
 
         # Create and return UserConfig object from the dict by unpacking all the key-value pairs as kwargs
         return cls(**data)
@@ -409,7 +409,7 @@ class UserConfig:
         data: dict[str, Any] = self.config_to_dict()
 
         # Filter out None values (TOML can't serialize None)
-        data: dict[str, Any] = {k: v for k, v in data.items() if v is not None}
+        data: dict[str, Any] = {k: v for k, v in data.items() if v is not None}  # type: ignore[no-redef]
         log.debug(f"Data to be written to toml file is: \n{data}")
 
         # Write to TOML file
@@ -437,11 +437,19 @@ class UserConfig:
         """
 
         data: dict[str, Any] = {
-            "input_docx": normalize_path(self.input_docx),
-            "input_pptx": normalize_path(self.input_pptx),
-            "output_folder": normalize_path(self.output_folder),
-            "template_pptx": normalize_path(self.template_pptx),
-            "template_docx": normalize_path(self.template_docx),
+            "input_docx": (
+                self.input_docx.resolve().as_posix() if self.input_docx else None
+            ),  # Convert Path to string with .as_posix() - gives you forward slashes (cross-platform)
+            "input_pptx": self.input_pptx.as_posix() if self.input_pptx else None,
+            "output_folder": (
+                self.output_folder.resolve().as_posix() if self.output_folder else None
+            ),
+            "template_pptx": (
+                self.template_pptx.resolve().as_posix() if self.template_pptx else None
+            ),
+            "template_docx": (
+                self.template_docx.resolve().as_posix() if self.template_docx else None
+            ),
             "range_start": self.range_start,
             "range_end": self.range_end,
             "chunk_type": self.chunk_type.value,
@@ -556,38 +564,6 @@ class UserConfig:
                 raise ValueError(
                     f"{field_name} must be a boolean, got {type(val).__name__}"
                 )
-
-        # Path strings should be strings, if provided
-        if self.input_docx is not None and not isinstance(self.input_docx, str):  # type: ignore[unreachable]
-            log.error(
-                f"input_docx must be a string, got {type(self.input_docx).__name__}"
-            )
-            raise ValueError(
-                f"input_docx must be a string, got {type(self.input_docx).__name__}"
-            )
-
-        if self.input_pptx is not None and not isinstance(self.input_pptx, str):  # type: ignore[unreachable]
-            log.error(
-                f"input_pptx must be a string, got {type(self.input_pptx).__name__}"
-            )
-            raise ValueError(
-                f"input_pptx must be a string, got {type(self.input_pptx).__name__}"
-            )
-
-        if self.output_folder is not None and not isinstance(self.output_folder, str):  # type: ignore[unreachable]
-            log.error(
-                f"output_folder must be a string, got {type(self.output_folder).__name__}"
-            )
-            raise ValueError(
-                f"output_folder must be a string, got {type(self.output_folder).__name__}"
-            )
-
-        # Can't be empty string
-        if self.output_folder == "":
-            log.error("output_folder cannot be empty string; use None for default")
-            raise ValueError(
-                "output_folder cannot be empty string; use None for default"
-            )
 
         if self.range_start is not None:
             if not isinstance(self.range_start, int):  # type: ignore[unreachable]

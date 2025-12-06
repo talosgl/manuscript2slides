@@ -18,9 +18,9 @@ def test_roundtrip_works(
     # Arrange a config to emulate how we run roundtrip from CLI and GUI,
     # but use the test data fixtures intead of relying on user directories
     test_cfg = UserConfig(
-        input_docx=str(path_to_sample_docx_with_everything),
-        template_pptx=str(path_to_empty_pptx),
-        output_folder=str(tmp_path),
+        input_docx=path_to_sample_docx_with_everything,
+        template_pptx=path_to_empty_pptx,
+        output_folder=tmp_path,
     ).enable_all_options()
 
     with caplog.at_level(logging.DEBUG):

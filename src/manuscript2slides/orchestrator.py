@@ -86,7 +86,7 @@ def run_roundtrip_test(cfg: UserConfig) -> tuple[Path, Path, Path]:
 
     # Create a NEW config for reverse direction
     reverse_cfg = UserConfig()
-    reverse_cfg.input_pptx = str(intermediate_pptx)
+    reverse_cfg.input_pptx = intermediate_pptx
     reverse_cfg.output_folder = cfg.output_folder  # Keep same output location
     reverse_cfg.template_docx = cfg.template_docx  # Keep templates
     # Copy other settings as needed

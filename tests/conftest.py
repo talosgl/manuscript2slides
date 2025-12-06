@@ -65,9 +65,9 @@ def sample_d2p_cfg(
 ) -> UserConfig:
     """Sample config object for docx2pptx testing"""
     return UserConfig(
-        input_docx=str(path_to_sample_docx_with_formatting),  # Use real test file
-        template_pptx=str(path_to_empty_pptx),
-        output_folder=str(temp_output_dir),
+        input_docx=path_to_sample_docx_with_formatting,  # Use real test file
+        template_pptx=path_to_empty_pptx,
+        output_folder=temp_output_dir,
         chunk_type=ChunkType.HEADING_FLAT,
         experimental_formatting_on=True,
     )
@@ -81,9 +81,9 @@ def sample_p2d_cfg(
 ) -> UserConfig:
     """Sample config object for pptx2docx testing"""
     return UserConfig(
-        input_pptx=str(path_to_sample_pptx_with_formatting),  # Use real test file
-        template_docx=str(path_to_empty_docx),
-        output_folder=str(temp_output_dir),
+        input_pptx=path_to_sample_pptx_with_formatting,  # Use real test file
+        template_docx=path_to_empty_docx,
+        output_folder=temp_output_dir,
     )
 
 

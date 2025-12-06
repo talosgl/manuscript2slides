@@ -5,6 +5,8 @@ This module handles the reverse pipeline (pptx -> docx), extracting text content
 from slide paragraphs, restoring formatting and annotations from speaker notes metadata,
 and creating comments for user notes and unmatched annotations.
 """
+# mypy: disable-error-code="import-untyped"
+# pyright: reportArgumentType=false
 
 # region imports
 import logging
@@ -81,7 +83,7 @@ def process_slide_paragraphs(
     slide_paragraphs: list[Paragraph_pptx] = get_slide_paragraphs(slide)
 
     unmatched_annotations = []
-    matched_comment_ids = set()
+    matched_comment_ids: set[int] = set()
 
     last_run = None
 
@@ -233,7 +235,7 @@ def get_slide_paragraphs(slide: Union[Slide, NotesSlide]) -> list[Paragraph_pptx
     """Extract all paragraphs from all text placeholders in a slide."""
     paragraphs: list[Paragraph_pptx] = []
 
-    for placeholder in slide.placeholders:
+    for placeholder in slide.placeholders:  # pyright: ignore[reportGeneralTypeIssues]
         if (
             isinstance(placeholder, SlidePlaceholder)
             and hasattr(placeholder, "text_frame")

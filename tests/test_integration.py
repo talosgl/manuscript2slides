@@ -30,9 +30,9 @@ def test_round_trip_preserves_basic_plaintext_content(
 
     # Make a config to send to round_trip
     test_cfg = UserConfig(
-        input_docx=str(path_to_sample_docx_with_everything),
-        template_pptx=str(path_to_empty_pptx),
-        output_folder=str(tmp_path),
+        input_docx=path_to_sample_docx_with_everything,
+        template_pptx=path_to_empty_pptx,
+        output_folder=tmp_path,
     ).enable_all_options()
 
     _, _, final_docx = run_roundtrip_test(test_cfg)
@@ -54,9 +54,9 @@ def test_round_trip_preserves_comments(
 
     # Make a config to send to round_trip
     test_cfg = UserConfig(
-        input_docx=str(path_to_sample_docx_with_everything),
-        template_pptx=str(path_to_empty_pptx),
-        output_folder=str(tmp_path),
+        input_docx=path_to_sample_docx_with_everything,
+        template_pptx=path_to_empty_pptx,
+        output_folder=tmp_path,
     ).enable_all_options()
 
     _, _, final_docx = run_roundtrip_test(test_cfg)
@@ -80,9 +80,9 @@ def test_docx2pptx_creates_valid_output(
 
     # Arrange: Make a config and set the input doc to our tests/data copy of sample_doc.docx
     test_cfg = UserConfig(
-        input_docx=str(path_to_sample_docx_with_everything),
-        template_pptx=str(path_to_empty_pptx),
-        output_folder=str(tmp_path),
+        input_docx=path_to_sample_docx_with_everything,
+        template_pptx=path_to_empty_pptx,
+        output_folder=tmp_path,
     ).enable_all_options()
 
     # Verify the direction has been set correctly
@@ -104,7 +104,7 @@ def test_pipeline_fails_gracefully_on_missing_input(
     """Test that if a bad path is passed into pipeline function, it raises without crashing/Traceback."""
 
     test_cfg = UserConfig(
-        input_docx="bad_path.docx", template_pptx=str(path_to_empty_pptx)
+        input_docx=Path("bad_path.docx"), template_pptx=path_to_empty_pptx
     )  # ensure the template won't be the failure cause for this test
 
     with pytest.raises(FileNotFoundError):
@@ -130,9 +130,9 @@ def test_pptx2docx_creates_valid_output(
 ) -> None:
     """Integration: pptx -> docx works"""
     test_cfg = UserConfig(
-        input_pptx=str(path_to_sample_pptx_with_formatting),
-        output_folder=str(tmp_path),
-        template_docx=str(path_to_empty_docx),
+        input_pptx=path_to_sample_pptx_with_formatting,
+        output_folder=tmp_path,
+        template_docx=path_to_empty_docx,
     ).enable_all_options()
 
     assert test_cfg.direction == PipelineDirection.PPTX_TO_DOCX
