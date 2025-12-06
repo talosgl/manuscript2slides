@@ -194,7 +194,8 @@ class BaseConversionTabView(ttk.Frame):
     # region init
     def __init__(self, parent: tk.Widget) -> None:
         super().__init__(parent)
-        self.buttons = []
+        self.buttons: list[ttk.Button] = []
+        self._button_original_texts: dict[ttk.Button, str] = {}
         # children must define and call self._create_widgets()
 
     # endregion
@@ -206,14 +207,15 @@ class BaseConversionTabView(ttk.Frame):
         """Disable all buttons inside self.buttons[] on this tab. Use to prevent button clicks during conversion pipeline runs."""
         log.debug("Disabling button(s) during conversion.")
         for button in self.buttons:
-            button._original_text = button.cget("text")
+            self._button_original_texts[button] = str(button.cget("text"))
             button.config(state="disabled", text="Converting...")
 
     def enable_buttons(self) -> None:
         """Re-enable all buttons inside self.buttons[] on this tab. Use after conversion pipeline is complete."""
         log.debug("Renabling convert button(s).")
         for button in self.buttons:
-            button.config(state="normal", text=button._original_text)
+            original_text = self._button_original_texts.get(button, "Convert")
+            button.config(state="normal", text=original_text)
 
     # endregion
 
@@ -403,7 +405,7 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     def __init__(self, view: ConfigurableConversionTabView) -> None:
         super().__init__(view)
         self.view = view
-        self.loaded_config = None
+        self.loaded_config: UserConfig | None = None
 
     # region abstract methods
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
@@ -422,12 +424,12 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
     def _on_file_selected(self, *args) -> None:  # noqa: ANN002
         """Enable convert button when a file is selected."""
         # Child needs to wire this up with trace_add
-        if self.view.convert_btn:
-            path = self.view._get_input_path()
+        if self.view.convert_btn:  # type: ignore[attr-defined]
+            path = self.view._get_input_path()  # type: ignore[attr-defined]
             if path and path != "No selection":
-                self.view.convert_btn.config(state="normal")
+                self.view.convert_btn.config(state="normal")  # type: ignore[attr-defined]
             else:
-                self.view.convert_btn.config(state="disabled")
+                self.view.convert_btn.config(state="disabled")  # type: ignore[attr-defined]
 
     # endregion
 
@@ -470,21 +472,10 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 
     # region _validate_loaded_config
     def _validate_loaded_config(self, cfg: UserConfig) -> None:
-        """Load config with direction validation."""
-
-        # Validate direction
-        if cfg.direction != self.view.get_pipeline_direction():
-            messagebox.showerror(
-                "Invalid Config",
-                f"This config is for {cfg.direction.value}.\n"
-                f"Please use the correct tab.",
-            )
-            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
-            # Note they'll still need to make sure an input file for conversion is selected
-            # on the new tab of the right type.
-            return
-
-        self.view.config_to_ui(cfg)
+        """Load config."""
+        # Direction is automatically determined by which input field is set,
+        # so no need to validate it separately
+        self.view.config_to_ui(cfg)  # type: ignore[attr-defined]
         self.loaded_config = cfg
         messagebox.showinfo("Config Loaded", f"Loaded config successfully")
 
@@ -573,14 +564,12 @@ class DemoTabPresenter(BaseConversionTabPresenter):
     # region unique child methods
     def on_docx2pptx_demo(self) -> None:
         """Handle DOCX → PPTX Demo button click."""
-        direction = PipelineDirection.DOCX_TO_PPTX
-        cfg = UserConfig().for_demo(direction=direction)
+        cfg = UserConfig().for_demo(requested_direction=PipelineDirection.DOCX_TO_PPTX)
         self.start_conversion(cfg, run_pipeline)
 
     def on_pptx2docx_demo_click(self) -> None:
         """Handle PPTX → DOCX Demo button click."""
-        direction = PipelineDirection.PPTX_TO_DOCX
-        cfg = UserConfig().for_demo(direction=direction)
+        cfg = UserConfig().for_demo(requested_direction=PipelineDirection.PPTX_TO_DOCX)
         self.start_conversion(cfg, run_pipeline)
 
     def on_load_demo_click(self) -> None:
@@ -714,9 +703,9 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI values from a loaded UserConfig"""
         # Set Path selectors
-        self.input_selector.selected_path.set(cfg.input_pptx or "No selection")
-        self.output_selector.selected_path.set(cfg.output_folder or "No selection")
-        self.template_selector.selected_path.set(cfg.template_docx or "No selection")
+        self.input_selector.selected_path.set(str(cfg.input_pptx) if cfg.input_pptx else "No selection")
+        self.output_selector.selected_path.set(str(cfg.output_folder) if cfg.output_folder else "No selection")
+        self.template_selector.selected_path.set(str(cfg.template_docx) if cfg.template_docx else "No selection")
 
     # endregion
 
@@ -750,18 +739,18 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     # region p2d _validate_input
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate pptx-specific input."""
-        if not cfg.input_pptx or cfg.input_pptx == "No selection":
+        if not cfg.input_pptx:
             messagebox.showerror("Missing Input", "Please select an input .pptx file.")
             return False
 
-        if not Path(cfg.input_pptx).exists():
+        if not cfg.input_pptx.exists():
             messagebox.showerror(
                 "File Not Found", f"Input file does not exist:\n{cfg.input_pptx}"
             )
             return False
 
         # Validate it's actually a .pptx
-        if not cfg.input_pptx.endswith(".pptx"):
+        if cfg.input_pptx.suffix != ".pptx":
             messagebox.showerror("Invalid File", "Input file must be a .pptx file.")
             return False
 
@@ -773,18 +762,18 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
 
-        # Set the direction based on what tab we're in.
-        cfg.direction = self.view.get_pipeline_direction()
+        # Direction is derived from which input is set, so don't set it directly
 
         # Only update fields that have UI controls
-        cfg.input_pptx = self.view.input_selector.selected_path.get()
+        input_path = self.view.input_selector.selected_path.get()
+        cfg.input_pptx = Path(input_path) if input_path != "No selection" else None
 
         # Handle optional paths (might be "No selection")
         output = self.view.output_selector.selected_path.get()
-        cfg.output_folder = output if output != "No selection" else None
+        cfg.output_folder = Path(output) if output != "No selection" else None
 
         template = self.view.template_selector.selected_path.get()
-        cfg.template_docx = template if template != "No selection" else None
+        cfg.template_docx = Path(template) if template != "No selection" else None
         return cfg
 
     # endregion
@@ -1057,9 +1046,9 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         # Only populate fields that have UI controls
 
         # Set Path selectors
-        self.input_selector.selected_path.set(cfg.input_docx or "No selection")
-        self.output_selector.selected_path.set(cfg.output_folder or "No selection")
-        self.template_selector.selected_path.set(cfg.template_pptx or "No selection")
+        self.input_selector.selected_path.set(str(cfg.input_docx) if cfg.input_docx else "No selection")
+        self.output_selector.selected_path.set(str(cfg.output_folder) if cfg.output_folder else "No selection")
+        self.template_selector.selected_path.set(str(cfg.template_pptx) if cfg.template_pptx else "No selection")
 
         # Set dropdown
         self.chunk_var.set(cfg.chunk_type.value)
@@ -1103,18 +1092,18 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     def _validate_input(self, cfg: UserConfig) -> bool:
         """Validate docx-specific input."""
         # Validate required fields
-        if not cfg.input_docx or cfg.input_docx == "No selection":
+        if not cfg.input_docx:
             messagebox.showerror("Missing Input", "Please select an input .docx file.")
             return False
 
-        if not Path(cfg.input_docx).exists():
+        if not cfg.input_docx.exists():
             messagebox.showerror(
                 "File Not Found", f"Input file does not exist:\n{cfg.input_docx}"
             )
             return False
 
         # Validate it's actually a .docx
-        if not cfg.input_docx.endswith(".docx"):
+        if cfg.input_docx.suffix != ".docx":
             messagebox.showerror("Invalid File", "Input file must be a .docx file.")
             return False
 
@@ -1126,10 +1115,11 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
     def ui_to_config(self, cfg: UserConfig) -> UserConfig:
         """Gather UI-selected values and update the UserConfig object"""
 
-        cfg.direction = self.view.get_pipeline_direction()
+        # Direction is derived from which input is set, so don't set it directly
 
         # Only update fields that have UI controls
-        cfg.input_docx = self.view.input_selector.selected_path.get()
+        input_path = self.view.input_selector.selected_path.get()
+        cfg.input_docx = Path(input_path) if input_path != "No selection" else None
         cfg.chunk_type = ChunkType(self.view.chunk_var.get())
         cfg.experimental_formatting_on = self.view.exp_fmt_var.get()
         cfg.preserve_docx_metadata_in_speaker_notes = self.view.keep_metadata.get()
@@ -1139,10 +1129,10 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
 
         # Handle optional paths (might be "No selection")
         output = self.view.output_selector.selected_path.get()
-        cfg.output_folder = output if output != "No selection" else None
+        cfg.output_folder = Path(output) if output != "No selection" else None
 
         template = self.view.template_selector.selected_path.get()
-        cfg.template_pptx = template if template != "No selection" else None
+        cfg.template_pptx = Path(template) if template != "No selection" else None
         return cfg
 
     # endregion
