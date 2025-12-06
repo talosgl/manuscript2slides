@@ -1,5 +1,6 @@
 """Add annotations we pulled from the docx to PowerPoint slide notes."""
 
+# mypy: disable-error-code="import-untyped"
 # region imports
 import logging
 import json

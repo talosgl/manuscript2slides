@@ -20,8 +20,8 @@ def test_create_empty_slide_deck_returns_empty_deck(
     even if a pptx is passed in that template which contains slides."""
     # Arrange: Construct a cfg using a deck as template that we know has slides in it
     test_cfg = UserConfig(
-        input_docx=str(path_to_sample_docx_with_formatting),
-        template_pptx=str(path_to_sample_pptx_with_formatting),
+        input_docx=path_to_sample_docx_with_formatting,
+        template_pptx=path_to_sample_pptx_with_formatting,
     )
 
     # Action: Pass that to our function
@@ -50,10 +50,8 @@ def test_create_empty_slide_deck_fails_gracefully_without_slide_layout(
     # Arrange: Create a cfg whose template is pointing to a test fixture object that is missing our required slide layout
 
     test_cfg = UserConfig(
-        input_docx=str(
-            path_to_sample_docx_with_formatting
-        ),  # We pass a real docx so that the validation doesn't fail earlier
-        template_pptx=str(path_to_missing_layout_pptx),
+        input_docx=path_to_sample_docx_with_formatting,  # We pass a real docx so that the validation doesn't fail earlier
+        template_pptx=path_to_missing_layout_pptx,
     )
 
     # Action: Capture logging at error level and pass our bad cfg into the func call
@@ -77,8 +75,8 @@ def test_create_empty_document_returns_empty_doc(
     """Ensure that even if we're passed in a docx full of stuff as a template, we start with no pages/paragraphs."""
     # Arrange: Construct a cfg using a doc that we know has content in it
     test_cfg = UserConfig(
-        input_pptx=str(path_to_sample_pptx_with_formatting),
-        template_docx=str(path_to_sample_docx_with_formatting),
+        input_pptx=path_to_sample_pptx_with_formatting,
+        template_docx=path_to_sample_docx_with_formatting,
     )
 
     # Action: Pass that to our function
@@ -104,7 +102,7 @@ def test_create_empty_document_fails_gracefully_on_missing_styles(
     with caplog.at_level(logging.ERROR):
         # Disguise our mock_doc as the return value for the docx.Document constructor
         with patch("docx.Document", return_value=mock_doc):
-            test_cfg = UserConfig(input_pptx=str(path_to_sample_pptx_with_formatting))
+            test_cfg = UserConfig(input_pptx=path_to_sample_pptx_with_formatting)
             with pytest.raises(
                 ValueError, match="styles"
             ):  # Test will fail if we do not raise as expected.

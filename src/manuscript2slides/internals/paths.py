@@ -158,34 +158,16 @@ def get_default_pptx_template_path() -> Path:
 
 
 # region resolve_path
-def resolve_path(raw: str) -> Path:
+def resolve_path(raw: str | Path) -> Path:
     """
     Expand ~ and ${VARS}; resolve to absolute path.
 
     Relative paths resolve relative to current working directory.
     """
+    if isinstance(raw, Path):
+        return raw.expanduser().resolve()
     expanded = os.path.expandvars(raw)
     return Path(expanded).expanduser().resolve()
-
-
-# endregion
-
-
-# region normalize_path
-def normalize_path(path_str: str | None) -> str | None:
-    """
-    Normalize path separators to forward slashes for cross-platform compatibility.
-
-    Forward slashes work on all platforms (Windows, Mac, Linux) and avoid
-    TOML escape sequence issues with backslashes.
-
-    Args:
-        path_str: Path string (may contain backslashes on Windows)
-
-    Returns:
-        Path with forward slashes, or None if input was None
-    """
-    return path_str.replace("\\", "/") if path_str else None
 
 
 # endregion
