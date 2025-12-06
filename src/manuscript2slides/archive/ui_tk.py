@@ -10,7 +10,7 @@ import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
-from typing import Callable
+from typing import Callable, TypeVar, Generic
 
 from manuscript2slides.internals.define_config import (
     ChunkType,
@@ -222,15 +222,15 @@ class BaseConversionTabView(ttk.Frame):
 
 # endregion
 
+# Type variable for generic view types
+ViewType = TypeVar('ViewType', bound=BaseConversionTabView)
 
 # region BaseConversionTabPresenter
-class BaseConversionTabPresenter:
+class BaseConversionTabPresenter(Generic[ViewType]):
     """Presenter class for the BaseConversionTab."""
 
-    def __init__(self, view: BaseConversionTabView) -> None:
-        self.view = (
-            view  # instantiated and passed in from MainWindow's _create_widgets()
-        )
+    def __init__(self, view: ViewType) -> None:
+        self.view: ViewType = view
 
     # region _load_config
     def _load_config(self, path: Path) -> UserConfig | None:
@@ -398,13 +398,15 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 # endregion
 
 
+# Type variable for configurable view types
+ConfigViewType = TypeVar('ConfigViewType', bound=ConfigurableConversionTabView)
+
 # region ConfigurableConversionTabPresenter
-class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
+class ConfigurableConversionTabPresenter(BaseConversionTabPresenter[ConfigViewType], Generic[ConfigViewType]):
     """Presenter class for the ConfigurableConversionTab."""
 
-    def __init__(self, view: ConfigurableConversionTabView) -> None:
+    def __init__(self, view: ConfigViewType) -> None:
         super().__init__(view)
-        self.view = view
         self.loaded_config: UserConfig | None = None
 
     # region abstract methods
@@ -598,6 +600,11 @@ class DemoTabPresenter(BaseConversionTabPresenter):
 class Pptx2DocxTabView(ConfigurableConversionTabView):
     """View Tab for the Pptx2Docx Pipeline."""
 
+    # Declare attributes that _create_io_section will create
+    input_selector: PathSelector
+    output_selector: PathSelector
+    template_selector: PathSelector
+
     # region init & _create_widgets
     def __init__(self, parent: tk.Widget) -> None:
         super().__init__(parent)
@@ -703,9 +710,15 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
     def config_to_ui(self, cfg: UserConfig) -> None:
         """Populate UI values from a loaded UserConfig"""
         # Set Path selectors
-        self.input_selector.selected_path.set(str(cfg.input_pptx) if cfg.input_pptx else "No selection")
-        self.output_selector.selected_path.set(str(cfg.output_folder) if cfg.output_folder else "No selection")
-        self.template_selector.selected_path.set(str(cfg.template_docx) if cfg.template_docx else "No selection")
+        self.input_selector.selected_path.set(
+            str(cfg.input_pptx) if cfg.input_pptx else "No selection"
+        )
+        self.output_selector.selected_path.set(
+            str(cfg.output_folder) if cfg.output_folder else "No selection"
+        )
+        self.template_selector.selected_path.set(
+            str(cfg.template_docx) if cfg.template_docx else "No selection"
+        )
 
     # endregion
 
@@ -714,14 +727,13 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
 
 # region Pptx2DocxPresenter
-class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
+class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter[Pptx2DocxTabView]):
     """Presenter class for the PPTX -> Docx Tab."""
 
     # region init
     # (where we wire up view & buttons from view)
     def __init__(self, view: Pptx2DocxTabView) -> None:
         super().__init__(view)
-        self.view = view
 
         # Wire up the View's buttons to Presenter's handlers
         if self.view.convert_btn:  # Please Pylance
@@ -786,10 +798,16 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 class Docx2PptxTabView(ConfigurableConversionTabView):
     """UI Tab for the docx2pptx pipeline."""
 
+    # Declare attributes that _create_io_section will create
+    input_selector: PathSelector
+    output_selector: PathSelector
+    template_selector: PathSelector
+
     # region d2p init + wiring + _create_widgets
     def __init__(self, parent: tk.Widget) -> None:
         """Constructor for docx2pptx Tab"""
         super().__init__(parent)
+
         self.chunk_var = tk.StringVar(value=self.cfg_defaults.chunk_type.value)
 
         # BooleanVars for checkboxes
@@ -1046,9 +1064,15 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         # Only populate fields that have UI controls
 
         # Set Path selectors
-        self.input_selector.selected_path.set(str(cfg.input_docx) if cfg.input_docx else "No selection")
-        self.output_selector.selected_path.set(str(cfg.output_folder) if cfg.output_folder else "No selection")
-        self.template_selector.selected_path.set(str(cfg.template_pptx) if cfg.template_pptx else "No selection")
+        self.input_selector.selected_path.set(
+            str(cfg.input_docx) if cfg.input_docx else "No selection"
+        )
+        self.output_selector.selected_path.set(
+            str(cfg.output_folder) if cfg.output_folder else "No selection"
+        )
+        self.template_selector.selected_path.set(
+            str(cfg.template_pptx) if cfg.template_pptx else "No selection"
+        )
 
         # Set dropdown
         self.chunk_var.set(cfg.chunk_type.value)
@@ -1067,13 +1091,12 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
 
 # region Docx2PptxPresenter
-class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
+class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter[Docx2PptxTabView]):
     """Presenter class for the Docx -> Pptx tab."""
 
     # region init and wiring up view + buttons
     def __init__(self, view: Docx2PptxTabView) -> None:
         super().__init__(view)
-        self.view = view
 
         # Wire up the View's buttons to Presenter's handlers
         if self.view.convert_btn:  # Please Pylance
