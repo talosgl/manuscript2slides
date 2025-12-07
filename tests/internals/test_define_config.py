@@ -349,13 +349,13 @@ def test_enable_all_options(sample_d2p_cfg: UserConfig, bool_name: str) -> None:
     assert getattr(sample_d2p_cfg, bool_name) is True
 
 
-# TODO: test save_toml#
+# TODO: test save_toml
 def test_save_toml_round_trip(
     path_to_sample_docx_with_formatting: Path,
     path_to_empty_pptx: Path,
     tmp_path: Path,
 ) -> None:
-    """Case: Test which builds a config in memory, saves with .save_toml to tmp_path/file.toml, then calls load_toml."""
+    """Case: (docx2pptx) Test which builds a config in memory, saves with .save_toml to tmp_path/file.toml, then calls load_toml."""
 
     # Set every field explicitly (for d2p), and don't use a fixture so that it's easier to read later.
     starting_cfg = UserConfig(
@@ -390,12 +390,72 @@ def test_save_toml_round_trip(
 
     assert load_config == starting_cfg
 
+
+def test_save_toml_round_trip_pptx2docx(
+    path_to_sample_pptx_with_formatting: Path,
+    path_to_empty_docx: Path,
+    tmp_path: Path,
+) -> None:
+    """Case: (pptx2docx) Test which builds a config in memory, saves with .save_toml to tmp_path/file.toml, then calls load_toml."""
+
+    # Set every field explicitly (for d2p), and don't use a fixture so that it's easier to read later.
+    starting_cfg = UserConfig(
+        input_pptx=path_to_sample_pptx_with_formatting,
+        template_docx=path_to_empty_docx,
+        output_folder=tmp_path,
+        chunk_type=ChunkType.HEADING_NESTED,
+        experimental_formatting_on=True,
+        range_start=1,
+        range_end=3,
+        display_comments=False,
+        comments_sort_by_date=False,
+        comments_keep_author_and_date=False,
+        display_endnotes=True,
+        display_footnotes=False,
+        preserve_docx_metadata_in_speaker_notes=True,
+    )
+
+    save_file_path = tmp_path / "test_saved_config.toml"
+
+    # Action: Call the function
+    starting_cfg.save_toml(save_file_path)
+
+    assert (
+        save_file_path.exists()
+    ), f"Something went wrong with the file system when we tried to save the test config, apparently"
+
+    load_config = UserConfig.from_toml(save_file_path)
+
+    # Assert: Check if these are equal.
+    # This works because UserConfig is a @dataclass and has a built in defined __eq__ method! Don't do this with non-dataclass objects in Py! Don't do it in C or JavaScript!
+
+    assert load_config == starting_cfg
+
+
+def test_save_toml_filters_None_vals() -> None:
+    """Case: Test that None values are filtered out of the saved TOML"""
+    pass
+
+
+def test_save_toml_creates_parent_dirs_if_needed() -> None:
+    """Case: Test that parent directories get created if they don't exist"""
+    pass
+
+
+def test_save_toml_raises_if_given_dir() -> None:
+    """Case: Test that it raises when path is a directory"""
+    pass
+
+
+def test_save_toml_saves_enum_as_str() -> None:
+    """Case: Test that enums are saved as strings in the TOML"""
+
     pass
 
 
 """
 Suggestions:
-Test the round-trip (create config → save → load → verify match)
+✓ Test the round-trip (create config → save → load → verify match)
 Test that None values are filtered out of the saved TOML
 Test that parent directories get created if they don't exist
 Test that it raises when path is a directory
