@@ -177,18 +177,52 @@ def _copy_samples_if_missing(input_dir: Path) -> None:
 
 # region _copy_sample_config_if_missing
 def _copy_sample_config_if_missing(configs_dir: Path) -> None:
-    """Copy sample config from package resources to user configs folder."""
+    """Generate sample config with correct absolute paths for this user's system."""
 
     sample_name = "sample_config.toml"
-    source = _get_resource_path(sample_name)
     target = configs_dir / sample_name
 
     if not target.exists():
-        if source.exists():
-            shutil.copy2(source, target)
-            log.info(f"Copied sample config: {sample_name}")
-        else:
-            log.warning(f"Sample config not found in resources: {sample_name}")
+        # Generate config content with user-specific absolute paths
+        base = user_base_dir()
+        sample_docx = base / "input" / "sample_doc.docx"
+        output = base / "output"
+        template_pptx = base / "templates" / "pptx_template.pptx"
+
+        # Use .as_posix() for cross-platform TOML compatibility
+        config_content = f"""# Sample configuration for manuscript2slides
+# This file was auto-generated with paths specific to your system
+
+# === Input Files ===
+input_docx = "{sample_docx.as_posix()}"
+# Uncomment and customize:
+# input_docx = "~/Documents/my-manuscript.docx"
+
+# === Output ===
+output_folder = "{output.as_posix()}"
+
+# === Templates ===
+template_pptx = "{template_pptx.as_posix()}"
+# Leave blank to use default template:
+# template_pptx = ""
+
+# === Processing Options ===
+chunk_type = "paragraph"  # Options: paragraph, page, heading_flat, heading_nested
+
+# === Formatting ===
+experimental_formatting_on = true
+
+# === Annotations ===
+display_comments = true
+comments_sort_by_date = true
+comments_keep_author_and_date = true
+display_footnotes = true
+display_endnotes = true
+preserve_docx_metadata_in_speaker_notes = true
+"""
+
+        target.write_text(config_content, encoding="utf-8")
+        log.info(f"Generated sample config: {sample_name}")
     else:
         log.debug(f"Sample config already exists (not overwriting): {sample_name}")
 

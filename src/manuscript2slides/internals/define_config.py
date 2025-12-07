@@ -438,17 +438,17 @@ class UserConfig:
 
         data: dict[str, Any] = {
             "input_docx": (
-                self.input_docx.resolve().as_posix() if self.input_docx else None
+                self.input_docx.as_posix() if self.input_docx else None
             ),  # Convert Path to string with .as_posix() - gives you forward slashes (cross-platform)
             "input_pptx": self.input_pptx.as_posix() if self.input_pptx else None,
             "output_folder": (
-                self.output_folder.resolve().as_posix() if self.output_folder else None
+                self.output_folder.as_posix() if self.output_folder else None
             ),
             "template_pptx": (
-                self.template_pptx.resolve().as_posix() if self.template_pptx else None
+                self.template_pptx.as_posix() if self.template_pptx else None
             ),
             "template_docx": (
-                self.template_docx.resolve().as_posix() if self.template_docx else None
+                self.template_docx.as_posix() if self.template_docx else None
             ),
             "range_start": self.range_start,
             "range_end": self.range_end,
