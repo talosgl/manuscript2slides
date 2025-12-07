@@ -1,4 +1,12 @@
-"""Tests for UserConfig class definition file and related items"""
+"""Tests for UserConfig class definition file and related items.
+
+Known missing tests for:
+- with_defaults()
+- for_demo()
+- get_input_file() (wrapper)
+
+We will add tests for these later if we see bugs related to them.
+"""
 
 import pytest
 from manuscript2slides.internals.define_config import (
@@ -9,6 +17,13 @@ from manuscript2slides.internals.define_config import (
 import sys
 import logging
 from pathlib import Path
+from typing import Any
+
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    # Python 3.10
+    import tomli as tomllib  # type: ignore[no-redef]
 
 
 # region test ChunkType enum
@@ -220,7 +235,7 @@ def test_from_toml_does_normalize_path(tmp_path: Path) -> None:
     assert cfg.input_docx == Path("C:/Users/test/file.docx")
 
 
-# end region
+# endregion
 
 
 # region direction property tests
@@ -243,7 +258,6 @@ def test_direction_property(
 ) -> None:
     """Test we get expected results for expected input"""
     result = input_cfg.direction
-    print(expected_result, result)
     assert result == expected_result
 
 
@@ -273,10 +287,8 @@ def test_direction_property_raises_when_both_inputs_set(
 
 # endregion
 
-# region pri3 TODOs
 
-
-# TODO: might be low value-to-effort, but, test all the get_*_path() ?
+# region test all the get_*_path()s
 def test_get_input_docx_path_works(
     path_to_sample_docx_with_everything: Path,
 ) -> None:
@@ -349,7 +361,10 @@ def test_enable_all_options(sample_d2p_cfg: UserConfig, bool_name: str) -> None:
     assert getattr(sample_d2p_cfg, bool_name) is True
 
 
-# TODO: test save_toml
+# endregion
+
+
+# region test save_toml
 def test_save_toml_round_trip(
     path_to_sample_docx_with_formatting: Path,
     path_to_empty_pptx: Path,
@@ -432,45 +447,155 @@ def test_save_toml_round_trip_pptx2docx(
     assert load_config == starting_cfg
 
 
-def test_save_toml_filters_None_vals() -> None:
+def test_config_to_dict_filters_None_vals(tmp_path: Path) -> None:
     """Case: Test that None values are filtered out of the saved TOML"""
-    pass
+    starting_cfg = UserConfig(
+        input_docx=None,
+        range_start=1,
+        range_end=3,
+        display_comments=False,
+        # See if a boolean set to None gets skipped ... it does!
+        display_endnotes=None,  # pyright: ignore[reportArgumentType]
+    )
+    save_file_path = tmp_path / "test_saved_config.toml"
+
+    # Action: Call the function
+    starting_cfg.save_toml(save_file_path)
+
+    assert (
+        save_file_path.exists()
+    ), f"Something went wrong with the file system when we tried to save the test config, apparently"
+
+    with open(save_file_path, "rb") as f:
+        data = tomllib.load(f)
+
+        assert "input_docx" not in data
+
+        # This should never happen IRL but it is interesting to test. If it causes issues later, this assert is safe to get rid of.
+        assert "display_endnotes" not in data
 
 
-def test_save_toml_creates_parent_dirs_if_needed() -> None:
+def test_save_toml_creates_parent_dirs_if_needed(
+    tmp_path: Path, sample_d2p_cfg: UserConfig
+) -> None:
     """Case: Test that parent directories get created if they don't exist"""
-    pass
+
+    sample_d2p_cfg.save_toml(tmp_path / "parent_dir")
+
+    assert (tmp_path / "parent_dir").exists()
 
 
-def test_save_toml_raises_if_given_dir() -> None:
+def test_save_toml_raises_if_given_dir(
+    tmp_path: Path, sample_d2p_cfg: UserConfig
+) -> None:
     """Case: Test that it raises when path is a directory"""
-    pass
+    with pytest.raises(ValueError, match="directory, not a file"):
+        sample_d2p_cfg.save_toml(tmp_path)
 
 
-def test_save_toml_saves_enum_as_str() -> None:
-    """Case: Test that enums are saved as strings in the TOML"""
+# endregion
 
-    pass
-
-
-"""
-Suggestions:
-✓ Test the round-trip (create config → save → load → verify match)
-Test that None values are filtered out of the saved TOML
-Test that parent directories get created if they don't exist
-Test that it raises when path is a directory
-Test that enums are saved as strings in the TOML
-"""
+# region test config_to_dict
 
 
-# TODO: test config_to_dict
-"""
-Suggestions:
-Test that all fields get converted to the dict
-Test that enums get converted to their string values (.value)
-Test that paths get normalized
-Test that None values are included in the dict (filtering happens in save_toml)
-"""
+def test_config_to_dict_happy_path(
+    path_to_sample_docx_with_everything: Path,
+    path_to_empty_pptx: Path,
+    path_to_sample_pptx_with_formatting: Path,
+    path_to_empty_docx: Path,
+    tmp_path: Path,
+) -> None:
+    """Case: Ensure that all intended fields get saved to the dict."""
+    # Set every field explicitly (for d2p), and don't use a fixture so that it's easier to read later.
+    pptx2docx_cfg = UserConfig(
+        input_pptx=path_to_sample_pptx_with_formatting,
+        template_docx=path_to_empty_docx,
+        output_folder=tmp_path,
+        range_start=1,
+        range_end=3,
+    )
+
+    docx2pptx_cfg = UserConfig(
+        input_docx=path_to_sample_docx_with_everything,
+        template_pptx=path_to_empty_pptx,
+        output_folder=tmp_path,
+        chunk_type=ChunkType.HEADING_NESTED,
+        experimental_formatting_on=True,
+        display_comments=False,
+        comments_sort_by_date=False,
+        comments_keep_author_and_date=False,
+        display_endnotes=True,
+        display_footnotes=False,
+        preserve_docx_metadata_in_speaker_notes=True,
+        range_start=1,
+        range_end=3,
+    )
+
+    pptx2docx_result = pptx2docx_cfg.config_to_dict()
+    docx2pptx_result = docx2pptx_cfg.config_to_dict()
+
+    # Test specific fields we care about
+    assert (
+        pptx2docx_result["input_pptx"] == path_to_sample_pptx_with_formatting.as_posix()
+    )
+    assert pptx2docx_result["input_docx"] is None
+    assert pptx2docx_result["template_docx"] == path_to_empty_docx.as_posix()
+    assert pptx2docx_result["output_folder"] == tmp_path.as_posix()
+    assert pptx2docx_result["range_start"] == 1
+    assert pptx2docx_result["range_end"] == 3
+
+    assert (
+        docx2pptx_result["input_docx"] == path_to_sample_docx_with_everything.as_posix()
+    )
+    assert docx2pptx_result["input_pptx"] is None
+    assert docx2pptx_result["display_comments"] is False
+
+    assert docx2pptx_result["chunk_type"] == ChunkType.HEADING_NESTED.value
+    assert isinstance(docx2pptx_result["chunk_type"], str)
+
+    # Ensure all expected keys are present
+    expected_keys = {
+        "input_docx",
+        "input_pptx",
+        "output_folder",
+        "template_pptx",
+        "template_docx",
+        "range_start",
+        "range_end",
+        "chunk_type",
+        "experimental_formatting_on",
+        "display_comments",
+        "comments_sort_by_date",
+        "comments_keep_author_and_date",
+        "display_footnotes",
+        "display_endnotes",
+        "preserve_docx_metadata_in_speaker_notes",
+    }
+    assert set(pptx2docx_result.keys()) == expected_keys
+    assert set(docx2pptx_result.keys()) == expected_keys
+
+
+def test_config_to_dict_does_not_save_direction() -> None:
+    """Case: direction is derived from inputs, ensure not saved to dict"""
+    # Arrange
+    cfg = UserConfig(
+        input_docx=Path("test.docx"),
+        output_folder=Path("output"),
+    )
+
+    result = cfg.direction
+
+    assert (
+        result is not None
+    ), f"We can't verify that direction doesn't get saved because it is set to None."
+
+    # Act
+    dict_result = cfg.config_to_dict()
+
+    # Assert
+    assert "direction" not in dict_result
+
+
 # endregion
 
 

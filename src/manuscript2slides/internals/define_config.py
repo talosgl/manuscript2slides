@@ -432,8 +432,8 @@ class UserConfig:
     # region config_to_dict
     def config_to_dict(self) -> dict[str, Any]:
         """Convert config to a TOML-serializable dict.
-        Path separators are normalized to forward slashes for cross-platform
-        patibility and to avoid TOML escape sequence issues.
+        Path separators are normalized cross-platform
+        portability and to avoid TOML escape sequence issues.
         """
 
         data: dict[str, Any] = {
@@ -453,7 +453,6 @@ class UserConfig:
             "range_start": self.range_start,
             "range_end": self.range_end,
             "chunk_type": self.chunk_type.value,
-            "direction": self.direction.value,
             "experimental_formatting_on": self.experimental_formatting_on,
             "display_comments": self.display_comments,
             "comments_sort_by_date": self.comments_sort_by_date,
