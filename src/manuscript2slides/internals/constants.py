@@ -1,11 +1,5 @@
 """Application-wide constants and configuration values."""
 
-from pathlib import Path
-
-# Get the directory where this script lives (NOT INTENDED FOR USER EDITING)
-PACKAGE_DIR = Path(__file__).parent.parent
-RESOURCES_DIR = PACKAGE_DIR / "resources"
-
 # Slide layout used by docx2pptx pipeline when creating new slides from chunks.
 # NOTE: We don't allow this to be overridden by users because of the dependency on
 # the structure of the layout during the slide creation and content injection
