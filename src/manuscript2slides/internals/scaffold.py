@@ -13,20 +13,19 @@ On first run, this creates:
 Safe to call repeatedly - won't overwrite existing user files.
 """
 
-from importlib.resources import files
-
 import logging
 import shutil
+from importlib.resources import files
 from pathlib import Path
 
 from manuscript2slides.internals.paths import (
     user_base_dir,
-    user_input_dir,
-    user_output_dir,
-    user_log_dir_path,
-    user_templates_dir,
     user_configs_dir,
+    user_input_dir,
+    user_log_dir_path,
     user_manifests_dir,
+    user_output_dir,
+    user_templates_dir,
 )
 
 log = logging.getLogger("manuscript2slides")
