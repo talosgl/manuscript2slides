@@ -1,8 +1,10 @@
 """Tests to ensure the manuscript2slides directory structure gets created properly under the users' Documents."""
 
-from manuscript2slides.internals import scaffold
 from pathlib import Path
+
 import pytest
+
+from manuscript2slides.internals import scaffold
 
 
 # region test ensure_user_scaffold
