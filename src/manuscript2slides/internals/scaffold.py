@@ -13,6 +13,8 @@ On first run, this creates:
 Safe to call repeatedly - won't overwrite existing user files.
 """
 
+from importlib.resources import files
+
 import logging
 import shutil
 from pathlib import Path
@@ -26,7 +28,6 @@ from manuscript2slides.internals.paths import (
     user_configs_dir,
     user_manifests_dir,
 )
-from manuscript2slides.internals.constants import RESOURCES_DIR
 
 log = logging.getLogger("manuscript2slides")
 
@@ -55,10 +56,7 @@ def ensure_user_scaffold() -> None:
     configs_dir = user_configs_dir()
     user_manifests_dir()
 
-    readme_path = base / "README.md"
-    if not readme_path.exists():
-        _create_readme(readme_path)
-        log.info(f"Created new README at {readme_path}")
+    _create_readme_if_missing(base)
 
     # Copy template files if missing
     _copy_templates_if_missing(templates)
@@ -74,53 +72,57 @@ def ensure_user_scaffold() -> None:
 
 # endregion
 
-# from importlib.resources import files # TODO, v1: uncomment when packaging
-
 
 # region _get_resource_path
 def _get_resource_path(filename: str) -> Path:
     """
     Get path to a packaged resource file used as the source for copying into scaffolded destination subfolders.
 
-    Currently uses direct filesystem access for development (./src/manuscript2slides/resources)
-    When installed will to site-packages/manuscript2slides/resources/
+    Works in both development and installed scenarios.
     """
-    return RESOURCES_DIR / filename
+    resource = files("manuscript2slides") / "resources" / filename
 
-    # TODO, v1 required: When packaging, switch to the below:
-
-    # Convert Traversable to Path
-    # resource = files("manuscript2slides").joinpath("resources", filename)
-    # return Path(str(resource))
+    # files() returns a Traversable that can be converted to Path
+    # In dev: points to src/manuscript2slides/resources/
+    # In production: points to site-packages/manuscript2slides/resources/
+    return Path(str(resource))
 
 
 # endregion
 
 
 # region _create_readme
-def _create_readme(path: Path) -> None:
-    """Write a friendly README explaining the folder structure."""
+def _create_readme_if_missing(base_dir: Path) -> Path:
+    """Write a friendly README explaining the folder structure if it doesn't already exist."""
+
+    readme_path = base_dir / "README.md"
+
+    if readme_path.exists():
+        log.debug("README already exists (not overwriting).")
+        return readme_path
 
     source = _get_resource_path("scaffold_README.md")
 
     if source.exists():
         readme_text = source.read_text(encoding="utf-8")
-        path.write_text(readme_text, encoding="utf-8")
+        log.debug(f"Found source readme successfully at {source}, copying text.")
     else:
         log.error(f"README template not found: {source}")
 
-        # Fallback: create a minimal README
-        path.write_text(
-            "# manuscript2slides\n\nUser folder created automatically.\n",
-            encoding="utf-8",
-        )
+        # Fallback: create a minimal README text
+        readme_text = "# manuscript2slides\n\nUser folder created automatically.\n"
+        log.debug(f"Can't find source README, creating fallback README text instead.")
+
+    readme_path.write_text(readme_text, encoding="utf-8")
+    log.info(f"Created new README at {readme_path}")
+    return readme_path
 
 
 # endregion
 
 
 # region _copy_templates_if_missing
-def _copy_templates_if_missing(templates_dir: Path) -> None:
+def _copy_templates_if_missing(templates_dir: Path) -> list[Path]:
     """Copy template files from resources/ to user templates folder."""
 
     templates_to_copy = [
@@ -128,12 +130,16 @@ def _copy_templates_if_missing(templates_dir: Path) -> None:
         "docx_template.docx",
     ]
 
+    paths_processed = []
+
     for template_name in templates_to_copy:
         source = _get_resource_path(template_name)
         target = templates_dir / template_name
 
         # Only copy if destination doesn't exist (don't overwrite user customizations)
-        if not target.exists():
+        if target.exists():
+            log.debug(f"Template already exists (not overwriting): {template_name}")
+        else:
             if source.exists():
                 shutil.copy2(
                     source, target
@@ -141,15 +147,17 @@ def _copy_templates_if_missing(templates_dir: Path) -> None:
                 log.info(f"Copied template: {template_name}")
             else:
                 log.warning(f"Template not found in resources: {template_name}")
-        else:
-            log.debug(f"Template already exists (not overwriting): {template_name}")
+
+        paths_processed.append(target)
+
+    return paths_processed
 
 
 # endregion
 
 
 # region _copy_samples_if_missing
-def _copy_samples_if_missing(input_dir: Path) -> None:
+def _copy_samples_if_missing(input_dir: Path) -> list[Path]:
     """Copy sample input files from package resources to user input folder."""
 
     samples_to_copy = [
@@ -157,40 +165,50 @@ def _copy_samples_if_missing(input_dir: Path) -> None:
         "sample_slides_output.pptx",  # For reverse pipeline testing
     ]
 
+    paths_processed = []
+
     for sample_name in samples_to_copy:
         source = _get_resource_path(sample_name)
         target = input_dir / sample_name
 
         # Only copy if destination doesn't exist
-        if not target.exists():
+        if target.exists():
+            log.debug(f"Sample already exists (not overwriting): {sample_name}")
+
+        else:
             if source.exists():
                 shutil.copy2(source, target)
                 log.info(f"Copied sample: {sample_name}")
             else:
                 log.warning(f"Sample not found in resources: {sample_name}")
-        else:
-            log.debug(f"Sample already exists (not overwriting): {sample_name}")
+
+        paths_processed.append(target)
+
+    return paths_processed
 
 
 # endregion
 
 
 # region _copy_sample_config_if_missing
-def _copy_sample_config_if_missing(configs_dir: Path) -> None:
+def _copy_sample_config_if_missing(configs_dir: Path) -> Path:
     """Generate sample config with correct absolute paths for this user's system."""
 
     sample_name = "sample_config.toml"
     target = configs_dir / sample_name
 
-    if not target.exists():
-        # Generate config content with user-specific absolute paths
-        base = user_base_dir()
-        sample_docx = base / "input" / "sample_doc.docx"
-        output = base / "output"
-        template_pptx = base / "templates" / "pptx_template.pptx"
+    if target.exists():
+        log.debug(f"{target} already exists (not overwriting).")
+        return target
 
-        # Use .as_posix() for cross-platform TOML compatibility
-        config_content = f"""# Sample configuration for manuscript2slides
+    # Generate config content with user-specific absolute paths
+    base = user_base_dir()
+    sample_docx = base / "input" / "sample_doc.docx"
+    output = base / "output"
+    template_pptx = base / "templates" / "pptx_template.pptx"
+
+    # Use .as_posix() for cross-platform TOML compatibility
+    config_content = f"""# Sample configuration for manuscript2slides
 # This file was auto-generated with paths specific to your system
 
 # === Input Files ===
@@ -221,10 +239,9 @@ display_endnotes = true
 preserve_docx_metadata_in_speaker_notes = true
 """
 
-        target.write_text(config_content, encoding="utf-8")
-        log.info(f"Generated sample config: {sample_name}")
-    else:
-        log.debug(f"Sample config already exists (not overwriting): {sample_name}")
+    target.write_text(config_content, encoding="utf-8")
+    log.info(f"Generated sample config: {sample_name}")
+    return target
 
 
 # endregion
