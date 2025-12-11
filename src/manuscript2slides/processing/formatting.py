@@ -24,8 +24,8 @@ from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.text.text import Font as Font_pptx
-from pptx.text.text import _Paragraph as Paragraph_pptx  # type: ignore
-from pptx.text.text import _Run as Run_pptx  # type: ignore
+from pptx.text.text import _Paragraph as Paragraph_pptx
+from pptx.text.text import _Run as Run_pptx
 from pptx.util import Pt
 
 from manuscript2slides.internals.define_config import UserConfig
@@ -434,7 +434,7 @@ def copy_paragraph_formatting_docx2pptx(
 
     _copy_paragraph_font_name_docx2pptx(source_para, target_para)
 
-    _copy_paragraph_alignment_docx2ppt(source_para, target_para)
+    _copy_paragraph_alignment_docx2pptx(source_para, target_para)
 
     if source_para.style:
         # _copy_paragraph_format_docx2pptx(source_para, target_para)
@@ -461,8 +461,8 @@ def _copy_paragraph_font_name_docx2pptx(
 # endregion
 
 
-# region _copy_paragraph_alignment_docx2ppt
-def _copy_paragraph_alignment_docx2ppt(
+# region _copy_paragraph_alignment_docx2pptx
+def _copy_paragraph_alignment_docx2pptx(
     source_para: Paragraph_docx, target_para: Paragraph_pptx
 ) -> None:
 
@@ -521,6 +521,8 @@ def copy_run_formatting_pptx2docx(
     target_run.text = source_run.text
 
     _copy_basic_font_formatting(sfont, tfont)
+
+    _copy_font_size_formatting(sfont, tfont)
 
     _copy_font_color_formatting(sfont, tfont)
 
