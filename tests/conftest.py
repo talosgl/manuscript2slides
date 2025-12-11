@@ -27,7 +27,7 @@ def path_to_sample_docx_with_formatting() -> Path:
 @pytest.fixture
 def path_to_sample_pptx_with_formatting() -> Path:
     """Path to test pptx with various formatting examples"""
-    path = Path("tests/data/test_slides.pptx")
+    path = Path("tests/data/test_formatting_expected_output.pptx")
     assert path.exists(), f"Test file not found: {path}"
     return path
 
@@ -37,6 +37,16 @@ def path_to_empty_pptx() -> Path:
     """Path to an empty slide deck (no slides) object for the purpose of instantiating
     new decks with pptx.Presentation() constructor."""
     path = Path("tests/data/pptx_template.pptx")
+    assert path.exists(), f"Test file not found: {path}"
+    return path
+
+
+@pytest.fixture
+def path_to_pptx_w_twenty_empty_slides() -> Path:
+    """Path to a slide deck object with 20 empty slides for the purpose of instantiating
+    new decks with pptx.Presentation() constructor, and populating slides with test data.
+    """
+    path = Path("tests/data/pptx_20_empty_slides.pptx")
     assert path.exists(), f"Test file not found: {path}"
     return path
 
