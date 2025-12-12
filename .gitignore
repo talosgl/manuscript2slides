@@ -60,3 +60,5 @@ homework.md
 export_code.py
 print_outline.py
 exports/
+
+*.bak

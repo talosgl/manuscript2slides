@@ -6,31 +6,27 @@
 # pyright: reportAttributeAccessIssue=false
 # pyright: reportIndexIssue=false
 # pyright: reportOptionalMemberAccess=false
+import logging
+from pathlib import Path
 
-from docx import Document
-from pptx import Presentation
-from docx import document
-from pptx import presentation
-
+import pytest
+from docx import Document, document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
-from docx.text.run import Run as Run_docx
+from docx.shared import RGBColor as RGBColor_docx
 from docx.text.font import Font as Font_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
-from docx.shared import RGBColor as RGBColor_docx
-
-
+from docx.text.run import Run as Run_docx
+from pptx import Presentation, presentation
+from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.text.text import Font as Font_pptx
+from pptx.text.text import TextFrame
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
-from pptx.dml.color import RGBColor as RGBColor_pptx
-from pptx.text.text import TextFrame
 
-from pathlib import Path
-import pytest
-from manuscript2slides.processing import formatting
 from manuscript2slides.internals.define_config import UserConfig
+from manuscript2slides.processing import formatting
 
 # region fixtures
 
@@ -39,6 +35,22 @@ from manuscript2slides.internals.define_config import UserConfig
 def blank_docx(path_to_empty_docx: Path) -> document.Document:
     """An empty docx object."""
     return Document(str(path_to_empty_docx))
+
+
+# sanity checks
+def test_blank_docx_is_fresh_per_test(blank_docx: document.Document) -> None:
+    """Verify that blank_docx fixture creates a new instance for each test"""
+    # Add a paragraph to "mutate" it2
+    blank_docx.add_paragraph("Test mutation")
+    # docx requires at least 1 paragraph to save, so the starting count was 1
+    assert len(blank_docx.paragraphs) == 2
+
+
+def test_blank_docx_is_fresh_per_test_2(blank_docx: document.Document) -> None:
+    """This test should get a fresh blank_docx without the paragraph from the previous test"""
+    # If the fixture is truly fresh, there should be 1 paragraphs
+    # docx requires at least 1 paragraph to save, so the starting count was 1
+    assert len(blank_docx.paragraphs) == 1
 
 
 @pytest.fixture
@@ -927,13 +939,6 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
 # endregion docx2pptx RUN tests
 
 # region docx2pptx paragraph formatting
-#
-# Background: Paragraph formatting was added to copy baseline formatting for runs that don't
-# have explicit formatting. It's called in run_processing.py before processing runs.
-#
-# Key insight: Paragraph fonts come from STYLES, not direct formatting. In the test document,
-# you need to use styles (like Normal with Times New Roman) rather than trying to set fonts directly
-# on paragraphs through the Word UI.
 
 # region copy_paragraph_formatting_docx2pptx
 
@@ -1625,7 +1630,99 @@ def test_alignment_map_pp2wd_is_inverse() -> None:
 # endregion
 
 
-# region TODO: apply_experimental_formatting_from_metadata tests
+# region apply_experimental_formatting_from_metadata tests
+
+
+def test_apply_experimental_formatting_from_metadata_highlight(
+    blank_docx: document.Document,
+) -> None:
+    """Test that highlight formatting is applied from metadata correctly"""
+    target_run = _create_target_docx_run(blank_docx)
+    format_info = {
+        "formatting_type": "highlight",
+        "ref_text": "test text",
+        "highlight_color_enum": "YELLOW",
+    }
+
+    formatting.apply_experimental_formatting_from_metadata(target_run, format_info)
+
+    assert target_run.font.highlight_color == WD_COLOR_INDEX.YELLOW
+
+
+@pytest.mark.parametrize(
+    "formatting_type,expected_attr",
+    [
+        ("strike", "strike"),
+        ("double_strike", "double_strike"),
+        ("subscript", "subscript"),
+        ("superscript", "superscript"),
+        ("all_caps", "all_caps"),
+        ("small_caps", "small_caps"),
+    ],
+)
+def test_apply_experimental_formatting_from_metadata_bool_formatting(
+    blank_docx: document.Document,
+    formatting_type: str,
+    expected_attr: str,
+) -> None:
+    """Test that boolean formatting types (strike, caps, sub/superscript) are applied from metadata correctly"""
+    target_run = _create_target_docx_run(blank_docx)
+
+    # Verify initial state is False (or None/not set)
+    initial_value = getattr(target_run.font, expected_attr)
+    assert (
+        initial_value is not True
+    ), f"Expected {expected_attr} to start as False/None, but was {initial_value}"
+
+    format_info = {
+        "formatting_type": formatting_type,
+        "ref_text": "test text",
+    }
+
+    formatting.apply_experimental_formatting_from_metadata(target_run, format_info)
+
+    actual_value = getattr(target_run.font, expected_attr)
+    assert actual_value is True
+
+
+def test_apply_experimental_formatting_from_metadata_unknown_formatting_type(
+    blank_docx: document.Document,
+) -> None:
+    """Test that unknown formatting_type in the JSON/dict is handled gracefully"""
+    target_run = _create_target_docx_run(blank_docx)
+    format_info = {
+        "formatting_type": "unknown_type",
+        "ref_text": "test",
+    }
+
+    # Should not crash - just do nothing
+    formatting.apply_experimental_formatting_from_metadata(target_run, format_info)
+
+    # Run should be unchanged (no attributes set to True)
+    assert target_run.font.strike is not True
+    assert target_run.font.all_caps is not True
+
+
+def test_apply_experimental_formatting_from_metadata_invalid_highlight_enum(
+    blank_docx: document.Document, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Test that invalid highlight_color_enum logs warning"""
+    target_run = _create_target_docx_run(blank_docx)
+    format_info = {
+        "formatting_type": "highlight",
+        "ref_text": "test",
+        "highlight_color_enum": "INVALID_COLOR",
+    }
+    # Act
+    formatting.apply_experimental_formatting_from_metadata(target_run, format_info)
+
+    # Assert - should log a warning
+    with caplog.at_level(logging.DEBUG):
+        assert "Could not restore highlight color. Invalid enum" in caplog.text
+    # Or just verify highlight_color is None
+    assert target_run.font.highlight_color is None
+
+
 # endregion
 
 
