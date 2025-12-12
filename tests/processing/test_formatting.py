@@ -38,14 +38,6 @@ def blank_docx(path_to_empty_docx: Path) -> document.Document:
 
 
 @pytest.fixture
-def pptx_with_formatting(
-    path_to_sample_pptx_with_formatting: Path,
-) -> presentation.Presentation:
-    """A pptx.presentation.Presentation object with sample formatting."""
-    return Presentation(path_to_sample_pptx_with_formatting)
-
-
-@pytest.fixture
 def pptx_w_twenty_empty_slides(
     path_to_pptx_w_twenty_empty_slides: Path,
 ) -> presentation.Presentation:
@@ -488,6 +480,58 @@ def pptx_formatting_runs_dict(
     }
 
 
+# TODO: Create paragraph-level fixtures (docx_formatting_paragraphs_dict and pptx_formatting_paragraphs_dict)
+#
+# IMPORTANT NOTES from investigation:
+#
+# What paragraph-level formatting CAN preserve:
+# - Alignment (via style or direct formatting)
+# - Font color (from paragraph style)
+# - Font size (from paragraph style) - was a bug, now fixed with _copy_font_size_formatting() call
+# - Bold/italic/underline (from paragraph style)
+# - Font name for EXPLICIT fonts only (e.g., Normal style with Bookerly)
+#
+# What paragraph-level formatting CANNOT preserve:
+# - Theme fonts (e.g., headings using "Heading Font" -> Calibri Light)
+#   - style.font.name returns None for theme fonts
+#   - Theme fonts are stored in word/theme/theme1.xml and require XML parsing
+#   - This is a KNOWN LIMITATION documented in get_style_font_name_with_fallback_docx()
+#   - Headings using default theme fonts will NOT get their font name preserved
+#
+# Test strategy:
+# - Test Normal paragraphs (they have explicit Bookerly font in test doc)
+# - Test alignment (both from style and direct formatting)
+# - Test color, size, bold/italic/underline from paragraph styles
+# - DO NOT test theme fonts (documented limitation)
+# - Note: Paragraph-level fonts are set via STYLES in Word, not direct formatting
+#   (you can't set paragraph font in Word UI, only via runs or styles)
+#
+# Functions to test:
+# - get_style_font_name_with_fallback_docx() - renamed from get_effective_font_name_docx
+# - copy_paragraph_formatting_docx2pptx()
+# - _copy_paragraph_font_name_docx2pptx()
+# - _copy_paragraph_alignment_docx2pptx()
+# - copy_paragraph_formatting_pptx2docx()
+# - get_effective_font_name_pptx()
+
+
+def test_formatting_paragraph_docx(path_to_sample_docx_with_formatting: Path) -> None:
+    """Build a dict of known-paragraphs with formatting applied.
+    We'll turn this into a fixture after debugging and getting the
+    right structures.
+    """
+
+    docx_with_formatting = Document(str(path_to_sample_docx_with_formatting))
+    # This paragraph has these 3 properties, just alias so it it is easier to reference
+    para_with_color = para_with_size = para_with_center_alignment = (
+        docx_with_formatting.paragraphs[1]
+    )
+    para_with_style_h2 = docx_with_formatting.paragraphs[10]
+    para_with_style_h3 = docx_with_formatting.paragraphs[13]
+
+    pass
+
+
 # endregion
 
 
@@ -520,113 +564,34 @@ def _create_target_docx_run(docx_obj: document.Document) -> Run_docx:
 # region _copy_basic_font_formatting tests
 
 
-def test_copy_basic_font_formatting_preserves_typeface(
+@pytest.mark.parametrize(
+    "run_key,expected_attrs",
+    [
+        ("typeface", {"name": "Georgia"}),
+        ("bold", {"bold": True}),
+        ("italic", {"italic": True}),
+        ("underline", {"underline": True}),
+        ("bold_and_italic", {"bold": True, "italic": True}),
+        ("bold_and_underline", {"bold": True, "underline": True}),
+        ("underline_and_italic", {"underline": True, "italic": True}),
+        ("all_three", {"bold": True, "italic": True, "underline": True}),
+    ],
+)
+def test_copy_basic_font_formatting_docx2pptx(
     docx_formatting_runs_dict: dict[str, Run_docx],
     pptx_w_twenty_empty_slides: presentation.Presentation,
+    run_key: str,
+    expected_attrs: dict,
 ) -> None:
-    """Test that _copy_basic_font_formatting correctly copies font.name typeface."""
-    source_run = docx_formatting_runs_dict["typeface"]
+    """Test that _copy_basic_font_formatting correctly copies formatting from docx to pptx."""
+    source_run = docx_formatting_runs_dict[run_key]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
 
     formatting._copy_basic_font_formatting(source_run.font, target_run.font)
 
-    assert target_run.font.name is not None and target_run.font.name == "Georgia"
-
-
-def test_copy_basic_font_formatting_preserves_bold(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold formatting."""
-    source_run = docx_formatting_runs_dict["bold"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-
-
-def test_copy_basic_font_formatting_preserves_italic(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies italic formatting."""
-    source_run = docx_formatting_runs_dict["italic"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.italic is True
-
-
-def test_copy_basic_font_formatting_preserves_underline(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies underline formatting."""
-    source_run = docx_formatting_runs_dict["underline"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.underline is True
-
-
-def test_copy_basic_font_formatting_preserves_bold_and_italic(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold and italic formatting together."""
-    source_run = docx_formatting_runs_dict["bold_and_italic"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-    assert target_run.font.italic is True
-
-
-def test_copy_basic_font_formatting_preserves_bold_and_underline(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold and underline formatting together."""
-    source_run = docx_formatting_runs_dict["bold_and_underline"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-    assert target_run.font.underline is True
-
-
-def test_copy_basic_font_formatting_preserves_underline_and_italic(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies underline and italic formatting together."""
-    source_run = docx_formatting_runs_dict["underline_and_italic"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.underline is True
-    assert target_run.font.italic is True
-
-
-def test_copy_basic_font_formatting_preserves_all_three(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold, italic, and underline formatting together."""
-    source_run = docx_formatting_runs_dict["all_three"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-    assert target_run.font.italic is True
-    assert target_run.font.underline is True
+    for attr, expected_value in expected_attrs.items():
+        actual_value = getattr(target_run.font, attr)
+        assert actual_value is not None and actual_value == expected_value
 
 
 # endregion
@@ -634,30 +599,26 @@ def test_copy_basic_font_formatting_preserves_all_three(
 # region _copy_font_size_formatting tests
 
 
-def test_copy_font_size_formatting_preserves_large_size(
+@pytest.mark.parametrize(
+    "run_key,expected_size_pt",
+    [
+        ("large_size", 48),
+        ("small_size", 8),
+    ],
+)
+def test_copy_font_size_formatting_docx2pptx(
     docx_formatting_runs_dict: dict[str, Run_docx],
     pptx_w_twenty_empty_slides: presentation.Presentation,
+    run_key: str,
+    expected_size_pt: int,
 ) -> None:
-    """Test that _copy_font_size_formatting correctly copies large font size (48pt)."""
-    source_run = docx_formatting_runs_dict["large_size"]
+    """Test that _copy_font_size_formatting correctly copies font size from docx to pptx."""
+    source_run = docx_formatting_runs_dict[run_key]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
 
     formatting._copy_font_size_formatting(source_run.font, target_run.font)
 
-    assert target_run.font.size.pt == 48
-
-
-def test_copy_font_size_formatting_preserves_small_size(
-    docx_formatting_runs_dict: dict[str, Run_docx],
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_font_size_formatting correctly copies small font size (8pt)."""
-    source_run = docx_formatting_runs_dict["small_size"]
-    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-
-    formatting._copy_font_size_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.size.pt == 8
+    assert target_run.font.size.pt == expected_size_pt
 
 
 # endregion
@@ -703,6 +664,8 @@ def test_copy_experimental_formatting_docx2pptx_preserves_highlight(
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "highlight"
+    assert metadata[0]["ref_text"] == source_run.text
+    assert metadata[0]["highlight_color_enum"] == source_run.font.highlight_color.name
 
 
 def test_copy_experimental_formatting_docx2pptx_preserves_single_strike(
@@ -721,6 +684,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_single_strike(
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "strike"
+    assert metadata[0]["ref_text"] == source_run.text
 
 
 def test_copy_experimental_formatting_docx2pptx_preserves_double_strike(
@@ -739,6 +703,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_double_strike(
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "double_strike"
+    assert metadata[0]["ref_text"] == source_run.text
 
 
 def test_copy_experimental_formatting_docx2pptx_preserves_subscript(
@@ -758,6 +723,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_subscript(
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "subscript"
+    assert metadata[0]["ref_text"] == source_run.text
 
 
 def test_copy_experimental_formatting_docx2pptx_preserves_superscript(
@@ -777,6 +743,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_superscript(
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "superscript"
+    assert metadata[0]["ref_text"] == source_run.text
 
 
 def test_copy_experimental_formatting_docx2pptx_preserves_all_caps(
@@ -795,6 +762,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_all_caps(
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "all_caps"
+    assert metadata[0]["ref_text"] == source_run.text
 
 
 def test_copy_experimental_formatting_docx2pptx_preserves_small_caps(
@@ -813,6 +781,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_small_caps(
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "small_caps"
+    assert metadata[0]["ref_text"] == source_run.text
 
 
 # endregion
@@ -942,7 +911,10 @@ def test_copy_run_formatting_docx2pptx_copies_experimental_when_enabled(
     sub_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
     sub_metadata = []
     formatting.copy_run_formatting_docx2pptx(
-        sub_source, sub_target, sub_metadata, UserConfig(experimental_formatting_on=True)
+        sub_source,
+        sub_target,
+        sub_metadata,
+        UserConfig(experimental_formatting_on=True),
     )
     baseline = sub_target.font._element.get("baseline")
     assert baseline is not None and int(baseline) < 0
@@ -953,7 +925,10 @@ def test_copy_run_formatting_docx2pptx_copies_experimental_when_enabled(
     caps_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
     caps_metadata = []
     formatting.copy_run_formatting_docx2pptx(
-        caps_source, caps_target, caps_metadata, UserConfig(experimental_formatting_on=True)
+        caps_source,
+        caps_target,
+        caps_metadata,
+        UserConfig(experimental_formatting_on=True),
     )
     assert caps_target.font._element.get("cap") == "all"
     assert len(caps_metadata) == 1
@@ -979,7 +954,10 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
     sub_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
     sub_metadata = []
     formatting.copy_run_formatting_docx2pptx(
-        sub_source, sub_target, sub_metadata, UserConfig(experimental_formatting_on=False)
+        sub_source,
+        sub_target,
+        sub_metadata,
+        UserConfig(experimental_formatting_on=False),
     )
     baseline = sub_target.font._element.get("baseline")
     assert baseline is None
@@ -992,17 +970,37 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
 # endregion docx2pptx RUN tests
 
 # region TODO: docx2pptx paragraph formatting
-
-# region TODO: get_effective_font_name_docx
-# endregion
+#
+# Background: Paragraph formatting was added to copy baseline formatting for runs that don't
+# have explicit formatting. It's called in run_processing.py before processing runs.
+#
+# BUG FIXED: Added _copy_font_size_formatting() call to copy_paragraph_formatting_docx2pptx()
+# at formatting.py:454. Previously font size wasn't being copied at paragraph level.
+#
+# Key insight: Paragraph fonts come from STYLES, not direct formatting. In the test document,
+# you need to use styles (like Normal with Bookerly) rather than trying to set fonts directly
+# on paragraphs through the Word UI.
 
 # region TODO: copy_paragraph_formatting_docx2pptx
-# endregion
-
-# region TODO: _copy_paragraph_font_name_docx2pptx
+# Test that it correctly calls:
+# - _copy_paragraph_font_name_docx2pptx()
+# - _copy_paragraph_alignment_docx2pptx()
+# - _copy_basic_font_formatting() for paragraph style fonts
+# - _copy_font_size_formatting() for paragraph style fonts (newly added!)
+# - _copy_font_color_formatting() for paragraph style fonts
 # endregion
 
 # region TODO: _copy_paragraph_alignment_docx2pptx
+# Test both:
+# - Alignment from style (lower priority)
+# - Alignment from direct formatting (higher priority, overwrites style)
+# endregion
+
+# region TODO: get_style_font_name_with_fallback_docx
+# Test that it:
+# - Returns explicit font names (e.g., "Bookerly" from Normal style)
+# - Returns None for theme fonts (e.g., headings with "Heading Font")
+# - Traverses style hierarchy (checks base_style if current style has no font)
 # endregion
 
 # endregion
@@ -1014,113 +1012,34 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
 # region _copy_basic_font_formatting tests (pptx2docx)
 
 
-def test_copy_basic_font_formatting_pptx2docx_preserves_typeface(
+@pytest.mark.parametrize(
+    "run_key,expected_attrs",
+    [
+        ("typeface", {"name": "Georgia"}),
+        ("bold", {"bold": True}),
+        ("italic", {"italic": True}),
+        ("underline", {"underline": True}),
+        ("bold_and_italic", {"bold": True, "italic": True}),
+        ("bold_and_underline", {"bold": True, "underline": True}),
+        ("underline_and_italic", {"underline": True, "italic": True}),
+        ("all_three", {"bold": True, "italic": True, "underline": True}),
+    ],
+)
+def test_copy_basic_font_formatting_pptx2docx(
     pptx_formatting_runs_dict: dict[str, Run_pptx],
     blank_docx: document.Document,
+    run_key: str,
+    expected_attrs: dict,
 ) -> None:
-    """Test that _copy_basic_font_formatting correctly copies font.name typeface from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["typeface"]
+    """Test that _copy_basic_font_formatting correctly copies formatting from pptx to docx."""
+    source_run = pptx_formatting_runs_dict[run_key]
     target_run = _create_target_docx_run(blank_docx)
 
     formatting._copy_basic_font_formatting(source_run.font, target_run.font)
 
-    assert target_run.font.name is not None and target_run.font.name == "Georgia"
-
-
-def test_copy_basic_font_formatting_pptx2docx_preserves_bold(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold formatting from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["bold"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-
-
-def test_copy_basic_font_formatting_pptx2docx_preserves_italic(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies italic formatting from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["italic"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.italic is True
-
-
-def test_copy_basic_font_formatting_pptx2docx_preserves_underline(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies underline formatting from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["underline"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.underline is True
-
-
-def test_copy_basic_font_formatting_pptx2docx_preserves_bold_and_italic(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold and italic formatting together from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["bold_and_italic"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-    assert target_run.font.italic is True
-
-
-def test_copy_basic_font_formatting_pptx2docx_preserves_bold_and_underline(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold and underline formatting together from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["bold_and_underline"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-    assert target_run.font.underline is True
-
-
-def test_copy_basic_font_formatting_pptx2docx_preserves_underline_and_italic(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies underline and italic formatting together from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["underline_and_italic"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.underline is True
-    assert target_run.font.italic is True
-
-
-def test_copy_basic_font_formatting_pptx2docx_preserves_all_three(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_basic_font_formatting correctly copies bold, italic, and underline formatting together from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["all_three"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_basic_font_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.bold is True
-    assert target_run.font.italic is True
-    assert target_run.font.underline is True
+    for attr, expected_value in expected_attrs.items():
+        actual_value = getattr(target_run.font, attr)
+        assert actual_value is not None and actual_value == expected_value
 
 
 # endregion
@@ -1128,30 +1047,26 @@ def test_copy_basic_font_formatting_pptx2docx_preserves_all_three(
 # region _copy_font_size_formatting tests (pptx2docx)
 
 
-def test_copy_font_size_formatting_pptx2docx_preserves_large_size(
+@pytest.mark.parametrize(
+    "run_key,expected_size_pt",
+    [
+        ("large_size", 48),
+        ("small_size", 8),
+    ],
+)
+def test_copy_font_size_formatting_pptx2docx(
     pptx_formatting_runs_dict: dict[str, Run_pptx],
     blank_docx: document.Document,
+    run_key: str,
+    expected_size_pt: int,
 ) -> None:
-    """Test that _copy_font_size_formatting correctly copies large font size (48pt) from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["large_size"]
+    """Test that _copy_font_size_formatting correctly copies font size from pptx to docx."""
+    source_run = pptx_formatting_runs_dict[run_key]
     target_run = _create_target_docx_run(blank_docx)
 
     formatting._copy_font_size_formatting(source_run.font, target_run.font)
 
-    assert target_run.font.size.pt == 48
-
-
-def test_copy_font_size_formatting_pptx2docx_preserves_small_size(
-    pptx_formatting_runs_dict: dict[str, Run_pptx],
-    blank_docx: document.Document,
-) -> None:
-    """Test that _copy_font_size_formatting correctly copies small font size (8pt) from pptx to docx."""
-    source_run = pptx_formatting_runs_dict["small_size"]
-    target_run = _create_target_docx_run(blank_docx)
-
-    formatting._copy_font_size_formatting(source_run.font, target_run.font)
-
-    assert target_run.font.size.pt == 8
+    assert target_run.font.size.pt == expected_size_pt
 
 
 # endregion
@@ -1433,9 +1348,22 @@ def test_copy_run_formatting_pptx2docx_skips_experimental_when_disabled(
 # endregion
 
 # region pptx2docx PARA tests
-# TODO: I guess there's just the one here?
+
+# region TODO: get_effective_font_name_pptx
+# This function tries to access the slide layout's XML to find a typeface attribute.
+# It's a fallback for when paragraph.font.name is None.
+# Test that it can retrieve fonts from slide layouts.
+# endregion
 
 # region TODO: copy_paragraph_formatting_pptx2docx tests
+# Test that it copies:
+# - Alignment (using ALIGNMENT_MAP_PP2WD)
+# - Font name (either from paragraph.font.name or from get_effective_font_name_pptx)
+# endregion
+
+# region TODO: test alignment map
+# Consider testing ALIGNMENT_MAP_WD2PP and ALIGNMENT_MAP_PP2WD constants
+# to ensure bidirectional mapping is correct
 # endregion
 
 # endregion
@@ -1444,7 +1372,174 @@ def test_copy_run_formatting_pptx2docx_skips_experimental_when_disabled(
 # region apply_experimental_formatting_from_metadata tests
 # endregion
 
+
+# region edge case tests
+
+
+def test_copy_run_formatting_with_empty_text_docx2pptx(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that copying formatting works when run has empty text."""
+    # Create a run with empty text but formatting
+    source_para = blank_docx.add_paragraph()
+    source_run = source_para.add_run("")
+    source_run.font.bold = True
+    source_run.font.italic = True
+
+    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
+
+    formatting.copy_run_formatting_docx2pptx(
+        source_run, target_run, [], UserConfig(experimental_formatting_on=False)
+    )
+
+    # Should copy formatting even with empty text
+    assert target_run.font.bold is True
+    assert target_run.font.italic is True
+    assert target_run.text == ""
+
+
+def test_copy_run_formatting_with_whitespace_only_text_docx2pptx(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that copying formatting works when run has only whitespace."""
+    # Create a run with whitespace
+    source_para = blank_docx.add_paragraph()
+    source_run = source_para.add_run("   ")
+    source_run.font.bold = True
+    source_run.font.highlight_color = 7  # Yellow
+
+    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
+    metadata = []
+
+    formatting.copy_run_formatting_docx2pptx(
+        source_run, target_run, metadata, UserConfig(experimental_formatting_on=True)
+    )
+
+    # Should copy basic formatting
+    assert target_run.font.bold is True
+    # Should NOT apply experimental formatting (whitespace-only text is skipped)
+    assert len(metadata) == 0
+
+
+def test_copy_run_formatting_with_none_font_properties_docx2pptx(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that copying formatting handles None font properties gracefully."""
+    # Create a run with no explicit formatting (all None)
+    source_para = blank_docx.add_paragraph()
+    source_run = source_para.add_run("Plain text")
+
+    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
+
+    # This should not crash
+    formatting.copy_run_formatting_docx2pptx(
+        source_run, target_run, [], UserConfig(experimental_formatting_on=False)
+    )
+
+    # Text should be copied
+    assert target_run.text == "Plain text"
+    # Font properties remain as they were (or None/inherited)
+
+
+def test_copy_run_formatting_with_long_text_docx2pptx(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that copying formatting works with very long text."""
+    long_text = "A" * 10000  # 10k characters
+
+    source_para = blank_docx.add_paragraph()
+    source_run = source_para.add_run(long_text)
+    source_run.font.bold = True
+
+    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
+
+    formatting.copy_run_formatting_docx2pptx(
+        source_run, target_run, [], UserConfig(experimental_formatting_on=False)
+    )
+
+    assert target_run.font.bold is True
+    assert target_run.text == long_text
+    assert len(target_run.text) == 10000
+
+
+def test_copy_run_formatting_with_unicode_text_docx2pptx(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that copying formatting works with Unicode and special characters."""
+    unicode_text = "Hello 世界 🌍 café naïve résumé"
+
+    source_para = blank_docx.add_paragraph()
+    source_run = source_para.add_run(unicode_text)
+    source_run.font.italic = True
+
+    target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
+
+    formatting.copy_run_formatting_docx2pptx(
+        source_run, target_run, [], UserConfig(experimental_formatting_on=False)
+    )
+
+    assert target_run.font.italic is True
+    assert target_run.text == unicode_text
+
+
+def test_copy_run_formatting_with_empty_text_pptx2docx(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that copying formatting works when pptx run has empty text."""
+    # Create a pptx run with empty text but formatting
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame = slide.shapes.placeholders[1].text_frame
+    source_para = text_frame.paragraphs[0]
+    source_run = source_para.add_run()
+    source_run.text = ""
+    source_run.font.bold = True
+    source_run.font.italic = True
+
+    target_run = _create_target_docx_run(blank_docx)
+
+    formatting.copy_run_formatting_pptx2docx(
+        source_run, target_run, UserConfig(experimental_formatting_on=False)
+    )
+
+    # Should copy formatting even with empty text
+    assert target_run.font.bold is True
+    assert target_run.font.italic is True
+    assert target_run.text == ""
+
+
+def test_copy_run_formatting_with_unicode_text_pptx2docx(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that copying formatting works with Unicode from pptx to docx."""
+    unicode_text = "Привет 你好 مرحبا 🎉"
+
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame = slide.shapes.placeholders[1].text_frame
+    source_para = text_frame.paragraphs[0]
+    source_run = source_para.add_run()
+    source_run.text = unicode_text
+    source_run.font.bold = True
+
+    target_run = _create_target_docx_run(blank_docx)
+
+    formatting.copy_run_formatting_pptx2docx(
+        source_run, target_run, UserConfig(experimental_formatting_on=False)
+    )
+
+    assert target_run.font.bold is True
+    assert target_run.text == unicode_text
+
+
+# endregion
+
+
 # region helper tests
 # TODO: test colormap?
-# TODO: test alignment map?
 # endregion

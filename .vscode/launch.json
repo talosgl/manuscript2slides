@@ -20,7 +20,8 @@
             "module": "manuscript2slides.cli",
             "args": [
                 //"--input-pptx=src/manuscript2slides/resources/sample_slides_output.pptx",
-                "--input-docx=src/manuscript2slides/resources/sample_doc.docx"
+                //"--input-docx=src/manuscript2slides/resources/sample_doc.docx"
+                "--input-docx=C:/dev/manuscript2slides/tests/data/test_formatting.docx"
             ],
             "env": {
                 "PYTHONPATH": "${workspaceRoot}",

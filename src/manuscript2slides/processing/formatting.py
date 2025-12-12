@@ -404,11 +404,22 @@ def _copy_experimental_formatting_docx2pptx(
 # endregion
 
 
-# region get_effective_font_name_docx
-def get_effective_font_name_docx(style: ParagraphStyle_docx) -> str | None:
+# region get_style_font_name_with_fallback_docx
+def get_style_font_name_with_fallback_docx(style: ParagraphStyle_docx) -> str | None:
     """
-    Traverses the style hierarchy (base_style chain) to find the
-    explicit font name. Returns None if nothing found.
+    Gets the font name from a paragraph style, traversing the style hierarchy.
+
+    This function is mainly useful for:
+    - Setting a default font for runs that don't have explicit formatting
+    - Preserving Normal style's font (e.g., Bookerly) as a baseline
+
+    KNOWN LIMITATION: Returns None for theme fonts (e.g., headings using
+    "Heading Font" which resolves to Calibri Light via theme). This means:
+    - Headings using theme fonts won't get their font name preserved
+    - We could add theme font resolution but it requires XML parsing
+    - Consider this for experimental_formatting if needed
+
+    Returns None if only theme fonts are found (can't be resolved without XML).
     """
     current_style = style
     while current_style is not None:
@@ -430,8 +441,9 @@ def get_effective_font_name_docx(style: ParagraphStyle_docx) -> str | None:
 def copy_paragraph_formatting_docx2pptx(
     source_para: Paragraph_docx, target_para: Paragraph_pptx
 ) -> None:
-    """Copy docx paragraph font name, alignment, and basics like bold, italics, etc. to a pptx paragraph."""
+    """Copy docx paragraph font name (if set explicitly), alignment, and basics like bold, italics, etc. to a pptx paragraph."""
 
+    # Font name - only works for explicitly set fonts, not theme fonts
     _copy_paragraph_font_name_docx2pptx(source_para, target_para)
 
     _copy_paragraph_alignment_docx2pptx(source_para, target_para)
@@ -439,6 +451,7 @@ def copy_paragraph_formatting_docx2pptx(
     if source_para.style:
         # _copy_paragraph_format_docx2pptx(source_para, target_para)
         _copy_basic_font_formatting(source_para.style.font, target_para.font)
+        _copy_font_size_formatting(source_para.style.font, target_para.font)
         _copy_font_color_formatting(source_para.style.font, target_para.font)
 
 
@@ -452,7 +465,7 @@ def _copy_paragraph_font_name_docx2pptx(
 
     name = None
     if source_para.style:
-        name = get_effective_font_name_docx(source_para.style)
+        name = get_style_font_name_with_fallback_docx(source_para.style)
 
     if name:
         target_para.font.name = name
