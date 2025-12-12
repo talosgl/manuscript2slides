@@ -12,16 +12,20 @@ from pptx import Presentation
 from docx import document
 from pptx import presentation
 
+from docx.enum.style import WD_STYLE_TYPE
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.text.run import Run as Run_docx
 from docx.text.font import Font as Font_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.shared import RGBColor as RGBColor_docx
 
 
+from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.text.text import Font as Font_pptx
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 from pptx.dml.color import RGBColor as RGBColor_pptx
+from pptx.text.text import TextFrame
 
 from pathlib import Path
 import pytest
@@ -41,7 +45,12 @@ def blank_docx(path_to_empty_docx: Path) -> document.Document:
 def pptx_w_twenty_empty_slides(
     path_to_pptx_w_twenty_empty_slides: Path,
 ) -> presentation.Presentation:
-    """An empty pptx object that contains 20 empty slides so we don't need to add slides or slide layout stuff to be adding paragraphs and runs."""
+    """An empty pptx object that contains 20 empty slides so we don't need to add slides or slide layout stuff to be adding paragraphs and runs.
+
+    NOTE: Returns a fresh Presentation object for each test to avoid mutation/pollution across tests.
+    This is because by default, pytest fixtures with no explicit scope parameter use scope="function",
+    which means they create a new instance for each test.
+    """
     return Presentation(path_to_pptx_w_twenty_empty_slides)
 
 
@@ -487,50 +496,29 @@ def pptx_formatting_runs_dict(
 # What paragraph-level formatting CAN preserve:
 # - Alignment (via style or direct formatting)
 # - Font color (from paragraph style)
-# - Font size (from paragraph style) - was a bug, now fixed with _copy_font_size_formatting() call
+# - Font size (from paragraph style)
 # - Bold/italic/underline (from paragraph style)
-# - Font name for EXPLICIT fonts only (e.g., Normal style with Bookerly)
-#
-# What paragraph-level formatting CANNOT preserve:
+# - Font name for EXPLICIT fonts (e.g., Normal style with Bookerly)
 # - Theme fonts (e.g., headings using "Heading Font" -> Calibri Light)
-#   - style.font.name returns None for theme fonts
-#   - Theme fonts are stored in word/theme/theme1.xml and require XML parsing
-#   - This is a KNOWN LIMITATION documented in get_style_font_name_with_fallback_docx()
-#   - Headings using default theme fonts will NOT get their font name preserved
+#   - Theme fonts are stored in word/theme/theme1.xml
+#   - Resolved via get_theme_fonts_from_package() and _resolve_theme_font_docx()
+#   - See test_copy_paragraph_font_name_docx2pptx_resolves_theme_fonts
 #
 # Test strategy:
 # - Test Normal paragraphs (they have explicit Bookerly font in test doc)
 # - Test alignment (both from style and direct formatting)
 # - Test color, size, bold/italic/underline from paragraph styles
-# - DO NOT test theme fonts (documented limitation)
+# - Test theme fonts (majorHAnsi -> Calibri Light)
 # - Note: Paragraph-level fonts are set via STYLES in Word, not direct formatting
 #   (you can't set paragraph font in Word UI, only via runs or styles)
 #
-# Functions to test:
-# - get_style_font_name_with_fallback_docx() - renamed from get_effective_font_name_docx
-# - copy_paragraph_formatting_docx2pptx()
-# - _copy_paragraph_font_name_docx2pptx()
-# - _copy_paragraph_alignment_docx2pptx()
-# - copy_paragraph_formatting_pptx2docx()
-# - get_effective_font_name_pptx()
-
-
-def test_formatting_paragraph_docx(path_to_sample_docx_with_formatting: Path) -> None:
-    """Build a dict of known-paragraphs with formatting applied.
-    We'll turn this into a fixture after debugging and getting the
-    right structures.
-    """
-
-    docx_with_formatting = Document(str(path_to_sample_docx_with_formatting))
-    # This paragraph has these 3 properties, just alias so it it is easier to reference
-    para_with_color = para_with_size = para_with_center_alignment = (
-        docx_with_formatting.paragraphs[1]
-    )
-    para_with_style_h2 = docx_with_formatting.paragraphs[10]
-    para_with_style_h3 = docx_with_formatting.paragraphs[13]
-
-    pass
-
+# Functions tested:
+# ✓ get_style_font_name_with_fallback_docx()
+# ✓ copy_paragraph_formatting_docx2pptx()
+# ✓ _copy_paragraph_font_name_docx2pptx()
+# ✓ _copy_paragraph_alignment_docx2pptx()
+# TODO: copy_paragraph_formatting_pptx2docx()
+# TODO: get_effective_font_name_pptx()
 
 # endregion
 
@@ -969,38 +957,263 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
 
 # endregion docx2pptx RUN tests
 
-# region TODO: docx2pptx paragraph formatting
+# region docx2pptx paragraph formatting
 #
 # Background: Paragraph formatting was added to copy baseline formatting for runs that don't
 # have explicit formatting. It's called in run_processing.py before processing runs.
-#
-# BUG FIXED: Added _copy_font_size_formatting() call to copy_paragraph_formatting_docx2pptx()
-# at formatting.py:454. Previously font size wasn't being copied at paragraph level.
 #
 # Key insight: Paragraph fonts come from STYLES, not direct formatting. In the test document,
 # you need to use styles (like Normal with Bookerly) rather than trying to set fonts directly
 # on paragraphs through the Word UI.
 
-# region TODO: copy_paragraph_formatting_docx2pptx
-# Test that it correctly calls:
-# - _copy_paragraph_font_name_docx2pptx()
-# - _copy_paragraph_alignment_docx2pptx()
-# - _copy_basic_font_formatting() for paragraph style fonts
-# - _copy_font_size_formatting() for paragraph style fonts (newly added!)
-# - _copy_font_color_formatting() for paragraph style fonts
+# region copy_paragraph_formatting_docx2pptx
+
+
+def test_copy_paragraph_formatting_docx2pptx_happy_path(
+    path_to_sample_docx_with_formatting: Path,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that paragraph formatting is copied as expected in the docx2pptx direction;
+    right now this only includes color, size, and alignment."""
+    # Arrange
+    docx_with_formatting = Document(str(path_to_sample_docx_with_formatting))
+
+    # This paragraph has these 3 properties, just alias so it it is easier to reference.
+    # (Also we can split to reference other paragraphs in future but keep the var names.)
+    para_with_color = para_with_size = para_with_center_alignment = (
+        docx_with_formatting.paragraphs[1]
+    )
+
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
+
+    target_para_for_color = text_frame.add_paragraph()
+    target_para_for_size = text_frame.add_paragraph()
+    target_para_for_alignment = text_frame.add_paragraph()
+
+    # Action
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_color, target_para=target_para_for_color
+    )
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_size, target_para=target_para_for_size
+    )
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_center_alignment, target_para=target_para_for_alignment
+    )
+
+    # Assert
+    assert (
+        target_para_for_color.font.color.rgb is not None
+        and target_para_for_color.font.color.rgb
+        == (47, 84, 150)  # blue from the test_formatting.docx theme
+    )
+    assert (
+        target_para_for_size.font.size.pt is not None
+        and target_para_for_size.font.size.pt == 16  # expected size from heading 1
+    )
+    assert (
+        target_para_for_alignment.alignment is not None
+        and target_para_for_alignment.alignment == PP_ALIGN.CENTER
+    )
+
+
+def test_copy_paragraph_formatting_docx2pptx_advanced(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """
+    Test that typeface and bold/italic/underline from paragraph styles work for
+    docx2pptx when explicitly set on style.font.
+
+    NOTE: I can't for the life of me figure out how to actually make a document HAVE
+    these properties at the paragraph level (they're typically run-level). However,
+    the code DOES attempt to copy these from source_para.style.font, so we test that
+    it works when explicitly set.
+    """
+    # Arrange - Create fresh paragraphs and explicitly set style font properties
+    para_with_bold = blank_docx.add_paragraph("Bold paragraph")
+    para_with_bold.style.font.bold = True
+
+    para_with_italic = blank_docx.add_paragraph("Italic paragraph")
+    para_with_italic.style.font.italic = True
+
+    para_with_underline = blank_docx.add_paragraph("Underline paragraph")
+    para_with_underline.style.font.underline = True
+
+    para_with_typeface = blank_docx.add_paragraph("Georgia paragraph")
+    para_with_typeface.style.font.name = "Georgia"
+
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
+
+    target_para_for_bold = text_frame.add_paragraph()
+    target_para_for_italic = text_frame.add_paragraph()
+    target_para_for_underline = text_frame.add_paragraph()
+    target_para_for_typeface = text_frame.add_paragraph()
+
+    # Act
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_bold, target_para=target_para_for_bold
+    )
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_italic, target_para=target_para_for_italic
+    )
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_underline, target_para=target_para_for_underline
+    )
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_typeface, target_para=target_para_for_typeface
+    )
+
+    # Assert
+    assert target_para_for_bold.font.bold is True
+    assert target_para_for_italic.font.italic is True
+    assert target_para_for_underline.font.underline is True
+    assert target_para_for_typeface.font.name == "Georgia"
+
+
 # endregion
 
-# region TODO: _copy_paragraph_alignment_docx2pptx
-# Test both:
-# - Alignment from style (lower priority)
-# - Alignment from direct formatting (higher priority, overwrites style)
+# region _copy_paragraph_font_name_docx2pptx
+
+
+def test_copy_paragraph_font_name_docx2pptx_resolves_theme_fonts(
+    path_to_sample_docx_with_formatting: Path,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that _copy_paragraph_font_name_docx2pptx resolves theme fonts correctly."""
+    # Arrange
+    docx_with_formatting = Document(str(path_to_sample_docx_with_formatting))
+    # Paragraph 1 is Heading 1 which uses the Major theme font (Calibri Light)
+    para_with_heading_style_from_theme = docx_with_formatting.paragraphs[1]
+
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
+    target_para = text_frame.add_paragraph()
+
+    # Act
+    formatting._copy_paragraph_font_name_docx2pptx(
+        para_with_heading_style_from_theme, target_para
+    )
+
+    # Assert - Should resolve majorHAnsi to "Calibri Light" from the theme
+    assert target_para.font.name == "Calibri Light"
+
+
 # endregion
 
-# region TODO: get_style_font_name_with_fallback_docx
-# Test that it:
-# - Returns explicit font names (e.g., "Bookerly" from Normal style)
-# - Returns None for theme fonts (e.g., headings with "Heading Font")
-# - Traverses style hierarchy (checks base_style if current style has no font)
+# region _copy_paragraph_alignment_docx2pptx
+
+
+def test_copy_paragraph_alignment_docx2pptx_from_style(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that paragraph alignment is copied from style when no direct formatting is applied."""
+    # Arrange - Create a paragraph with center alignment from style
+    source_para = blank_docx.add_paragraph("Test text")
+    # Set alignment on the style's paragraph format
+    source_para.style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
+    target_para = text_frame.add_paragraph()
+
+    # Act
+    formatting._copy_paragraph_alignment_docx2pptx(source_para, target_para)
+
+    # Assert - Should map WD_ALIGN_PARAGRAPH.CENTER to PP_ALIGN.CENTER (enum value 2)
+    assert target_para.alignment == PP_ALIGN.CENTER
+
+
+def test_copy_paragraph_alignment_docx2pptx_direct_formatting_overrides_style(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that direct paragraph alignment overrides style alignment (higher priority)."""
+    # Arrange - Create a paragraph with CENTER alignment in style but RIGHT in direct formatting
+    source_para = blank_docx.add_paragraph("Test text")
+    # Set alignment on the style (lower priority)
+    source_para.style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # Set direct formatting (higher priority - should win)
+    source_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
+    target_para = text_frame.add_paragraph()
+
+    # Act
+    formatting._copy_paragraph_alignment_docx2pptx(source_para, target_para)
+
+    # Assert - Should use direct formatting (RIGHT), not style (CENTER)
+    assert target_para.alignment == PP_ALIGN.RIGHT
+
+
+def test_copy_paragraph_alignment_docx2pptx_no_alignment_set(
+    blank_docx: document.Document,
+    pptx_w_twenty_empty_slides: presentation.Presentation,
+) -> None:
+    """Test that paragraph alignment copy handles None/unset alignment gracefully."""
+    # Arrange - Create a paragraph with no explicit alignment
+    source_para = blank_docx.add_paragraph("Test text")
+
+    slide = pptx_w_twenty_empty_slides.slides[0]
+    text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
+    target_para = text_frame.add_paragraph()
+
+    # Act
+    formatting._copy_paragraph_alignment_docx2pptx(source_para, target_para)
+
+    # Assert - Alignment should remain None or unchanged
+    # (The function doesn't set alignment if source has none)
+    assert target_para.alignment is None or target_para.alignment == PP_ALIGN.LEFT
+
+
+# endregion
+
+
+# region get_style_font_name_with_fallback_docx
+def test_get_style_font_name_with_fallback_docx_explicit_font(
+    blank_docx: document.Document,
+) -> None:
+    """Test that the function returns explicit font names from a style."""
+    # Arrange - Create a paragraph with Normal style and set explicit font
+    para = blank_docx.add_paragraph("Test")
+    para.style.font.name = "Bookerly"
+
+    # Act
+    assert para.style is not None
+    result = formatting.get_style_font_name_with_fallback_docx(para.style)
+
+    # Assert
+    assert result == "Bookerly"
+
+
+def test_get_style_font_name_with_fallback_docx_traverses_style_hierarchy(
+    blank_docx: document.Document,
+) -> None:
+    """Test that the function traverses the style hierarchy to find font names."""
+    # Arrange - Create a base style with explicit font, then a derived style without one
+    # Create base style with explicit font
+    base_style = blank_docx.styles.add_style("BaseStyle", WD_STYLE_TYPE.PARAGRAPH)
+    base_style.font.name = "Georgia"
+
+    # Create a custom style based on BaseStyle without setting its own font
+    custom_style = blank_docx.styles.add_style("CustomStyle", WD_STYLE_TYPE.PARAGRAPH)
+    custom_style.base_style = base_style
+    # Don't set custom_style.font.name - it should inherit from base_style
+
+    para = blank_docx.add_paragraph("Test", style="CustomStyle")
+
+    # Act
+    assert para.style is not None
+    result = formatting.get_style_font_name_with_fallback_docx(para.style)
+
+    # Assert - Should find "Georgia" from the base style
+    assert result == "Georgia"
+
+
 # endregion
 
 # endregion

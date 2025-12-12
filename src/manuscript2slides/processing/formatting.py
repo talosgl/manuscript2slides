@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 from typing import Union, cast
 
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
+from docx.opc.package import OpcPackage
 from docx.shared import RGBColor as RGBColor_docx
 from docx.styles.style import ParagraphStyle as ParagraphStyle_docx
 from docx.text.font import Font as Font_docx
@@ -29,6 +30,10 @@ from pptx.text.text import _Run as Run_pptx
 from pptx.util import Pt
 
 from manuscript2slides.internals.define_config import UserConfig
+from manuscript2slides.annotations.docx_xml import (
+    parse_xml_blob,
+    extract_theme_fonts_from_xml,
+)
 
 # endregion
 
@@ -404,8 +409,46 @@ def _copy_experimental_formatting_docx2pptx(
 # endregion
 
 
+# region get_theme_fonts_from_package
+def get_theme_fonts_from_package(package: OpcPackage | None) -> dict[str, str | None]:
+    """
+    Extracts theme fonts from a document package (accessible via paragraph.part.package).
+    This allows extracting theme fonts without needing the full Document object.
+    """
+    if package is None:
+        return {"Major": None, "Minor": None}
+
+    try:
+        # Find theme parts in the package
+        theme_parts = []
+        for part in package.parts:
+            if "theme" in str(part.partname):
+                theme_parts.append(part)
+
+        if not theme_parts:
+            log.debug("No theme parts found in package.")
+            return {"Major": None, "Minor": None}
+
+        # Get the first theme part
+        theme_part = theme_parts[0]
+        theme_xml_blob = theme_part.blob
+
+        # Parse and extract fonts
+        theme_root = parse_xml_blob(theme_xml_blob)
+        return extract_theme_fonts_from_xml(theme_root)
+
+    except Exception as e:
+        log.debug(f"Could not extract theme fonts from package: {e}")
+        return {"Major": None, "Minor": None}
+
+
+# endregion
+
+
 # region get_style_font_name_with_fallback_docx
-def get_style_font_name_with_fallback_docx(style: ParagraphStyle_docx) -> str | None:
+def get_style_font_name_with_fallback_docx(
+    style: ParagraphStyle_docx, theme_fonts: dict[str, str | None] | None = None
+) -> str | None:
     """
     Gets the font name from a paragraph style, traversing the style hierarchy.
 
@@ -413,16 +456,31 @@ def get_style_font_name_with_fallback_docx(style: ParagraphStyle_docx) -> str | 
     - Setting a default font for runs that don't have explicit formatting
     - Preserving Normal style's font (e.g., Bookerly) as a baseline
 
-    KNOWN LIMITATION: Returns None for theme fonts (e.g., headings using
-    "Heading Font" which resolves to Calibri Light via theme). This means:
-    - Headings using theme fonts won't get their font name preserved
-    - We could add theme font resolution but it requires XML parsing
-    - Consider this for experimental_formatting if needed
+    Now includes theme font resolution: If a style uses theme fonts (e.g., "minorHAnsi"
+    or "majorHAnsi"), this function will attempt to resolve them from the provided
+    theme_fonts dict. Falls back gracefully to None if theme resolution fails.
 
-    Returns None if only theme fonts are found (can't be resolved without XML).
+    Priority order:
+    1. Theme fonts on the current style (highest priority - overrides explicit fonts in base styles)
+    2. Explicit font name on current style
+    3. Theme fonts on base styles
+    4. Explicit font names on base styles
+
+    Args:
+        style: The paragraph style to get the font name from
+        theme_fonts: Optional dict with 'Major' and 'Minor' theme font names
+
+    Returns the resolved font name, or None if no font is found.
     """
     current_style = style
     while current_style is not None:
+        # Check theme fonts FIRST - they have priority over explicit fonts in base styles
+        if theme_fonts:
+            theme_font = _resolve_theme_font_docx(current_style, theme_fonts)
+            if theme_font:
+                return theme_font
+
+        # Then check for explicit font names
         if current_style.font.name:
             # Found an explicit font name in this style or a base style
             return current_style.font.name
@@ -430,7 +488,52 @@ def get_style_font_name_with_fallback_docx(style: ParagraphStyle_docx) -> str | 
         # Move up to the base style (cast helps Pylance here if it complains)
         current_style = cast(ParagraphStyle_docx, current_style.base_style)
 
-    # If the entire chain returns None, we return None so as to keep whatever the theme default is in place
+    # If the entire chain returns None, return None
+    return None
+
+
+def _resolve_theme_font_docx(
+    style: ParagraphStyle_docx, theme_fonts: dict[str, str | None]
+) -> str | None:
+    """
+    Attempt to resolve a theme font reference to an actual font name.
+
+    Checks the style's rPr/rFonts element for theme font attributes (like asciiTheme, hAnsiTheme)
+    and maps them to the actual font names from theme_fonts dict.
+    """
+    try:
+        # Access the style's XML element
+        style_element = style._element
+
+        # Find the rFonts element within rPr (run properties)
+        # Namespace for Word markup
+        ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+        rfonts = style_element.find(".//w:rPr/w:rFonts", ns)
+
+        if rfonts is not None:
+            # Check for various theme font attributes
+            # The 'asciiTheme' and 'hAnsiTheme' attributes indicate which theme font to use
+            ascii_theme = rfonts.get(
+                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}asciiTheme"
+            )
+            hansi_theme = rfonts.get(
+                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}hAnsiTheme"
+            )
+
+            # Common theme font references in Word:
+            # - "majorHAnsi" or "majorAscii" -> Heading font (Major)
+            # - "minorHAnsi" or "minorAscii" -> Body font (Minor)
+            theme_ref = ascii_theme or hansi_theme
+
+            if theme_ref:
+                if "major" in theme_ref.lower():
+                    return theme_fonts.get("Major")
+                elif "minor" in theme_ref.lower():
+                    return theme_fonts.get("Minor")
+
+    except Exception as e:
+        log.debug(f"Could not resolve theme font for style '{style.name}': {e}")
+
     return None
 
 
@@ -439,11 +542,12 @@ def get_style_font_name_with_fallback_docx(style: ParagraphStyle_docx) -> str | 
 
 # region copy_paragraph_formatting_docx2pptx
 def copy_paragraph_formatting_docx2pptx(
-    source_para: Paragraph_docx, target_para: Paragraph_pptx
+    source_para: Paragraph_docx,
+    target_para: Paragraph_pptx,
 ) -> None:
     """Copy docx paragraph font name (if set explicitly), alignment, and basics like bold, italics, etc. to a pptx paragraph."""
 
-    # Font name - only works for explicitly set fonts, not theme fonts
+    # Font name - now works for both explicit fonts and theme fonts
     _copy_paragraph_font_name_docx2pptx(source_para, target_para)
 
     _copy_paragraph_alignment_docx2pptx(source_para, target_para)
@@ -460,12 +564,15 @@ def copy_paragraph_formatting_docx2pptx(
 
 # region _copy_paragraph_font_name_docx2pptx
 def _copy_paragraph_font_name_docx2pptx(
-    source_para: Paragraph_docx, target_para: Paragraph_pptx
+    source_para: Paragraph_docx,
+    target_para: Paragraph_pptx,
 ) -> None:
-
+    """Copy paragraph font name, resolving theme fonts if necessary."""
     name = None
     if source_para.style:
-        name = get_style_font_name_with_fallback_docx(source_para.style)
+        # Extract theme fonts from the package for resolution
+        theme_fonts = get_theme_fonts_from_package(source_para.part.package)
+        name = get_style_font_name_with_fallback_docx(source_para.style, theme_fonts)
 
     if name:
         target_para.font.name = name
