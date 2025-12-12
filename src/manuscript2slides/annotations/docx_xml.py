@@ -1,4 +1,7 @@
-"""XML parsing utilities for extracting annotations from docx files."""
+"""XML parsing utilities for extracting annotations from docx files.
+
+TODO: Move this out of annotations, and/or split it into 2 files. It has
+turned more into XML utilities for working with docx files."""
 
 import logging
 import re
@@ -162,3 +165,31 @@ def detect_field_code_hyperlinks(run: Run_docx) -> None | str:
 
 
 # endregion
+
+
+# region find_theme_fonts
+def extract_theme_fonts_from_xml(root: ET.Element) -> dict[str, str | None]:
+    """Extracts major and minor font typeface names from the theme XML root."""
+
+    # Define the namespace for DrawingML elements where fonts live
+    ns = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
+
+    fonts: dict[str, str | None] = {"Major": None, "Minor": None}
+
+    # Find the fontScheme element
+    font_scheme = root.find(".//a:fontScheme", ns)
+
+    if font_scheme is not None:
+        # Find Major (Headings) font
+        major_font = font_scheme.find("a:majorFont/a:latin", ns)
+        if major_font is not None:
+            fonts["Major"] = major_font.get("typeface")
+            log.debug(f"Found major theme font: {fonts['Major']}")
+
+        # Find Minor (Body/Normal) font
+        minor_font = font_scheme.find("a:minorFont/a:latin", ns)
+        if minor_font is not None:
+            fonts["Minor"] = minor_font.get("typeface")
+            log.debug(f"Found minor theme font: {fonts['Minor']}")
+
+    return fonts
