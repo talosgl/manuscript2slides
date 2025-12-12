@@ -13,7 +13,7 @@ from docx import document
 from pptx import presentation
 
 from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
 from docx.text.run import Run as Run_docx
 from docx.text.font import Font as Font_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
@@ -489,37 +489,6 @@ def pptx_formatting_runs_dict(
     }
 
 
-# TODO: Create paragraph-level fixtures (docx_formatting_paragraphs_dict and pptx_formatting_paragraphs_dict)
-#
-# IMPORTANT NOTES from investigation:
-#
-# What paragraph-level formatting CAN preserve:
-# - Alignment (via style or direct formatting)
-# - Font color (from paragraph style)
-# - Font size (from paragraph style)
-# - Bold/italic/underline (from paragraph style)
-# - Font name for EXPLICIT fonts (e.g., Normal style with Bookerly)
-# - Theme fonts (e.g., headings using "Heading Font" -> Calibri Light)
-#   - Theme fonts are stored in word/theme/theme1.xml
-#   - Resolved via get_theme_fonts_from_package() and _resolve_theme_font_docx()
-#   - See test_copy_paragraph_font_name_docx2pptx_resolves_theme_fonts
-#
-# Test strategy:
-# - Test Normal paragraphs (they have explicit Bookerly font in test doc)
-# - Test alignment (both from style and direct formatting)
-# - Test color, size, bold/italic/underline from paragraph styles
-# - Test theme fonts (majorHAnsi -> Calibri Light)
-# - Note: Paragraph-level fonts are set via STYLES in Word, not direct formatting
-#   (you can't set paragraph font in Word UI, only via runs or styles)
-#
-# Functions tested:
-# ✓ get_style_font_name_with_fallback_docx()
-# ✓ copy_paragraph_formatting_docx2pptx()
-# ✓ _copy_paragraph_font_name_docx2pptx()
-# ✓ _copy_paragraph_alignment_docx2pptx()
-# TODO: copy_paragraph_formatting_pptx2docx()
-# TODO: get_effective_font_name_pptx()
-
 # endregion
 
 
@@ -963,7 +932,7 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
 # have explicit formatting. It's called in run_processing.py before processing runs.
 #
 # Key insight: Paragraph fonts come from STYLES, not direct formatting. In the test document,
-# you need to use styles (like Normal with Bookerly) rather than trying to set fonts directly
+# you need to use styles (like Normal with Times New Roman) rather than trying to set fonts directly
 # on paragraphs through the Word UI.
 
 # region copy_paragraph_formatting_docx2pptx
@@ -1174,23 +1143,23 @@ def test_copy_paragraph_alignment_docx2pptx_no_alignment_set(
 
 
 # region get_style_font_name_with_fallback_docx
-def test_get_style_font_name_with_fallback_docx_explicit_font(
+def test_get_effective_font_name_docx_explicit_font(
     blank_docx: document.Document,
 ) -> None:
     """Test that the function returns explicit font names from a style."""
     # Arrange - Create a paragraph with Normal style and set explicit font
     para = blank_docx.add_paragraph("Test")
-    para.style.font.name = "Bookerly"
+    para.style.font.name = "Georgia"
 
     # Act
     assert para.style is not None
-    result = formatting.get_style_font_name_with_fallback_docx(para.style)
+    result = formatting.get_effective_font_name_docx(para.style)
 
     # Assert
-    assert result == "Bookerly"
+    assert result == "Georgia"
 
 
-def test_get_style_font_name_with_fallback_docx_traverses_style_hierarchy(
+def test_get_effective_font_name_docx_traverses_style_hierarchy(
     blank_docx: document.Document,
 ) -> None:
     """Test that the function traverses the style hierarchy to find font names."""
@@ -1208,7 +1177,7 @@ def test_get_style_font_name_with_fallback_docx_traverses_style_hierarchy(
 
     # Act
     assert para.style is not None
-    result = formatting.get_style_font_name_with_fallback_docx(para.style)
+    result = formatting.get_effective_font_name_docx(para.style)
 
     # Assert - Should find "Georgia" from the base style
     assert result == "Georgia"
@@ -1562,27 +1531,101 @@ def test_copy_run_formatting_pptx2docx_skips_experimental_when_disabled(
 
 # region pptx2docx PARA tests
 
-# region TODO: get_effective_font_name_pptx
-# This function tries to access the slide layout's XML to find a typeface attribute.
-# It's a fallback for when paragraph.font.name is None.
-# Test that it can retrieve fonts from slide layouts.
+
+# region copy_paragraph_formatting_pptx2docx tests
+def test_copy_paragraph_formatting_pptx2docx_copies_font_name(
+    path_to_pptx_w_twenty_empty_slides: Path, path_to_empty_docx: Path
+) -> None:
+    """Test that copy_paragraph_formatting_pptx2docx copies font name from pptx to docx.
+
+    This test validates that get_effective_font_name_pptx works correctly by testing
+    through the orchestrator function copy_paragraph_formatting_pptx2docx.
+    """
+    pptx_with_formatting: presentation.Presentation = Presentation(
+        path_to_pptx_w_twenty_empty_slides
+    )
+    new_docx = Document(str(path_to_empty_docx))
+    source_slide = pptx_with_formatting.slides[0]
+    source_paragraphs = source_slide.shapes.placeholders[1].text_frame.paragraphs
+    source_pptx_para: Paragraph_pptx = source_paragraphs[0]
+    assert (
+        source_pptx_para.font.name is None
+    ), f"Test cannot proceed; test data source_pptx_para.font.name should be None but is {source_pptx_para.font.name}"
+
+    target_docx_para = new_docx.add_paragraph()
+
+    formatting.copy_paragraph_formatting_pptx2docx(
+        source_para=source_pptx_para, target_para=target_docx_para
+    )
+
+    assert target_docx_para.style.font.name == "Times New Roman"
+
+
+def test_copy_paragraph_formatting_pptx2docx_copies_alignment(
+    path_to_sample_pptx_with_formatting: Path, path_to_empty_docx: Path
+) -> None:
+    """Test that copy_paragraph_formatting_pptx2docx copies alignment from pptx to docx."""
+
+    pptx_with_formatting: presentation.Presentation = Presentation(
+        path_to_sample_pptx_with_formatting
+    )
+
+    new_docx = Document(str(path_to_empty_docx))
+    source_slide = pptx_with_formatting.slides[0]
+    source_paragraphs = source_slide.shapes.placeholders[1].text_frame.paragraphs
+    source_pptx_para: Paragraph_pptx = source_paragraphs[0]
+    assert (
+        source_pptx_para.alignment == PP_ALIGN.CENTER
+    ), f"Test cannot proceed because test data is not in expected form. Source_pptx_para.alignment should be PP_ALIGN.CENTER but is {source_pptx_para.alignment}."
+    target_docx_para = new_docx.add_paragraph()
+
+    formatting.copy_paragraph_formatting_pptx2docx(
+        source_para=source_pptx_para, target_para=target_docx_para
+    )
+
+    assert target_docx_para.alignment == WD_ALIGN_PARAGRAPH.CENTER
+
+
 # endregion
 
-# region TODO: copy_paragraph_formatting_pptx2docx tests
-# Test that it copies:
-# - Alignment (using ALIGNMENT_MAP_PP2WD)
-# - Font name (either from paragraph.font.name or from get_effective_font_name_pptx)
+
+# region test alignment map
+def test_alignment_map_wd2pp_completeness() -> None:
+    """Verify all common WD_ALIGN values map to PP_ALIGN values"""
+    # Test the common alignment cases
+    assert formatting.ALIGNMENT_MAP_WD2PP[WD_ALIGN_PARAGRAPH.LEFT] == PP_ALIGN.LEFT
+    assert formatting.ALIGNMENT_MAP_WD2PP[WD_ALIGN_PARAGRAPH.CENTER] == PP_ALIGN.CENTER
+    assert formatting.ALIGNMENT_MAP_WD2PP[WD_ALIGN_PARAGRAPH.RIGHT] == PP_ALIGN.RIGHT
+    assert (
+        formatting.ALIGNMENT_MAP_WD2PP[WD_ALIGN_PARAGRAPH.JUSTIFY] == PP_ALIGN.JUSTIFY
+    )
+
+    # Edge case: Multiple JUSTIFY types map to same value
+    assert (
+        formatting.ALIGNMENT_MAP_WD2PP[WD_ALIGN_PARAGRAPH.JUSTIFY_HI]
+        == PP_ALIGN.JUSTIFY
+    )
+    assert (
+        formatting.ALIGNMENT_MAP_WD2PP[WD_ALIGN_PARAGRAPH.JUSTIFY_MED]
+        == PP_ALIGN.JUSTIFY
+    )
+
+
+def test_alignment_map_pp2wd_is_inverse() -> None:
+    """Verify reverse map is constructed correctly"""
+    # Note: This won't be perfect inverse due to many-to-one mappings
+    # (multiple JUSTIFY variants map to one PP_ALIGN.JUSTIFY)
+    for pp_val, wd_val in formatting.ALIGNMENT_MAP_PP2WD.items():
+        # The round-trip should work for PP->WD->PP
+        assert formatting.ALIGNMENT_MAP_WD2PP[wd_val] == pp_val
+
+
 # endregion
 
-# region TODO: test alignment map
-# Consider testing ALIGNMENT_MAP_WD2PP and ALIGNMENT_MAP_PP2WD constants
-# to ensure bidirectional mapping is correct
-# endregion
-
 # endregion
 
 
-# region apply_experimental_formatting_from_metadata tests
+# region TODO: apply_experimental_formatting_from_metadata tests
 # endregion
 
 
@@ -1753,6 +1796,45 @@ def test_copy_run_formatting_with_unicode_text_pptx2docx(
 # endregion
 
 
-# region helper tests
-# TODO: test colormap?
+# region test color map
+def test_color_map_hex_has_expected_colors() -> None:
+    """Verify color map contains expected highlight colors"""
+    # Test a few key colors
+    assert formatting.COLOR_MAP_HEX[WD_COLOR_INDEX.YELLOW] == "FFFF00"
+    assert formatting.COLOR_MAP_HEX[WD_COLOR_INDEX.PINK] == "FF00FF"
+    assert formatting.COLOR_MAP_HEX[WD_COLOR_INDEX.BLACK] == "000000"
+
+
+def test_color_map_from_hex_is_inverse() -> None:
+    """Verify reverse color map is constructed correctly"""
+    for wd_color, hex_val in formatting.COLOR_MAP_HEX.items():
+        assert formatting.COLOR_MAP_FROM_HEX[hex_val] == wd_color
+
+
+def test_color_map_completeness() -> None:
+    """Verify all WD_COLOR_INDEX highlight colors are mapped (except AUTO)"""
+    # List all possible highlight colors from WD_COLOR_INDEX enum
+    # We exclude AUTO (0) since it represents "automatic/default" rather than a specific color
+    expected_colors = [
+        WD_COLOR_INDEX.BLACK,
+        WD_COLOR_INDEX.BLUE,
+        WD_COLOR_INDEX.TURQUOISE,
+        WD_COLOR_INDEX.BRIGHT_GREEN,
+        WD_COLOR_INDEX.PINK,
+        WD_COLOR_INDEX.RED,
+        WD_COLOR_INDEX.YELLOW,
+        WD_COLOR_INDEX.WHITE,
+        WD_COLOR_INDEX.DARK_BLUE,
+        WD_COLOR_INDEX.TEAL,
+        WD_COLOR_INDEX.GREEN,
+        WD_COLOR_INDEX.VIOLET,
+        WD_COLOR_INDEX.DARK_RED,
+        WD_COLOR_INDEX.DARK_YELLOW,
+        WD_COLOR_INDEX.GRAY_50,
+        WD_COLOR_INDEX.GRAY_25,
+    ]
+    for color in expected_colors:
+        assert color in formatting.COLOR_MAP_HEX, f"Missing color mapping for {color}"
+
+
 # endregion
