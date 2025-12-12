@@ -29,11 +29,11 @@ from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 from pptx.util import Pt
 
-from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.annotations.docx_xml import (
-    parse_xml_blob,
     extract_theme_fonts_from_xml,
+    parse_xml_blob,
 )
+from manuscript2slides.internals.define_config import UserConfig
 
 # endregion
 
@@ -792,7 +792,12 @@ def apply_experimental_formatting_from_metadata(
         if highlight_enum:
             try:
                 color_index = getattr(WD_COLOR_INDEX, highlight_enum, None)
-                tfont.highlight_color = color_index
+                if color_index is None:
+                    log.debug(
+                        f"Could not restore highlight color. Invalid enum '{highlight_enum}' in metadata for run: {target_run.text[:50]}..."
+                    )
+                else:
+                    tfont.highlight_color = color_index
             except Exception as e:
                 log.warning(_exp_fmt_issue(formatting_type, target_run.text, e))
 
