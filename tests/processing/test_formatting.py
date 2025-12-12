@@ -1,4 +1,4 @@
-"""Tests for standard formatting"""
+"""Tests for formatting in both pipeline directions."""
 
 # tests/test_formatting.py
 
