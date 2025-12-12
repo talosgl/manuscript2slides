@@ -1706,20 +1706,21 @@ def test_apply_experimental_formatting_from_metadata_unknown_formatting_type(
 def test_apply_experimental_formatting_from_metadata_invalid_highlight_enum(
     blank_docx: document.Document, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Test that invalid highlight_color_enum logs warning"""
+    """Test that invalid highlight_color_enum logs debug message"""
     target_run = _create_target_docx_run(blank_docx)
     format_info = {
         "formatting_type": "highlight",
         "ref_text": "test",
         "highlight_color_enum": "INVALID_COLOR",
     }
-    # Act
-    formatting.apply_experimental_formatting_from_metadata(target_run, format_info)
 
-    # Assert - should log a warning
+    # Act - with debug logging enabled
     with caplog.at_level(logging.DEBUG):
-        assert "Could not restore highlight color. Invalid enum" in caplog.text
-    # Or just verify highlight_color is None
+        formatting.apply_experimental_formatting_from_metadata(target_run, format_info)
+
+    # Assert - should have logged a debug message
+    assert "Could not restore highlight color. Invalid enum" in caplog.text
+    # Also verify highlight_color is None
     assert target_run.font.highlight_color is None
 
 
