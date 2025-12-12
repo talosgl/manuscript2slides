@@ -10,8 +10,14 @@ from pptx import Presentation  # pyright: ignore[reportPrivateImportUsage]
 
 # TODO: Consider adding:
 """
-A test that manifest files are created (since you modified run_pipeline to use manifest)
-A test for the range_start/range_end config options (if those are important features)
+MAYBE: A test that manifest files are created (since run_pipeline uses manifest)
+MAYBE: A test for the range_start/range_end config options (if those are important features)
+
+YES, BUT A BIG FOCUSED PUSH:
+A test that documents the first 1~2 pages of the sample_doc and expected pptx, and tests it, including formatting.    
+    - test that we capture all the formatting from the docx correctly and 1) apply it to the slides as expected and 2) write it into the slidee notes as expected
+    - read & write to/from disk for this.
+    - this is probably overkill, but it would mirror the REAL manual testing performed during dev
 """
 
 
