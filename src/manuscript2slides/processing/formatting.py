@@ -74,11 +74,16 @@ ALIGNMENT_MAP_WD2PP = {
     WD_ALIGN_PARAGRAPH.DISTRIBUTE: PP_ALIGN.DISTRIBUTE,
     # I don't know Thai and I'm completely guessing that this is desired
     WD_ALIGN_PARAGRAPH.THAI_JUSTIFY: PP_ALIGN.THAI_DISTRIBUTE,
+    # Word has multiple JUSTIFY variants with different character spacing;
+    # PowerPoint only has standard JUSTIFY and JUSTIFY_LOW
     WD_ALIGN_PARAGRAPH.JUSTIFY_HI: PP_ALIGN.JUSTIFY,
     WD_ALIGN_PARAGRAPH.JUSTIFY_MED: PP_ALIGN.JUSTIFY,
     WD_ALIGN_PARAGRAPH.JUSTIFY_LOW: PP_ALIGN.JUSTIFY_LOW,
 }
 
+# Reverse map: PP_ALIGN -> WD_ALIGN_PARAGRAPH
+# Note: Where multiple WD values map to one PP value, the last entry in
+# ALIGNMENT_MAP_WD2PP wins (e.g., PP_ALIGN.JUSTIFY -> WD_ALIGN_PARAGRAPH.JUSTIFY_LOW)
 ALIGNMENT_MAP_PP2WD = {v: k for k, v in ALIGNMENT_MAP_WD2PP.items()}
 # endregion
 
@@ -403,14 +408,16 @@ def _copy_experimental_formatting_docx2pptx(
             </a:r>
             """
     except Exception as e:
-        log.error(f"Unexpected error in experimental formatting: {e}")
+        log.warning(f"Unexpected error in experimental formatting: {e}")
 
 
 # endregion
 
 
-# region get_theme_fonts_from_package
-def get_theme_fonts_from_package(package: OpcPackage | None) -> dict[str, str | None]:
+# region get_theme_fonts_from_docx_package
+def get_theme_fonts_from_docx_package(
+    package: OpcPackage | None,
+) -> dict[str, str | None]:
     """
     Extracts theme fonts from a document package (accessible via paragraph.part.package).
     This allows extracting theme fonts without needing the full Document object.
@@ -446,25 +453,17 @@ def get_theme_fonts_from_package(package: OpcPackage | None) -> dict[str, str | 
 
 
 # region get_style_font_name_with_fallback_docx
-def get_style_font_name_with_fallback_docx(
+def get_effective_font_name_docx(
     style: ParagraphStyle_docx, theme_fonts: dict[str, str | None] | None = None
 ) -> str | None:
     """
     Gets the font name from a paragraph style, traversing the style hierarchy.
 
-    This function is mainly useful for:
-    - Setting a default font for runs that don't have explicit formatting
-    - Preserving Normal style's font (e.g., Bookerly) as a baseline
-
-    Now includes theme font resolution: If a style uses theme fonts (e.g., "minorHAnsi"
-    or "majorHAnsi"), this function will attempt to resolve them from the provided
-    theme_fonts dict. Falls back gracefully to None if theme resolution fails.
-
     Priority order:
     1. Theme fonts on the current style (highest priority - overrides explicit fonts in base styles)
     2. Explicit font name on current style
     3. Theme fonts on base styles
-    4. Explicit font names on base styles
+    4. Explicit font names on base styles (E.g., Heading1 inheriting from Normal, and using Normal's font)
 
     Args:
         style: The paragraph style to get the font name from
@@ -571,8 +570,8 @@ def _copy_paragraph_font_name_docx2pptx(
     name = None
     if source_para.style:
         # Extract theme fonts from the package for resolution
-        theme_fonts = get_theme_fonts_from_package(source_para.part.package)
-        name = get_style_font_name_with_fallback_docx(source_para.style, theme_fonts)
+        theme_fonts = get_theme_fonts_from_docx_package(source_para.part.package)
+        name = get_effective_font_name_docx(source_para.style, theme_fonts)
 
     if name:
         target_para.font.name = name
@@ -728,28 +727,46 @@ def _copy_experimental_formatting_pptx2docx(
 # region get_effective_font_name_pptx
 def get_effective_font_name_pptx(paragraph: Paragraph_pptx) -> str | None:
     """
-    Try to access this pptx Paragraph's slide_layout's XML for a 'typeface' attribute;
-    return the first found, or None.
+    Get the effective font name for a pptx paragraph.
+
+    First checks if the paragraph has an explicit font name set. If not, searches the
+    slide layouts for font definitions, prioritizing a:ea and a:cs elements (which
+    typically contain actual font names) over a:latin elements (which often contain
+    theme references like "+mj-lt"). Theme font references (starting with "+") are
+    skipped in favor of actual font names.
+
+    Returns the first actual font name found, or None if no font is found.
+
+    Example XML structure:
+    <a:defRPr sz="1800">
+        <a:latin typeface="+mj-lt"/>
+        <a:ea typeface="Arial" panose="02020602040305020204" pitchFamily="18" charset="0"/>
+        <a:cs typeface="Times New Roman" panose="02020602040305020204" pitchFamily="18" charset="0"/>
+    </a:defRPr>
     """
     if paragraph.font.name is not None:
         return paragraph.font.name
 
     try:
-        typefaces = set()
-
         slide_layouts = (
             paragraph.part.package.presentation_part.presentation.slide_layouts
         )
         for slide_layout in slide_layouts:
-            xpath_query = ".//a:latin[@typeface]"
-            matching_elements = slide_layout.element.xpath(xpath_query)
-            if matching_elements:
+            # Check a:ea, a:cs, and a:latin elements for typeface attributes
+            # Prioritize a:ea and a:cs which typically have actual font names
+            for xpath_query in [
+                ".//a:ea[@typeface]",
+                ".//a:cs[@typeface]",
+                ".//a:latin[@typeface]",
+            ]:
+                matching_elements = slide_layout.element.xpath(xpath_query)
                 for el in matching_elements:
-                    typefaces.add(el.typeface)
-        if typefaces:
-            return typefaces.pop()
+                    typeface = el.attrib.get("typeface")
+                    # Skip theme font references (start with +) and return first actual font
+                    if typeface and not typeface.startswith("+"):
+                        return typeface
     except Exception as e:
-        log.warning(
+        log.debug(
             f"Something went wrong when we tried to traverse XML to find a font name for a pptx paragraph (against our better judgment). \nException: {e}"
         )
 
