@@ -444,10 +444,13 @@ def build_config_from_args(args: argparse.Namespace) -> UserConfig:
             args.preserve_docx_metadata_in_speaker_notes
         )
 
-    # Validate config
-    cfg.validate()
+    # Recreate config to ensure __post_init__ runs with final values
+    final_cfg = UserConfig(**{f.name: getattr(cfg, f.name) for f in fields(cfg)})
 
-    return cfg
+    # Validate config
+    final_cfg.validate()
+
+    return final_cfg
 
 
 # endregion
