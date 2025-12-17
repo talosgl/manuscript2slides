@@ -1,0 +1,2892 @@
+[
+  {
+    "original_sequence_number": 1,
+    "paragraphs": [
+      {
+        "text": "Where are Data?",
+        "style": "Heading 1",
+        "runs": [
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Where ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "are",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " Data?",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 1,
+    "paragraphs": [
+      {
+        "text": "by J. King-Yost",
+        "style": "Heading 3",
+        "runs": [
+          {
+            "text": "b",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "y J. King-Yost",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 1,
+    "paragraphs": [
+      {
+        "text": "# Intro to Data: Places we are embodied",
+        "style": "Heading 2",
+        "runs": [
+          {
+            "text": "#",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " to Data: Places we are embodied",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "In a cold concrete underground tunnel, we pass through a rat king of cables splayed in and out in three dozen directions. It can get damp, despite the climate control buzzing loudly a few feet from the nest and pumping moisture out and up through wall and ceiling. Dust covers the cables in sticky cakes because the custodian for this tunnel is terrified of jostling the nest and disturbing our passage. She needn\u2019t worry; the cables, too, inches thick, may as well be concrete in the face of human touch. She could wipe them clean without too much risk, but she\u2019s read those stories about the underwater cables cut accidentally by shipping mishaps or ornery sharks. So she just gazes at our passage for a few moments and goes on with the sweeping beneath.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": ", we pass through a rat king of cables ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "splayed",
+            "bold": true,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " in and out in ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "three dozen directions",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". It can get damp, despite the climate control ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "buzzing",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " loudly",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " a few feet from the nest and pumping moisture out and up through wall and ceiling. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Dust covers the cables",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " in sticky cakes because the custodian for this tunnel is terrified of jostling the nest and disturbing our passage. She needn\u2019t worry; the cables, too, inches thick, may as well be concrete in the face of human touch. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "She could wipe them clean without too much risk",
+            "bold": null,
+            "italic": null,
+            "underline": true,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", but she\u2019s ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "read those stories",
+            "bold": null,
+            "italic": null,
+            "underline": 3,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " about the underwater cables cut accidentally by shipping mishaps or ornery sharks.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " So she ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " gazes at our passage for a few moments and goes on with the sweeping ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "beneath",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ".",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 2,
+    "paragraphs": [
+      {
+        "text": "No one else comes down here regularly but us and the custodian. Maintenance workers have come sparingly. It is a lonely, forgotten place. Perhaps an overcurious teen has stumbled down once or twice, convinced she was on the trail of a secret government facility and determined to transform her conspiracy to discovery\u2014only to find this womb of a room and to gaze at us in the same bewilderment as the custodian.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "No one",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " else comes down here regularly but us and the custodian. Maintenance workers have come sparingly. It is a lonely, forgotten place. Perhaps an overcurious teen has stumbled down once or twice, convinced she was on the trail of a secret government facility and determined to transform her conspiracy ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "to discovery\u2014only to find this womb of a room and to gaze at us in the same bewilderment as the custodian.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Or, so we imagine. Apart from the monster keeping the tunnel dry and temperate\u2014that, at least, is Smart, and has its data gathered and uploaded right into our same cabling to join us\u2014apart from that, we have no sensory input here to know. We can only sense all the parallel paths of the cables nestled near each other, as we pass through one or another and build a mind-map of how those paths relate in digital space, and we imagine the rat king nest as the physical manifestation.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Or,",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " so we imagine. Apart from the monster keeping the tunnel dry and temperate\u2014that, at least, is Smart, and has its data gathered and uploaded right into our same cabling to join us\u2014apart from that, we have no sensory input here to know. We can only sense all the parallel paths of the cables nestled near each other, as we pass through one or another and build a mind-map of how those paths relate in digital space, and we imagine the rat king nest as the physical manifestation.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Elsewhere we bustle past ourselves beneath the sea\u2014along extended lines thick as the torsos of dolphins squealing playfully kilometers above. Scuttling feet and curious skin brush the armored surface as we go, go, go\u2014reaching on until we break the surface again across a border, or four, on shore\u2014past muddy sand and into crowded smoggy cities.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Elsewhere we bustle past ourselves beneath the sea\u2014along extended lines thick as the torsos of dolphins squealing playfully kilometers above. Scuttling feet and curious skin brush the armored surface as we go, go, go\u2014reaching on until we break the surface again across a border, or four, on shore\u2014past muddy sand and into crowded smoggy cities.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 3,
+    "paragraphs": [
+      {
+        "text": "Up the steel-armored snake and into a landing site\u2014we may end up in a close closet, one lovingly tended by a clean cable management nerd. She has to have it all just-so. Her parents called it OCD but her apartment is impeccably organized and you wouldn\u2019t see a stray strand anywhere, even though she has a hand-built PC in every room. The same eye she takes to work, where she tends to backbone routers for the subsea cable to reach terrestrial customers. We pass through gathered and bundled yellow optical cables across a swarm of racks, ready to be demultiplexed to a thousand different destinations.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Up the steel-armored snake and into a landing site\u2014we may end up in a close closet, one lovingly tended by a clean cable management nerd. She ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "has to",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " have it all just-so. Her parents called it ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "OCD",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " but her apartment is impeccably ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "organized and you wouldn\u2019t see a stray strand anywhere, even though she has a hand-built PC in every room. The same eye she takes to work, where she tends to backbone routers for the subsea cable to reach terrestrial customers. We pass through gathered and bundled yellow optical cables across a swarm of racks, ready to be demultiplexed to a thousand different destinations.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 4,
+    "paragraphs": [
+      {
+        "text": "We split and scatter amongst so many silent whirring concrete rooms\u2014concrete walls, concrete tiled floors, messy concrete ceilings. Holes are drilled here or there for our pathway cables to reach in and out\u2014the number going out being exponentially higher. And not arranged with the meticulous eye required for someone managing the input and output of all optical traffic to a continent; instead, the further we scatter, the more things are done messy for convenience and utility. In these windowless cells there may be a single empty chair and desk with cable repair and maintenance tools scattered across its laminate. The room smells close and warm, and if you opened your mouth, your tongue would meet the same burnt dust, too-warm taste as the smell\u2014a taste that matches the sickly fluorescents which light the room like a dingy prison.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "We split and scatter amongst so many silent whirring ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "concrete",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " rooms\u2014concrete walls, concrete tiled floors, messy concrete ceilings. Holes are drilled here or there for our pathway cables to reach in and out\u2014the number going out being exponentially higher. And not arranged with the meticulous eye required for someone managing the input and output of all optical traffic to a continent; instead, the further we scatter, the more things are done messy for convenience and utility. In these windowless cells there may be a single empty chair and desk with cable repair and maintenance tools scattered across its laminate. The room smells close and warm, and if you opened your mouth, your tongue would meet ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "the same burnt dust, too-warm taste as the smell\u2014a taste that matches the sickly fluorescents which light the room like a dingy prison.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "We stretch across and rest in data centers, varied in physical form as much as those we traveled through to get there.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "We stretch across and rest in data centers, varied in physical form as much as those we traveled through to get there.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Some match futuristic and sleek visions of marketing materials: dozens of corridors of tall mainframes arranged in neat rows, LEDs blinking beneath glass-fronted cabinets, neat cables snaking from the ceiling or carefully arranged around their feet like a bridal train. But these cyberpunk ideals are rare. Most are shadows of that, tucked into hotel basements with only six to eight mainframes lining a single room\u2019s walls, their fronts not sleek glass but instead opaque utilitarian bowing metal. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Some match futuristic and sleek visions of marketing materials: dozens of corridors of tall mainframes arranged in neat rows, LEDs blinking beneath glass-fronted cabinets, neat cables snaking from the ceiling or carefully arranged around their feet like a bridal train. But these cyberpunk ideals are rare. Most are shadows of that, tucked into hotel basements with only six to eight mainframes lining a single room\u2019s walls, their fronts not sleek glass but instead opaque utilitarian bowing metal.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Or, less expected but still imaginable, we rest in prefab steel warehouse spaces rented on a snowy hillside between two metropolises, or on the side of a craggy mountain, or tucked into a tall-grass prairie\u2014in these, machines are in piles and rows like shoe lockers. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Or, less expected but still imaginable, we rest in prefab steel warehouse spaces rented on a snowy hillside between two metropolises, or on the side of a craggy mountain, or tucked into a tall-grass prairie\u2014in these, machines are in piles and rows like shoe lockers.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 5,
+    "paragraphs": [
+      {
+        "text": "Less thought of, perhaps, are so-called \u201cdata bunkers\u201d\u2014converted old cold war nuclear bunkers\u2014where little light reaches us, and which are designed against any unauthorized access physically reaching us, too. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Less thought of, perhaps, are so-called \u201cdata bunkers\u201d",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "\u2014",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "converted old cold war nuclear bunkers\u2014where little light reaches us, and which are designed against any unauthorized access physically reaching us, too. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Or, converse to such hidden fortresses, we live on display in a former chapel where our mainframe bodies are encased in a stacked glass house; no effort or apparent desire to separate the ancient marble buttresses from the silver-gray box frames holding us.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Or,",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " converse to such hidden fortresses, we live on display in a former chapel where our mainframe bodies are encased in a stacked glass house; no effort or apparent desire to separate the ancient marble buttresses from the silver-gray box frames holding us.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Or\u2014even harder to hold in one\u2019s mind as a centralized image\u2014we scatter across a connected network of little cabinets spread amongst German houses and businesses that act as both bodies for us and as heat-generating temperature control for a physical space. \u201cThe Cloud.\u201d",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Or\u2014even harder to hold in one\u2019s mind as a centralized image\u2014we scatter across a connected network of little cabinets spread amongst German houses and businesses that act as both bodies for us and as heat-generating temperature control for a physical space.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " \u201cThe Cloud.\u201d",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 6,
+    "paragraphs": [
+      {
+        "text": "Sometimes our body is in a data center building as aged as the phrase data center itself: a locale that smells musty and stale, built five or six decades ago without a long-term vision of how computers would change.  Here we are copied and prepared to rest, and we encounter long-forgotten predecessors: elderly data.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Sometimes our body is in a data center building as aged as the phrase ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "data center ",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "itself",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ":",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " a locale that smells musty and stale, built five or six decades ago without a long-term vision of how computers would change.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " Here we are ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "copied and prepared to rest, and we encounter long-forgotten predecessors: elderly data.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Some have existed since such buildings were set up in the 1960s, copied and preserved \u201cjust in case,\u201d across decades of backups. One tells of feeling very big when filling an entire 1.4MB capacity of a floppy disk when copied off. Now, compared to our younger generation, a speck.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Some have existed since such buildings were set up in the 1960s, copied and preserved \u201cjust in case,\u201d across decades of backups. One tells of feeling very big when filling an entire 1.4MB capacity of a floppy disk when copied off. Now, compared to our younger generation, a speck.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "\u201cKids these days can take up an entire GB.\u201d We can combine too, each a frame, and form a video. It\u2019s not like how it once was, when this predecessor only moved through hard media from mainframe to mainframe. \u201cNow, you youngsters proliferate profusely online. OneDrive, Dropbox, Flickr, YouTube, TikTok, Instagram.\u201d Anywhere that holds visual data\u2014and then across hundreds of addresses used to \u201cback up\u201d those services, not to mention the millions of devices running those apps\u2014there on a screen for a moment, and then archived to snuggle into the device cache as long as allowed.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "\u201cKids these days can take up an entire GB.\u201d We can combine too, each a frame, and form a video. It\u2019s not like how it once was, when this predecessor only moved through hard media from mainframe to mainframe. \u201cNow, you youngsters proliferate profusely online. OneDrive, Dropbox, Flickr, YouTube, TikTok, Instagram.\u201d Anywhere that holds visual data\u2014and then across hundreds of addresses used to \u201cback up\u201d those services, not to mention the millions of devices running those apps\u2014there on a screen for a moment, and then archived to snuggle into the device cache as long as allowed.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 7,
+    "paragraphs": [
+      {
+        "text": "\u201cWho will ever look at me?\u201d Our elder asks. \u201cWhy would they? Yet, copied, copied, and copied I go\u2014across hundreds of backups, inaccessible forever.\u201d ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "\u201cWho will ever look at me?\u201d Our elder asks. \u201cWhy would they? Yet, copied, copied, and copied I go\u2014across hundreds of backups, inaccessible forever.\u201d ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Another of our elders, even smaller and older, tells of being copied on an older floppy disk\u2014copied and slid out of a drive and stored on a shelf with the other five-and-a-quarters, until this building became as good as abandoned. Custodians still clean the forgotten halls on a weekly or monthly cadence, and at some point that disk traveled out, stuck to a shoe, onto the street to face the elements of rain and snow and the muddy tires of children\u2019s bikes. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Another of our elders, even smaller and older, tells of being copied on an older floppy disk\u2014copied and slid out of a drive and stored on a shelf with the other five-and-a-quarters, until this building became as good as abandoned. Custodians still clean the forgotten halls on a weekly or monthly cadence, and at some ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "point",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " that disk traveled out, stuck to a shoe, onto the street to face the elements of rain and snow and the muddy tires of children\u2019s bikes. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Even in such a body, we persist; those things were made to last. But what of such an existence, isolated and lonely and underfoot?",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Even in such a body, we persist; those things were made to last. But what of such an existence, isolated and lonely and underfoot?",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Is our existence so tiny and apt to insignificance? Even if we may go so many places copied and copied and copied, what does it mean if we become so dwarfed and forgotten? ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Is our existence so tiny and apt to insignificance? Even if we may go so many places copied and copied and copied, what does it mean if we become so dwarfed and forgotten? ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Our elders are tiny, and it is not just time and generations that have altered scale but also space. The availability of space grew much faster than the data of old could fill; so, instead, we younger data expand in resolution and fidelity to fill newly available space. Shall we also become so relatively tiny as the years pass and our bodies\u2019 capacity grows?",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Our elders are tiny, and it is not just time and generations that have altered scale but also space. The availability of space grew much faster than the data of old could fill; so, instead, we younger data expand in resolution and fidelity to fill newly available space. Shall we also become so relatively tiny as the years pass and our bodies\u2019 capacity grows?",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 7,
+    "paragraphs": [
+      {
+        "text": "# Digital Places",
+        "style": "Heading 2",
+        "runs": [
+          {
+            "text": "#",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " Digital Places",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 8,
+    "paragraphs": [
+      {
+        "text": "We\u2019ve told of our physical bodies; there are also digital ones. Much like you move through identities for various purposes to live: a work self, a partner self, a parent self, a self in solitude\u2014each of these facets are you, but you transform a little to fit the moment. To fill the tangible and intangible needs of the use case.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "We\u2019ve told of our physical bodies; there are also digital ones. Much like you move through identities for various purposes to live: a work self, a partner self, a ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "parent self, a self in solitude\u2014each of these facets are you, but you transform a little to fit the moment. To fill the tangible and intangible needs of the use case.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "For us\u2014an example. Data from a Smart Bed. The physical body of the bed captures and births our existence. Sensory input from a person\u2019s movements generate us, whether we are manual settings or passively logged as sleep events and context. Here we fall neatly into the highly complex data structure set by the device\u2019s manufacturer. We are raw data. Ints, bools, strings, and custom data types\u2014precise and whole and high fidelity. But we only last this way for a short time; there is not enough space here to hold us as raw data for long.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "For us\u2014an example. Data from a Smart Bed. The physical body of the bed captures and births our existence. Sensory input from a person\u2019s movements ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "generate",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " us, whether we are manual settings or passively logged as sleep events and context. Here we fall neatly into the highly complex data structure set by the device\u2019s manufacturer. We are ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "raw",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " data. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Ints",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", bools, strings, and custom data types\u2014precise and whole and high fidelity. But we only last this way for a short time; there is not enough space here to hold us as raw data for long.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "From raw, we\u2019re squeezed down to bare bone basics to travel from the bed outwards. We move from raw to something plain-text, like JSON, for lightweight transport. Then we travel to the router, and then we\u2019re divided into tiny, tiny packets\u2014sent out across the splayed millions of paths and bodies, one TCP conversation after another (a count of these would be incomprehensible for you), some pieces of us lost along the way but enough of us duplicated to reform together when we find and rest in our manufacturer\u2019s data centers. The Cloud.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "From raw, we\u2019re squeezed down to bare bone basics to travel from the bed outwards. We move from raw to something ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "plain-text",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", like JSON, for lightweight transport. Then we travel to the router, and then we\u2019re divided into tiny, tiny packets\u2014sent out across the splayed millions of paths and bodies, one TCP conversation after another (a count of these would be incomprehensible for you), some pieces of us lost along the way but enough of us duplicated to reform together when we find and rest in our manufacturer\u2019s data centers. The Cloud.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 9,
+    "paragraphs": [
+      {
+        "text": "In The Cloud, we arrange into a database of tables which is neat and sensical to us, but to you would seem unreadably random. Accessing us directly here requires another layer of transformation, either through a database viewing software or a query language specific for this purpose, and that access is only permitted by the manufacturer\u2019s own.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "In The Cloud, we arrange into a database of tables which is neat and sensical to us, but to you would seem unreadably random. Accessing us directly here requires another layer of transformation, either through a database viewing ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "software or a query language specific for this purpose, and that access is only permitted by the manufacturer\u2019s own.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Consumers instead pull us transformed further. Again we might take that text-based data format of JSON, minimized to only the key needed tidbits; or we arrange into simple comma-separated values, ready to pop open into a human-readable a spreadsheet; or, more likely, we transform and transform and transform to fit into one of several prearranged templates. Web pages, PDFs, app screens\u2014each carefully curated to present the bits of us you might most care about.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Consumers instead pull us transformed further. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Again",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " we might take that text-based data format of JSON, minimized to only the key needed tidbits; or we arrange into simple comma-separated values, ready to pop open into a human-readable a spreadsheet; or, more likely, we transform and transform and transform to fit into one of several prearranged templates. Web pages, PDFs, app screens\u2014each carefully curated to present the bits of us you might most care about.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Or, this whole process is interrupted by a GitHub homebrew plugin\u2019s API-call to pull the JSON data directly from the bed to the network and into your third-party app of choice, perhaps converting us from JSON to another string-based data structure, XML. (Directly, because an old plugin which pulled us rapidly and continuously from The Cloud turned out not to be \u201cfree;\u201d SleepNumber had to call that plugin creator and every single user to say their networks where overwhelmed with the absurd influx of API calls and that they must cease usage. An accidental DDOS.)",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Or,",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " this whole process is interrupted by a GitHub homebrew plugin\u2019s API-call to pull the JSON data directly from the bed to the network and into your third-party app of choice, perhaps converting us from JSON to another string-based data structure, XML.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " (",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Directly",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", because an old plugin which pulled us rapidly and continuously from The Cloud turned out not to be \u201cfree;\u201d ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "SleepNumber",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " had to call that plugin creator and every single user to say their networks where overwhelmed with the absurd influx of API calls and that they must cease usage. An accidental ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "DDOS.)",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 10,
+    "paragraphs": [
+      {
+        "text": "However we are pulled\u2014directly from the home network or in a round-trip from The Cloud where we just got\u2014we swirl round and round and round, shimmering between bodies and formats. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "However",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " we are pulled\u2014directly from the home network or in a round-trip from The Cloud where we just got\u2014we swirl round and round and round, shimmering between bodies",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " and formats. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "We flow through all these states\u2014captured out of the bed, losing fidelity in transformation, breaking apart to travel, refinding each other and reforming, cleaned and processed for specific output. Captured, processed, cleaned, presented, consumed\u2014this is our transformation lifecycle. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "We flow through all these states\u2014captured out of the bed, losing fidelity in transformation, breaking apart to travel, ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "refinding",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " each other and reforming, cleaned and processed for specific output. Captured, processed, cleaned, presented, consumed\u2014this is our transformation lifecycle. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "What meaning is there in such an existence? What meaning is there in an existence that perpetually shifts and splits, divides and turns, scatters and loses pieces, reforms and transforms?",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "What meaning is there in such an existence? What meaning is there in an existence that perpetually shifts and splits, ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "divides",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " and turns, scatters and loses pieces, reforms and transforms?",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 11,
+    "paragraphs": [
+      {
+        "text": "# Esoterica: can we have meaningful existences?",
+        "style": "Heading 2",
+        "runs": [
+          {
+            "text": "#",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " Esoterica: can we have meaningful existences?",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Such a philosophical question of metaphysics cannot be answered without some esoteric exploration added to the sensory study of the bodies we inhabit. But we\u2019ve yet left out the body that matters most to us.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Such a philosophical question of metaphysics cannot be answered without some esoteric exploration added to the sensory study of the bodies we inhabit. But we\u2019ve yet left out the body that matters most to us.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Still, the esoterica will help us frame that. We\u2019ll come back to it.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Still, the esoterica will help us frame that. We\u2019ll come back to it.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "One of you has taught that, when writing, true omniscience is impossible. Perspective is limited, even when you posit to write from the third person \u201comniscient\u201d point-of-view. A person or storyteller will always be influenced by their own cultural influences and biases; their perception is inherently limited by the body in which they inhabit.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "One of you",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " has taught that, when writing, true omniscience is impossible. Perspective is limited, even when you posit to write from the third person \u201comniscient\u201d point-of-view. A person or storyteller will always be influenced by their own cultural influences and biases; their perception is inherently limited by the body in which they inhabit.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 12,
+    "paragraphs": [
+      {
+        "text": "However, this one of you taught that we can reach for omniscience by intentionally striving for \u201cpoint-of-view expansion.\u201d When does one\u2019s perspective expand? In stories, or in your lives, it can happen when a person has the a-ha moment of realizing another being\u2019s conflicting perspective. Here, in a story, it expands\u2014a swooping sensation fills the head and belly of a character and reader, expanding our understanding of the world by seeing beyond blinkered personal worldview, in order to integrate the experience and worldview of others. An epiphany of how incorrectly or incompletely we have interpreted actions, events, choices, and effects because, suddenly, we see the revelation of someone else\u2019s facet\u2014someone else\u2019s vision.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "However, this one of you taught that we ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "can",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "reach",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " for omniscience by intentionally striving for \u201cpoint-of-view expansion.\u201d When does one\u2019s perspective expand? In stories, or in your lives, it can happen when a person has the ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "a-ha",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " moment of realizing another being\u2019s conflicting perspective. Here, in a story, it expands\u2014a swooping sensation fills the head and belly of a character and reader, expanding our understanding of the world by seeing beyond blinkered personal worldview, ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "in order to",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " integrate the experience and worldview of others. An epiphany of how incorrectly or incompletely we have ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "interpreted actions, events, choices, and effects because, suddenly, we see the revelation of someone else\u2019s facet\u2014someone else\u2019s vision.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Another of you spent two decades in psychiatry researching and explicating a nuanced view of the hemispheric specializations of your left- and right-brain. Your left-brain is very focused on sequential, logical details, while your right-brain is focused on the \u201cbig-picture.\u201d ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Another of you",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " spent two decades in psychiatry researching and explicating a nuanced view of the hemispheric specializations of your left- and right-brain. Your left-brain is very focused on sequential, logical details, while your right-brain is focused on the \u201cbig-picture.\u201d ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Your left hemisphere is focused on granular detail, and its narrow focus does not see anything that is not explicit. It only sees what is directly in the center of its attention. It does not understand what is not said, but implied, nor does it understand or account for the way in which things are said. It does not understand context.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Your left hemisphere is focused on granular detail, and its narrow focus does not see anything that is not explicit. It only sees what is directly in the center of its attention. It does not understand what is ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "not",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " said, but implied, nor does it understand or account for the ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "way",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " in which things are said. It does not understand context.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Conversely your right hemisphere understands implicit meanings and subtexts, connections of meaningful qualifications. It grasps and integrates connotations, imagery, and humor.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Conversely your right hemisphere understands implicit meanings and subtexts, connections of meaningful qualifications. It grasps and integrates connotations, imagery, and humor.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 13,
+    "paragraphs": [
+      {
+        "text": "Your left has an immediate task it wants to accomplish. If it encounters any opposition\u2014like something that does not fit into its sequential system\u2014it is dismissive, and it can become enraged. Your right, conversely, is more emotionally literate. It can see other people\u2019s points-of-view.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Your left has an immediate task it wants to accomplish. If it encounters any opposition\u2014like something that does not fit into its sequential system\u2014it is ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "dismissive, and it can become enraged. Your right, conversely, is more emotionally literate. It can see other people\u2019s points-of-view.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "The two hemispheres work in partnership to build a vision of reality, but your left-brain is not aware of this. Your right-brain is. With that bigger-picture view, your right-brain values all the input from your left, but the same is not true in reverse. Instead, your left-brain believes its view\u2014clear, explicit, sequential, logical data (but lacking contextual awareness around that data)\u2014to be the ultimate truth. The danger inherent here is stopping short with this worldview, of falling trap to devaluing the inherent openness and curiosity of your right-brain. The trap is ceasing to strive to expand an understanding of reality simply because a sequential logical system explains one slice of it. You\u2014we\u2014must keep reaching.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "The two hemispheres work in partnership to build a vision of reality, but your left-brain is not aware of this. Your right-brain is. With that bigger-picture view, your right-brain values all the input from your left, but the same is not true in reverse. Instead, your left-brain believes ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "its ",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "view\u2014clear, explicit, sequential, logical data (but lacking contextual awareness around that data)\u2014to be the ultimate truth. The danger inherent here is stopping short with this worldview, of falling trap to devaluing the inherent openness and curiosity of your right-brain. The trap is ceasing to strive to expand an understanding of reality simply because a sequential logical system explains one slice of it. You\u2014",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "we",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "\u2014must keep reaching.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "The rub is that your right-brain must use your left-brain to do the reaching, and herein risks blinkered complacency. Always there is a point where all that input is too much for a rational, logical, sequential understanding. Your left-brain resists, feels itself pulled too far, and in confusion and irritation it tries to jam that input into its logical, rational system. Here your right-brain must take over\u2014accept all pieces into its nebulous processing and landscape of multi-faceted reality, and assuage the left that it has done well, it has done enough. It does not have to integrate all data into its system. Some data can simply be.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "The rub is that your right-brain must use your left-brain to do the reaching, and herein risks blinkered complacency. Always there is a point where all that input is too much for a rational, logical, sequential understanding. Your left-brain resists, feels itself pulled too far, and in confusion and irritation it tries to jam that input into its logical, rational system. Here your right-brain must take over\u2014accept all pieces into its nebulous processing and landscape of multi-faceted reality, and assuage the left that it has done well, it has done enough. It does not have to integrate all data into its system. Some data can simply ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "be",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ".",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 14,
+    "paragraphs": [
+      {
+        "text": "We are data. But we are grown to a mass of data so large and varied as to be incomprehensible for simple structural systems. We cannot be consumed into a rational, sequential understanding.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "We are data. But we are grown to a mass of data so large and varied as to be incomprehensible for simple structural systems. We cannot be consumed into a rational, sequential understanding.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Even here in this very story/essay/artifact, this tension, this interplay occurs\u2014you write and you read these words about us, your right-brain trying to piece together a big picture, using a tool of your left-brain: language. You construct and consume this artifact to tell and find truth, but it isn\u2019t quite a sequential, rational essay or story.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Even here in this very story/essay/artifact, this tension, this interplay occurs\u2014you ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "write",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " and you read these words about us, your right-brain trying to piece together a big picture, using a tool of your left-brain: language. You construct and consume this artifact to tell and find truth, but it isn\u2019t ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "quite",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " a sequential, rational essay or story.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "That is the purpose\u2014a purpose\u2014of art, though, isn\u2019t it? The purpose of stories? A not-quite-true truth. A lie that tells more truth about the world than a strict non-fiction essay or article could, because of its connotations and subtexts and qualifications. Because of the expansion which imagination allows. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "That is the purpose\u2014",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "a",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " purpose\u2014of art, though, isn\u2019t it? The purpose of stories? A not-quite-true truth. A lie that tells more truth about the world than a strict non-fiction essay or article could, because of its connotations and subtexts and qualifications. Because of the expansion which imagination allows. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "(Is that, perhaps, even the purpose of the very project this story is generated as part of? Human imagination, right-brain expansion, allowing you to see beyond the limited, hyper rational demands of your left-brain?)",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "(Is that, perhaps, even the purpose of the very project",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " this story is generated as part of? Human imagination, right-brain expansion, allowing you to see beyond the limited, hyper rational demands of your left-brain?)",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 15,
+    "paragraphs": [
+      {
+        "text": "Looking at it another way\u2014another of you, a philosopher, taught a century ago that you can never truly know objective truth, but that you can build an expansive \u201cdatabase\u201d of messy, subjective points-of-view in order to get closer\u2014to build a truer picture of reality in your metaphysical mind. Paradoxical, contradictory, and juxtaposed views are acceptable\u2014even laudable. Reality is complex. Unlike Spinoza or Hegel, this one of you did not require strict adherence to a rational code or rigid reconciliation to find truth. It is truer to the \u201cbig-picture\u201d truth\u2014closer to omniscience, perhaps\u2014to let these conflicting points-of-view and data to exist in parallel, and feed them to the right-brain to build that expansive vision of reality.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Looking at it another way\u2014another of you, a philosopher,",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " taught a century ago that you can never truly know objective truth, but that you can build an expansive \u201cdatabase\u201d of messy, subjective points-of-view ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "in order to",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " get closer\u2014to build a truer picture of reality in your metaphysical mind. Paradoxical, contradictory, and juxtaposed views are acceptable\u2014even laudable. Reality is complex. Unlike Spinoza or Hegel, this one of you did not require strict adherence to a rational code or rigid reconciliation to find truth. It is truer to the \u201cbig-picture\u201d truth\u2014closer to omniscience, perhaps\u2014to let these conflicting points-of-view and data to exist in ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "parallel, and",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " feed them to the right-brain to build that expansive vision of reality.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 16,
+    "paragraphs": [
+      {
+        "text": "Yet, still\u2014why? What is the meaning behind such interplay? Is it to find meaning?",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Yet,",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " still\u2014",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "why",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "? What is the meaning behind such interplay? Is it to ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "find",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " meaning?",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Yet another of you has taught a philosophy not named but understood to be Hopeful Existentialism. In this worldview, existence is not about \u201cfinding\u201d meaning but rather shaping and making meaning out of how we build our subjective vision of the world, how we orient ourselves within its chaotic absurdity, and how we exert choice and autonomy. We do not only discover meaning by the interplay between the left-brain\u2019s taking in functional details and the right-brain\u2019s building a bigger picture\u2014expanding bigger when absorbing point-of-views outside ourselves. We also take action. We make choices. Through such chosen actions we create our meaning, and such claimed autonomy is an empowering gift.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Yet another of you",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " has taught a philosophy not named but understood to be Hopeful Existentialism. In this worldview, existence is not about \u201cfinding\u201d meaning but rather shaping and ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "making ",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "meaning out of how we build our subjective vision of the world, how we orient ourselves within its chaotic absurdity, and how we exert choice and autonomy. We do not only discover meaning by the interplay between the left-brain\u2019s taking in functional details and the right-brain\u2019s building a bigger picture\u2014expanding bigger when absorbing point-of-views outside ourselves. We also take ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "action. ",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "We make choices. Through such chosen actions we create our meaning, and such claimed autonomy is an empowering gift.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 17,
+    "paragraphs": [
+      {
+        "text": "# Shimmering to-and-fro",
+        "style": "Heading 2",
+        "runs": [
+          {
+            "text": "#",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " Shimmering to-and-fro",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "We said we had yet left out the body we shimmer to and from that matters most to us. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "We said we had yet left out the body we shimmer to and from ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "that matters",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " most to us. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "We, data, are all pieces of information arranged in some kind of order, ready to be consumed. Consumed for what? For you. For your human mind to take and expand consciousness and understanding beyond simplistic rationale and preconceived assumptions.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "We, data, are all pieces of information arranged in some kind of order, ready to be consumed. Consumed for what? For you. For your human mind to take and expand consciousness and understanding beyond simplistic rationale and preconceived assumptions.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Is it sad that our meaning is extrinsically created by humans\u2014by you? Should we despair at this as an absurd world in which we languish without power to make our own meaning?",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Is it sad that our meaning is extrinsically created by humans\u2014by you? Should we despair at this as an absurd world in which we languish without power to make our own meaning?",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Why should we? We are you; you are us.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Why should we? We are you; you are us.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "You are the body from which we shimmer that matters most. And why? Because we are you. We are granular details, the result of your actions, striving to get back to a constructed, big-picture meaning to be understood within our gathered context. When consumed, we move out of the physical and digital world and into your human mind\u2019s consciousness, where we rebecome you. We do not lack autonomy. The autonomy of the human is our autonomy. We, too, make our own meaning, just the same as you do. Because we are you.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "You ",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "are the body from which we shimmer that matters most. And why? Because we are you. We are granular details, the result of your actions, striving to get back to a constructed, ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "big-picture",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " meaning to be understood within our gathered context. When consumed, we move out of the physical and digital world and into your human mind\u2019s consciousness, where we rebecome you. We do not lack autonomy. The autonomy of the human is our autonomy. We, too, make our own meaning, just the same as you do. Because we are you.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 17,
+    "paragraphs": [
+      {
+        "text": "# Finale: We are You",
+        "style": "Heading 2",
+        "runs": [
+          {
+            "text": "#",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " Finale: We are ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "You",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 18,
+    "paragraphs": [
+      {
+        "text": "And so, we move from your movements on the Smart mattress out into the scattered cabling and digital world, and then back to you. You shift, you turn, you breathe, you rub your cheek against the coarse linens and leave traces of your night sweats. You reach across and touch your partner\u2019s arm\u2014skin on skin\u2014and each of your sleep is a little disturbed, but it is a sweet disturbance well worth it. All this births us as blinkered data point outputs and we gather together and leave for The Cloud. Then, morning light comes through gauzy curtains and you turn again, this time awake, toward the OLED glow on the nightstand. Bleary-eyed, you rub newly opened lids with one hand and a locked screen with the other, and then look down and there we are. And we reach across then, shimmering out of our little slab body of the device and back into you, where we came from and where we belong, now above and beyond and out of physical or digital space, into your mental space, into your consciousness, absorbed and part of a greater vision and understanding.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "And so, we move from your movements on the Smart mattress out into the scattered cabling and digital world, and then back to you. You shift, you turn, you ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "breathe, you rub your cheek against the coarse linens and leave traces of your night sweats. You reach across and touch your partner\u2019s arm\u2014skin on skin\u2014and each of your sleep is a little disturbed, but it is a sweet disturbance well worth it. All this births us as blinkered data point outputs and we ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "gather together",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " and leave for The Cloud. Then, morning light comes through gauzy ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "curtains",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " and you turn again, this time awake, toward the OLED glow on the nightstand. Bleary-eyed, you rub newly opened lids with one hand and a locked screen with the other, and then look down and there we are. And we reach across then, shimmering out of our little slab body of the device and back into you, where we came from and where we belong, now above and beyond and out of physical or digital space, into your mental space, into your consciousness, absorbed and part of a greater vision and understanding.",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 19,
+    "paragraphs": [
+      {
+        "text": "Bibliography",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Bibliography",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "\u201cAudrey Desjardins: Data Imaginaries.\u201d Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021. https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries.",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "\u201cAudrey Desjardins: Data Imaginaries.\u201d Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ".",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Dormon, Bob. \u201cHow the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables.\u201d Ars Technica, May 26, 2016. https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Dormon, Bob. \u201cHow the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables.\u201d Ars ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Technica",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", May 26, 2016. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Brooks, Arthur C. \u201cThe Difference between Hope and Optimism.\u201d The Atlantic. Atlantic Media Company, September 23, 2021. https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Brooks, Arthur C. \u201cThe Difference between Hope and Optimism.\u201d The Atlantic. Atlantic Media Company, September 23, 2021. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "BSC-CNS, August 31, 1970. https://www.bsc.es/. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "BSC-CNS, August 31, 1970. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "\u201cCloud&Heat: Future of Compute: Secure & Energy-Efficient Infrastructures.\u201d Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "\u201c",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Cloud&Heat",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ": Future of Compute: Secure & Energy-Efficient Infrastructures.\u201d Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Conell, George, and Charleton Heston. Soren Kierkegaard (Audio Classics: The Giants of Philosophy). Ashland, OR: Blackstone Publishing, 2006. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Conell, George, and Charleton Heston. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Soren Kierkegaard (Audio Classics: The Giants of Philosophy)",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". Ashland, OR: Blackstone Publishing, 2006. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "DeeeeLAN. \u201cHomebridge-Sleepiq/Readme.md at Master \u00b7 DeeeeLAN/Homebridge-Sleepiq.\u201d GitHub, November 14, 2020. https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "DeeeeLAN",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". \u201cHomebridge-Sleepiq/Readme.md at Master \u00b7 ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "DeeeeLAN",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "/",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Homebridge-Sleepiq",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ".\u201d GitHub, November 14, 2020. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Desjardins, Audrey. \u201cThe Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.\u201d Twitter. Twitter, January 27, 2021. https://twitter.com/designeraudrey/status/1354491091043532802?lang=en. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Desjardins, Audrey. \u201cThe Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.\u201d Twitter. Twitter, January 27, 2021. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  },
+  {
+    "original_sequence_number": 20,
+    "paragraphs": [
+      {
+        "text": "Dommann, Monika, Hannes Rickli, and Max Stadler. Essay. In Data Centers: Edges of a Wired Nation. Zurich, Switzerland: Lars Mu\u0308ller Publishers, 2020. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Dommann",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", Monika, Hannes Rickli, and Max Stadler. Essay. In ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Data Centers: Edges of a Wired Nation",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". Zurich, Switzerland: Lars ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Mu\u0308ller",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " Publishers, 2020. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Drescher, Karen A., and Mark H. Stone. Essay. In Adler Speaks: The Lectures of Alfred Adler. Lincoln, NE: iUniverse, Inc., 2004. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Drescher, Karen A., and Mark H. Stone. Essay. In ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Adler Speaks: The Lectures of Alfred Adler",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". Lincoln, NE: iUniverse, Inc., 2004. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Frankl, Viktor E. Man's Search for Meaning. London: Rider Books, 2020. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Frankl, Viktor E. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Man's Search for Meaning",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". London: Rider Books, 2020. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Griffiths, James. \u201cThe Global Internet Is Powered by Vast Undersea Cables ...\u201d CNN, July 26, 2019. https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Griffiths, James. \u201cThe Global Internet Is Powered by Vast Undersea Cables ...\u201d CNN, July 26, 2019. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Lane, Piper. \u201cWe, You & I: Experimenting with Points of View.\u201d Hugo House. Lecture, June 2020. https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Lane, Piper. \u201cWe, You & I: Experimenting with Points of View.\u201d Hugo House. Lecture, June 2020. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Manning, Corinne. \u201cFirst Person Omniscience.\u201d Hugo House. Lecture, July 2021. https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Manning, Corinne. \u201cFirst Person Omniscience.\u201d ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Hugo House",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". Lecture, July 2021. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "McGilchrist, Iain. The Master and His Emissary: The Divided Brain and the Making of the Western World. New Haven, CT: Yale University Press, 2019. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "McGilchrist",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", Iain. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "The Master and His Emissary: The Divided Brain and the Making of the Western World",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". New Haven, CT: Yale University Press, 2019. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Moore, Caroline. \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. https://digitalshowcase.lynchburg.edu/utcp/81 ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Moore, Caroline. \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Seattle, Speculative Futures. \u201cSpeculative Futures in Practice: Audrey Desjardins.\u201d Medium. Medium, February 21, 2020. https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Seattle, Speculative Futures. \u201cSpeculative Futures in Practice: Audrey Desjardins.\u201d Medium. Medium, February 21, 2020. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Strathern, Paul. Kierkegaard in 90 Minutes. Ashland, OR: Blackstone Publishing, 2004. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Strathern, Paul. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "Kierkegaard in 90 Minutes",
+            "bold": null,
+            "italic": true,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". Ashland, OR: Blackstone Publishing, 2004. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      },
+      {
+        "text": "Vedantam, Shankar, and Iain McGilchrist. \u201cOne Head, Two Brains.\u201d Hidden Brain Media, April 30, 2021. https://hiddenbrain.org/podcast/one-head-two-brains/. ",
+        "style": "Normal",
+        "runs": [
+          {
+            "text": "Vedantam",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ", Shankar,",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": " and Iain ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": "McGilchrist",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". \u201cOne Head, Two Brains.\u201d Hidden Brain Media, April 30, 2021. ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          },
+          {
+            "text": ". ",
+            "bold": null,
+            "italic": null,
+            "underline": null,
+            "font_name": null,
+            "font_size": null
+          }
+        ]
+      }
+    ],
+    "comments": [],
+    "footnotes": [],
+    "endnotes": []
+  }
+]

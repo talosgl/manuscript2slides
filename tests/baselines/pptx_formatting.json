@@ -1,0 +1,610 @@
+[
+  {
+    "slide_number": 1,
+    "shapes": [
+      {
+        "text": "Regular Formatting tests",
+        "paragraphs": [
+          {
+            "text": "Regular Formatting tests",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Calibri Light",
+              "font_size": 16.0
+            },
+            "runs": [
+              {
+                "text": "Regular Formatting"
+              },
+              {
+                "text": " tests"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 2,
+    "shapes": [
+      {
+        "text": "This text is bolded.",
+        "paragraphs": [
+          {
+            "text": "This text is bolded.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text is bolded.",
+                "bold": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 3,
+    "shapes": [
+      {
+        "text": "This text is in italics.",
+        "paragraphs": [
+          {
+            "text": "This text is in italics.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text is in italics.",
+                "italic": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 4,
+    "shapes": [
+      {
+        "text": "This is bolded and italicized.",
+        "paragraphs": [
+          {
+            "text": "This is bolded and italicized.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This is bolded and italicized.",
+                "bold": true,
+                "italic": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 5,
+    "shapes": [
+      {
+        "text": "This text is underlined.",
+        "paragraphs": [
+          {
+            "text": "This text is underlined.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text is underlined.",
+                "underline": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 6,
+    "shapes": [
+      {
+        "text": "Bolded and underlined.",
+        "paragraphs": [
+          {
+            "text": "Bolded and underlined.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "Bolded and underlined.",
+                "bold": true,
+                "underline": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 7,
+    "shapes": [
+      {
+        "text": "Underlined and italicized.",
+        "paragraphs": [
+          {
+            "text": "Underlined and italicized.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "Underlined and italicized",
+                "italic": true,
+                "underline": true
+              },
+              {
+                "text": ".",
+                "italic": true,
+                "underline": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 8,
+    "shapes": [
+      {
+        "text": "All three!",
+        "paragraphs": [
+          {
+            "text": "All three!",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "All three!",
+                "bold": true,
+                "italic": true,
+                "underline": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 9,
+    "shapes": [
+      {
+        "text": "This text is in a special font. Georgia.",
+        "paragraphs": [
+          {
+            "text": "This text is in a special font. Georgia.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text is in a special font. Georgia.",
+                "font_name": "Georgia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 10,
+    "shapes": [
+      {
+        "text": "Size",
+        "paragraphs": [
+          {
+            "text": "Size",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Calibri Light",
+              "font_size": 13.0
+            },
+            "runs": [
+              {
+                "text": "Size"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 11,
+    "shapes": [
+      {
+        "text": "In the original test_formatting.docx, is very large text (48pt).",
+        "paragraphs": [
+          {
+            "text": "In the original test_formatting.docx, is very large text (48pt).",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "In the original ",
+                "font_size": 48.0
+              },
+              {
+                "text": "test_formatting",
+                "font_size": 48.0
+              },
+              {
+                "text": ".doc",
+                "font_size": 48.0
+              },
+              {
+                "text": "x, is very large text",
+                "font_size": 48.0
+              },
+              {
+                "text": " (48pt)",
+                "font_size": 48.0
+              },
+              {
+                "text": ".",
+                "font_size": 48.0
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 12,
+    "shapes": [
+      {
+        "text": "In the original test document, this text is very small (8pt).",
+        "paragraphs": [
+          {
+            "text": "In the original test document, this text is very small (8pt).",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "In the original test document, this text is very small (",
+                "font_size": 8.0
+              },
+              {
+                "text": "8pt",
+                "font_size": 8.0
+              },
+              {
+                "text": ").",
+                "font_size": 8.0
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 13,
+    "shapes": [
+      {
+        "text": "Color",
+        "paragraphs": [
+          {
+            "text": "Color",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Calibri Light",
+              "font_size": 13.0
+            },
+            "runs": [
+              {
+                "text": "Color"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 14,
+    "shapes": [
+      {
+        "text": "This text has this in red, and this in blue.",
+        "paragraphs": [
+          {
+            "text": "This text has this in red, and this in blue.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text has "
+              },
+              {
+                "text": "this in red"
+              },
+              {
+                "text": ", and "
+              },
+              {
+                "text": "this in blue."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 15,
+    "shapes": [
+      {
+        "text": "Experimental formatting tests",
+        "paragraphs": [
+          {
+            "text": "Experimental formatting tests",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Calibri Light",
+              "font_size": 16.0
+            },
+            "runs": [
+              {
+                "text": "Experimental f"
+              },
+              {
+                "text": "ormatting tests"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 16,
+    "shapes": [
+      {
+        "text": "This text is highlighted.",
+        "paragraphs": [
+          {
+            "text": "This text is highlighted.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text is highlighted",
+                "has_highlight": true
+              },
+              {
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 17,
+    "shapes": [
+      {
+        "text": "This text is highlighted, but also has this part underlined, and this part is in italics, and this part is bolded.",
+        "paragraphs": [
+          {
+            "text": "This text is highlighted, but also has this part underlined, and this part is in italics, and this part is bolded.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text is highlighted, ",
+                "has_highlight": true
+              },
+              {
+                "text": "but also has this part underlined",
+                "underline": true,
+                "has_highlight": true
+              },
+              {
+                "text": ", and ",
+                "has_highlight": true
+              },
+              {
+                "text": "this part is in italics",
+                "italic": true,
+                "has_highlight": true
+              },
+              {
+                "text": ", and ",
+                "has_highlight": true
+              },
+              {
+                "text": "this part is bolded",
+                "bold": true,
+                "has_highlight": true
+              },
+              {
+                "text": ".",
+                "has_highlight": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 18,
+    "shapes": [
+      {
+        "text": "This is normal-size text, but it has a subscript here and a superscript here.",
+        "paragraphs": [
+          {
+            "text": "This is normal-size text, but it has a subscript here and a superscript here.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This is normal-size text, but it has a "
+              },
+              {
+                "text": "subscript here ",
+                "baseline": -25000
+              },
+              {
+                "text": "and a "
+              },
+              {
+                "text": "superscript here",
+                "baseline": 60000
+              },
+              {
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 19,
+    "shapes": [
+      {
+        "text": "THIS TEXT IS IN ALL CAPS.",
+        "paragraphs": [
+          {
+            "text": "THIS TEXT IS IN ALL CAPS.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "THIS TEXT IS IN ALL CAPS",
+                "cap": "all"
+              },
+              {
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 20,
+    "shapes": [
+      {
+        "text": "This text is in small caps.",
+        "paragraphs": [
+          {
+            "text": "This text is in small caps.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "This text is in small caps.",
+                "cap": "small"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 21,
+    "shapes": [
+      {
+        "text": "And this text has a single strikethrough, and a double strikethrough.",
+        "paragraphs": [
+          {
+            "text": "And this text has a single strikethrough, and a double strikethrough.",
+            "level": 0,
+            "paragraph_font": {
+              "font_name": "Times New Roman",
+              "font_size": 12.0
+            },
+            "runs": [
+              {
+                "text": "And this text has "
+              },
+              {
+                "text": "a single strikethrough",
+                "strike": "sngStrike"
+              },
+              {
+                "text": ", and "
+              },
+              {
+                "text": "a double strikethrough.",
+                "strike": "dblStrike"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

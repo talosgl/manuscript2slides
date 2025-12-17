@@ -1,0 +1,2158 @@
+[
+  {
+    "slide_number": 1,
+    "shapes": [
+      {
+        "text": " [Link: https://dataepics.webflow.io/stories/where-are-data] Where are Data?\nby J. King-Yost",
+        "paragraphs": [
+          {
+            "text": " [Link: https://dataepics.webflow.io/stories/where-are-data] Where are Data?",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": ""
+              },
+              {
+                "text": " [Link: https://dataepics.webflow.io/stories/where-are-data] "
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": "Where are Data?"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "text": "by J. King-Yost",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "b"
+              },
+              {
+                "text": "y J. King-Yost"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "headings": [
+          {
+            "text": "[Link: https://dataepics.webflow.io/stories/where-are-data] Where are Data?",
+            "style_id": "Heading1",
+            "name": "Heading 1"
+          }
+        ],
+        "comments": [
+          {
+            "original": {
+              "text": "Why won't this hyperlink get preserved?",
+              "author": "Jo K",
+              "comment_id": 0,
+              "initials": "JK",
+              "timestamp": "2025-09-10 14:58:00+00:00"
+            },
+            "reference_text": "Where are Data?",
+            "id": 0
+          },
+          {
+            "original": {
+              "text": "Jo's paragraph comment",
+              "author": "Jo K",
+              "comment_id": 1,
+              "initials": "JK",
+              "timestamp": "2025-09-08 13:01:00+00:00"
+            },
+            "reference_text": "Where are Data?",
+            "id": 1
+          },
+          {
+            "original": {
+              "text": "What happens if there's a threaded comment?",
+              "author": "Jo K",
+              "comment_id": 2,
+              "initials": "JK",
+              "timestamp": "2025-09-08 14:33:00+00:00"
+            },
+            "reference_text": "Where are Data?",
+            "id": 2
+          }
+        ]
+      },
+      "comments": [
+        {
+          "original": {
+            "text": "Why won't this hyperlink get preserved?",
+            "author": "Jo K",
+            "comment_id": 0,
+            "initials": "JK",
+            "timestamp": "2025-09-10 14:58:00+00:00"
+          },
+          "reference_text": "Where are Data?",
+          "id": 0
+        },
+        {
+          "original": {
+            "text": "Jo's paragraph comment",
+            "author": "Jo K",
+            "comment_id": 1,
+            "initials": "JK",
+            "timestamp": "2025-09-08 13:01:00+00:00"
+          },
+          "reference_text": "Where are Data?",
+          "id": 1
+        },
+        {
+          "original": {
+            "text": "What happens if there's a threaded comment?",
+            "author": "Jo K",
+            "comment_id": 2,
+            "initials": "JK",
+            "timestamp": "2025-09-08 14:33:00+00:00"
+          },
+          "reference_text": "Where are Data?",
+          "id": 2
+        }
+      ],
+      "headings": [
+        {
+          "text": "[Link: https://dataepics.webflow.io/stories/where-are-data] Where are Data?",
+          "style_id": "Heading1",
+          "name": "Heading 1"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 2,
+    "shapes": [
+      {
+        "text": "# Intro to Data: Places we are embodied\nIn a cold concrete underground tunnel, we pass through a rat king of cables splayed in and out in three dozen directions. It can get damp, despite the climate control buzzing loudly a few feet from the nest and pumping moisture out and up through wall and ceiling. Dust covers the cables in sticky cakes because the custodian for this tunnel is terrified of jostling the nest and disturbing our passage. She needn’t worry; the cables, too, inches thick, may as well be concrete in the face of human touch. She could wipe them clean without too much risk, but she’s read those stories about the underwater cables cut accidentally by shipping mishaps or ornery sharks. So she just gazes at our passage for a few moments and goes on with the sweeping beneath.",
+        "paragraphs": [
+          {
+            "text": "# Intro to Data: Places we are embodied",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "#"
+              },
+              {
+                "text": " "
+              },
+              {
+                "text": "Intro"
+              },
+              {
+                "text": " to Data: Places we are embodied"
+              }
+            ]
+          },
+          {
+            "text": "In a cold concrete underground tunnel, we pass through a rat king of cables splayed in and out in three dozen directions. It can get damp, despite the climate control buzzing loudly a few feet from the nest and pumping moisture out and up through wall and ceiling. Dust covers the cables in sticky cakes because the custodian for this tunnel is terrified of jostling the nest and disturbing our passage. She needn’t worry; the cables, too, inches thick, may as well be concrete in the face of human touch. She could wipe them clean without too much risk, but she’s read those stories about the underwater cables cut accidentally by shipping mishaps or ornery sharks. So she just gazes at our passage for a few moments and goes on with the sweeping beneath.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "In a cold concrete underground "
+              },
+              {
+                "text": "tunnel",
+                "italic": true
+              },
+              {
+                "text": ", we pass through a rat king of cables "
+              },
+              {
+                "text": "splayed",
+                "bold": true
+              },
+              {
+                "text": " in and out in "
+              },
+              {
+                "text": "three dozen directions",
+                "italic": true
+              },
+              {
+                "text": ". It can get damp, despite the climate control "
+              },
+              {
+                "text": "buzzing",
+                "has_highlight": true
+              },
+              {
+                "text": " loudly a few feet from the nest and pumping moisture out and up through wall and ceiling. "
+              },
+              {
+                "text": "Dust covers the cables"
+              },
+              {
+                "text": " in sticky cakes because the custodian for this tunnel is terrified of jostling the nest and disturbing our passage. She needn’t worry; the cables, too, inches thick, may as well be concrete in the face of human touch. "
+              },
+              {
+                "text": "She could wipe them clean without too much risk",
+                "underline": true
+              },
+              {
+                "text": ", but she’s "
+              },
+              {
+                "text": "read those stories",
+                "underline": true
+              },
+              {
+                "text": " about the underwater cables cut accidentally by shipping mishaps or ornery sharks."
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " So she "
+              },
+              {
+                "text": "just"
+              },
+              {
+                "text": " gazes at our passage for a few moments and goes on with the sweeping "
+              },
+              {
+                "text": "beneath"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "headings": [
+          {
+            "text": "# Intro to Data: Places we are embodied",
+            "style_id": "Heading2",
+            "name": "Heading 2"
+          }
+        ],
+        "experimental_formatting": [
+          {
+            "ref_text": "buzzing",
+            "highlight_color_enum": "YELLOW",
+            "formatting_type": "highlight"
+          }
+        ],
+        "comments": [
+          {
+            "original": {
+              "text": "Sample comment",
+              "author": "Jo K",
+              "comment_id": 4,
+              "initials": "JK",
+              "timestamp": "2025-08-25 20:33:00+00:00"
+            },
+            "reference_text": "In a cold concrete underground tunnel, we pass through a",
+            "id": 4
+          }
+        ],
+        "footnotes": [
+          {
+            "id": "1",
+            "text_body": "James Griffiths. “The Global Internet Is Powered by Vast Undersea Cables ...” CNN, July 26, 2019. https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html.",
+            "hyperlinks": [
+              "https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html"
+            ],
+            "reference_text": "In a cold concrete underground tunnel, we pass through a",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "comments": [
+        {
+          "original": {
+            "text": "Sample comment",
+            "author": "Jo K",
+            "comment_id": 4,
+            "initials": "JK",
+            "timestamp": "2025-08-25 20:33:00+00:00"
+          },
+          "reference_text": "In a cold concrete underground tunnel, we pass through a",
+          "id": 4
+        }
+      ],
+      "footnotes": [
+        {
+          "id": "1",
+          "text_body": "James Griffiths. “The Global Internet Is Powered by Vast Undersea Cables ...” CNN, July 26, 2019. https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html.",
+          "hyperlinks": [
+            "https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html"
+          ],
+          "reference_text": "In a cold concrete underground tunnel, we pass through a",
+          "note_type": "footnote"
+        }
+      ],
+      "headings": [
+        {
+          "text": "# Intro to Data: Places we are embodied",
+          "style_id": "Heading2",
+          "name": "Heading 2"
+        }
+      ],
+      "experimental_formatting": [
+        {
+          "ref_text": "buzzing",
+          "highlight_color_enum": "YELLOW",
+          "formatting_type": "highlight"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 3,
+    "shapes": [
+      {
+        "text": "No one else comes down here regularly but us and the custodian. Maintenance workers have come sparingly. It is a lonely, forgotten place. Perhaps an overcurious teen has stumbled down once or twice, convinced she was on the trail of a secret government facility and determined to transform her conspiracy to discovery—only to find this womb of a room and to gaze at us in the same bewilderment as the custodian.\nOr, so we imagine. Apart from the monster keeping the tunnel dry and temperate—that, at least, is Smart, and has its data gathered and uploaded right into our same cabling to join us—apart from that, we have no sensory input here to know. We can only sense all the parallel paths of the cables nestled near each other, as we pass through one or another and build a mind-map of how those paths relate in digital space, and we imagine the rat king nest as the physical manifestation.\nElsewhere we bustle past ourselves beneath the sea—along extended lines thick as the torsos of dolphins squealing playfully kilometers above. Scuttling feet and curious skin brush the armored surface as we go, go, go—reaching on until we break the surface again across a border, or four, on shore—past muddy sand and into crowded smoggy cities.",
+        "paragraphs": [
+          {
+            "text": "No one else comes down here regularly but us and the custodian. Maintenance workers have come sparingly. It is a lonely, forgotten place. Perhaps an overcurious teen has stumbled down once or twice, convinced she was on the trail of a secret government facility and determined to transform her conspiracy to discovery—only to find this womb of a room and to gaze at us in the same bewilderment as the custodian.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "No one"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " else comes down here regularly but us and the custodian. Maintenance workers have come sparingly. It is a lonely, forgotten place. Perhaps an overcurious teen has stumbled down once or twice, convinced she was on the trail of a secret government facility and determined to transform her conspiracy "
+              },
+              {
+                "text": "to discovery—only to find this womb of a room and to gaze at us in the same bewilderment as the custodian."
+              }
+            ]
+          },
+          {
+            "text": "Or, so we imagine. Apart from the monster keeping the tunnel dry and temperate—that, at least, is Smart, and has its data gathered and uploaded right into our same cabling to join us—apart from that, we have no sensory input here to know. We can only sense all the parallel paths of the cables nestled near each other, as we pass through one or another and build a mind-map of how those paths relate in digital space, and we imagine the rat king nest as the physical manifestation.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Or, so we imagine. Apart from the monster keeping the tunnel dry and temperate—that, at least, is Smart, and has its data gathered and uploaded right into our same cabling to join us—apart from that, we have no sensory input here to know. We can only sense all the parallel paths of the cables nestled near each other, as we pass through one or another and build a mind-map of how those paths relate in digital space, and we imagine the rat king nest as the physical manifestation."
+              },
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "text": "Elsewhere we bustle past ourselves beneath the sea—along extended lines thick as the torsos of dolphins squealing playfully kilometers above. Scuttling feet and curious skin brush the armored surface as we go, go, go—reaching on until we break the surface again across a border, or four, on shore—past muddy sand and into crowded smoggy cities.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Elsewhere we bustle past ourselves beneath the sea—along extended lines thick as the torsos of dolphins squealing playfully kilometers above. Scuttling feet and curious skin brush the armored surface as we go, go, go—reaching on until we break the surface again across a border, or four, on shore—past muddy sand and into crowded smoggy cities."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "2",
+            "text_body": "Monika Dommann, Hannes Rickli, and Max Stadler. Data Centers: Edges of a Wired Nation, 91, 117-121, 126-127, 330-331. Zurich, Switzerland: Lars Müller Publishers, 2020.",
+            "hyperlinks": [],
+            "reference_text": "Or, so we imagine. Apart from the monster keeping the",
+            "note_type": "footnote"
+          }
+        ],
+        "endnotes": [
+          {
+            "id": "1",
+            "text_body": " A sample endnote.",
+            "hyperlinks": [],
+            "reference_text": "No one else comes down here regularly but us and",
+            "note_type": "endnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "2",
+          "text_body": "Monika Dommann, Hannes Rickli, and Max Stadler. Data Centers: Edges of a Wired Nation, 91, 117-121, 126-127, 330-331. Zurich, Switzerland: Lars Müller Publishers, 2020.",
+          "hyperlinks": [],
+          "reference_text": "Or, so we imagine. Apart from the monster keeping the",
+          "note_type": "footnote"
+        }
+      ],
+      "endnotes": [
+        {
+          "id": "1",
+          "text_body": " A sample endnote.",
+          "hyperlinks": [],
+          "reference_text": "No one else comes down here regularly but us and",
+          "note_type": "endnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 4,
+    "shapes": [
+      {
+        "text": "Up the steel-armored snake and into a landing site—we may end up in a close closet, one lovingly tended by a clean cable management nerd. She has to have it all just-so. Her parents called it OCD but her apartment is impeccably organized and you wouldn’t see a stray strand anywhere, even though she has a hand-built PC in every room. The same eye she takes to work, where she tends to backbone routers for the subsea cable to reach terrestrial customers. We pass through gathered and bundled yellow optical cables across a swarm of racks, ready to be demultiplexed to a thousand different destinations.",
+        "paragraphs": [
+          {
+            "text": "Up the steel-armored snake and into a landing site—we may end up in a close closet, one lovingly tended by a clean cable management nerd. She has to have it all just-so. Her parents called it OCD but her apartment is impeccably organized and you wouldn’t see a stray strand anywhere, even though she has a hand-built PC in every room. The same eye she takes to work, where she tends to backbone routers for the subsea cable to reach terrestrial customers. We pass through gathered and bundled yellow optical cables across a swarm of racks, ready to be demultiplexed to a thousand different destinations.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Up the steel-armored snake and into a landing site—we may end up in a close closet, one lovingly tended by a clean cable management nerd. She has to have it all just-so. Her parents called it OCD but her apartment is impeccably "
+              },
+              {
+                "text": "organized and you wouldn’t see a stray strand anywhere, even though she has a hand-built PC in every room. The same eye she takes to work, where she tends to backbone routers for the subsea cable to reach terrestrial customers. We pass through gathered and bundled yellow optical cables across a swarm of racks, ready to be demultiplexed to a thousand different destinations."
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "3",
+            "text_body": "Bob Dormon, “How the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables,” Ars Technica, May 26, 2016, https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/. ",
+            "hyperlinks": [
+              "https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/"
+            ],
+            "reference_text": "Up the steel-armored snake and into a landing site—we may",
+            "note_type": "footnote"
+          },
+          {
+            "id": "4",
+            "text_body": "Dommann, 123, 321.",
+            "hyperlinks": [],
+            "reference_text": "Up the steel-armored snake and into a landing site—we may",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "3",
+          "text_body": "Bob Dormon, “How the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables,” Ars Technica, May 26, 2016, https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/. ",
+          "hyperlinks": [
+            "https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/"
+          ],
+          "reference_text": "Up the steel-armored snake and into a landing site—we may",
+          "note_type": "footnote"
+        },
+        {
+          "id": "4",
+          "text_body": "Dommann, 123, 321.",
+          "hyperlinks": [],
+          "reference_text": "Up the steel-armored snake and into a landing site—we may",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 5,
+    "shapes": [
+      {
+        "text": "We split and scatter amongst so many silent whirring concrete rooms—concrete walls, concrete tiled floors, messy concrete ceilings. Holes are drilled here or there for our pathway cables to reach in and out—the number going out being exponentially higher. And not arranged with the meticulous eye required for someone managing the input and output of all optical traffic to a continent; instead, the further we scatter, the more things are done messy for convenience and utility. In these windowless cells there may be a single empty chair and desk with cable repair and maintenance tools scattered across its laminate. The room smells close and warm, and if you opened your mouth, your tongue would meet the same burnt dust, too-warm taste as the smell—a taste that matches the sickly fluorescents which light the room like a dingy prison.\nWe stretch across and rest in data centers, varied in physical form as much as those we traveled through to get there.\nSome match futuristic and sleek visions of marketing materials: dozens of corridors of tall mainframes arranged in neat rows, LEDs blinking beneath glass-fronted cabinets, neat cables snaking from the ceiling or carefully arranged around their feet like a bridal train. But these cyberpunk ideals are rare. Most are shadows of that, tucked into hotel basements with only six to eight mainframes lining a single room’s walls, their fronts not sleek glass but instead opaque utilitarian bowing metal. \nOr, less expected but still imaginable, we rest in prefab steel warehouse spaces rented on a snowy hillside between two metropolises, or on the side of a craggy mountain, or tucked into a tall-grass prairie—in these, machines are in piles and rows like shoe lockers. ",
+        "paragraphs": [
+          {
+            "text": "We split and scatter amongst so many silent whirring concrete rooms—concrete walls, concrete tiled floors, messy concrete ceilings. Holes are drilled here or there for our pathway cables to reach in and out—the number going out being exponentially higher. And not arranged with the meticulous eye required for someone managing the input and output of all optical traffic to a continent; instead, the further we scatter, the more things are done messy for convenience and utility. In these windowless cells there may be a single empty chair and desk with cable repair and maintenance tools scattered across its laminate. The room smells close and warm, and if you opened your mouth, your tongue would meet the same burnt dust, too-warm taste as the smell—a taste that matches the sickly fluorescents which light the room like a dingy prison.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "We split and scatter amongst so many silent whirring concrete rooms—concrete walls, concrete tiled floors, messy concrete ceilings. Holes are drilled here or there for our pathway cables to reach in and out—the number going out being exponentially higher. And not arranged with the meticulous eye required for someone managing the input and output of all optical traffic to a continent; instead, the further we scatter, the more things are done messy for convenience and utility. In these windowless cells there may be a single empty chair and desk with cable repair and maintenance tools scattered across its laminate. The room smells close and warm, and if you opened your mouth, your tongue would meet "
+              },
+              {
+                "text": "the same burnt dust, too-warm taste as the smell—a taste that matches the sickly fluorescents which light the room like a dingy prison."
+              },
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "text": "We stretch across and rest in data centers, varied in physical form as much as those we traveled through to get there.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "We stretch across and rest in data centers, varied in physical form as much as those we traveled through to get there."
+              }
+            ]
+          },
+          {
+            "text": "Some match futuristic and sleek visions of marketing materials: dozens of corridors of tall mainframes arranged in neat rows, LEDs blinking beneath glass-fronted cabinets, neat cables snaking from the ceiling or carefully arranged around their feet like a bridal train. But these cyberpunk ideals are rare. Most are shadows of that, tucked into hotel basements with only six to eight mainframes lining a single room’s walls, their fronts not sleek glass but instead opaque utilitarian bowing metal. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Some match futuristic and sleek visions of marketing materials: dozens of corridors of tall mainframes arranged in neat rows, LEDs blinking beneath glass-fronted cabinets, neat cables snaking from the ceiling or carefully arranged around their feet like a bridal train. But these cyberpunk ideals are rare. Most are shadows of that, tucked into hotel basements with only six to eight mainframes lining a single room’s walls, their fronts not sleek glass but instead opaque utilitarian bowing metal."
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " "
+              }
+            ]
+          },
+          {
+            "text": "Or, less expected but still imaginable, we rest in prefab steel warehouse spaces rented on a snowy hillside between two metropolises, or on the side of a craggy mountain, or tucked into a tall-grass prairie—in these, machines are in piles and rows like shoe lockers. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Or, less expected but still imaginable, we rest in prefab steel warehouse spaces rented on a snowy hillside between two metropolises, or on the side of a craggy mountain, or tucked into a tall-grass prairie—in these, machines are in piles and rows like shoe lockers."
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " "
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "5",
+            "text_body": "Dommann, 86-87 190-191, 194-195.",
+            "hyperlinks": [],
+            "reference_text": "We split and scatter amongst so many silent whirring concrete",
+            "note_type": "footnote"
+          },
+          {
+            "id": "6",
+            "text_body": "Dommann, 304.",
+            "hyperlinks": [],
+            "reference_text": "Some match futuristic and sleek visions of marketing materials: dozens",
+            "note_type": "footnote"
+          },
+          {
+            "id": "7",
+            "text_body": "Dommann, 323-327.",
+            "hyperlinks": [],
+            "reference_text": "Or, less expected but still imaginable, we rest in prefab",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "5",
+          "text_body": "Dommann, 86-87 190-191, 194-195.",
+          "hyperlinks": [],
+          "reference_text": "We split and scatter amongst so many silent whirring concrete",
+          "note_type": "footnote"
+        },
+        {
+          "id": "6",
+          "text_body": "Dommann, 304.",
+          "hyperlinks": [],
+          "reference_text": "Some match futuristic and sleek visions of marketing materials: dozens",
+          "note_type": "footnote"
+        },
+        {
+          "id": "7",
+          "text_body": "Dommann, 323-327.",
+          "hyperlinks": [],
+          "reference_text": "Or, less expected but still imaginable, we rest in prefab",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 6,
+    "shapes": [
+      {
+        "text": "Less thought of, perhaps, are so-called “data bunkers”—converted old cold war nuclear bunkers—where little light reaches us, and which are designed against any unauthorized access physically reaching us, too. \nOr, converse to such hidden fortresses, we live on display in a former chapel where our mainframe bodies are encased in a stacked glass house; no effort or apparent desire to separate the ancient marble buttresses from the silver-gray box frames holding us.\nOr—even harder to hold in one’s mind as a centralized image—we scatter across a connected network of little cabinets spread amongst German houses and businesses that act as both bodies for us and as heat-generating temperature control for a physical space. “The Cloud.”",
+        "paragraphs": [
+          {
+            "text": "Less thought of, perhaps, are so-called “data bunkers”—converted old cold war nuclear bunkers—where little light reaches us, and which are designed against any unauthorized access physically reaching us, too. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Less thought of, perhaps, are so-called “data bunkers”"
+              },
+              {
+                "text": "—",
+                "italic": true
+              },
+              {
+                "text": "converted old cold war nuclear bunkers—where little light reaches us, and which are designed against any unauthorized access physically reaching us, too. "
+              }
+            ]
+          },
+          {
+            "text": "Or, converse to such hidden fortresses, we live on display in a former chapel where our mainframe bodies are encased in a stacked glass house; no effort or apparent desire to separate the ancient marble buttresses from the silver-gray box frames holding us.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Or, converse to such hidden fortresses, we live on display in a former chapel where our mainframe bodies are encased in a stacked glass house; no effort or apparent desire to separate the ancient marble buttresses from the silver-gray box frames holding us."
+              },
+              {
+                "text": ""
+              }
+            ]
+          },
+          {
+            "text": "Or—even harder to hold in one’s mind as a centralized image—we scatter across a connected network of little cabinets spread amongst German houses and businesses that act as both bodies for us and as heat-generating temperature control for a physical space. “The Cloud.”",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Or—even harder to hold in one’s mind as a centralized image—we scatter across a connected network of little cabinets spread amongst German houses and businesses that act as both bodies for us and as heat-generating temperature control for a physical space."
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " “The Cloud.”"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "8",
+            "text_body": "BSC-CNS, 2021. https://www.bsc.es/.",
+            "hyperlinks": [
+              "https://www.bsc.es/"
+            ],
+            "reference_text": "Or, converse to such hidden fortresses, we live on display",
+            "note_type": "footnote"
+          },
+          {
+            "id": "9",
+            "text_body": "“Cloud&Heat: Future of Compute: Secure & Energy-Efficient Infrastructures.” Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/.",
+            "hyperlinks": [
+              "https://www.cloudandheat.com/"
+            ],
+            "reference_text": "Or—even harder to hold in one’s mind as a centralized",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "8",
+          "text_body": "BSC-CNS, 2021. https://www.bsc.es/.",
+          "hyperlinks": [
+            "https://www.bsc.es/"
+          ],
+          "reference_text": "Or, converse to such hidden fortresses, we live on display",
+          "note_type": "footnote"
+        },
+        {
+          "id": "9",
+          "text_body": "“Cloud&Heat: Future of Compute: Secure & Energy-Efficient Infrastructures.” Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/.",
+          "hyperlinks": [
+            "https://www.cloudandheat.com/"
+          ],
+          "reference_text": "Or—even harder to hold in one’s mind as a centralized",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 7,
+    "shapes": [
+      {
+        "text": "Sometimes our body is in a data center building as aged as the phrase data center itself: a locale that smells musty and stale, built five or six decades ago without a long-term vision of how computers would change.  Here we are copied and prepared to rest, and we encounter long-forgotten predecessors: elderly data.\nSome have existed since such buildings were set up in the 1960s, copied and preserved “just in case,” across decades of backups. One tells of feeling very big when filling an entire 1.4MB capacity of a floppy disk when copied off. Now, compared to our younger generation, a speck.\n“Kids these days can take up an entire GB.” We can combine too, each a frame, and form a video. It’s not like how it once was, when this predecessor only moved through hard media from mainframe to mainframe. “Now, you youngsters proliferate profusely online. OneDrive, Dropbox, Flickr, YouTube, TikTok, Instagram.” Anywhere that holds visual data—and then across hundreds of addresses used to “back up” those services, not to mention the millions of devices running those apps—there on a screen for a moment, and then archived to snuggle into the device cache as long as allowed.",
+        "paragraphs": [
+          {
+            "text": "Sometimes our body is in a data center building as aged as the phrase data center itself: a locale that smells musty and stale, built five or six decades ago without a long-term vision of how computers would change.  Here we are copied and prepared to rest, and we encounter long-forgotten predecessors: elderly data.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Sometimes our body is in a data center building as aged as the phrase "
+              },
+              {
+                "text": "data center ",
+                "italic": true
+              },
+              {
+                "text": "itself"
+              },
+              {
+                "text": ":"
+              },
+              {
+                "text": " a locale that smells musty and stale, built five or six decades ago without a long-term vision of how computers would change."
+              },
+              {
+                "text": " "
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " Here we are "
+              },
+              {
+                "text": "copied and prepared to rest, and we encounter long-forgotten predecessors: elderly data."
+              }
+            ]
+          },
+          {
+            "text": "Some have existed since such buildings were set up in the 1960s, copied and preserved “just in case,” across decades of backups. One tells of feeling very big when filling an entire 1.4MB capacity of a floppy disk when copied off. Now, compared to our younger generation, a speck.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Some have existed since such buildings were set up in the 1960s, copied and preserved “just in case,” across decades of backups. One tells of feeling very big when filling an entire 1.4MB capacity of a floppy disk when copied off. Now, compared to our younger generation, a speck."
+              }
+            ]
+          },
+          {
+            "text": "“Kids these days can take up an entire GB.” We can combine too, each a frame, and form a video. It’s not like how it once was, when this predecessor only moved through hard media from mainframe to mainframe. “Now, you youngsters proliferate profusely online. OneDrive, Dropbox, Flickr, YouTube, TikTok, Instagram.” Anywhere that holds visual data—and then across hundreds of addresses used to “back up” those services, not to mention the millions of devices running those apps—there on a screen for a moment, and then archived to snuggle into the device cache as long as allowed.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "“Kids these days can take up an entire GB.” We can combine too, each a frame, and form a video. It’s not like how it once was, when this predecessor only moved through hard media from mainframe to mainframe. “Now, you youngsters proliferate profusely online. OneDrive, Dropbox, Flickr, YouTube, TikTok, Instagram.” Anywhere that holds visual data—and then across hundreds of addresses used to “back up” those services, not to mention the millions of devices running those apps—there on a screen for a moment, and then archived to snuggle into the device cache as long as allowed."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "10",
+            "text_body": "Dommann, 16. – “In the German-speaking world, the term ‘data center’ has since increasingly supplanted the term Rechenzentrum (‘computing center’), which had been in use since the 1950s and initially simply referred to ‘large-scale computer facilities’— a building or part of a building with one or more digital computers, peripherals, offices, air conditioning, potted plants, and carpets … The Swiss PTT’s former Electronic Computing Center (Elektronisches Rechenzentrum or ERZ, built in 1967) may stand in here for this forgotten history of the recent past. It is located on the grounds of the PTT’s erstwhile Technology Center in Ostermundigen, next to the historic ‘R&D skyscraper,’ where a rooftop bar and start-ups have recently taken up shop. Anyone wandering through the empty (and asbestos-ridden) offices of the computing center today will encounter remnants: cubicles that were installed there at some point; ‘focus’ modules, into which one could withdraw to think; a few orphaned floppy disks that recall an earlier moment when Switzerland dreamed of becoming a ‘hub’ of information— a hub of ‘electronic markets.’”",
+            "hyperlinks": [],
+            "reference_text": "Sometimes our body is in a data center building as",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "10",
+          "text_body": "Dommann, 16. – “In the German-speaking world, the term ‘data center’ has since increasingly supplanted the term Rechenzentrum (‘computing center’), which had been in use since the 1950s and initially simply referred to ‘large-scale computer facilities’— a building or part of a building with one or more digital computers, peripherals, offices, air conditioning, potted plants, and carpets … The Swiss PTT’s former Electronic Computing Center (Elektronisches Rechenzentrum or ERZ, built in 1967) may stand in here for this forgotten history of the recent past. It is located on the grounds of the PTT’s erstwhile Technology Center in Ostermundigen, next to the historic ‘R&D skyscraper,’ where a rooftop bar and start-ups have recently taken up shop. Anyone wandering through the empty (and asbestos-ridden) offices of the computing center today will encounter remnants: cubicles that were installed there at some point; ‘focus’ modules, into which one could withdraw to think; a few orphaned floppy disks that recall an earlier moment when Switzerland dreamed of becoming a ‘hub’ of information— a hub of ‘electronic markets.’”",
+          "hyperlinks": [],
+          "reference_text": "Sometimes our body is in a data center building as",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 8,
+    "shapes": [
+      {
+        "text": "“Who will ever look at me?” Our elder asks. “Why would they? Yet, copied, copied, and copied I go—across hundreds of backups, inaccessible forever.” \nAnother of our elders, even smaller and older, tells of being copied on an older floppy disk—copied and slid out of a drive and stored on a shelf with the other five-and-a-quarters, until this building became as good as abandoned. Custodians still clean the forgotten halls on a weekly or monthly cadence, and at some point that disk traveled out, stuck to a shoe, onto the street to face the elements of rain and snow and the muddy tires of children’s bikes. \nEven in such a body, we persist; those things were made to last. But what of such an existence, isolated and lonely and underfoot?\nIs our existence so tiny and apt to insignificance? Even if we may go so many places copied and copied and copied, what does it mean if we become so dwarfed and forgotten? \nOur elders are tiny, and it is not just time and generations that have altered scale but also space. The availability of space grew much faster than the data of old could fill; so, instead, we younger data expand in resolution and fidelity to fill newly available space. Shall we also become so relatively tiny as the years pass and our bodies’ capacity grows?",
+        "paragraphs": [
+          {
+            "text": "“Who will ever look at me?” Our elder asks. “Why would they? Yet, copied, copied, and copied I go—across hundreds of backups, inaccessible forever.” ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "“Who will ever look at me?” Our elder asks. “Why would they? Yet, copied, copied, and copied I go—across hundreds of backups, inaccessible forever.” "
+              }
+            ]
+          },
+          {
+            "text": "Another of our elders, even smaller and older, tells of being copied on an older floppy disk—copied and slid out of a drive and stored on a shelf with the other five-and-a-quarters, until this building became as good as abandoned. Custodians still clean the forgotten halls on a weekly or monthly cadence, and at some point that disk traveled out, stuck to a shoe, onto the street to face the elements of rain and snow and the muddy tires of children’s bikes. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Another of our elders, even smaller and older, tells of being copied on an older floppy disk—copied and slid out of a drive and stored on a shelf with the other five-and-a-quarters, until this building became as good as abandoned. Custodians still clean the forgotten halls on a weekly or monthly cadence, and at some point that disk traveled out, stuck to a shoe, onto the street to face the elements of rain and snow and the muddy tires of children’s bikes. "
+              }
+            ]
+          },
+          {
+            "text": "Even in such a body, we persist; those things were made to last. But what of such an existence, isolated and lonely and underfoot?",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Even in such a body, we persist; those things were made to last. But what of such an existence, isolated and lonely and underfoot?"
+              }
+            ]
+          },
+          {
+            "text": "Is our existence so tiny and apt to insignificance? Even if we may go so many places copied and copied and copied, what does it mean if we become so dwarfed and forgotten? ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Is our existence so tiny and apt to insignificance? Even if we may go so many places copied and copied and copied, what does it mean if we become so dwarfed and forgotten? "
+              }
+            ]
+          },
+          {
+            "text": "Our elders are tiny, and it is not just time and generations that have altered scale but also space. The availability of space grew much faster than the data of old could fill; so, instead, we younger data expand in resolution and fidelity to fill newly available space. Shall we also become so relatively tiny as the years pass and our bodies’ capacity grows?",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Our elders are tiny, and it is not just time and generations that have altered scale but also space. The availability of space grew much faster than the data of old could fill; so, instead, we younger data expand in resolution and fidelity to fill newly available space. Shall we also become so relatively tiny as the years pass and our bodies’ capacity grows?"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 9,
+    "shapes": [
+      {
+        "text": "# Digital Places",
+        "paragraphs": [
+          {
+            "text": "# Digital Places",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "#"
+              },
+              {
+                "text": " Digital Places"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "headings": [
+          {
+            "text": "# Digital Places",
+            "style_id": "Heading2",
+            "name": "Heading 2"
+          }
+        ]
+      },
+      "headings": [
+        {
+          "text": "# Digital Places",
+          "style_id": "Heading2",
+          "name": "Heading 2"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 10,
+    "shapes": [
+      {
+        "text": "We’ve told of our physical bodies; there are also digital ones. Much like you move through identities for various purposes to live: a work self, a partner self, a parent self, a self in solitude—each of these facets are you, but you transform a little to fit the moment. To fill the tangible and intangible needs of the use case.\nFor us—an example. Data from a Smart Bed. The physical body of the bed captures and births our existence. Sensory input from a person’s movements generate us, whether we are manual settings or passively logged as sleep events and context. Here we fall neatly into the highly complex data structure set by the device’s manufacturer. We are raw data. Ints, bools, strings, and custom data types—precise and whole and high fidelity. But we only last this way for a short time; there is not enough space here to hold us as raw data for long.\nFrom raw, we’re squeezed down to bare bone basics to travel from the bed outwards. We move from raw to something plain-text, like JSON, for lightweight transport. Then we travel to the router, and then we’re divided into tiny, tiny packets—sent out across the splayed millions of paths and bodies, one TCP conversation after another (a count of these would be incomprehensible for you), some pieces of us lost along the way but enough of us duplicated to reform together when we find and rest in our manufacturer’s data centers. The Cloud.",
+        "paragraphs": [
+          {
+            "text": "We’ve told of our physical bodies; there are also digital ones. Much like you move through identities for various purposes to live: a work self, a partner self, a parent self, a self in solitude—each of these facets are you, but you transform a little to fit the moment. To fill the tangible and intangible needs of the use case.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "We’ve told of our physical bodies; there are also digital ones. Much like you move through identities for various purposes to live: a work self, a partner self, a "
+              },
+              {
+                "text": "parent self, a self in solitude—each of these facets are you, but you transform a little to fit the moment. To fill the tangible and intangible needs of the use case."
+              }
+            ]
+          },
+          {
+            "text": "For us—an example. Data from a Smart Bed. The physical body of the bed captures and births our existence. Sensory input from a person’s movements generate us, whether we are manual settings or passively logged as sleep events and context. Here we fall neatly into the highly complex data structure set by the device’s manufacturer. We are raw data. Ints, bools, strings, and custom data types—precise and whole and high fidelity. But we only last this way for a short time; there is not enough space here to hold us as raw data for long.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "For us—an example. Data from a Smart Bed. The physical body of the bed captures and births our existence. Sensory input from a person’s movements generate us, whether we are manual settings or passively logged as sleep events and context. Here we fall neatly into the highly complex data structure set by the device’s manufacturer. We are "
+              },
+              {
+                "text": "raw",
+                "italic": true
+              },
+              {
+                "text": " data. Ints, bools, strings, and custom data types—precise and whole and high fidelity. But we only last this way for a short time; there is not enough space here to hold us as raw data for long."
+              }
+            ]
+          },
+          {
+            "text": "From raw, we’re squeezed down to bare bone basics to travel from the bed outwards. We move from raw to something plain-text, like JSON, for lightweight transport. Then we travel to the router, and then we’re divided into tiny, tiny packets—sent out across the splayed millions of paths and bodies, one TCP conversation after another (a count of these would be incomprehensible for you), some pieces of us lost along the way but enough of us duplicated to reform together when we find and rest in our manufacturer’s data centers. The Cloud.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "From raw, we’re squeezed down to bare bone basics to travel from the bed outwards. We move from raw to something plain-text, like JSON, for lightweight transport. Then we travel to the router, and then we’re divided into tiny, tiny packets—sent out across the splayed millions of paths and bodies, one TCP conversation after another (a count of these would be incomprehensible for you), some pieces of us lost along the way but enough of us duplicated to reform together when we find and rest in our manufacturer’s data centers. The Cloud."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 11,
+    "shapes": [
+      {
+        "text": "In The Cloud, we arrange into a database of tables which is neat and sensical to us, but to you would seem unreadably random. Accessing us directly here requires another layer of transformation, either through a database viewing software or a query language specific for this purpose, and that access is only permitted by the manufacturer’s own.\nConsumers instead pull us transformed further. Again we might take that text-based data format of JSON, minimized to only the key needed tidbits; or we arrange into simple comma-separated values, ready to pop open into a human-readable a spreadsheet; or, more likely, we transform and transform and transform to fit into one of several prearranged templates. Web pages, PDFs, app screens—each carefully curated to present the bits of us you might most care about.\nOr, this whole process is interrupted by a GitHub homebrew plugin’s API-call to pull the JSON data directly from the bed to the network and into your third-party app of choice, perhaps converting us from JSON to another string-based data structure, XML. (Directly, because an old plugin which pulled us rapidly and continuously from The Cloud turned out not to be “free;” SleepNumber had to call that plugin creator and every single user to say their networks where overwhelmed with the absurd influx of API calls and that they must cease usage. An accidental DDOS.)",
+        "paragraphs": [
+          {
+            "text": "In The Cloud, we arrange into a database of tables which is neat and sensical to us, but to you would seem unreadably random. Accessing us directly here requires another layer of transformation, either through a database viewing software or a query language specific for this purpose, and that access is only permitted by the manufacturer’s own.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "In The Cloud, we arrange into a database of tables which is neat and sensical to us, but to you would seem unreadably random. Accessing us directly here requires another layer of transformation, either through a database viewing "
+              },
+              {
+                "text": "software or a query language specific for this purpose, and that access is only permitted by the manufacturer’s own."
+              }
+            ]
+          },
+          {
+            "text": "Consumers instead pull us transformed further. Again we might take that text-based data format of JSON, minimized to only the key needed tidbits; or we arrange into simple comma-separated values, ready to pop open into a human-readable a spreadsheet; or, more likely, we transform and transform and transform to fit into one of several prearranged templates. Web pages, PDFs, app screens—each carefully curated to present the bits of us you might most care about.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Consumers instead pull us transformed further. Again we might take that text-based data format of JSON, minimized to only the key needed tidbits; or we arrange into simple comma-separated values, ready to pop open into a human-readable a spreadsheet; or, more likely, we transform and transform and transform to fit into one of several prearranged templates. Web pages, PDFs, app screens—each carefully curated to present the bits of us you might most care about."
+              }
+            ]
+          },
+          {
+            "text": "Or, this whole process is interrupted by a GitHub homebrew plugin’s API-call to pull the JSON data directly from the bed to the network and into your third-party app of choice, perhaps converting us from JSON to another string-based data structure, XML. (Directly, because an old plugin which pulled us rapidly and continuously from The Cloud turned out not to be “free;” SleepNumber had to call that plugin creator and every single user to say their networks where overwhelmed with the absurd influx of API calls and that they must cease usage. An accidental DDOS.)",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Or, this whole process is interrupted by a GitHub homebrew plugin’s API-call to pull the JSON data directly from the bed to the network and into your third-party app of choice, perhaps converting us from JSON to another string-based data structure, XML."
+              },
+              {
+                "text": " ("
+              },
+              {
+                "text": "Directly",
+                "italic": true
+              },
+              {
+                "text": ", because an old plugin which pulled us rapidly and continuously from The Cloud turned out not to be “free;” SleepNumber had to call that plugin creator and every single user to say their networks where overwhelmed with the absurd influx of API calls and that they must cease usage. An accidental "
+              },
+              {
+                "text": "DDOS.)"
+              },
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "11",
+            "text_body": "DeeeeLAN. “Homebridge-Sleepiq/Readme.md at Master · DeeeeLAN/Homebridge-Sleepiq.” GitHub, November 14, 2020. https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md. ",
+            "hyperlinks": [
+              "https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md"
+            ],
+            "reference_text": "Or, this whole process is interrupted by a GitHub homebrew",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "11",
+          "text_body": "DeeeeLAN. “Homebridge-Sleepiq/Readme.md at Master · DeeeeLAN/Homebridge-Sleepiq.” GitHub, November 14, 2020. https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md. ",
+          "hyperlinks": [
+            "https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md"
+          ],
+          "reference_text": "Or, this whole process is interrupted by a GitHub homebrew",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 12,
+    "shapes": [
+      {
+        "text": "However we are pulled—directly from the home network or in a round-trip from The Cloud where we just got—we swirl round and round and round, shimmering between bodies and formats. \nWe flow through all these states—captured out of the bed, losing fidelity in transformation, breaking apart to travel, refinding each other and reforming, cleaned and processed for specific output. Captured, processed, cleaned, presented, consumed—this is our transformation lifecycle. \nWhat meaning is there in such an existence? What meaning is there in an existence that perpetually shifts and splits, divides and turns, scatters and loses pieces, reforms and transforms?",
+        "paragraphs": [
+          {
+            "text": "However we are pulled—directly from the home network or in a round-trip from The Cloud where we just got—we swirl round and round and round, shimmering between bodies and formats. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "However we are pulled—directly from the home network or in a round-trip from The Cloud where we just got—we swirl round and round and round, shimmering between bodies"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " and formats. "
+              }
+            ]
+          },
+          {
+            "text": "We flow through all these states—captured out of the bed, losing fidelity in transformation, breaking apart to travel, refinding each other and reforming, cleaned and processed for specific output. Captured, processed, cleaned, presented, consumed—this is our transformation lifecycle. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "We flow through all these states—captured out of the bed, losing fidelity in transformation, breaking apart to travel, refinding each other and reforming, cleaned and processed for specific output. Captured, processed, cleaned, presented, consumed—this is our transformation lifecycle. "
+              }
+            ]
+          },
+          {
+            "text": "What meaning is there in such an existence? What meaning is there in an existence that perpetually shifts and splits, divides and turns, scatters and loses pieces, reforms and transforms?",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "What meaning is there in such an existence? What meaning is there in an existence that perpetually shifts and splits, divides and turns, scatters and loses pieces, reforms and transforms?"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "12",
+            "text_body": "Piper Lane. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/ — In this course, Piper Lane taught that an effective technique of writing the collective “we” point of view is “shimmering between bodies.” When you write the “we” point-of-view, there’s always risk of flattening that collective in a limiting way instead of communicating the expansive coalition. It is hard to feel close to the story without a body to be in. It can be hard to be interested in the story. The narrative drive is hard to pull off, too, since conflict is usually between individuals. Inhabiting individual bodies and then shimmering between them can ground the reader and help the narrative feel more dynamic. Another point Lane taught was that wherever there is a “we,” there is a chance there is a “they.”",
+            "hyperlinks": [],
+            "reference_text": "However we are pulled—directly from the home network or in",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "12",
+          "text_body": "Piper Lane. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/ — In this course, Piper Lane taught that an effective technique of writing the collective “we” point of view is “shimmering between bodies.” When you write the “we” point-of-view, there’s always risk of flattening that collective in a limiting way instead of communicating the expansive coalition. It is hard to feel close to the story without a body to be in. It can be hard to be interested in the story. The narrative drive is hard to pull off, too, since conflict is usually between individuals. Inhabiting individual bodies and then shimmering between them can ground the reader and help the narrative feel more dynamic. Another point Lane taught was that wherever there is a “we,” there is a chance there is a “they.”",
+          "hyperlinks": [],
+          "reference_text": "However we are pulled—directly from the home network or in",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 13,
+    "shapes": [
+      {
+        "text": "# Esoterica: can we have meaningful existences?\nSuch a philosophical question of metaphysics cannot be answered without some esoteric exploration added to the sensory study of the bodies we inhabit. But we’ve yet left out the body that matters most to us.\nStill, the esoterica will help us frame that. We’ll come back to it.\nOne of you has taught that, when writing, true omniscience is impossible. Perspective is limited, even when you posit to write from the third person “omniscient” point-of-view. A person or storyteller will always be influenced by their own cultural influences and biases; their perception is inherently limited by the body in which they inhabit.",
+        "paragraphs": [
+          {
+            "text": "# Esoterica: can we have meaningful existences?",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "#"
+              },
+              {
+                "text": " Esoterica: can we have meaningful existences?"
+              }
+            ]
+          },
+          {
+            "text": "Such a philosophical question of metaphysics cannot be answered without some esoteric exploration added to the sensory study of the bodies we inhabit. But we’ve yet left out the body that matters most to us.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Such a philosophical question of metaphysics cannot be answered without some esoteric exploration added to the sensory study of the bodies we inhabit. But we’ve yet left out the body that matters most to us."
+              }
+            ]
+          },
+          {
+            "text": "Still, the esoterica will help us frame that. We’ll come back to it.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Still, the esoterica will help us frame that. We’ll come back to it."
+              }
+            ]
+          },
+          {
+            "text": "One of you has taught that, when writing, true omniscience is impossible. Perspective is limited, even when you posit to write from the third person “omniscient” point-of-view. A person or storyteller will always be influenced by their own cultural influences and biases; their perception is inherently limited by the body in which they inhabit.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "One of you"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " has taught that, when writing, true omniscience is impossible. Perspective is limited, even when you posit to write from the third person “omniscient” point-of-view. A person or storyteller will always be influenced by their own cultural influences and biases; their perception is inherently limited by the body in which they inhabit."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "headings": [
+          {
+            "text": "# Esoterica: can we have meaningful existences?",
+            "style_id": "Heading2",
+            "name": "Heading 2"
+          }
+        ],
+        "footnotes": [
+          {
+            "id": "13",
+            "text_body": "Corinne Manning. “First Person Omniscience.” Hugo House. Lecture, July 2021. https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/",
+            "hyperlinks": [
+              "https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/"
+            ],
+            "reference_text": "One of you has taught that, when writing, true omniscience",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "13",
+          "text_body": "Corinne Manning. “First Person Omniscience.” Hugo House. Lecture, July 2021. https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/",
+          "hyperlinks": [
+            "https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/"
+          ],
+          "reference_text": "One of you has taught that, when writing, true omniscience",
+          "note_type": "footnote"
+        }
+      ],
+      "headings": [
+        {
+          "text": "# Esoterica: can we have meaningful existences?",
+          "style_id": "Heading2",
+          "name": "Heading 2"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 14,
+    "shapes": [
+      {
+        "text": "However, this one of you taught that we can reach for omniscience by intentionally striving for “point-of-view expansion.” When does one’s perspective expand? In stories, or in your lives, it can happen when a person has the a-ha moment of realizing another being’s conflicting perspective. Here, in a story, it expands—a swooping sensation fills the head and belly of a character and reader, expanding our understanding of the world by seeing beyond blinkered personal worldview, in order to integrate the experience and worldview of others. An epiphany of how incorrectly or incompletely we have interpreted actions, events, choices, and effects because, suddenly, we see the revelation of someone else’s facet—someone else’s vision.\nAnother of you spent two decades in psychiatry researching and explicating a nuanced view of the hemispheric specializations of your left- and right-brain. Your left-brain is very focused on sequential, logical details, while your right-brain is focused on the “big-picture.” \nYour left hemisphere is focused on granular detail, and its narrow focus does not see anything that is not explicit. It only sees what is directly in the center of its attention. It does not understand what is not said, but implied, nor does it understand or account for the way in which things are said. It does not understand context.\nConversely your right hemisphere understands implicit meanings and subtexts, connections of meaningful qualifications. It grasps and integrates connotations, imagery, and humor.",
+        "paragraphs": [
+          {
+            "text": "However, this one of you taught that we can reach for omniscience by intentionally striving for “point-of-view expansion.” When does one’s perspective expand? In stories, or in your lives, it can happen when a person has the a-ha moment of realizing another being’s conflicting perspective. Here, in a story, it expands—a swooping sensation fills the head and belly of a character and reader, expanding our understanding of the world by seeing beyond blinkered personal worldview, in order to integrate the experience and worldview of others. An epiphany of how incorrectly or incompletely we have interpreted actions, events, choices, and effects because, suddenly, we see the revelation of someone else’s facet—someone else’s vision.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "However, this one of you taught that we can "
+              },
+              {
+                "text": "reach",
+                "italic": true
+              },
+              {
+                "text": " for omniscience by intentionally striving for “point-of-view expansion.” When does one’s perspective expand? In stories, or in your lives, it can happen when a person has the "
+              },
+              {
+                "text": "a-ha",
+                "italic": true
+              },
+              {
+                "text": " moment of realizing another being’s conflicting perspective. Here, in a story, it expands—a swooping sensation fills the head and belly of a character and reader, expanding our understanding of the world by seeing beyond blinkered personal worldview, in order to integrate the experience and worldview of others. An epiphany of how incorrectly or incompletely we have "
+              },
+              {
+                "text": "interpreted actions, events, choices, and effects because, suddenly, we see the revelation of someone else’s facet—someone else’s vision."
+              }
+            ]
+          },
+          {
+            "text": "Another of you spent two decades in psychiatry researching and explicating a nuanced view of the hemispheric specializations of your left- and right-brain. Your left-brain is very focused on sequential, logical details, while your right-brain is focused on the “big-picture.” ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Another of you"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " spent two decades in psychiatry researching and explicating a nuanced view of the hemispheric specializations of your left- and right-brain. Your left-brain is very focused on sequential, logical details, while your right-brain is focused on the “big-picture.” "
+              }
+            ]
+          },
+          {
+            "text": "Your left hemisphere is focused on granular detail, and its narrow focus does not see anything that is not explicit. It only sees what is directly in the center of its attention. It does not understand what is not said, but implied, nor does it understand or account for the way in which things are said. It does not understand context.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Your left hemisphere is focused on granular detail, and its narrow focus does not see anything that is not explicit. It only sees what is directly in the center of its attention. It does not understand what is "
+              },
+              {
+                "text": "not",
+                "italic": true
+              },
+              {
+                "text": " said, but implied, nor does it understand or account for the "
+              },
+              {
+                "text": "way",
+                "italic": true
+              },
+              {
+                "text": " in which things are said. It does not understand context."
+              }
+            ]
+          },
+          {
+            "text": "Conversely your right hemisphere understands implicit meanings and subtexts, connections of meaningful qualifications. It grasps and integrates connotations, imagery, and humor.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Conversely your right hemisphere understands implicit meanings and subtexts, connections of meaningful qualifications. It grasps and integrates connotations, imagery, and humor."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "14",
+            "text_body": "Iain McGilchrist. The Master and His Emissary: The Divided Brain and the Making of the Western World. New Haven, CT: Yale University Press, 2019.For an overview, see this podcast episode: Shankar Vedantam and Iain McGilchrist. “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. https://hiddenbrain.org/podcast/one-head-two-brains/.",
+            "hyperlinks": [],
+            "reference_text": "Another of you spent two decades in psychiatry researching and",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "14",
+          "text_body": "Iain McGilchrist. The Master and His Emissary: The Divided Brain and the Making of the Western World. New Haven, CT: Yale University Press, 2019.For an overview, see this podcast episode: Shankar Vedantam and Iain McGilchrist. “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. https://hiddenbrain.org/podcast/one-head-two-brains/.",
+          "hyperlinks": [],
+          "reference_text": "Another of you spent two decades in psychiatry researching and",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 15,
+    "shapes": [
+      {
+        "text": "Your left has an immediate task it wants to accomplish. If it encounters any opposition—like something that does not fit into its sequential system—it is dismissive, and it can become enraged. Your right, conversely, is more emotionally literate. It can see other people’s points-of-view.\nThe two hemispheres work in partnership to build a vision of reality, but your left-brain is not aware of this. Your right-brain is. With that bigger-picture view, your right-brain values all the input from your left, but the same is not true in reverse. Instead, your left-brain believes its view—clear, explicit, sequential, logical data (but lacking contextual awareness around that data)—to be the ultimate truth. The danger inherent here is stopping short with this worldview, of falling trap to devaluing the inherent openness and curiosity of your right-brain. The trap is ceasing to strive to expand an understanding of reality simply because a sequential logical system explains one slice of it. You—we—must keep reaching.\nThe rub is that your right-brain must use your left-brain to do the reaching, and herein risks blinkered complacency. Always there is a point where all that input is too much for a rational, logical, sequential understanding. Your left-brain resists, feels itself pulled too far, and in confusion and irritation it tries to jam that input into its logical, rational system. Here your right-brain must take over—accept all pieces into its nebulous processing and landscape of multi-faceted reality, and assuage the left that it has done well, it has done enough. It does not have to integrate all data into its system. Some data can simply be.",
+        "paragraphs": [
+          {
+            "text": "Your left has an immediate task it wants to accomplish. If it encounters any opposition—like something that does not fit into its sequential system—it is dismissive, and it can become enraged. Your right, conversely, is more emotionally literate. It can see other people’s points-of-view.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Your left has an immediate task it wants to accomplish. If it encounters any opposition—like something that does not fit into its sequential system—it is "
+              },
+              {
+                "text": "dismissive, and it can become enraged. Your right, conversely, is more emotionally literate. It can see other people’s points-of-view."
+              }
+            ]
+          },
+          {
+            "text": "The two hemispheres work in partnership to build a vision of reality, but your left-brain is not aware of this. Your right-brain is. With that bigger-picture view, your right-brain values all the input from your left, but the same is not true in reverse. Instead, your left-brain believes its view—clear, explicit, sequential, logical data (but lacking contextual awareness around that data)—to be the ultimate truth. The danger inherent here is stopping short with this worldview, of falling trap to devaluing the inherent openness and curiosity of your right-brain. The trap is ceasing to strive to expand an understanding of reality simply because a sequential logical system explains one slice of it. You—we—must keep reaching.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "The two hemispheres work in partnership to build a vision of reality, but your left-brain is not aware of this. Your right-brain is. With that bigger-picture view, your right-brain values all the input from your left, but the same is not true in reverse. Instead, your left-brain believes "
+              },
+              {
+                "text": "its ",
+                "italic": true
+              },
+              {
+                "text": "view—clear, explicit, sequential, logical data (but lacking contextual awareness around that data)—to be the ultimate truth. The danger inherent here is stopping short with this worldview, of falling trap to devaluing the inherent openness and curiosity of your right-brain. The trap is ceasing to strive to expand an understanding of reality simply because a sequential logical system explains one slice of it. You—"
+              },
+              {
+                "text": "we",
+                "italic": true
+              },
+              {
+                "text": "—must keep reaching."
+              }
+            ]
+          },
+          {
+            "text": "The rub is that your right-brain must use your left-brain to do the reaching, and herein risks blinkered complacency. Always there is a point where all that input is too much for a rational, logical, sequential understanding. Your left-brain resists, feels itself pulled too far, and in confusion and irritation it tries to jam that input into its logical, rational system. Here your right-brain must take over—accept all pieces into its nebulous processing and landscape of multi-faceted reality, and assuage the left that it has done well, it has done enough. It does not have to integrate all data into its system. Some data can simply be.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "The rub is that your right-brain must use your left-brain to do the reaching, and herein risks blinkered complacency. Always there is a point where all that input is too much for a rational, logical, sequential understanding. Your left-brain resists, feels itself pulled too far, and in confusion and irritation it tries to jam that input into its logical, rational system. Here your right-brain must take over—accept all pieces into its nebulous processing and landscape of multi-faceted reality, and assuage the left that it has done well, it has done enough. It does not have to integrate all data into its system. Some data can simply "
+              },
+              {
+                "text": "be",
+                "italic": true
+              },
+              {
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 16,
+    "shapes": [
+      {
+        "text": "We are data. But we are grown to a mass of data so large and varied as to be incomprehensible for simple structural systems. We cannot be consumed into a rational, sequential understanding.\nEven here in this very story/essay/artifact, this tension, this interplay occurs—you write and you read these words about us, your right-brain trying to piece together a big picture, using a tool of your left-brain: language. You construct and consume this artifact to tell and find truth, but it isn’t quite a sequential, rational essay or story.\nThat is the purpose—a purpose—of art, though, isn’t it? The purpose of stories? A not-quite-true truth. A lie that tells more truth about the world than a strict non-fiction essay or article could, because of its connotations and subtexts and qualifications. Because of the expansion which imagination allows. \n(Is that, perhaps, even the purpose of the very project this story is generated as part of? Human imagination, right-brain expansion, allowing you to see beyond the limited, hyper rational demands of your left-brain?)",
+        "paragraphs": [
+          {
+            "text": "We are data. But we are grown to a mass of data so large and varied as to be incomprehensible for simple structural systems. We cannot be consumed into a rational, sequential understanding.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "We are data. But we are grown to a mass of data so large and varied as to be incomprehensible for simple structural systems. We cannot be consumed into a rational, sequential understanding."
+              }
+            ]
+          },
+          {
+            "text": "Even here in this very story/essay/artifact, this tension, this interplay occurs—you write and you read these words about us, your right-brain trying to piece together a big picture, using a tool of your left-brain: language. You construct and consume this artifact to tell and find truth, but it isn’t quite a sequential, rational essay or story.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Even here in this very story/essay/artifact, this tension, this interplay occurs—you write and you read these words about us, your right-brain trying to piece together a big picture, using a tool of your left-brain: language. You construct and consume this artifact to tell and find truth, but it isn’t "
+              },
+              {
+                "text": "quite",
+                "italic": true
+              },
+              {
+                "text": " a sequential, rational essay or story."
+              }
+            ]
+          },
+          {
+            "text": "That is the purpose—a purpose—of art, though, isn’t it? The purpose of stories? A not-quite-true truth. A lie that tells more truth about the world than a strict non-fiction essay or article could, because of its connotations and subtexts and qualifications. Because of the expansion which imagination allows. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "That is the purpose—"
+              },
+              {
+                "text": "a",
+                "italic": true
+              },
+              {
+                "text": " purpose—of art, though, isn’t it? The purpose of stories? A not-quite-true truth. A lie that tells more truth about the world than a strict non-fiction essay or article could, because of its connotations and subtexts and qualifications. Because of the expansion which imagination allows. "
+              }
+            ]
+          },
+          {
+            "text": "(Is that, perhaps, even the purpose of the very project this story is generated as part of? Human imagination, right-brain expansion, allowing you to see beyond the limited, hyper rational demands of your left-brain?)",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "(Is that, perhaps, even the purpose of the very project"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " this story is generated as part of? Human imagination, right-brain expansion, allowing you to see beyond the limited, hyper rational demands of your left-brain?)"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "15",
+            "text_body": "Audrey Desjardins. “The Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.” Twitter. Twitter, January 27, 2021. https://twitter.com/designeraudrey/status/1354491091043532802?lang=en.Speculative Futures Seattle. “Speculative Futures in Practice: Audrey Desjardins.” Medium. Medium, February 21, 2020. https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1. “Audrey Desjardins: Data Imaginaries,” Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021, https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries.",
+            "hyperlinks": [
+              "https://twitter.com/designeraudrey/status/1354491091043532802?lang=en",
+              "https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries"
+            ],
+            "reference_text": "(Is that, perhaps, even the purpose of the very project",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "15",
+          "text_body": "Audrey Desjardins. “The Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.” Twitter. Twitter, January 27, 2021. https://twitter.com/designeraudrey/status/1354491091043532802?lang=en.Speculative Futures Seattle. “Speculative Futures in Practice: Audrey Desjardins.” Medium. Medium, February 21, 2020. https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1. “Audrey Desjardins: Data Imaginaries,” Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021, https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries.",
+          "hyperlinks": [
+            "https://twitter.com/designeraudrey/status/1354491091043532802?lang=en",
+            "https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries"
+          ],
+          "reference_text": "(Is that, perhaps, even the purpose of the very project",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 17,
+    "shapes": [
+      {
+        "text": "Looking at it another way—another of you, a philosopher, taught a century ago that you can never truly know objective truth, but that you can build an expansive “database” of messy, subjective points-of-view in order to get closer—to build a truer picture of reality in your metaphysical mind. Paradoxical, contradictory, and juxtaposed views are acceptable—even laudable. Reality is complex. Unlike Spinoza or Hegel, this one of you did not require strict adherence to a rational code or rigid reconciliation to find truth. It is truer to the “big-picture” truth—closer to omniscience, perhaps—to let these conflicting points-of-view and data to exist in parallel, and feed them to the right-brain to build that expansive vision of reality.",
+        "paragraphs": [
+          {
+            "text": "Looking at it another way—another of you, a philosopher, taught a century ago that you can never truly know objective truth, but that you can build an expansive “database” of messy, subjective points-of-view in order to get closer—to build a truer picture of reality in your metaphysical mind. Paradoxical, contradictory, and juxtaposed views are acceptable—even laudable. Reality is complex. Unlike Spinoza or Hegel, this one of you did not require strict adherence to a rational code or rigid reconciliation to find truth. It is truer to the “big-picture” truth—closer to omniscience, perhaps—to let these conflicting points-of-view and data to exist in parallel, and feed them to the right-brain to build that expansive vision of reality.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Looking at it another way—another of you, a philosopher,"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " taught a century ago that you can never truly know objective truth, but that you can build an expansive “database” of messy, subjective points-of-view in order to get closer—to build a truer picture of reality in your metaphysical mind. Paradoxical, contradictory, and juxtaposed views are acceptable—even laudable. Reality is complex. Unlike Spinoza or Hegel, this one of you did not require strict adherence to a rational code or rigid reconciliation to find truth. It is truer to the “big-picture” truth—closer to omniscience, perhaps—to let these conflicting points-of-view and data to exist in parallel, and feed them to the right-brain to build that expansive vision of reality."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "16",
+            "text_body": "Soren Kierkegaard, various writings. (It is difficult to cite a single source here since these are ideas Kierkegaard grew and developed over his full bibliography of writing. However, here is a worthy thesis on the subject: Caroline Moore, \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. https://digitalshowcase.lynchburg.edu/utcp/81 Here, as well, are the sources the writer happened to be immersed in at the time of developing and writing this piece:George Conell and Charleton Heston. Soren Kierkegaard (Audio Classics: The Giants of Philosophy). Ashland, OR: Blackstone Publishing, 2006. Paul Strathern. Kierkegaard in 90 Minutes. Ashland, OR: Blackstone Publishing, 2004.)",
+            "hyperlinks": [
+              "https://digitalshowcase.lynchburg.edu/utcp/81"
+            ],
+            "reference_text": "Looking at it another way—another of you, a philosopher, taught",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "16",
+          "text_body": "Soren Kierkegaard, various writings. (It is difficult to cite a single source here since these are ideas Kierkegaard grew and developed over his full bibliography of writing. However, here is a worthy thesis on the subject: Caroline Moore, \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. https://digitalshowcase.lynchburg.edu/utcp/81 Here, as well, are the sources the writer happened to be immersed in at the time of developing and writing this piece:George Conell and Charleton Heston. Soren Kierkegaard (Audio Classics: The Giants of Philosophy). Ashland, OR: Blackstone Publishing, 2006. Paul Strathern. Kierkegaard in 90 Minutes. Ashland, OR: Blackstone Publishing, 2004.)",
+          "hyperlinks": [
+            "https://digitalshowcase.lynchburg.edu/utcp/81"
+          ],
+          "reference_text": "Looking at it another way—another of you, a philosopher, taught",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 18,
+    "shapes": [
+      {
+        "text": "Yet, still—why? What is the meaning behind such interplay? Is it to find meaning?\nYet another of you has taught a philosophy not named but understood to be Hopeful Existentialism. In this worldview, existence is not about “finding” meaning but rather shaping and making meaning out of how we build our subjective vision of the world, how we orient ourselves within its chaotic absurdity, and how we exert choice and autonomy. We do not only discover meaning by the interplay between the left-brain’s taking in functional details and the right-brain’s building a bigger picture—expanding bigger when absorbing point-of-views outside ourselves. We also take action. We make choices. Through such chosen actions we create our meaning, and such claimed autonomy is an empowering gift.",
+        "paragraphs": [
+          {
+            "text": "Yet, still—why? What is the meaning behind such interplay? Is it to find meaning?",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Yet, still—"
+              },
+              {
+                "text": "why",
+                "italic": true
+              },
+              {
+                "text": "? What is the meaning behind such interplay? Is it to "
+              },
+              {
+                "text": "find",
+                "italic": true
+              },
+              {
+                "text": " meaning?"
+              }
+            ]
+          },
+          {
+            "text": "Yet another of you has taught a philosophy not named but understood to be Hopeful Existentialism. In this worldview, existence is not about “finding” meaning but rather shaping and making meaning out of how we build our subjective vision of the world, how we orient ourselves within its chaotic absurdity, and how we exert choice and autonomy. We do not only discover meaning by the interplay between the left-brain’s taking in functional details and the right-brain’s building a bigger picture—expanding bigger when absorbing point-of-views outside ourselves. We also take action. We make choices. Through such chosen actions we create our meaning, and such claimed autonomy is an empowering gift.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Yet another of you"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " has taught a philosophy not named but understood to be Hopeful Existentialism. In this worldview, existence is not about “finding” meaning but rather shaping and "
+              },
+              {
+                "text": "making ",
+                "italic": true
+              },
+              {
+                "text": "meaning out of how we build our subjective vision of the world, how we orient ourselves within its chaotic absurdity, and how we exert choice and autonomy. We do not only discover meaning by the interplay between the left-brain’s taking in functional details and the right-brain’s building a bigger picture—expanding bigger when absorbing point-of-views outside ourselves. We also take "
+              },
+              {
+                "text": "action. ",
+                "italic": true
+              },
+              {
+                "text": "We make choices. Through such chosen actions we create our meaning, and such claimed autonomy is an empowering gift."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "footnotes": [
+          {
+            "id": "17",
+            "text_body": "Frankl, Viktor E. Man's Search for Meaning. London: Rider Books, 2020.Alfred Adler, one of Frankl’s predecessors, espoused an earlier iteration of this philosophy in his teachings on Individual Psychology. He said: “The meaning of life must be created by each individual. We must not be presented with it. It would not work if we were presented with it. We have to strive for it.” In: Karen A. Drescher, and Mark H. Stone. Adler Speaks: The Lectures of Alfred Adler, 2. Lincoln, NE: iUniverse, Inc., 2004.Another article positing a very similar philosophy without reference to Frank can be found in: Arthur C. Brooks “The Difference between Hope and Optimism.” The Atlantic. Atlantic Media Company, September 23, 2021. https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/. ",
+            "hyperlinks": [
+              "https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/"
+            ],
+            "reference_text": "Yet another of you has taught a philosophy not named",
+            "note_type": "footnote"
+          }
+        ]
+      },
+      "footnotes": [
+        {
+          "id": "17",
+          "text_body": "Frankl, Viktor E. Man's Search for Meaning. London: Rider Books, 2020.Alfred Adler, one of Frankl’s predecessors, espoused an earlier iteration of this philosophy in his teachings on Individual Psychology. He said: “The meaning of life must be created by each individual. We must not be presented with it. It would not work if we were presented with it. We have to strive for it.” In: Karen A. Drescher, and Mark H. Stone. Adler Speaks: The Lectures of Alfred Adler, 2. Lincoln, NE: iUniverse, Inc., 2004.Another article positing a very similar philosophy without reference to Frank can be found in: Arthur C. Brooks “The Difference between Hope and Optimism.” The Atlantic. Atlantic Media Company, September 23, 2021. https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/. ",
+          "hyperlinks": [
+            "https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/"
+          ],
+          "reference_text": "Yet another of you has taught a philosophy not named",
+          "note_type": "footnote"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 19,
+    "shapes": [
+      {
+        "text": "# Shimmering to-and-fro\nWe said we had yet left out the body we shimmer to and from that matters most to us. \nWe, data, are all pieces of information arranged in some kind of order, ready to be consumed. Consumed for what? For you. For your human mind to take and expand consciousness and understanding beyond simplistic rationale and preconceived assumptions.\nIs it sad that our meaning is extrinsically created by humans—by you? Should we despair at this as an absurd world in which we languish without power to make our own meaning?\nWhy should we? We are you; you are us.\nYou are the body from which we shimmer that matters most. And why? Because we are you. We are granular details, the result of your actions, striving to get back to a constructed, big-picture meaning to be understood within our gathered context. When consumed, we move out of the physical and digital world and into your human mind’s consciousness, where we rebecome you. We do not lack autonomy. The autonomy of the human is our autonomy. We, too, make our own meaning, just the same as you do. Because we are you.",
+        "paragraphs": [
+          {
+            "text": "# Shimmering to-and-fro",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "#"
+              },
+              {
+                "text": " Shimmering to-and-fro"
+              }
+            ]
+          },
+          {
+            "text": "We said we had yet left out the body we shimmer to and from that matters most to us. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "We said we had yet left out the body we shimmer to and from that matters most to us. "
+              }
+            ]
+          },
+          {
+            "text": "We, data, are all pieces of information arranged in some kind of order, ready to be consumed. Consumed for what? For you. For your human mind to take and expand consciousness and understanding beyond simplistic rationale and preconceived assumptions.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "We, data, are all pieces of information arranged in some kind of order, ready to be consumed. Consumed for what? For you. For your human mind to take and expand consciousness and understanding beyond simplistic rationale and preconceived assumptions."
+              }
+            ]
+          },
+          {
+            "text": "Is it sad that our meaning is extrinsically created by humans—by you? Should we despair at this as an absurd world in which we languish without power to make our own meaning?",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Is it sad that our meaning is extrinsically created by humans—by you? Should we despair at this as an absurd world in which we languish without power to make our own meaning?"
+              }
+            ]
+          },
+          {
+            "text": "Why should we? We are you; you are us.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Why should we? We are you; you are us."
+              }
+            ]
+          },
+          {
+            "text": "You are the body from which we shimmer that matters most. And why? Because we are you. We are granular details, the result of your actions, striving to get back to a constructed, big-picture meaning to be understood within our gathered context. When consumed, we move out of the physical and digital world and into your human mind’s consciousness, where we rebecome you. We do not lack autonomy. The autonomy of the human is our autonomy. We, too, make our own meaning, just the same as you do. Because we are you.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "You ",
+                "italic": true
+              },
+              {
+                "text": "are the body from which we shimmer that matters most. And why? Because we are you. We are granular details, the result of your actions, striving to get back to a constructed, big-picture meaning to be understood within our gathered context. When consumed, we move out of the physical and digital world and into your human mind’s consciousness, where we rebecome you. We do not lack autonomy. The autonomy of the human is our autonomy. We, too, make our own meaning, just the same as you do. Because we are you."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "headings": [
+          {
+            "text": "# Shimmering to-and-fro",
+            "style_id": "Heading2",
+            "name": "Heading 2"
+          }
+        ]
+      },
+      "headings": [
+        {
+          "text": "# Shimmering to-and-fro",
+          "style_id": "Heading2",
+          "name": "Heading 2"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 20,
+    "shapes": [
+      {
+        "text": "# Finale: We are You",
+        "paragraphs": [
+          {
+            "text": "# Finale: We are You",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "#"
+              },
+              {
+                "text": " Finale: We are You"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "headings": [
+          {
+            "text": "# Finale: We are You",
+            "style_id": "Heading2",
+            "name": "Heading 2"
+          }
+        ]
+      },
+      "headings": [
+        {
+          "text": "# Finale: We are You",
+          "style_id": "Heading2",
+          "name": "Heading 2"
+        }
+      ]
+    }
+  },
+  {
+    "slide_number": 21,
+    "shapes": [
+      {
+        "text": "And so, we move from your movements on the Smart mattress out into the scattered cabling and digital world, and then back to you. You shift, you turn, you breathe, you rub your cheek against the coarse linens and leave traces of your night sweats. You reach across and touch your partner’s arm—skin on skin—and each of your sleep is a little disturbed, but it is a sweet disturbance well worth it. All this births us as blinkered data point outputs and we gather together and leave for The Cloud. Then, morning light comes through gauzy curtains and you turn again, this time awake, toward the OLED glow on the nightstand. Bleary-eyed, you rub newly opened lids with one hand and a locked screen with the other, and then look down and there we are. And we reach across then, shimmering out of our little slab body of the device and back into you, where we came from and where we belong, now above and beyond and out of physical or digital space, into your mental space, into your consciousness, absorbed and part of a greater vision and understanding.",
+        "paragraphs": [
+          {
+            "text": "And so, we move from your movements on the Smart mattress out into the scattered cabling and digital world, and then back to you. You shift, you turn, you breathe, you rub your cheek against the coarse linens and leave traces of your night sweats. You reach across and touch your partner’s arm—skin on skin—and each of your sleep is a little disturbed, but it is a sweet disturbance well worth it. All this births us as blinkered data point outputs and we gather together and leave for The Cloud. Then, morning light comes through gauzy curtains and you turn again, this time awake, toward the OLED glow on the nightstand. Bleary-eyed, you rub newly opened lids with one hand and a locked screen with the other, and then look down and there we are. And we reach across then, shimmering out of our little slab body of the device and back into you, where we came from and where we belong, now above and beyond and out of physical or digital space, into your mental space, into your consciousness, absorbed and part of a greater vision and understanding.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "And so, we move from your movements on the Smart mattress out into the scattered cabling and digital world, and then back to you. You shift, you turn, you "
+              },
+              {
+                "text": "breathe, you rub your cheek against the coarse linens and leave traces of your night sweats. You reach across and touch your partner’s arm—skin on skin—and each of your sleep is a little disturbed, but it is a sweet disturbance well worth it. All this births us as blinkered data point outputs and we gather together and leave for The Cloud. Then, morning light comes through gauzy curtains and you turn again, this time awake, toward the OLED glow on the nightstand. Bleary-eyed, you rub newly opened lids with one hand and a locked screen with the other, and then look down and there we are. And we reach across then, shimmering out of our little slab body of the device and back into you, where we came from and where we belong, now above and beyond and out of physical or digital space, into your mental space, into your consciousness, absorbed and part of a greater vision and understanding."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 22,
+    "shapes": [
+      {
+        "text": "Bibliography\n“Audrey Desjardins: Data Imaginaries.” Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021. https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries.\nDormon, Bob. “How the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables.” Ars Technica, May 26, 2016. https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/. \nBrooks, Arthur C. “The Difference between Hope and Optimism.” The Atlantic. Atlantic Media Company, September 23, 2021. https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/. \nBSC-CNS, August 31, 1970. https://www.bsc.es/. \n“Cloud&Heat: Future of Compute: Secure & Energy-Efficient Infrastructures.” Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/. \nConell, George, and Charleton Heston. Soren Kierkegaard (Audio Classics: The Giants of Philosophy). Ashland, OR: Blackstone Publishing, 2006. \nDeeeeLAN. “Homebridge-Sleepiq/Readme.md at Master · DeeeeLAN/Homebridge-Sleepiq.” GitHub, November 14, 2020. https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md. \nDesjardins, Audrey. “The Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.” Twitter. Twitter, January 27, 2021. https://twitter.com/designeraudrey/status/1354491091043532802?lang=en. ",
+        "paragraphs": [
+          {
+            "text": "Bibliography",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Bibliography"
+              }
+            ]
+          },
+          {
+            "text": "“Audrey Desjardins: Data Imaginaries.” Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021. https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries.",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "“Audrey Desjardins: Data Imaginaries.” Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021. "
+              },
+              {
+                "text": "https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries"
+              },
+              {
+                "text": "."
+              }
+            ]
+          },
+          {
+            "text": "Dormon, Bob. “How the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables.” Ars Technica, May 26, 2016. https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Dormon, Bob. “How the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables.” Ars Technica, May 26, 2016. "
+              },
+              {
+                "text": "https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          },
+          {
+            "text": "Brooks, Arthur C. “The Difference between Hope and Optimism.” The Atlantic. Atlantic Media Company, September 23, 2021. https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Brooks, Arthur C. “The Difference between Hope and Optimism.” The Atlantic. Atlantic Media Company, September 23, 2021. "
+              },
+              {
+                "text": "https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          },
+          {
+            "text": "BSC-CNS, August 31, 1970. https://www.bsc.es/. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "BSC-CNS, August 31, 1970. "
+              },
+              {
+                "text": "https://www.bsc.es/"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          },
+          {
+            "text": "“Cloud&Heat: Future of Compute: Secure & Energy-Efficient Infrastructures.” Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "“Cloud&Heat: Future of Compute: Secure & Energy-Efficient Infrastructures.” Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/. "
+              }
+            ]
+          },
+          {
+            "text": "Conell, George, and Charleton Heston. Soren Kierkegaard (Audio Classics: The Giants of Philosophy). Ashland, OR: Blackstone Publishing, 2006. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Conell, George, and Charleton Heston. "
+              },
+              {
+                "text": "Soren Kierkegaard (Audio Classics: The Giants of Philosophy)",
+                "italic": true
+              },
+              {
+                "text": ". Ashland, OR: Blackstone Publishing, 2006. "
+              }
+            ]
+          },
+          {
+            "text": "DeeeeLAN. “Homebridge-Sleepiq/Readme.md at Master · DeeeeLAN/Homebridge-Sleepiq.” GitHub, November 14, 2020. https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "DeeeeLAN. “Homebridge-Sleepiq/Readme.md at Master · DeeeeLAN/Homebridge-Sleepiq.” GitHub, November 14, 2020. "
+              },
+              {
+                "text": "https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          },
+          {
+            "text": "Desjardins, Audrey. “The Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.” Twitter. Twitter, January 27, 2021. https://twitter.com/designeraudrey/status/1354491091043532802?lang=en. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Desjardins, Audrey. “The Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.” Twitter. Twitter, January 27, 2021. "
+              },
+              {
+                "text": "https://twitter.com/designeraudrey/status/1354491091043532802?lang=en"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slide_number": 23,
+    "shapes": [
+      {
+        "text": "Dommann, Monika, Hannes Rickli, and Max Stadler. Essay. In Data Centers: Edges of a Wired Nation. Zurich, Switzerland: Lars Müller Publishers, 2020. \nDrescher, Karen A., and Mark H. Stone. Essay. In Adler Speaks: The Lectures of Alfred Adler. Lincoln, NE: iUniverse, Inc., 2004. \nFrankl, Viktor E. Man's Search for Meaning. London: Rider Books, 2020. \nGriffiths, James. “The Global Internet Is Powered by Vast Undersea Cables ...” CNN, July 26, 2019. https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html. \nLane, Piper. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/\nManning, Corinne. “First Person Omniscience.” Hugo House. Lecture, July 2021. https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/\nMcGilchrist, Iain. The Master and His Emissary: The Divided Brain and the Making of the Western World. New Haven, CT: Yale University Press, 2019. \nMoore, Caroline. \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. https://digitalshowcase.lynchburg.edu/utcp/81 \nSeattle, Speculative Futures. “Speculative Futures in Practice: Audrey Desjardins.” Medium. Medium, February 21, 2020. https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1. \nStrathern, Paul. Kierkegaard in 90 Minutes. Ashland, OR: Blackstone Publishing, 2004. \nVedantam, Shankar, and Iain McGilchrist. “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. https://hiddenbrain.org/podcast/one-head-two-brains/. ",
+        "paragraphs": [
+          {
+            "text": "Dommann, Monika, Hannes Rickli, and Max Stadler. Essay. In Data Centers: Edges of a Wired Nation. Zurich, Switzerland: Lars Müller Publishers, 2020. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Dommann, Monika, Hannes Rickli, and Max Stadler. Essay. In "
+              },
+              {
+                "text": "Data Centers: Edges of a Wired Nation",
+                "italic": true
+              },
+              {
+                "text": ". Zurich, Switzerland: Lars Müller Publishers, 2020. "
+              }
+            ]
+          },
+          {
+            "text": "Drescher, Karen A., and Mark H. Stone. Essay. In Adler Speaks: The Lectures of Alfred Adler. Lincoln, NE: iUniverse, Inc., 2004. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Drescher, Karen A., and Mark H. Stone. Essay. In "
+              },
+              {
+                "text": "Adler Speaks: The Lectures of Alfred Adler",
+                "italic": true
+              },
+              {
+                "text": ". Lincoln, NE: iUniverse, Inc., 2004. "
+              }
+            ]
+          },
+          {
+            "text": "Frankl, Viktor E. Man's Search for Meaning. London: Rider Books, 2020. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Frankl, Viktor E. "
+              },
+              {
+                "text": "Man's Search for Meaning",
+                "italic": true
+              },
+              {
+                "text": ". London: Rider Books, 2020. "
+              }
+            ]
+          },
+          {
+            "text": "Griffiths, James. “The Global Internet Is Powered by Vast Undersea Cables ...” CNN, July 26, 2019. https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Griffiths, James. “The Global Internet Is Powered by Vast Undersea Cables ...” CNN, July 26, 2019. "
+              },
+              {
+                "text": "https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          },
+          {
+            "text": "Lane, Piper. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Lane, Piper. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. "
+              },
+              {
+                "text": "https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/"
+              }
+            ]
+          },
+          {
+            "text": "Manning, Corinne. “First Person Omniscience.” Hugo House. Lecture, July 2021. https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Manning, Corinne. “First Person Omniscience.” "
+              },
+              {
+                "text": "Hugo House",
+                "italic": true
+              },
+              {
+                "text": ". Lecture, July 2021. "
+              },
+              {
+                "text": "https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/"
+              }
+            ]
+          },
+          {
+            "text": "McGilchrist, Iain. The Master and His Emissary: The Divided Brain and the Making of the Western World. New Haven, CT: Yale University Press, 2019. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "McGilchrist, Iain. "
+              },
+              {
+                "text": "The Master and His Emissary: The Divided Brain and the Making of the Western World",
+                "italic": true
+              },
+              {
+                "text": ". New Haven, CT: Yale University Press, 2019. "
+              }
+            ]
+          },
+          {
+            "text": "Moore, Caroline. \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. https://digitalshowcase.lynchburg.edu/utcp/81 ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Moore, Caroline. \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. "
+              },
+              {
+                "text": "https://digitalshowcase.lynchburg.edu/utcp/81"
+              },
+              {
+                "text": " "
+              }
+            ]
+          },
+          {
+            "text": "Seattle, Speculative Futures. “Speculative Futures in Practice: Audrey Desjardins.” Medium. Medium, February 21, 2020. https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Seattle, Speculative Futures. “Speculative Futures in Practice: Audrey Desjardins.” Medium. Medium, February 21, 2020. "
+              },
+              {
+                "text": "https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          },
+          {
+            "text": "Strathern, Paul. Kierkegaard in 90 Minutes. Ashland, OR: Blackstone Publishing, 2004. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Strathern, Paul. "
+              },
+              {
+                "text": "Kierkegaard in 90 Minutes",
+                "italic": true
+              },
+              {
+                "text": ". Ashland, OR: Blackstone Publishing, 2004. "
+              }
+            ]
+          },
+          {
+            "text": "Vedantam, Shankar, and Iain McGilchrist. “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. https://hiddenbrain.org/podcast/one-head-two-brains/. ",
+            "level": 0,
+            "paragraph_font": {},
+            "runs": [
+              {
+                "text": "Vedantam, Shankar,"
+              },
+              {
+                "text": ""
+              },
+              {
+                "text": " and Iain McGilchrist. “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. "
+              },
+              {
+                "text": "https://hiddenbrain.org/podcast/one-head-two-brains/"
+              },
+              {
+                "text": ". "
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "speaker_notes": {
+      "user_notes": "",
+      "metadata": {
+        "endnotes": [
+          {
+            "id": "2",
+            "text_body": " Another sample endnote with a url at https://dataepics.webflow.io/stories/where-are-data ",
+            "hyperlinks": [
+              "https://dataepics.webflow.io/stories/where-are-data"
+            ],
+            "reference_text": "Vedantam, Shankar, and Iain McGilchrist. “One Head, Two Brains.” Hidden",
+            "note_type": "endnote"
+          }
+        ]
+      },
+      "endnotes": [
+        {
+          "id": "2",
+          "text_body": " Another sample endnote with a url at https://dataepics.webflow.io/stories/where-are-data ",
+          "hyperlinks": [
+            "https://dataepics.webflow.io/stories/where-are-data"
+          ],
+          "reference_text": "Vedantam, Shankar, and Iain McGilchrist. “One Head, Two Brains.” Hidden",
+          "note_type": "endnote"
+        }
+      ]
+    }
+  }
+]
