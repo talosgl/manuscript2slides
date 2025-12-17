@@ -60,5 +60,6 @@ homework.md
 export_code.py
 print_outline.py
 exports/
-
+tests/data/xml_extracts
+tests/data/json_extracts
 *.bak
