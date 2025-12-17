@@ -1,0 +1,627 @@
+[
+  {
+    "paragraph_number": 0,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 1,
+    "text": "Regular Formatting tests",
+    "style": "Heading 1",
+    "paragraph_font": {
+      "font_name": "Calibri Light",
+      "font_size": 16.0,
+      "color_rgb": "2F5496"
+    },
+    "runs": [
+      {
+        "text": "Regular Formatting"
+      },
+      {
+        "text": " tests"
+      }
+    ]
+  },
+  {
+    "paragraph_number": 2,
+    "text": "This text is bolded.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text is bolded.",
+        "bold": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 3,
+    "text": "This text is in italics.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text is in italics.",
+        "italic": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 4,
+    "text": "This is bolded and italicized.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This is bolded and italicized.",
+        "bold": true,
+        "italic": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 5,
+    "text": "This text is underlined.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text is underlined.",
+        "underline": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 6,
+    "text": "Bolded and underlined.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "Bolded and underlined.",
+        "bold": true,
+        "underline": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 7,
+    "text": "Underlined and italicized.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "Underlined and italicized",
+        "italic": true,
+        "underline": true
+      },
+      {
+        "text": ".",
+        "italic": true,
+        "underline": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 8,
+    "text": "All three!",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "All three!",
+        "bold": true,
+        "italic": true,
+        "underline": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 9,
+    "text": "This text is in a special font. Georgia.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text is in a special font. Georgia.",
+        "font_name": "Georgia"
+      }
+    ]
+  },
+  {
+    "paragraph_number": 10,
+    "text": "Size",
+    "style": "Heading 2",
+    "paragraph_font": {
+      "font_name": "Calibri Light",
+      "font_size": 13.0,
+      "color_rgb": "2F5496"
+    },
+    "runs": [
+      {
+        "text": "Size"
+      }
+    ]
+  },
+  {
+    "paragraph_number": 11,
+    "text": "In the original test_formatting.docx, is very large text (48pt).",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "In the original ",
+        "font_size": 48.0
+      },
+      {
+        "text": "test_formatting",
+        "font_size": 48.0
+      },
+      {
+        "text": ".doc",
+        "font_size": 48.0
+      },
+      {
+        "text": "x, is very large text",
+        "font_size": 48.0
+      },
+      {
+        "text": " (48pt)",
+        "font_size": 48.0
+      },
+      {
+        "text": ".",
+        "font_size": 48.0
+      }
+    ]
+  },
+  {
+    "paragraph_number": 12,
+    "text": "In the original test document, this text is very small (8pt).",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "In the original test document, this text is very small (",
+        "font_size": 8.0
+      },
+      {
+        "text": "8pt",
+        "font_size": 8.0
+      },
+      {
+        "text": ").",
+        "font_size": 8.0
+      }
+    ]
+  },
+  {
+    "paragraph_number": 13,
+    "text": "Color",
+    "style": "Heading 2",
+    "paragraph_font": {
+      "font_name": "Calibri Light",
+      "font_size": 13.0,
+      "color_rgb": "2F5496"
+    },
+    "runs": [
+      {
+        "text": "Color"
+      }
+    ]
+  },
+  {
+    "paragraph_number": 14,
+    "text": "This text has this in red, and this in blue.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text has "
+      },
+      {
+        "text": "this in red",
+        "color_rgb": "FF0000"
+      },
+      {
+        "text": ", and "
+      },
+      {
+        "text": "this in blue.",
+        "color_rgb": "4472C4"
+      }
+    ]
+  },
+  {
+    "paragraph_number": 15,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 16,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 17,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 18,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 19,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 20,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 21,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 22,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 23,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 24,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 25,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 26,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 27,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 28,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 29,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 30,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 31,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 32,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  },
+  {
+    "paragraph_number": 33,
+    "text": "Experimental formatting tests",
+    "style": "Heading 1",
+    "paragraph_font": {
+      "font_name": "Calibri Light",
+      "font_size": 16.0,
+      "color_rgb": "2F5496"
+    },
+    "runs": [
+      {
+        "text": "Experimental f"
+      },
+      {
+        "text": "ormatting tests"
+      }
+    ]
+  },
+  {
+    "paragraph_number": 34,
+    "text": "This text is highlighted.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text is highlighted",
+        "highlight_color": "YELLOW"
+      },
+      {
+        "text": "."
+      }
+    ]
+  },
+  {
+    "paragraph_number": 35,
+    "text": "This text is highlighted, but also has this part underlined, and this part is in italics, and this part is bolded.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text is highlighted, ",
+        "highlight_color": "YELLOW"
+      },
+      {
+        "text": "but also has this part underlined",
+        "underline": true,
+        "highlight_color": "YELLOW"
+      },
+      {
+        "text": ", and ",
+        "highlight_color": "YELLOW"
+      },
+      {
+        "text": "this part is in italics",
+        "italic": true,
+        "highlight_color": "YELLOW"
+      },
+      {
+        "text": ", and ",
+        "highlight_color": "YELLOW"
+      },
+      {
+        "text": "this part is bolded",
+        "bold": true,
+        "highlight_color": "YELLOW"
+      },
+      {
+        "text": ".",
+        "highlight_color": "YELLOW"
+      }
+    ]
+  },
+  {
+    "paragraph_number": 36,
+    "text": "This is normal-size text, but it has a subscript here and a superscript here.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This is normal-size text, but it has a "
+      },
+      {
+        "text": "subscript here ",
+        "subscript": true
+      },
+      {
+        "text": "and a "
+      },
+      {
+        "text": "superscript here",
+        "superscript": true
+      },
+      {
+        "text": "."
+      }
+    ]
+  },
+  {
+    "paragraph_number": 37,
+    "text": "THIS TEXT IS IN ALL CAPS.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "THIS TEXT IS IN ALL CAPS",
+        "all_caps": true
+      },
+      {
+        "text": "."
+      }
+    ]
+  },
+  {
+    "paragraph_number": 38,
+    "text": "This text is in small caps.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "This text is in small caps.",
+        "small_caps": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 39,
+    "text": "And this text has a single strikethrough, and a double strikethrough.",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": [
+      {
+        "text": "And this text has "
+      },
+      {
+        "text": "a single strikethrough",
+        "strike": true
+      },
+      {
+        "text": ", and "
+      },
+      {
+        "text": "a double strikethrough.",
+        "double_strike": true
+      }
+    ]
+  },
+  {
+    "paragraph_number": 40,
+    "text": "",
+    "style": "Normal",
+    "paragraph_font": {
+      "font_name": "Times New Roman",
+      "font_size": 12.0
+    },
+    "runs": []
+  }
+]
