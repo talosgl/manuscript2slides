@@ -1625,6 +1625,8 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         annotations_label.setWordWrap(True)
 
         # Parent checkbox
+        # TODO, BUG: If you check the parent, first, it doesn't actually "check" the children until you do it twice. 
+        # Starting state is [ ], one click state is [-], two-click state is [✓] and clicks the children
         self.keep_all_annotations_chk = QCheckBox("Keep all annotations")
         self.keep_all_annotations_chk.setTristate(True)
 
