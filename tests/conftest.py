@@ -3,9 +3,9 @@
 # tests/conftest.py
 import pytest
 from pathlib import Path
-import tempfile
-import shutil
 from manuscript2slides.internals.define_config import UserConfig, ChunkType
+
+from manuscript2slides.orchestrator import run_pipeline
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def path_to_sample_pptx_with_formatting() -> Path:
     return path
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def path_to_empty_pptx() -> Path:
     """Path to an empty slide deck (no slides) object for the purpose of instantiating
     new decks with pptx.Presentation() constructor."""
@@ -59,7 +59,7 @@ def path_to_empty_docx() -> Path:
     return path
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def path_to_sample_docx_with_everything() -> Path:
     """Path to a copy of the standard sample_doc.docx that lives in tests/data."""
     path = Path("tests/data/sample_doc.docx")
@@ -112,3 +112,31 @@ def sample_config_toml() -> Path:
     path = Path("tests/data/test_config.toml")
     assert path.exists(), f"Test file not found: {path}"
     return path
+
+
+@pytest.fixture(scope="session")
+def session_temp_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Session-scoped temporary directory that persists across all tests.
+
+    Uses tmp_path_factory instead of tmp_path because tmp_path is function-scoped
+    and cannot be used as a dependency for session-scoped fixtures.
+    """
+    # pytest handles cleanup automatically for tmp_path_factory
+    return tmp_path_factory.mktemp("session")
+
+
+@pytest.fixture(scope="session")
+def output_pptx(
+    path_to_sample_docx_with_everything: Path,
+    path_to_empty_pptx: Path,
+    session_temp_dir: Path,
+) -> Path:
+    """Run the pipeline once for the entire test session."""
+    cfg = UserConfig(
+        input_docx=path_to_sample_docx_with_everything,
+        template_pptx=path_to_empty_pptx,
+        output_folder=session_temp_dir,
+    ).enable_all_options()
+
+    output_filepath = run_pipeline(cfg)
+    return output_filepath
