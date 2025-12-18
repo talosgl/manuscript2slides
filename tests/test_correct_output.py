@@ -1,4 +1,4 @@
-"""Tests for correctness of pipeline output based on manual test cases."""
+"""Tests for correctness of pipeline output based on manual test cases performed during development."""
 
 # pyright: reportAttributeAccessIssue=false
 import pytest
@@ -25,7 +25,7 @@ from tests.helpers import (
 # region docx2pptx tests
 
 """ 
-Whe converting from sample_doc.docx -> standard pptx output, with these options:
+When converting from sample_doc.docx -> standard pptx output, with these options:
     - preserve experimental formatting
     - keep all annotations
     - preserve metadata in speaker notes
@@ -37,6 +37,8 @@ Whe converting from sample_doc.docx -> standard pptx output, with these options:
 
 
 def test_where_are_data_slide(output_pptx: Path) -> None:
+    """Find the slide with the 'Where are Data?' title text. Test slide's text formatting
+    and the contents of slide notes against expectations."""
     prs = pptx.Presentation(output_pptx)
     sld_result = find_first_slide_containing(prs, "Where are Data?")
 
@@ -62,8 +64,10 @@ def test_where_are_data_slide(output_pptx: Path) -> None:
     # TODO add the other test cases for this slide:
     """
     - paragraph text should contain link text from a field code hyperlink, maybe look for https in the string
-	- the speaker notes should contain "COMMENTS FROM SOURCE DOCUMENT" and
-	- "What happens if there's a threaded comment?"
+	- the speaker notes should contain 
+        - "COMMENTS FROM SOURCE DOCUMENT" and
+        - "What happens if there's a threaded comment?"
+        - AND "heading" data
     """
 
 
