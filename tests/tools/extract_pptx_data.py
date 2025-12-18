@@ -11,13 +11,14 @@ from pathlib import Path
 import json
 import sys
 from typing import cast
+import xml.etree.ElementTree as ET
 
 from pptx.presentation import Presentation
 from pptx.slide import Slides
 from manuscript2slides import io
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
 
-from extraction_utils import safe_pprint, filter_none_keep_false
+from extraction_utils import safe_pprint, filter_none_keep_false, rgb_to_hex
 
 
 # ============================================================================
@@ -39,7 +40,10 @@ def main() -> None:
 
     if not test_pptx_path.exists():
         print(f"Error: {test_pptx_path} not found!", file=sys.stderr)
-        print(f"Please check the INPUT_PPTX configuration at the top of this script.", file=sys.stderr)
+        print(
+            f"Please check the INPUT_PPTX configuration at the top of this script.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Load the pptx
@@ -83,7 +87,9 @@ def main() -> None:
                 if parsed_notes.headings:
                     slide_data["speaker_notes"]["headings"] = parsed_notes.headings
                 if parsed_notes.experimental_formatting:
-                    slide_data["speaker_notes"]["experimental_formatting"] = parsed_notes.experimental_formatting
+                    slide_data["speaker_notes"][
+                        "experimental_formatting"
+                    ] = parsed_notes.experimental_formatting
 
         for shape in slide.shapes:
             if shape.has_text_frame:
@@ -118,14 +124,29 @@ def main() -> None:
                             "font_size": run.font.size.pt if run.font.size else None,
                         }
 
+                        # Extract color if it's RGB
+                        if hasattr(run.font.color, 'rgb') and run.font.color.rgb is not None:
+                            run_data["color"] = rgb_to_hex(run.font.color.rgb)
+
                         # Extract experimental formatting from XML (not exposed by python-pptx)
                         if hasattr(run, "_r") and hasattr(run.font, "_element"):
                             xml = run._r.xml
                             element = run.font._element
 
-                            # Highlight
+                            # Highlight - extract both presence and color
                             if "a:highlight" in xml:
                                 run_data["has_highlight"] = True
+                                # Parse XML to extract highlight color
+                                try:
+                                    root = ET.fromstring(xml)
+                                    ns = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
+                                    highlight = root.find(".//a:highlight/a:srgbClr", ns)
+                                    if highlight is not None:
+                                        hex_color = highlight.get("val")
+                                        if hex_color:
+                                            run_data["highlight_color"] = hex_color
+                                except ET.ParseError:
+                                    pass  # Just keep has_highlight=True without color
 
                             # Strike (single or double)
                             strike_val = element.get("strike")
