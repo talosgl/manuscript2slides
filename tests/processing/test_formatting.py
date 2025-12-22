@@ -948,10 +948,10 @@ def test_copy_paragraph_formatting_docx2pptx_happy_path(
     pptx_w_twenty_empty_slides: presentation.Presentation,
 ) -> None:
     """Test that paragraph formatting is copied as expected in the docx2pptx direction;
-    right now this only includes color and alignment.
+    right now this includes color, alignment, and size (for headings only).
 
-    NOTE: We don't test size because this functionality doesn't work right now and it's
-    a conscious decision/choice. See comments in formatting.py, def copy_paragraph_formatting_docx2pptx().
+    NOTE: Size is only copied for Heading styles to preserve semantic sizing without
+    breaking PowerPoint's auto-sizing for body text. See formatting.py, copy_paragraph_formatting_docx2pptx().
     """
     # Arrange
     docx_with_formatting = Document(str(path_to_sample_docx_with_formatting))
@@ -966,16 +966,16 @@ def test_copy_paragraph_formatting_docx2pptx_happy_path(
     text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
 
     target_para_for_color = text_frame.add_paragraph()
-    # target_para_for_size = text_frame.add_paragraph()
+    target_para_for_size = text_frame.add_paragraph()
     target_para_for_alignment = text_frame.add_paragraph()
 
     # Action
     formatting.copy_paragraph_formatting_docx2pptx(
         source_para=para_with_color, target_para=target_para_for_color
     )
-    # formatting.copy_paragraph_formatting_docx2pptx(
-    #     source_para=para_with_size, target_para=target_para_for_size
-    # )
+    formatting.copy_paragraph_formatting_docx2pptx(
+        source_para=para_with_size, target_para=target_para_for_size
+    )
     formatting.copy_paragraph_formatting_docx2pptx(
         source_para=para_with_center_alignment, target_para=target_para_for_alignment
     )
@@ -986,10 +986,10 @@ def test_copy_paragraph_formatting_docx2pptx_happy_path(
         and target_para_for_color.font.color.rgb
         == (47, 84, 150)  # blue from the test_formatting.docx theme
     )
-    # assert (
-    #     target_para_for_size.font.size.pt is not None
-    #     and target_para_for_size.font.size.pt == 16  # expected size from heading 1
-    # )
+    assert (
+        target_para_for_size.font.size.pt is not None
+        and target_para_for_size.font.size.pt == 16  # expected size from heading 1
+    )
     assert (
         target_para_for_alignment.alignment is not None
         and target_para_for_alignment.alignment == PP_ALIGN.CENTER
