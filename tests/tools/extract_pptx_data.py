@@ -116,6 +116,7 @@ def main() -> None:
                     for run_idx, run in enumerate(para.runs):
                         run_data = {
                             "run_number": run_idx,
+                            "type": f"{type(run).__module__}.{type(run).__name__}",
                             "text": run.text,
                             "bold": run.font.bold,
                             "italic": run.font.italic,
@@ -124,8 +125,18 @@ def main() -> None:
                             "font_size": run.font.size.pt if run.font.size else None,
                         }
 
+                        # Extract hyperlink if present
+                        if run.hyperlink.address:
+                            run_data["hyperlink_url"] = run.hyperlink.address
+                            run_data["hyperlink_type"] = (
+                                f"{type(run.hyperlink).__module__}.{type(run.hyperlink).__name__}"
+                            )
+
                         # Extract color if it's RGB
-                        if hasattr(run.font.color, 'rgb') and run.font.color.rgb is not None:
+                        if (
+                            hasattr(run.font.color, "rgb")
+                            and run.font.color.rgb is not None
+                        ):
                             run_data["color"] = rgb_to_hex(run.font.color.rgb)
 
                         # Extract experimental formatting from XML (not exposed by python-pptx)
@@ -139,8 +150,12 @@ def main() -> None:
                                 # Parse XML to extract highlight color
                                 try:
                                     root = ET.fromstring(xml)
-                                    ns = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
-                                    highlight = root.find(".//a:highlight/a:srgbClr", ns)
+                                    ns = {
+                                        "a": "http://schemas.openxmlformats.org/drawingml/2006/main"
+                                    }
+                                    highlight = root.find(
+                                        ".//a:highlight/a:srgbClr", ns
+                                    )
                                     if highlight is not None:
                                         hex_color = highlight.get("val")
                                         if hex_color:
