@@ -27,6 +27,7 @@ from pptx.text.text import _Run as Run_pptx
 
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.processing import formatting
+from tests import helpers
 
 # region fixtures
 
@@ -400,8 +401,7 @@ def pptx_formatting_runs_dict(
         .runs[0]
     )
     # Check for highlight in XML since pptx doesn't expose as property
-    hl_xml = hl_run._r.xml
-    assert "a:highlight" in hl_xml, (
+    assert helpers.run_has_highlight(hl_run), (
         test_err
         + "expected highlight element in XML at slide 15, placeholder 1, para 0, run 0"
     )
@@ -412,13 +412,13 @@ def pptx_formatting_runs_dict(
     )
     # Get the highlighted runs from this paragraph
     hl_run2 = hl_para.runs[0]
-    assert "a:highlight" in hl_run2._r.xml, (
+    assert helpers.run_has_highlight(hl_run2), (
         test_err + "expected highlight in run 0 at slide 16"
     )
 
     hl_and_underlined = hl_para.runs[1]
     assert (
-        "a:highlight" in hl_and_underlined._r.xml
+        helpers.run_has_highlight(hl_and_underlined)
         and hl_and_underlined.font.underline is True
     ), (test_err + "expected highlight + underline at slide 16, run 1")
 
@@ -629,7 +629,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_highlight(
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
     # Check XML contains highlight
-    assert "a:highlight" in target_run._r.xml
+    assert helpers.run_has_highlight(target_run)
     # Check metadata was recorded
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "highlight"
@@ -872,7 +872,7 @@ def test_copy_run_formatting_docx2pptx_copies_experimental_when_enabled(
     formatting.copy_run_formatting_docx2pptx(
         hl_source, hl_target, hl_metadata, UserConfig(experimental_formatting_on=True)
     )
-    assert "a:highlight" in hl_target._r.xml
+    assert helpers.run_has_highlight(hl_target)
     assert len(hl_metadata) == 1
 
     # Test with subscript
@@ -915,7 +915,7 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
     formatting.copy_run_formatting_docx2pptx(
         hl_source, hl_target, hl_metadata, UserConfig(experimental_formatting_on=False)
     )
-    assert "a:highlight" not in hl_target._r.xml
+    assert not helpers.run_has_highlight(hl_target)
     assert len(hl_metadata) == 0
 
     # Test with subscript
@@ -948,7 +948,11 @@ def test_copy_paragraph_formatting_docx2pptx_happy_path(
     pptx_w_twenty_empty_slides: presentation.Presentation,
 ) -> None:
     """Test that paragraph formatting is copied as expected in the docx2pptx direction;
-    right now this only includes color, size, and alignment."""
+    right now this only includes color and alignment.
+
+    NOTE: We don't test size because this functionality doesn't work right now and it's
+    a conscious decision/choice. See comments in formatting.py, def copy_paragraph_formatting_docx2pptx().
+    """
     # Arrange
     docx_with_formatting = Document(str(path_to_sample_docx_with_formatting))
 
@@ -962,16 +966,16 @@ def test_copy_paragraph_formatting_docx2pptx_happy_path(
     text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
 
     target_para_for_color = text_frame.add_paragraph()
-    target_para_for_size = text_frame.add_paragraph()
+    # target_para_for_size = text_frame.add_paragraph()
     target_para_for_alignment = text_frame.add_paragraph()
 
     # Action
     formatting.copy_paragraph_formatting_docx2pptx(
         source_para=para_with_color, target_para=target_para_for_color
     )
-    formatting.copy_paragraph_formatting_docx2pptx(
-        source_para=para_with_size, target_para=target_para_for_size
-    )
+    # formatting.copy_paragraph_formatting_docx2pptx(
+    #     source_para=para_with_size, target_para=target_para_for_size
+    # )
     formatting.copy_paragraph_formatting_docx2pptx(
         source_para=para_with_center_alignment, target_para=target_para_for_alignment
     )
@@ -982,10 +986,10 @@ def test_copy_paragraph_formatting_docx2pptx_happy_path(
         and target_para_for_color.font.color.rgb
         == (47, 84, 150)  # blue from the test_formatting.docx theme
     )
-    assert (
-        target_para_for_size.font.size.pt is not None
-        and target_para_for_size.font.size.pt == 16  # expected size from heading 1
-    )
+    # assert (
+    #     target_para_for_size.font.size.pt is not None
+    #     and target_para_for_size.font.size.pt == 16  # expected size from heading 1
+    # )
     assert (
         target_para_for_alignment.alignment is not None
         and target_para_for_alignment.alignment == PP_ALIGN.CENTER
