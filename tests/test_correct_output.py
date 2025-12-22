@@ -222,11 +222,10 @@ def test_in_a_cold_concrete_underground_tunnel_slide(output_pptx: Path) -> None:
     assert hl_color == "FFFF00"
 
     # Case: "read those stories" should be underlined... double-underlined!
-    # TODO KNOWN FAIL, we need to update source code to use MSO_TEXT_UNDERLINE_TYPE_pptx
     double_ul_run = helpers.find_first_pptx_run_in_para_containing(
         para, "read those stories"
     )
-    # assert double_ul_run.font.underline == MSO_TEXT_UNDERLINE_TYPE_pptx.DOUBLE_LINE
+    assert double_ul_run.font.underline == MSO_TEXT_UNDERLINE_TYPE_pptx.DOUBLE_LINE
 
     # Speaker notes checks:
     notes_text_frame = helpers.get_slide_notes_text(slide)

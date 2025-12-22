@@ -13,7 +13,7 @@ import logging
 import xml.etree.ElementTree as ET
 from typing import Union, cast
 
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_UNDERLINE
 from docx.opc.package import OpcPackage
 from docx.shared import RGBColor as RGBColor_docx
 from docx.styles.style import ParagraphStyle as ParagraphStyle_docx
@@ -23,6 +23,7 @@ from docx.text.parfmt import ParagraphFormat
 from docx.text.run import Run as Run_docx
 from pptx.dml.color import RGBColor as RGBColor_pptx
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
+from pptx.enum.text import MSO_TEXT_UNDERLINE_TYPE
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.text.text import Font as Font_pptx
 from pptx.text.text import _Paragraph as Paragraph_pptx
@@ -87,6 +88,22 @@ ALIGNMENT_MAP_WD2PP = {
 ALIGNMENT_MAP_PP2WD = {v: k for k, v in ALIGNMENT_MAP_WD2PP.items()}
 # endregion
 
+# region underline map
+# Map WD_UNDERLINE enum values to MSO_TEXT_UNDERLINE_TYPE for docx->pptx conversion
+UNDERLINE_MAP_WD2MSO = {
+    WD_UNDERLINE.SINGLE: True,  # Standard single underline
+    WD_UNDERLINE.DOUBLE: MSO_TEXT_UNDERLINE_TYPE.DOUBLE_LINE,
+    WD_UNDERLINE.THICK: MSO_TEXT_UNDERLINE_TYPE.HEAVY_LINE,
+    WD_UNDERLINE.DOTTED: MSO_TEXT_UNDERLINE_TYPE.DOTTED_LINE,
+    WD_UNDERLINE.DASH: MSO_TEXT_UNDERLINE_TYPE.DASH_LINE,
+    WD_UNDERLINE.DOT_DASH: MSO_TEXT_UNDERLINE_TYPE.DOT_DASH_LINE,
+    WD_UNDERLINE.DOT_DOT_DASH: MSO_TEXT_UNDERLINE_TYPE.DOT_DOT_DASH_LINE,
+    WD_UNDERLINE.WAVY: MSO_TEXT_UNDERLINE_TYPE.WAVY_LINE,
+    WD_UNDERLINE.WAVY_DOUBLE: MSO_TEXT_UNDERLINE_TYPE.WAVY_DOUBLE_LINE,
+    WD_UNDERLINE.WORDS: True,  # Word-only underline -> single underline
+}
+# endregion
+
 BASELINE_SUBSCRIPT_SMALL_FONT = -25000
 BASELINE_SUBSCRIPT_LARGE_FONT = -50000
 BASELINE_SUPERSCRIPT_SMALL_FONT = 60000  # For fonts < 24pt
@@ -115,9 +132,17 @@ def _copy_basic_font_formatting(
     if source_font.italic is not None:
         target_font.italic = source_font.italic
 
-    # Underline: collapse any explicit value (True/False/WD_UNDERLINE.*) to bool
+    # Underline: Handle both boolean and enum values
     if source_font.underline is not None:
-        target_font.underline = bool(source_font.underline)
+        # Check if it's a boolean (True/False/None)
+        if isinstance(source_font.underline, bool):
+            target_font.underline = source_font.underline
+        else:
+            # It's a WD_UNDERLINE enum - map to MSO_TEXT_UNDERLINE_TYPE
+            # Use mapped value if available, otherwise fall back to simple boolean
+            target_font.underline = UNDERLINE_MAP_WD2MSO.get(
+                source_font.underline, bool(source_font.underline)
+            )
 
 
 # endregion
@@ -554,10 +579,13 @@ def copy_paragraph_formatting_docx2pptx(
     if source_para.style:
         # _copy_paragraph_format_docx2pptx(source_para, target_para)
         _copy_basic_font_formatting(source_para.style.font, target_para.font)
-        # NOTE: Don't copy paragraph size, because it cancels the slide's ability to auto-size for visuals
-        # TODO: Study if there is some way to support applying paragraph styling size to JUST headings, without
-        # impacting all the other runs. # TODO: Or at least store the para size info in the JSON metadata.
-        # _copy_font_size_formatting(source_para.style.font, target_para.font)
+
+        # Copy size only for Heading styles to preserve semantic sizing without breaking auto-size
+        # For body text, PowerPoint's auto-sizing works better without explicit size constraints
+        is_heading = source_para.style.name and source_para.style.name.startswith("Heading")
+        if is_heading:
+            _copy_font_size_formatting(source_para.style.font, target_para.font)
+
         _copy_font_color_formatting(source_para.style.font, target_para.font)
 
 
