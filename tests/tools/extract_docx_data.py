@@ -13,6 +13,8 @@ import json
 import sys
 
 from docx import Document
+from docx.text.hyperlink import Hyperlink
+from docx.text.run import Run as Run_docx
 
 from manuscript2slides.processing.formatting import (
     get_theme_fonts_from_docx_package,
@@ -45,6 +47,112 @@ OUTPUT_JSON = "tests/baselines/docx_sample.json"
 # ============================================================================
 
 
+def extract_run_data(
+    run: Run_docx,
+    all_comments: dict,
+    all_footnotes: dict,
+    all_endnotes: dict,
+) -> dict:
+    """Extract all data from a docx run including formatting and annotations."""
+    run_data = {
+        "type": f"{type(run).__module__}.{type(run).__name__}",
+        "text": run.text,
+        "bold": run.font.bold,
+        "italic": run.font.italic,
+        "underline": run.font.underline,
+        "font_name": run.font.name,
+        "font_size": run.font.size.pt if run.font.size else None,
+    }
+
+    # Add color if present
+    if run.font.color and run.font.color.rgb:
+        run_data["color_rgb"] = rgb_to_hex(run.font.color.rgb)
+
+    # Extract experimental formatting (exposed by python-docx)
+    if run.font.highlight_color:
+        run_data["highlight_color"] = run.font.highlight_color.name
+
+    if run.font.strike:
+        run_data["strike"] = run.font.strike
+
+    if run.font.double_strike:
+        run_data["double_strike"] = run.font.double_strike
+
+    if run.font.subscript:
+        run_data["subscript"] = run.font.subscript
+
+    if run.font.superscript:
+        run_data["superscript"] = run.font.superscript
+
+    if run.font.all_caps:
+        run_data["all_caps"] = run.font.all_caps
+
+    if run.font.small_caps:
+        run_data["small_caps"] = run.font.small_caps
+
+    # Extract annotation references from run XML
+    try:
+        run_xml = run.element.xml
+        root = ET.fromstring(run_xml)
+
+        # Find comment references
+        comment_refs = root.findall(".//w:commentReference", XML_NS)
+        if comment_refs:
+            run_data["comment_refs"] = []
+            for ref in comment_refs:
+                comment_id = ref.get(f'{{{XML_NS["w"]}}}id')
+                if comment_id and comment_id in all_comments:
+                    comment_obj = all_comments[comment_id]
+                    run_data["comment_refs"].append(
+                        {
+                            "id": comment_id,
+                            "text": comment_obj.text,
+                            "author": (
+                                comment_obj.author
+                                if hasattr(comment_obj, "author")
+                                else None
+                            ),
+                        }
+                    )
+
+        # Find footnote references
+        footnote_refs = root.findall(".//w:footnoteReference", XML_NS)
+        if footnote_refs:
+            run_data["footnote_refs"] = []
+            for ref in footnote_refs:
+                footnote_id = ref.get(f'{{{XML_NS["w"]}}}id')
+                if footnote_id and footnote_id in all_footnotes:
+                    footnote_obj = all_footnotes[footnote_id]
+                    run_data["footnote_refs"].append(
+                        {
+                            "id": footnote_id,
+                            "text_body": footnote_obj.text_body,
+                            "hyperlinks": footnote_obj.hyperlinks,
+                        }
+                    )
+
+        # Find endnote references
+        endnote_refs = root.findall(".//w:endnoteReference", XML_NS)
+        if endnote_refs:
+            run_data["endnote_refs"] = []
+            for ref in endnote_refs:
+                endnote_id = ref.get(f'{{{XML_NS["w"]}}}id')
+                if endnote_id and endnote_id in all_endnotes:
+                    endnote_obj = all_endnotes[endnote_id]
+                    run_data["endnote_refs"].append(
+                        {
+                            "id": endnote_id,
+                            "text_body": endnote_obj.text_body,
+                            "hyperlinks": endnote_obj.hyperlinks,
+                        }
+                    )
+    except (AttributeError, ET.ParseError):
+        pass  # No annotations in this run
+
+    # Filter out None values but keep False
+    return filter_none_keep_false(run_data)
+
+
 def main() -> None:
     """Load a test docx and explore its structure."""
 
@@ -53,7 +161,10 @@ def main() -> None:
 
     if not test_docx_path.exists():
         print(f"Error: {test_docx_path} not found!", file=sys.stderr)
-        print(f"Please check the INPUT_DOCX configuration at the top of this script.", file=sys.stderr)
+        print(
+            f"Please check the INPUT_DOCX configuration at the top of this script.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Load the docx
@@ -103,98 +214,39 @@ def main() -> None:
             "text": para.text,
             "style": para.style.name if para.style else None,
             "paragraph_font": para_font,
-            "runs": []
+            "runs": [],
         }
 
-        for run_idx, run in enumerate(para.runs):
-            run_data = {
-                "run_number": run_idx,
-                "text": run.text,
-                "bold": run.font.bold,
-                "italic": run.font.italic,
-                "underline": run.font.underline,
-                "font_name": run.font.name,
-                "font_size": run.font.size.pt if run.font.size else None,
-            }
+        # Use iter_inner_content() to properly handle both runs and hyperlinks
+        run_idx = 0
+        for item in para.iter_inner_content():
+            # Check if this is a Hyperlink object
+            if isinstance(item, Hyperlink):
+                # This is a hyperlink containing nested runs
+                hyperlink_data = {
+                    "run_number": run_idx,
+                    "type": f"{type(item).__module__}.{type(item).__name__}",
+                    "hyperlink_url": item.url,
+                    "hyperlink_runs": [],
+                }
 
-            # Add color if present
-            if run.font.color and run.font.color.rgb:
-                run_data["color_rgb"] = rgb_to_hex(run.font.color.rgb)
+                # Process each run within the hyperlink
+                for run in item.runs:
+                    run_data = extract_run_data(
+                        run, all_comments, all_footnotes, all_endnotes
+                    )
+                    hyperlink_data["hyperlink_runs"].append(run_data)
 
-            # Extract experimental formatting (exposed by python-docx)
-            if run.font.highlight_color:
-                run_data["highlight_color"] = run.font.highlight_color.name
-
-            if run.font.strike:
-                run_data["strike"] = run.font.strike
-
-            if run.font.double_strike:
-                run_data["double_strike"] = run.font.double_strike
-
-            if run.font.subscript:
-                run_data["subscript"] = run.font.subscript
-
-            if run.font.superscript:
-                run_data["superscript"] = run.font.superscript
-
-            if run.font.all_caps:
-                run_data["all_caps"] = run.font.all_caps
-
-            if run.font.small_caps:
-                run_data["small_caps"] = run.font.small_caps
-
-            # Extract annotation references from run XML
-            try:
-                run_xml = run.element.xml
-                root = ET.fromstring(run_xml)
-
-                # Find comment references
-                comment_refs = root.findall(".//w:commentReference", XML_NS)
-                if comment_refs:
-                    run_data["comment_refs"] = []
-                    for ref in comment_refs:
-                        comment_id = ref.get(f'{{{XML_NS["w"]}}}id')
-                        if comment_id and comment_id in all_comments:
-                            comment_obj = all_comments[comment_id]
-                            run_data["comment_refs"].append({
-                                "id": comment_id,
-                                "text": comment_obj.text,
-                                "author": comment_obj.author if hasattr(comment_obj, 'author') else None,
-                            })
-
-                # Find footnote references
-                footnote_refs = root.findall(".//w:footnoteReference", XML_NS)
-                if footnote_refs:
-                    run_data["footnote_refs"] = []
-                    for ref in footnote_refs:
-                        footnote_id = ref.get(f'{{{XML_NS["w"]}}}id')
-                        if footnote_id and footnote_id in all_footnotes:
-                            footnote_obj = all_footnotes[footnote_id]
-                            run_data["footnote_refs"].append({
-                                "id": footnote_id,
-                                "text_body": footnote_obj.text_body,
-                                "hyperlinks": footnote_obj.hyperlinks,
-                            })
-
-                # Find endnote references
-                endnote_refs = root.findall(".//w:endnoteReference", XML_NS)
-                if endnote_refs:
-                    run_data["endnote_refs"] = []
-                    for ref in endnote_refs:
-                        endnote_id = ref.get(f'{{{XML_NS["w"]}}}id')
-                        if endnote_id and endnote_id in all_endnotes:
-                            endnote_obj = all_endnotes[endnote_id]
-                            run_data["endnote_refs"].append({
-                                "id": endnote_id,
-                                "text_body": endnote_obj.text_body,
-                                "hyperlinks": endnote_obj.hyperlinks,
-                            })
-            except (AttributeError, ET.ParseError):
-                pass  # No annotations in this run
-
-            # Filter out None values but keep False
-            run_data = filter_none_keep_false(run_data)
-            para_data["runs"].append(run_data)
+                para_data["runs"].append(hyperlink_data)
+                run_idx += 1
+            else:
+                # This is a regular run
+                run_data = extract_run_data(
+                    item, all_comments, all_footnotes, all_endnotes
+                )
+                run_data["run_number"] = run_idx
+                para_data["runs"].append(run_data)
+                run_idx += 1
 
         data.append(para_data)
 

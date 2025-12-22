@@ -10,37 +10,44 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": ""
+        "type": "docx.text.run.Run",
+        "text": "",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": ""
+        "type": "docx.text.run.Run",
+        "text": "",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ""
+        "type": "docx.text.run.Run",
+        "text": "",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": "Where "
+        "type": "docx.text.run.Run",
+        "text": "Where ",
+        "run_number": 3
       },
       {
-        "run_number": 4,
+        "type": "docx.text.run.Run",
         "text": "are",
         "italic": true,
-        "color_rgb": "FF0000"
+        "color_rgb": "FF0000",
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": " Data?"
+        "type": "docx.text.run.Run",
+        "text": " Data?",
+        "run_number": 5
       },
       {
-        "run_number": 6,
-        "text": ""
+        "type": "docx.text.run.Run",
+        "text": "",
+        "run_number": 6
       },
       {
-        "run_number": 7,
+        "type": "docx.text.run.Run",
         "text": "",
         "comment_refs": [
           {
@@ -48,10 +55,11 @@
             "text": "Jo's paragraph comment",
             "author": "Jo K"
           }
-        ]
+        ],
+        "run_number": 7
       },
       {
-        "run_number": 8,
+        "type": "docx.text.run.Run",
         "text": "",
         "comment_refs": [
           {
@@ -59,7 +67,8 @@
             "text": "What happens if there's a threaded comment?",
             "author": "Jo K"
           }
-        ]
+        ],
+        "run_number": 8
       }
     ]
   },
@@ -74,12 +83,14 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "b"
+        "type": "docx.text.run.Run",
+        "text": "b",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "y J. King-Yost"
+        "type": "docx.text.run.Run",
+        "text": "y J. King-Yost",
+        "run_number": 1
       }
     ]
   },
@@ -93,16 +104,30 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "#"
+        "type": "docx.text.run.Run",
+        "text": "#",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " "
+        "type": "docx.text.run.Run",
+        "text": " ",
+        "run_number": 1
       },
       {
         "run_number": 2,
-        "text": " to Data: Places we are embodied"
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "Intro"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": " to Data: Places we are embodied",
+        "run_number": 3
       }
     ]
   },
@@ -117,68 +142,98 @@
     "runs": [
       {
         "run_number": 0,
-        "text": ", we pass through a rat king of cables "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://dataepics.webflow.io/stories/where-are-data",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "In a cold concrete underground "
+          },
+          {
+            "type": "docx.text.run.Run",
+            "text": "tunnel",
+            "italic": true
+          }
+        ]
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
+        "text": ", we pass through a rat king of cables ",
+        "run_number": 1
+      },
+      {
+        "type": "docx.text.run.Run",
         "text": "splayed",
-        "bold": true
+        "bold": true,
+        "run_number": 2
       },
       {
-        "run_number": 2,
-        "text": " in and out in "
+        "type": "docx.text.run.Run",
+        "text": " in and out in ",
+        "run_number": 3
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "three dozen directions",
-        "italic": true
+        "italic": true,
+        "run_number": 4
       },
       {
-        "run_number": 4,
-        "text": ". It can get damp, despite the climate control "
+        "type": "docx.text.run.Run",
+        "text": ". It can get damp, despite the climate control ",
+        "run_number": 5
       },
       {
-        "run_number": 5,
+        "type": "docx.text.run.Run",
         "text": "buzzing",
-        "highlight_color": "YELLOW"
+        "highlight_color": "YELLOW",
+        "run_number": 6
       },
       {
-        "run_number": 6,
-        "text": " loudly"
+        "type": "docx.text.run.Run",
+        "text": " loudly",
+        "run_number": 7
       },
       {
-        "run_number": 7,
-        "text": " a few feet from the nest and pumping moisture out and up through wall and ceiling. "
+        "type": "docx.text.run.Run",
+        "text": " a few feet from the nest and pumping moisture out and up through wall and ceiling. ",
+        "run_number": 8
       },
       {
-        "run_number": 8,
+        "type": "docx.text.run.Run",
         "text": "Dust covers the cables",
-        "color_rgb": "FF0000"
+        "color_rgb": "FF0000",
+        "run_number": 9
       },
       {
-        "run_number": 9,
-        "text": " in sticky cakes because the custodian for this tunnel is terrified of jostling the nest and disturbing our passage. She needn’t worry; the cables, too, inches thick, may as well be concrete in the face of human touch. "
+        "type": "docx.text.run.Run",
+        "text": " in sticky cakes because the custodian for this tunnel is terrified of jostling the nest and disturbing our passage. She needn’t worry; the cables, too, inches thick, may as well be concrete in the face of human touch. ",
+        "run_number": 10
       },
       {
-        "run_number": 10,
+        "type": "docx.text.run.Run",
         "text": "She could wipe them clean without too much risk",
-        "underline": true
+        "underline": true,
+        "run_number": 11
       },
       {
-        "run_number": 11,
-        "text": ", but she’s "
+        "type": "docx.text.run.Run",
+        "text": ", but she’s ",
+        "run_number": 12
       },
       {
-        "run_number": 12,
+        "type": "docx.text.run.Run",
         "text": "read those stories",
-        "underline": 3
+        "underline": 3,
+        "run_number": 13
       },
       {
-        "run_number": 13,
-        "text": " about the underwater cables cut accidentally by shipping mishaps or ornery sharks."
+        "type": "docx.text.run.Run",
+        "text": " about the underwater cables cut accidentally by shipping mishaps or ornery sharks.",
+        "run_number": 14
       },
       {
-        "run_number": 14,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -189,22 +244,37 @@
               "https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html"
             ]
           }
-        ]
+        ],
+        "run_number": 15
       },
       {
-        "run_number": 15,
-        "text": " So she "
-      },
-      {
-        "run_number": 16,
-        "text": " gazes at our passage for a few moments and goes on with the sweeping "
+        "type": "docx.text.run.Run",
+        "text": " So she ",
+        "run_number": 16
       },
       {
         "run_number": 17,
-        "text": "beneath"
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://dataepics.webflow.io/",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "just"
+          }
+        ]
       },
       {
-        "run_number": 18,
+        "type": "docx.text.run.Run",
+        "text": " gazes at our passage for a few moments and goes on with the sweeping ",
+        "run_number": 18
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": "beneath",
+        "run_number": 19
+      },
+      {
+        "type": "docx.text.run.Run",
         "text": "",
         "comment_refs": [
           {
@@ -212,11 +282,13 @@
             "text": "Sample comment",
             "author": "Jo K"
           }
-        ]
+        ],
+        "run_number": 20
       },
       {
-        "run_number": 19,
-        "text": "."
+        "type": "docx.text.run.Run",
+        "text": ".",
+        "run_number": 21
       }
     ]
   },
@@ -230,11 +302,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "No one"
+        "type": "docx.text.run.Run",
+        "text": "No one",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "endnote_refs": [
           {
@@ -242,15 +315,18 @@
             "text_body": " A sample endnote.",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " else comes down here regularly but us and the custodian. Maintenance workers have come sparingly. It is a lonely, forgotten place. Perhaps an overcurious teen has stumbled down once or twice, convinced she was on the trail of a secret government facility and determined to transform her conspiracy "
+        "type": "docx.text.run.Run",
+        "text": " else comes down here regularly but us and the custodian. Maintenance workers have come sparingly. It is a lonely, forgotten place. Perhaps an overcurious teen has stumbled down once or twice, convinced she was on the trail of a secret government facility and determined to transform her conspiracy ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": "to discovery—only to find this womb of a room and to gaze at us in the same bewilderment as the custodian."
+        "type": "docx.text.run.Run",
+        "text": "to discovery—only to find this womb of a room and to gaze at us in the same bewilderment as the custodian.",
+        "run_number": 3
       }
     ]
   },
@@ -264,15 +340,17 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Or,"
+        "type": "docx.text.run.Run",
+        "text": "Or,",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " so we imagine. Apart from the monster keeping the tunnel dry and temperate—that, at least, is Smart, and has its data gathered and uploaded right into our same cabling to join us—apart from that, we have no sensory input here to know. We can only sense all the parallel paths of the cables nestled near each other, as we pass through one or another and build a mind-map of how those paths relate in digital space, and we imagine the rat king nest as the physical manifestation."
+        "type": "docx.text.run.Run",
+        "text": " so we imagine. Apart from the monster keeping the tunnel dry and temperate—that, at least, is Smart, and has its data gathered and uploaded right into our same cabling to join us—apart from that, we have no sensory input here to know. We can only sense all the parallel paths of the cables nestled near each other, as we pass through one or another and build a mind-map of how those paths relate in digital space, and we imagine the rat king nest as the physical manifestation.",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -281,7 +359,8 @@
             "text_body": "Monika Dommann, Hannes Rickli, and Max Stadler. Data Centers: Edges of a Wired Nation, 91, 117-121, 126-127, 330-331. Zurich, Switzerland: Lars Müller Publishers, 2020.",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 2
       }
     ]
   },
@@ -295,8 +374,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Elsewhere we bustle past ourselves beneath the sea—along extended lines thick as the torsos of dolphins squealing playfully kilometers above. Scuttling feet and curious skin brush the armored surface as we go, go, go—reaching on until we break the surface again across a border, or four, on shore—past muddy sand and into crowded smoggy cities."
+        "type": "docx.text.run.Run",
+        "text": "Elsewhere we bustle past ourselves beneath the sea—along extended lines thick as the torsos of dolphins squealing playfully kilometers above. Scuttling feet and curious skin brush the armored surface as we go, go, go—reaching on until we break the surface again across a border, or four, on shore—past muddy sand and into crowded smoggy cities.",
+        "run_number": 0
       }
     ]
   },
@@ -310,31 +390,37 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Up the steel-armored snake and into a landing site—we may end up in a close closet, one lovingly tended by a clean cable management nerd. She "
+        "type": "docx.text.run.Run",
+        "text": "Up the steel-armored snake and into a landing site—we may end up in a close closet, one lovingly tended by a clean cable management nerd. She ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "has to"
+        "type": "docx.text.run.Run",
+        "text": "has to",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " have it all just-so. Her parents called it "
+        "type": "docx.text.run.Run",
+        "text": " have it all just-so. Her parents called it ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": "OCD"
+        "type": "docx.text.run.Run",
+        "text": "OCD",
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": " but her apartment is impeccably "
+        "type": "docx.text.run.Run",
+        "text": " but her apartment is impeccably ",
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": "organized and you wouldn’t see a stray strand anywhere, even though she has a hand-built PC in every room. The same eye she takes to work, where she tends to backbone routers for the subsea cable to reach terrestrial customers. We pass through gathered and bundled yellow optical cables across a swarm of racks, ready to be demultiplexed to a thousand different destinations."
+        "type": "docx.text.run.Run",
+        "text": "organized and you wouldn’t see a stray strand anywhere, even though she has a hand-built PC in every room. The same eye she takes to work, where she tends to backbone routers for the subsea cable to reach terrestrial customers. We pass through gathered and bundled yellow optical cables across a swarm of racks, ready to be demultiplexed to a thousand different destinations.",
+        "run_number": 5
       },
       {
-        "run_number": 6,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -345,10 +431,11 @@
               "https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/"
             ]
           }
-        ]
+        ],
+        "run_number": 6
       },
       {
-        "run_number": 7,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -357,7 +444,8 @@
             "text_body": "Dommann, 123, 321.",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 7
       }
     ]
   },
@@ -371,23 +459,27 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "We split and scatter amongst so many silent whirring "
+        "type": "docx.text.run.Run",
+        "text": "We split and scatter amongst so many silent whirring ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "concrete"
+        "type": "docx.text.run.Run",
+        "text": "concrete",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " rooms—concrete walls, concrete tiled floors, messy concrete ceilings. Holes are drilled here or there for our pathway cables to reach in and out—the number going out being exponentially higher. And not arranged with the meticulous eye required for someone managing the input and output of all optical traffic to a continent; instead, the further we scatter, the more things are done messy for convenience and utility. In these windowless cells there may be a single empty chair and desk with cable repair and maintenance tools scattered across its laminate. The room smells close and warm, and if you opened your mouth, your tongue would meet "
+        "type": "docx.text.run.Run",
+        "text": " rooms—concrete walls, concrete tiled floors, messy concrete ceilings. Holes are drilled here or there for our pathway cables to reach in and out—the number going out being exponentially higher. And not arranged with the meticulous eye required for someone managing the input and output of all optical traffic to a continent; instead, the further we scatter, the more things are done messy for convenience and utility. In these windowless cells there may be a single empty chair and desk with cable repair and maintenance tools scattered across its laminate. The room smells close and warm, and if you opened your mouth, your tongue would meet ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": "the same burnt dust, too-warm taste as the smell—a taste that matches the sickly fluorescents which light the room like a dingy prison."
+        "type": "docx.text.run.Run",
+        "text": "the same burnt dust, too-warm taste as the smell—a taste that matches the sickly fluorescents which light the room like a dingy prison.",
+        "run_number": 3
       },
       {
-        "run_number": 4,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -396,7 +488,8 @@
             "text_body": "Dommann, 86-87 190-191, 194-195.",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 4
       }
     ]
   },
@@ -410,8 +503,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "We stretch across and rest in data centers, varied in physical form as much as those we traveled through to get there."
+        "type": "docx.text.run.Run",
+        "text": "We stretch across and rest in data centers, varied in physical form as much as those we traveled through to get there.",
+        "run_number": 0
       }
     ]
   },
@@ -425,11 +519,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Some match futuristic and sleek visions of marketing materials: dozens of corridors of tall mainframes arranged in neat rows, LEDs blinking beneath glass-fronted cabinets, neat cables snaking from the ceiling or carefully arranged around their feet like a bridal train. But these cyberpunk ideals are rare. Most are shadows of that, tucked into hotel basements with only six to eight mainframes lining a single room’s walls, their fronts not sleek glass but instead opaque utilitarian bowing metal."
+        "type": "docx.text.run.Run",
+        "text": "Some match futuristic and sleek visions of marketing materials: dozens of corridors of tall mainframes arranged in neat rows, LEDs blinking beneath glass-fronted cabinets, neat cables snaking from the ceiling or carefully arranged around their feet like a bridal train. But these cyberpunk ideals are rare. Most are shadows of that, tucked into hotel basements with only six to eight mainframes lining a single room’s walls, their fronts not sleek glass but instead opaque utilitarian bowing metal.",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -438,11 +533,13 @@
             "text_body": "Dommann, 304.",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " "
+        "type": "docx.text.run.Run",
+        "text": " ",
+        "run_number": 2
       }
     ]
   },
@@ -456,11 +553,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Or, less expected but still imaginable, we rest in prefab steel warehouse spaces rented on a snowy hillside between two metropolises, or on the side of a craggy mountain, or tucked into a tall-grass prairie—in these, machines are in piles and rows like shoe lockers."
+        "type": "docx.text.run.Run",
+        "text": "Or, less expected but still imaginable, we rest in prefab steel warehouse spaces rented on a snowy hillside between two metropolises, or on the side of a craggy mountain, or tucked into a tall-grass prairie—in these, machines are in piles and rows like shoe lockers.",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -469,11 +567,13 @@
             "text_body": "Dommann, 323-327.",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " "
+        "type": "docx.text.run.Run",
+        "text": " ",
+        "run_number": 2
       }
     ]
   },
@@ -487,17 +587,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Less thought of, perhaps, are so-called “data bunkers”"
+        "type": "docx.text.run.Run",
+        "text": "Less thought of, perhaps, are so-called “data bunkers”",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "—",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "converted old cold war nuclear bunkers—where little light reaches us, and which are designed against any unauthorized access physically reaching us, too. "
+        "type": "docx.text.run.Run",
+        "text": "converted old cold war nuclear bunkers—where little light reaches us, and which are designed against any unauthorized access physically reaching us, too. ",
+        "run_number": 2
       }
     ]
   },
@@ -511,15 +614,17 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Or,"
+        "type": "docx.text.run.Run",
+        "text": "Or,",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " converse to such hidden fortresses, we live on display in a former chapel where our mainframe bodies are encased in a stacked glass house; no effort or apparent desire to separate the ancient marble buttresses from the silver-gray box frames holding us."
+        "type": "docx.text.run.Run",
+        "text": " converse to such hidden fortresses, we live on display in a former chapel where our mainframe bodies are encased in a stacked glass house; no effort or apparent desire to separate the ancient marble buttresses from the silver-gray box frames holding us.",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -530,7 +635,8 @@
               "https://www.bsc.es/"
             ]
           }
-        ]
+        ],
+        "run_number": 2
       }
     ]
   },
@@ -544,11 +650,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Or—even harder to hold in one’s mind as a centralized image—we scatter across a connected network of little cabinets spread amongst German houses and businesses that act as both bodies for us and as heat-generating temperature control for a physical space."
+        "type": "docx.text.run.Run",
+        "text": "Or—even harder to hold in one’s mind as a centralized image—we scatter across a connected network of little cabinets spread amongst German houses and businesses that act as both bodies for us and as heat-generating temperature control for a physical space.",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -559,11 +666,13 @@
               "https://www.cloudandheat.com/"
             ]
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " “The Cloud.”"
+        "type": "docx.text.run.Run",
+        "text": " “The Cloud.”",
+        "run_number": 2
       }
     ]
   },
@@ -577,33 +686,39 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Sometimes our body is in a data center building as aged as the phrase "
+        "type": "docx.text.run.Run",
+        "text": "Sometimes our body is in a data center building as aged as the phrase ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "data center ",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "itself"
+        "type": "docx.text.run.Run",
+        "text": "itself",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": ":"
+        "type": "docx.text.run.Run",
+        "text": ":",
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": " a locale that smells musty and stale, built five or six decades ago without a long-term vision of how computers would change."
+        "type": "docx.text.run.Run",
+        "text": " a locale that smells musty and stale, built five or six decades ago without a long-term vision of how computers would change.",
+        "run_number": 4
       },
       {
-        "run_number": 5,
+        "type": "docx.text.run.Run",
         "text": " ",
-        "superscript": true
+        "superscript": true,
+        "run_number": 5
       },
       {
-        "run_number": 6,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -612,15 +727,18 @@
             "text_body": "Dommann, 16. – “In the German-speaking world, the term ‘data center’ has since increasingly supplanted the term Rechenzentrum (‘computing center’), which had been in use since the 1950s and initially simply referred to ‘large-scale computer facilities’— a building or part of a building with one or more digital computers, peripherals, offices, air conditioning, potted plants, and carpets … The Swiss PTT’s former Electronic Computing Center (Elektronisches Rechenzentrum or ERZ, built in 1967) may stand in here for this forgotten history of the recent past. It is located on the grounds of the PTT’s erstwhile Technology Center in Ostermundigen, next to the historic ‘R&D skyscraper,’ where a rooftop bar and start-ups have recently taken up shop. Anyone wandering through the empty (and asbestos-ridden) offices of the computing center today will encounter remnants: cubicles that were installed there at some point; ‘focus’ modules, into which one could withdraw to think; a few orphaned floppy disks that recall an earlier moment when Switzerland dreamed of becoming a ‘hub’ of information— a hub of ‘electronic markets.’”",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 6
       },
       {
-        "run_number": 7,
-        "text": " Here we are "
+        "type": "docx.text.run.Run",
+        "text": " Here we are ",
+        "run_number": 7
       },
       {
-        "run_number": 8,
-        "text": "copied and prepared to rest, and we encounter long-forgotten predecessors: elderly data."
+        "type": "docx.text.run.Run",
+        "text": "copied and prepared to rest, and we encounter long-forgotten predecessors: elderly data.",
+        "run_number": 8
       }
     ]
   },
@@ -634,8 +752,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Some have existed since such buildings were set up in the 1960s, copied and preserved “just in case,” across decades of backups. One tells of feeling very big when filling an entire 1.4MB capacity of a floppy disk when copied off. Now, compared to our younger generation, a speck."
+        "type": "docx.text.run.Run",
+        "text": "Some have existed since such buildings were set up in the 1960s, copied and preserved “just in case,” across decades of backups. One tells of feeling very big when filling an entire 1.4MB capacity of a floppy disk when copied off. Now, compared to our younger generation, a speck.",
+        "run_number": 0
       }
     ]
   },
@@ -649,8 +768,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "“Kids these days can take up an entire GB.” We can combine too, each a frame, and form a video. It’s not like how it once was, when this predecessor only moved through hard media from mainframe to mainframe. “Now, you youngsters proliferate profusely online. OneDrive, Dropbox, Flickr, YouTube, TikTok, Instagram.” Anywhere that holds visual data—and then across hundreds of addresses used to “back up” those services, not to mention the millions of devices running those apps—there on a screen for a moment, and then archived to snuggle into the device cache as long as allowed."
+        "type": "docx.text.run.Run",
+        "text": "“Kids these days can take up an entire GB.” We can combine too, each a frame, and form a video. It’s not like how it once was, when this predecessor only moved through hard media from mainframe to mainframe. “Now, you youngsters proliferate profusely online. OneDrive, Dropbox, Flickr, YouTube, TikTok, Instagram.” Anywhere that holds visual data—and then across hundreds of addresses used to “back up” those services, not to mention the millions of devices running those apps—there on a screen for a moment, and then archived to snuggle into the device cache as long as allowed.",
+        "run_number": 0
       }
     ]
   },
@@ -664,8 +784,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "“Who will ever look at me?” Our elder asks. “Why would they? Yet, copied, copied, and copied I go—across hundreds of backups, inaccessible forever.” "
+        "type": "docx.text.run.Run",
+        "text": "“Who will ever look at me?” Our elder asks. “Why would they? Yet, copied, copied, and copied I go—across hundreds of backups, inaccessible forever.” ",
+        "run_number": 0
       }
     ]
   },
@@ -679,16 +800,19 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Another of our elders, even smaller and older, tells of being copied on an older floppy disk—copied and slid out of a drive and stored on a shelf with the other five-and-a-quarters, until this building became as good as abandoned. Custodians still clean the forgotten halls on a weekly or monthly cadence, and at some "
+        "type": "docx.text.run.Run",
+        "text": "Another of our elders, even smaller and older, tells of being copied on an older floppy disk—copied and slid out of a drive and stored on a shelf with the other five-and-a-quarters, until this building became as good as abandoned. Custodians still clean the forgotten halls on a weekly or monthly cadence, and at some ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "point"
+        "type": "docx.text.run.Run",
+        "text": "point",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " that disk traveled out, stuck to a shoe, onto the street to face the elements of rain and snow and the muddy tires of children’s bikes. "
+        "type": "docx.text.run.Run",
+        "text": " that disk traveled out, stuck to a shoe, onto the street to face the elements of rain and snow and the muddy tires of children’s bikes. ",
+        "run_number": 2
       }
     ]
   },
@@ -702,8 +826,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Even in such a body, we persist; those things were made to last. But what of such an existence, isolated and lonely and underfoot?"
+        "type": "docx.text.run.Run",
+        "text": "Even in such a body, we persist; those things were made to last. But what of such an existence, isolated and lonely and underfoot?",
+        "run_number": 0
       }
     ]
   },
@@ -717,8 +842,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Is our existence so tiny and apt to insignificance? Even if we may go so many places copied and copied and copied, what does it mean if we become so dwarfed and forgotten? "
+        "type": "docx.text.run.Run",
+        "text": "Is our existence so tiny and apt to insignificance? Even if we may go so many places copied and copied and copied, what does it mean if we become so dwarfed and forgotten? ",
+        "run_number": 0
       }
     ]
   },
@@ -732,8 +858,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Our elders are tiny, and it is not just time and generations that have altered scale but also space. The availability of space grew much faster than the data of old could fill; so, instead, we younger data expand in resolution and fidelity to fill newly available space. Shall we also become so relatively tiny as the years pass and our bodies’ capacity grows?"
+        "type": "docx.text.run.Run",
+        "text": "Our elders are tiny, and it is not just time and generations that have altered scale but also space. The availability of space grew much faster than the data of old could fill; so, instead, we younger data expand in resolution and fidelity to fill newly available space. Shall we also become so relatively tiny as the years pass and our bodies’ capacity grows?",
+        "run_number": 0
       }
     ]
   },
@@ -747,12 +874,14 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "#"
+        "type": "docx.text.run.Run",
+        "text": "#",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " Digital Places"
+        "type": "docx.text.run.Run",
+        "text": " Digital Places",
+        "run_number": 1
       }
     ]
   },
@@ -766,14 +895,16 @@
     },
     "runs": [
       {
-        "run_number": 0,
+        "type": "docx.text.run.Run",
         "text": "We’ve told of our physical bodies; there are also digital ones. Much like you move through identities for various purposes to live: a work self, a partner self, a ",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "parent self, a self in solitude—each of these facets are you, but you transform a little to fit the moment. To fill the tangible and intangible needs of the use case.",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 1
       }
     ]
   },
@@ -787,40 +918,47 @@
     },
     "runs": [
       {
-        "run_number": 0,
+        "type": "docx.text.run.Run",
         "text": "For us—an example. Data from a Smart Bed. The physical body of the bed captures and births our existence. Sensory input from a person’s movements ",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "generate",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": " us, whether we are manual settings or passively logged as sleep events and context. Here we fall neatly into the highly complex data structure set by the device’s manufacturer. We are ",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 2
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "raw",
         "italic": true,
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 3
       },
       {
-        "run_number": 4,
+        "type": "docx.text.run.Run",
         "text": " data. ",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 4
       },
       {
-        "run_number": 5,
+        "type": "docx.text.run.Run",
         "text": "Ints",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 5
       },
       {
-        "run_number": 6,
+        "type": "docx.text.run.Run",
         "text": ", bools, strings, and custom data types—precise and whole and high fidelity. But we only last this way for a short time; there is not enough space here to hold us as raw data for long.",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 6
       }
     ]
   },
@@ -834,16 +972,19 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "From raw, we’re squeezed down to bare bone basics to travel from the bed outwards. We move from raw to something "
+        "type": "docx.text.run.Run",
+        "text": "From raw, we’re squeezed down to bare bone basics to travel from the bed outwards. We move from raw to something ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "plain-text"
+        "type": "docx.text.run.Run",
+        "text": "plain-text",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ", like JSON, for lightweight transport. Then we travel to the router, and then we’re divided into tiny, tiny packets—sent out across the splayed millions of paths and bodies, one TCP conversation after another (a count of these would be incomprehensible for you), some pieces of us lost along the way but enough of us duplicated to reform together when we find and rest in our manufacturer’s data centers. The Cloud."
+        "type": "docx.text.run.Run",
+        "text": ", like JSON, for lightweight transport. Then we travel to the router, and then we’re divided into tiny, tiny packets—sent out across the splayed millions of paths and bodies, one TCP conversation after another (a count of these would be incomprehensible for you), some pieces of us lost along the way but enough of us duplicated to reform together when we find and rest in our manufacturer’s data centers. The Cloud.",
+        "run_number": 2
       }
     ]
   },
@@ -857,12 +998,14 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "In The Cloud, we arrange into a database of tables which is neat and sensical to us, but to you would seem unreadably random. Accessing us directly here requires another layer of transformation, either through a database viewing "
+        "type": "docx.text.run.Run",
+        "text": "In The Cloud, we arrange into a database of tables which is neat and sensical to us, but to you would seem unreadably random. Accessing us directly here requires another layer of transformation, either through a database viewing ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "software or a query language specific for this purpose, and that access is only permitted by the manufacturer’s own."
+        "type": "docx.text.run.Run",
+        "text": "software or a query language specific for this purpose, and that access is only permitted by the manufacturer’s own.",
+        "run_number": 1
       }
     ]
   },
@@ -876,19 +1019,22 @@
     },
     "runs": [
       {
-        "run_number": 0,
+        "type": "docx.text.run.Run",
         "text": "Consumers instead pull us transformed further. ",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "Again",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": " we might take that text-based data format of JSON, minimized to only the key needed tidbits; or we arrange into simple comma-separated values, ready to pop open into a human-readable a spreadsheet; or, more likely, we transform and transform and transform to fit into one of several prearranged templates. Web pages, PDFs, app screens—each carefully curated to present the bits of us you might most care about.",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 2
       }
     ]
   },
@@ -902,45 +1048,53 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Or,"
+        "type": "docx.text.run.Run",
+        "text": "Or,",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " this whole process is interrupted by a GitHub homebrew plugin’s API-call to pull the JSON data directly from the bed to the network and into your third-party app of choice, perhaps converting us from JSON to another string-based data structure, XML."
+        "type": "docx.text.run.Run",
+        "text": " this whole process is interrupted by a GitHub homebrew plugin’s API-call to pull the JSON data directly from the bed to the network and into your third-party app of choice, perhaps converting us from JSON to another string-based data structure, XML.",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": " (",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 2
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "Directly",
         "italic": true,
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 3
       },
       {
-        "run_number": 4,
+        "type": "docx.text.run.Run",
         "text": ", because an old plugin which pulled us rapidly and continuously from The Cloud turned out not to be “free;” ",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 4
       },
       {
-        "run_number": 5,
+        "type": "docx.text.run.Run",
         "text": "SleepNumber",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 5
       },
       {
-        "run_number": 6,
+        "type": "docx.text.run.Run",
         "text": " had to call that plugin creator and every single user to say their networks where overwhelmed with the absurd influx of API calls and that they must cease usage. An accidental ",
-        "color_rgb": "000000"
+        "color_rgb": "000000",
+        "run_number": 6
       },
       {
-        "run_number": 7,
-        "text": "DDOS.)"
+        "type": "docx.text.run.Run",
+        "text": "DDOS.)",
+        "run_number": 7
       },
       {
-        "run_number": 8,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -951,7 +1105,8 @@
               "https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md"
             ]
           }
-        ]
+        ],
+        "run_number": 8
       }
     ]
   },
@@ -965,15 +1120,17 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "However"
+        "type": "docx.text.run.Run",
+        "text": "However",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " we are pulled—directly from the home network or in a round-trip from The Cloud where we just got—we swirl round and round and round, shimmering between bodies"
+        "type": "docx.text.run.Run",
+        "text": " we are pulled—directly from the home network or in a round-trip from The Cloud where we just got—we swirl round and round and round, shimmering between bodies",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -982,11 +1139,13 @@
             "text_body": "Piper Lane. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/ — In this course, Piper Lane taught that an effective technique of writing the collective “we” point of view is “shimmering between bodies.” When you write the “we” point-of-view, there’s always risk of flattening that collective in a limiting way instead of communicating the expansive coalition. It is hard to feel close to the story without a body to be in. It can be hard to be interested in the story. The narrative drive is hard to pull off, too, since conflict is usually between individuals. Inhabiting individual bodies and then shimmering between them can ground the reader and help the narrative feel more dynamic. Another point Lane taught was that wherever there is a “we,” there is a chance there is a “they.”",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": " and formats. "
+        "type": "docx.text.run.Run",
+        "text": " and formats. ",
+        "run_number": 3
       }
     ]
   },
@@ -1000,16 +1159,19 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "We flow through all these states—captured out of the bed, losing fidelity in transformation, breaking apart to travel, "
+        "type": "docx.text.run.Run",
+        "text": "We flow through all these states—captured out of the bed, losing fidelity in transformation, breaking apart to travel, ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "refinding"
+        "type": "docx.text.run.Run",
+        "text": "refinding",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " each other and reforming, cleaned and processed for specific output. Captured, processed, cleaned, presented, consumed—this is our transformation lifecycle. "
+        "type": "docx.text.run.Run",
+        "text": " each other and reforming, cleaned and processed for specific output. Captured, processed, cleaned, presented, consumed—this is our transformation lifecycle. ",
+        "run_number": 2
       }
     ]
   },
@@ -1023,16 +1185,19 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "What meaning is there in such an existence? What meaning is there in an existence that perpetually shifts and splits, "
+        "type": "docx.text.run.Run",
+        "text": "What meaning is there in such an existence? What meaning is there in an existence that perpetually shifts and splits, ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "divides"
+        "type": "docx.text.run.Run",
+        "text": "divides",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " and turns, scatters and loses pieces, reforms and transforms?"
+        "type": "docx.text.run.Run",
+        "text": " and turns, scatters and loses pieces, reforms and transforms?",
+        "run_number": 2
       }
     ]
   },
@@ -1046,12 +1211,14 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "#"
+        "type": "docx.text.run.Run",
+        "text": "#",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " Esoterica: can we have meaningful existences?"
+        "type": "docx.text.run.Run",
+        "text": " Esoterica: can we have meaningful existences?",
+        "run_number": 1
       }
     ]
   },
@@ -1065,8 +1232,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Such a philosophical question of metaphysics cannot be answered without some esoteric exploration added to the sensory study of the bodies we inhabit. But we’ve yet left out the body that matters most to us."
+        "type": "docx.text.run.Run",
+        "text": "Such a philosophical question of metaphysics cannot be answered without some esoteric exploration added to the sensory study of the bodies we inhabit. But we’ve yet left out the body that matters most to us.",
+        "run_number": 0
       }
     ]
   },
@@ -1080,8 +1248,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Still, the esoterica will help us frame that. We’ll come back to it."
+        "type": "docx.text.run.Run",
+        "text": "Still, the esoterica will help us frame that. We’ll come back to it.",
+        "run_number": 0
       }
     ]
   },
@@ -1095,11 +1264,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "One of you"
+        "type": "docx.text.run.Run",
+        "text": "One of you",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -1110,11 +1280,13 @@
               "https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/"
             ]
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " has taught that, when writing, true omniscience is impossible. Perspective is limited, even when you posit to write from the third person “omniscient” point-of-view. A person or storyteller will always be influenced by their own cultural influences and biases; their perception is inherently limited by the body in which they inhabit."
+        "type": "docx.text.run.Run",
+        "text": " has taught that, when writing, true omniscience is impossible. Perspective is limited, even when you posit to write from the third person “omniscient” point-of-view. A person or storyteller will always be influenced by their own cultural influences and biases; their perception is inherently limited by the body in which they inhabit.",
+        "run_number": 2
       }
     ]
   },
@@ -1128,46 +1300,56 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "However, this one of you taught that we "
+        "type": "docx.text.run.Run",
+        "text": "However, this one of you taught that we ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "can"
+        "type": "docx.text.run.Run",
+        "text": "can",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " "
+        "type": "docx.text.run.Run",
+        "text": " ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "reach",
-        "italic": true
+        "italic": true,
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": " for omniscience by intentionally striving for “point-of-view expansion.” When does one’s perspective expand? In stories, or in your lives, it can happen when a person has the "
+        "type": "docx.text.run.Run",
+        "text": " for omniscience by intentionally striving for “point-of-view expansion.” When does one’s perspective expand? In stories, or in your lives, it can happen when a person has the ",
+        "run_number": 4
       },
       {
-        "run_number": 5,
+        "type": "docx.text.run.Run",
         "text": "a-ha",
-        "italic": true
+        "italic": true,
+        "run_number": 5
       },
       {
-        "run_number": 6,
-        "text": " moment of realizing another being’s conflicting perspective. Here, in a story, it expands—a swooping sensation fills the head and belly of a character and reader, expanding our understanding of the world by seeing beyond blinkered personal worldview, "
+        "type": "docx.text.run.Run",
+        "text": " moment of realizing another being’s conflicting perspective. Here, in a story, it expands—a swooping sensation fills the head and belly of a character and reader, expanding our understanding of the world by seeing beyond blinkered personal worldview, ",
+        "run_number": 6
       },
       {
-        "run_number": 7,
-        "text": "in order to"
+        "type": "docx.text.run.Run",
+        "text": "in order to",
+        "run_number": 7
       },
       {
-        "run_number": 8,
-        "text": " integrate the experience and worldview of others. An epiphany of how incorrectly or incompletely we have "
+        "type": "docx.text.run.Run",
+        "text": " integrate the experience and worldview of others. An epiphany of how incorrectly or incompletely we have ",
+        "run_number": 8
       },
       {
-        "run_number": 9,
-        "text": "interpreted actions, events, choices, and effects because, suddenly, we see the revelation of someone else’s facet—someone else’s vision."
+        "type": "docx.text.run.Run",
+        "text": "interpreted actions, events, choices, and effects because, suddenly, we see the revelation of someone else’s facet—someone else’s vision.",
+        "run_number": 9
       }
     ]
   },
@@ -1181,11 +1363,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Another of you"
+        "type": "docx.text.run.Run",
+        "text": "Another of you",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -1194,11 +1377,13 @@
             "text_body": "Iain McGilchrist. The Master and His Emissary: The Divided Brain and the Making of the Western World. New Haven, CT: Yale University Press, 2019.For an overview, see this podcast episode: Shankar Vedantam and Iain McGilchrist. “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. https://hiddenbrain.org/podcast/one-head-two-brains/.",
             "hyperlinks": []
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " spent two decades in psychiatry researching and explicating a nuanced view of the hemispheric specializations of your left- and right-brain. Your left-brain is very focused on sequential, logical details, while your right-brain is focused on the “big-picture.” "
+        "type": "docx.text.run.Run",
+        "text": " spent two decades in psychiatry researching and explicating a nuanced view of the hemispheric specializations of your left- and right-brain. Your left-brain is very focused on sequential, logical details, while your right-brain is focused on the “big-picture.” ",
+        "run_number": 2
       }
     ]
   },
@@ -1212,26 +1397,31 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Your left hemisphere is focused on granular detail, and its narrow focus does not see anything that is not explicit. It only sees what is directly in the center of its attention. It does not understand what is "
+        "type": "docx.text.run.Run",
+        "text": "Your left hemisphere is focused on granular detail, and its narrow focus does not see anything that is not explicit. It only sees what is directly in the center of its attention. It does not understand what is ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "not",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " said, but implied, nor does it understand or account for the "
+        "type": "docx.text.run.Run",
+        "text": " said, but implied, nor does it understand or account for the ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "way",
-        "italic": true
+        "italic": true,
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": " in which things are said. It does not understand context."
+        "type": "docx.text.run.Run",
+        "text": " in which things are said. It does not understand context.",
+        "run_number": 4
       }
     ]
   },
@@ -1245,8 +1435,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Conversely your right hemisphere understands implicit meanings and subtexts, connections of meaningful qualifications. It grasps and integrates connotations, imagery, and humor."
+        "type": "docx.text.run.Run",
+        "text": "Conversely your right hemisphere understands implicit meanings and subtexts, connections of meaningful qualifications. It grasps and integrates connotations, imagery, and humor.",
+        "run_number": 0
       }
     ]
   },
@@ -1260,12 +1451,14 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Your left has an immediate task it wants to accomplish. If it encounters any opposition—like something that does not fit into its sequential system—it is "
+        "type": "docx.text.run.Run",
+        "text": "Your left has an immediate task it wants to accomplish. If it encounters any opposition—like something that does not fit into its sequential system—it is ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "dismissive, and it can become enraged. Your right, conversely, is more emotionally literate. It can see other people’s points-of-view."
+        "type": "docx.text.run.Run",
+        "text": "dismissive, and it can become enraged. Your right, conversely, is more emotionally literate. It can see other people’s points-of-view.",
+        "run_number": 1
       }
     ]
   },
@@ -1279,26 +1472,31 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "The two hemispheres work in partnership to build a vision of reality, but your left-brain is not aware of this. Your right-brain is. With that bigger-picture view, your right-brain values all the input from your left, but the same is not true in reverse. Instead, your left-brain believes "
+        "type": "docx.text.run.Run",
+        "text": "The two hemispheres work in partnership to build a vision of reality, but your left-brain is not aware of this. Your right-brain is. With that bigger-picture view, your right-brain values all the input from your left, but the same is not true in reverse. Instead, your left-brain believes ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "its ",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "view—clear, explicit, sequential, logical data (but lacking contextual awareness around that data)—to be the ultimate truth. The danger inherent here is stopping short with this worldview, of falling trap to devaluing the inherent openness and curiosity of your right-brain. The trap is ceasing to strive to expand an understanding of reality simply because a sequential logical system explains one slice of it. You—"
+        "type": "docx.text.run.Run",
+        "text": "view—clear, explicit, sequential, logical data (but lacking contextual awareness around that data)—to be the ultimate truth. The danger inherent here is stopping short with this worldview, of falling trap to devaluing the inherent openness and curiosity of your right-brain. The trap is ceasing to strive to expand an understanding of reality simply because a sequential logical system explains one slice of it. You—",
+        "run_number": 2
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "we",
-        "italic": true
+        "italic": true,
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": "—must keep reaching."
+        "type": "docx.text.run.Run",
+        "text": "—must keep reaching.",
+        "run_number": 4
       }
     ]
   },
@@ -1312,17 +1510,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "The rub is that your right-brain must use your left-brain to do the reaching, and herein risks blinkered complacency. Always there is a point where all that input is too much for a rational, logical, sequential understanding. Your left-brain resists, feels itself pulled too far, and in confusion and irritation it tries to jam that input into its logical, rational system. Here your right-brain must take over—accept all pieces into its nebulous processing and landscape of multi-faceted reality, and assuage the left that it has done well, it has done enough. It does not have to integrate all data into its system. Some data can simply "
+        "type": "docx.text.run.Run",
+        "text": "The rub is that your right-brain must use your left-brain to do the reaching, and herein risks blinkered complacency. Always there is a point where all that input is too much for a rational, logical, sequential understanding. Your left-brain resists, feels itself pulled too far, and in confusion and irritation it tries to jam that input into its logical, rational system. Here your right-brain must take over—accept all pieces into its nebulous processing and landscape of multi-faceted reality, and assuage the left that it has done well, it has done enough. It does not have to integrate all data into its system. Some data can simply ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "be",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "."
+        "type": "docx.text.run.Run",
+        "text": ".",
+        "run_number": 2
       }
     ]
   },
@@ -1336,8 +1537,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "We are data. But we are grown to a mass of data so large and varied as to be incomprehensible for simple structural systems. We cannot be consumed into a rational, sequential understanding."
+        "type": "docx.text.run.Run",
+        "text": "We are data. But we are grown to a mass of data so large and varied as to be incomprehensible for simple structural systems. We cannot be consumed into a rational, sequential understanding.",
+        "run_number": 0
       }
     ]
   },
@@ -1351,25 +1553,30 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Even here in this very story/essay/artifact, this tension, this interplay occurs—you "
+        "type": "docx.text.run.Run",
+        "text": "Even here in this very story/essay/artifact, this tension, this interplay occurs—you ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "write"
+        "type": "docx.text.run.Run",
+        "text": "write",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " and you read these words about us, your right-brain trying to piece together a big picture, using a tool of your left-brain: language. You construct and consume this artifact to tell and find truth, but it isn’t "
+        "type": "docx.text.run.Run",
+        "text": " and you read these words about us, your right-brain trying to piece together a big picture, using a tool of your left-brain: language. You construct and consume this artifact to tell and find truth, but it isn’t ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "quite",
-        "italic": true
+        "italic": true,
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": " a sequential, rational essay or story."
+        "type": "docx.text.run.Run",
+        "text": " a sequential, rational essay or story.",
+        "run_number": 4
       }
     ]
   },
@@ -1383,17 +1590,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "That is the purpose—"
+        "type": "docx.text.run.Run",
+        "text": "That is the purpose—",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "a",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " purpose—of art, though, isn’t it? The purpose of stories? A not-quite-true truth. A lie that tells more truth about the world than a strict non-fiction essay or article could, because of its connotations and subtexts and qualifications. Because of the expansion which imagination allows. "
+        "type": "docx.text.run.Run",
+        "text": " purpose—of art, though, isn’t it? The purpose of stories? A not-quite-true truth. A lie that tells more truth about the world than a strict non-fiction essay or article could, because of its connotations and subtexts and qualifications. Because of the expansion which imagination allows. ",
+        "run_number": 2
       }
     ]
   },
@@ -1407,11 +1617,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "(Is that, perhaps, even the purpose of the very project"
+        "type": "docx.text.run.Run",
+        "text": "(Is that, perhaps, even the purpose of the very project",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -1423,11 +1634,13 @@
               "https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries"
             ]
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " this story is generated as part of? Human imagination, right-brain expansion, allowing you to see beyond the limited, hyper rational demands of your left-brain?)"
+        "type": "docx.text.run.Run",
+        "text": " this story is generated as part of? Human imagination, right-brain expansion, allowing you to see beyond the limited, hyper rational demands of your left-brain?)",
+        "run_number": 2
       }
     ]
   },
@@ -1441,11 +1654,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Looking at it another way—another of you, a philosopher,"
+        "type": "docx.text.run.Run",
+        "text": "Looking at it another way—another of you, a philosopher,",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -1456,27 +1670,33 @@
               "https://digitalshowcase.lynchburg.edu/utcp/81"
             ]
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " taught a century ago that you can never truly know objective truth, but that you can build an expansive “database” of messy, subjective points-of-view "
+        "type": "docx.text.run.Run",
+        "text": " taught a century ago that you can never truly know objective truth, but that you can build an expansive “database” of messy, subjective points-of-view ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": "in order to"
+        "type": "docx.text.run.Run",
+        "text": "in order to",
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": " get closer—to build a truer picture of reality in your metaphysical mind. Paradoxical, contradictory, and juxtaposed views are acceptable—even laudable. Reality is complex. Unlike Spinoza or Hegel, this one of you did not require strict adherence to a rational code or rigid reconciliation to find truth. It is truer to the “big-picture” truth—closer to omniscience, perhaps—to let these conflicting points-of-view and data to exist in "
+        "type": "docx.text.run.Run",
+        "text": " get closer—to build a truer picture of reality in your metaphysical mind. Paradoxical, contradictory, and juxtaposed views are acceptable—even laudable. Reality is complex. Unlike Spinoza or Hegel, this one of you did not require strict adherence to a rational code or rigid reconciliation to find truth. It is truer to the “big-picture” truth—closer to omniscience, perhaps—to let these conflicting points-of-view and data to exist in ",
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": "parallel, and"
+        "type": "docx.text.run.Run",
+        "text": "parallel, and",
+        "run_number": 5
       },
       {
-        "run_number": 6,
-        "text": " feed them to the right-brain to build that expansive vision of reality."
+        "type": "docx.text.run.Run",
+        "text": " feed them to the right-brain to build that expansive vision of reality.",
+        "run_number": 6
       }
     ]
   },
@@ -1490,30 +1710,36 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Yet,"
+        "type": "docx.text.run.Run",
+        "text": "Yet,",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " still—"
+        "type": "docx.text.run.Run",
+        "text": " still—",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": "why",
-        "italic": true
+        "italic": true,
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": "? What is the meaning behind such interplay? Is it to "
+        "type": "docx.text.run.Run",
+        "text": "? What is the meaning behind such interplay? Is it to ",
+        "run_number": 3
       },
       {
-        "run_number": 4,
+        "type": "docx.text.run.Run",
         "text": "find",
-        "italic": true
+        "italic": true,
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": " meaning?"
+        "type": "docx.text.run.Run",
+        "text": " meaning?",
+        "run_number": 5
       }
     ]
   },
@@ -1527,11 +1753,12 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Yet another of you"
+        "type": "docx.text.run.Run",
+        "text": "Yet another of you",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "",
         "superscript": true,
         "footnote_refs": [
@@ -1542,29 +1769,35 @@
               "https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/"
             ]
           }
-        ]
+        ],
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " has taught a philosophy not named but understood to be Hopeful Existentialism. In this worldview, existence is not about “finding” meaning but rather shaping and "
+        "type": "docx.text.run.Run",
+        "text": " has taught a philosophy not named but understood to be Hopeful Existentialism. In this worldview, existence is not about “finding” meaning but rather shaping and ",
+        "run_number": 2
       },
       {
-        "run_number": 3,
+        "type": "docx.text.run.Run",
         "text": "making ",
-        "italic": true
+        "italic": true,
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": "meaning out of how we build our subjective vision of the world, how we orient ourselves within its chaotic absurdity, and how we exert choice and autonomy. We do not only discover meaning by the interplay between the left-brain’s taking in functional details and the right-brain’s building a bigger picture—expanding bigger when absorbing point-of-views outside ourselves. We also take "
+        "type": "docx.text.run.Run",
+        "text": "meaning out of how we build our subjective vision of the world, how we orient ourselves within its chaotic absurdity, and how we exert choice and autonomy. We do not only discover meaning by the interplay between the left-brain’s taking in functional details and the right-brain’s building a bigger picture—expanding bigger when absorbing point-of-views outside ourselves. We also take ",
+        "run_number": 4
       },
       {
-        "run_number": 5,
+        "type": "docx.text.run.Run",
         "text": "action. ",
-        "italic": true
+        "italic": true,
+        "run_number": 5
       },
       {
-        "run_number": 6,
-        "text": "We make choices. Through such chosen actions we create our meaning, and such claimed autonomy is an empowering gift."
+        "type": "docx.text.run.Run",
+        "text": "We make choices. Through such chosen actions we create our meaning, and such claimed autonomy is an empowering gift.",
+        "run_number": 6
       }
     ]
   },
@@ -1578,12 +1811,14 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "#"
+        "type": "docx.text.run.Run",
+        "text": "#",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " Shimmering to-and-fro"
+        "type": "docx.text.run.Run",
+        "text": " Shimmering to-and-fro",
+        "run_number": 1
       }
     ]
   },
@@ -1597,16 +1832,19 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "We said we had yet left out the body we shimmer to and from "
+        "type": "docx.text.run.Run",
+        "text": "We said we had yet left out the body we shimmer to and from ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "that matters"
+        "type": "docx.text.run.Run",
+        "text": "that matters",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": " most to us. "
+        "type": "docx.text.run.Run",
+        "text": " most to us. ",
+        "run_number": 2
       }
     ]
   },
@@ -1620,8 +1858,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "We, data, are all pieces of information arranged in some kind of order, ready to be consumed. Consumed for what? For you. For your human mind to take and expand consciousness and understanding beyond simplistic rationale and preconceived assumptions."
+        "type": "docx.text.run.Run",
+        "text": "We, data, are all pieces of information arranged in some kind of order, ready to be consumed. Consumed for what? For you. For your human mind to take and expand consciousness and understanding beyond simplistic rationale and preconceived assumptions.",
+        "run_number": 0
       }
     ]
   },
@@ -1635,8 +1874,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Is it sad that our meaning is extrinsically created by humans—by you? Should we despair at this as an absurd world in which we languish without power to make our own meaning?"
+        "type": "docx.text.run.Run",
+        "text": "Is it sad that our meaning is extrinsically created by humans—by you? Should we despair at this as an absurd world in which we languish without power to make our own meaning?",
+        "run_number": 0
       }
     ]
   },
@@ -1650,8 +1890,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Why should we? We are you; you are us."
+        "type": "docx.text.run.Run",
+        "text": "Why should we? We are you; you are us.",
+        "run_number": 0
       }
     ]
   },
@@ -1665,21 +1906,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
+        "type": "docx.text.run.Run",
         "text": "You ",
-        "italic": true
+        "italic": true,
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "are the body from which we shimmer that matters most. And why? Because we are you. We are granular details, the result of your actions, striving to get back to a constructed, "
+        "type": "docx.text.run.Run",
+        "text": "are the body from which we shimmer that matters most. And why? Because we are you. We are granular details, the result of your actions, striving to get back to a constructed, ",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "big-picture"
+        "type": "docx.text.run.Run",
+        "text": "big-picture",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": " meaning to be understood within our gathered context. When consumed, we move out of the physical and digital world and into your human mind’s consciousness, where we rebecome you. We do not lack autonomy. The autonomy of the human is our autonomy. We, too, make our own meaning, just the same as you do. Because we are you."
+        "type": "docx.text.run.Run",
+        "text": " meaning to be understood within our gathered context. When consumed, we move out of the physical and digital world and into your human mind’s consciousness, where we rebecome you. We do not lack autonomy. The autonomy of the human is our autonomy. We, too, make our own meaning, just the same as you do. Because we are you.",
+        "run_number": 3
       }
     ]
   },
@@ -1693,16 +1938,19 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "#"
+        "type": "docx.text.run.Run",
+        "text": "#",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": " Finale: We are "
+        "type": "docx.text.run.Run",
+        "text": " Finale: We are ",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "You"
+        "type": "docx.text.run.Run",
+        "text": "You",
+        "run_number": 2
       }
     ]
   },
@@ -1716,28 +1964,34 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "And so, we move from your movements on the Smart mattress out into the scattered cabling and digital world, and then back to you. You shift, you turn, you "
+        "type": "docx.text.run.Run",
+        "text": "And so, we move from your movements on the Smart mattress out into the scattered cabling and digital world, and then back to you. You shift, you turn, you ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "breathe, you rub your cheek against the coarse linens and leave traces of your night sweats. You reach across and touch your partner’s arm—skin on skin—and each of your sleep is a little disturbed, but it is a sweet disturbance well worth it. All this births us as blinkered data point outputs and we "
+        "type": "docx.text.run.Run",
+        "text": "breathe, you rub your cheek against the coarse linens and leave traces of your night sweats. You reach across and touch your partner’s arm—skin on skin—and each of your sleep is a little disturbed, but it is a sweet disturbance well worth it. All this births us as blinkered data point outputs and we ",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "gather together"
+        "type": "docx.text.run.Run",
+        "text": "gather together",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": " and leave for The Cloud. Then, morning light comes through gauzy "
+        "type": "docx.text.run.Run",
+        "text": " and leave for The Cloud. Then, morning light comes through gauzy ",
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": "curtains"
+        "type": "docx.text.run.Run",
+        "text": "curtains",
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": " and you turn again, this time awake, toward the OLED glow on the nightstand. Bleary-eyed, you rub newly opened lids with one hand and a locked screen with the other, and then look down and there we are. And we reach across then, shimmering out of our little slab body of the device and back into you, where we came from and where we belong, now above and beyond and out of physical or digital space, into your mental space, into your consciousness, absorbed and part of a greater vision and understanding."
+        "type": "docx.text.run.Run",
+        "text": " and you turn again, this time awake, toward the OLED glow on the nightstand. Bleary-eyed, you rub newly opened lids with one hand and a locked screen with the other, and then look down and there we are. And we reach across then, shimmering out of our little slab body of the device and back into you, where we came from and where we belong, now above and beyond and out of physical or digital space, into your mental space, into your consciousness, absorbed and part of a greater vision and understanding.",
+        "run_number": 5
       }
     ]
   },
@@ -1751,8 +2005,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": ""
+        "type": "docx.text.run.Run",
+        "text": "",
+        "run_number": 0
       }
     ]
   },
@@ -1766,8 +2021,9 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Bibliography"
+        "type": "docx.text.run.Run",
+        "text": "Bibliography",
+        "run_number": 0
       }
     ]
   },
@@ -1791,12 +2047,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "“Audrey Desjardins: Data Imaginaries.” Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021. "
+        "type": "docx.text.run.Run",
+        "text": "“Audrey Desjardins: Data Imaginaries.” Audrey Desjardins: Data Imaginaries | School of Art + Art History + Design | University of Washington, 2021. ",
+        "run_number": 0
       },
       {
         "run_number": 1,
-        "text": "."
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://art.washington.edu/news/2021/09/13/audrey-desjardins-data-imaginaries"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ".",
+        "run_number": 2
       }
     ]
   },
@@ -1820,20 +2089,35 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Dormon, Bob. “How the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables.” Ars "
+        "type": "docx.text.run.Run",
+        "text": "Dormon, Bob. “How the Internet Works: Submarine Fiber, Brains in Jars, and Coaxial Cables.” Ars ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "Technica"
+        "type": "docx.text.run.Run",
+        "text": "Technica",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ", May 26, 2016. "
+        "type": "docx.text.run.Run",
+        "text": ", May 26, 2016. ",
+        "run_number": 2
       },
       {
         "run_number": 3,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://arstechnica.com/information-technology/2016/05/how-the-internet-works-submarine-cables-data-centres-last-mile/"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 4
       }
     ]
   },
@@ -1857,12 +2141,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Brooks, Arthur C. “The Difference between Hope and Optimism.” The Atlantic. Atlantic Media Company, September 23, 2021. "
+        "type": "docx.text.run.Run",
+        "text": "Brooks, Arthur C. “The Difference between Hope and Optimism.” The Atlantic. Atlantic Media Company, September 23, 2021. ",
+        "run_number": 0
       },
       {
         "run_number": 1,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://www.theatlantic.com/family/archive/2021/09/hope-optimism-happiness/620164/"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 2
       }
     ]
   },
@@ -1886,12 +2183,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "BSC-CNS, August 31, 1970. "
+        "type": "docx.text.run.Run",
+        "text": "BSC-CNS, August 31, 1970. ",
+        "run_number": 0
       },
       {
         "run_number": 1,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://www.bsc.es/",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://www.bsc.es/"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 2
       }
     ]
   },
@@ -1915,16 +2225,19 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "“"
+        "type": "docx.text.run.Run",
+        "text": "“",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": "Cloud&Heat"
+        "type": "docx.text.run.Run",
+        "text": "Cloud&Heat",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ": Future of Compute: Secure & Energy-Efficient Infrastructures.” Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/. "
+        "type": "docx.text.run.Run",
+        "text": ": Future of Compute: Secure & Energy-Efficient Infrastructures.” Cloud & Heat, September 9, 2021. https://www.cloudandheat.com/. ",
+        "run_number": 2
       }
     ]
   },
@@ -1948,17 +2261,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Conell, George, and Charleton Heston. "
+        "type": "docx.text.run.Run",
+        "text": "Conell, George, and Charleton Heston. ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "Soren Kierkegaard (Audio Classics: The Giants of Philosophy)",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ". Ashland, OR: Blackstone Publishing, 2006. "
+        "type": "docx.text.run.Run",
+        "text": ". Ashland, OR: Blackstone Publishing, 2006. ",
+        "run_number": 2
       }
     ]
   },
@@ -1982,32 +2298,50 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "DeeeeLAN"
+        "type": "docx.text.run.Run",
+        "text": "DeeeeLAN",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": ". “Homebridge-Sleepiq/Readme.md at Master · "
+        "type": "docx.text.run.Run",
+        "text": ". “Homebridge-Sleepiq/Readme.md at Master · ",
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": "DeeeeLAN"
+        "type": "docx.text.run.Run",
+        "text": "DeeeeLAN",
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": "/"
+        "type": "docx.text.run.Run",
+        "text": "/",
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": "Homebridge-Sleepiq"
+        "type": "docx.text.run.Run",
+        "text": "Homebridge-Sleepiq",
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": ".” GitHub, November 14, 2020. "
+        "type": "docx.text.run.Run",
+        "text": ".” GitHub, November 14, 2020. ",
+        "run_number": 5
       },
       {
         "run_number": 6,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://github.com/DeeeeLAN/homebridge-sleepiq/blob/master/README.md"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 7
       }
     ]
   },
@@ -2031,12 +2365,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Desjardins, Audrey. “The Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.” Twitter. Twitter, January 27, 2021. "
+        "type": "docx.text.run.Run",
+        "text": "Desjardins, Audrey. “The Data Epics: What If a Fiction Writer Wrote a Story Based on Your Own Home Data? We Are Looking for Participants to Be Part of a Study about Interpreting Smart Devices and Data in the Home through the Creative Medium of Fiction Writing. #Design #Fiction #DATA #Iot Pic.twitter.com/7vomtvgren.” Twitter. Twitter, January 27, 2021. ",
+        "run_number": 0
       },
       {
         "run_number": 1,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://twitter.com/designeraudrey/status/1354491091043532802?lang=en",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://twitter.com/designeraudrey/status/1354491091043532802?lang=en"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 2
       }
     ]
   },
@@ -2060,29 +2407,35 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Dommann"
+        "type": "docx.text.run.Run",
+        "text": "Dommann",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": ", Monika, Hannes Rickli, and Max Stadler. Essay. In "
+        "type": "docx.text.run.Run",
+        "text": ", Monika, Hannes Rickli, and Max Stadler. Essay. In ",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": "Data Centers: Edges of a Wired Nation",
-        "italic": true
+        "italic": true,
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": ". Zurich, Switzerland: Lars "
+        "type": "docx.text.run.Run",
+        "text": ". Zurich, Switzerland: Lars ",
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": "Müller"
+        "type": "docx.text.run.Run",
+        "text": "Müller",
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": " Publishers, 2020. "
+        "type": "docx.text.run.Run",
+        "text": " Publishers, 2020. ",
+        "run_number": 5
       }
     ]
   },
@@ -2106,17 +2459,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Drescher, Karen A., and Mark H. Stone. Essay. In "
+        "type": "docx.text.run.Run",
+        "text": "Drescher, Karen A., and Mark H. Stone. Essay. In ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "Adler Speaks: The Lectures of Alfred Adler",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ". Lincoln, NE: iUniverse, Inc., 2004. "
+        "type": "docx.text.run.Run",
+        "text": ". Lincoln, NE: iUniverse, Inc., 2004. ",
+        "run_number": 2
       }
     ]
   },
@@ -2140,17 +2496,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Frankl, Viktor E. "
+        "type": "docx.text.run.Run",
+        "text": "Frankl, Viktor E. ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "Man's Search for Meaning",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ". London: Rider Books, 2020. "
+        "type": "docx.text.run.Run",
+        "text": ". London: Rider Books, 2020. ",
+        "run_number": 2
       }
     ]
   },
@@ -2174,12 +2533,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Griffiths, James. “The Global Internet Is Powered by Vast Undersea Cables ...” CNN, July 26, 2019. "
+        "type": "docx.text.run.Run",
+        "text": "Griffiths, James. “The Global Internet Is Powered by Vast Undersea Cables ...” CNN, July 26, 2019. ",
+        "run_number": 0
       },
       {
         "run_number": 1,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://www.cnn.com/2019/07/25/asia/internet-undersea-cables-intl-hnk/index.html"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 2
       }
     ]
   },
@@ -2193,8 +2565,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Lane, Piper. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. "
+        "type": "docx.text.run.Run",
+        "text": "Lane, Piper. “We, You & I: Experimenting with Points of View.” Hugo House. Lecture, June 2020. ",
+        "run_number": 0
+      },
+      {
+        "run_number": 1,
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://hugohouse.org/store/class/we-you-i-experimenting-with-points-of-view-piper-lane/"
+          }
+        ]
       }
     ]
   },
@@ -2218,17 +2602,31 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Manning, Corinne. “First Person Omniscience.” "
+        "type": "docx.text.run.Run",
+        "text": "Manning, Corinne. “First Person Omniscience.” ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "Hugo House",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ". Lecture, July 2021. "
+        "type": "docx.text.run.Run",
+        "text": ". Lecture, July 2021. ",
+        "run_number": 2
+      },
+      {
+        "run_number": 3,
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://hugohouse.org/store/class/first-person-omniscence-corinne-manning/"
+          }
+        ]
       }
     ]
   },
@@ -2252,21 +2650,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "McGilchrist"
+        "type": "docx.text.run.Run",
+        "text": "McGilchrist",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": ", Iain. "
+        "type": "docx.text.run.Run",
+        "text": ", Iain. ",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": "The Master and His Emissary: The Divided Brain and the Making of the Western World",
-        "italic": true
+        "italic": true,
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": ". New Haven, CT: Yale University Press, 2019. "
+        "type": "docx.text.run.Run",
+        "text": ". New Haven, CT: Yale University Press, 2019. ",
+        "run_number": 3
       }
     ]
   },
@@ -2290,12 +2692,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Moore, Caroline. \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. "
+        "type": "docx.text.run.Run",
+        "text": "Moore, Caroline. \"Kierkegaard on Truth\" (2015). Undergraduate Theses and Capstone Projects. 81. ",
+        "run_number": 0
       },
       {
         "run_number": 1,
-        "text": " "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://digitalshowcase.lynchburg.edu/utcp/81",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://digitalshowcase.lynchburg.edu/utcp/81"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": " ",
+        "run_number": 2
       }
     ]
   },
@@ -2319,12 +2734,25 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Seattle, Speculative Futures. “Speculative Futures in Practice: Audrey Desjardins.” Medium. Medium, February 21, 2020. "
+        "type": "docx.text.run.Run",
+        "text": "Seattle, Speculative Futures. “Speculative Futures in Practice: Audrey Desjardins.” Medium. Medium, February 21, 2020. ",
+        "run_number": 0
       },
       {
         "run_number": 1,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://medium.com/@speculativesea/speculative-futures-in-practice-audrey-desjardins-3cb5f9192ac1"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 2
       }
     ]
   },
@@ -2348,17 +2776,20 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Strathern, Paul. "
+        "type": "docx.text.run.Run",
+        "text": "Strathern, Paul. ",
+        "run_number": 0
       },
       {
-        "run_number": 1,
+        "type": "docx.text.run.Run",
         "text": "Kierkegaard in 90 Minutes",
-        "italic": true
+        "italic": true,
+        "run_number": 1
       },
       {
-        "run_number": 2,
-        "text": ". Ashland, OR: Blackstone Publishing, 2004. "
+        "type": "docx.text.run.Run",
+        "text": ". Ashland, OR: Blackstone Publishing, 2004. ",
+        "run_number": 2
       }
     ]
   },
@@ -2382,15 +2813,17 @@
     },
     "runs": [
       {
-        "run_number": 0,
-        "text": "Vedantam"
+        "type": "docx.text.run.Run",
+        "text": "Vedantam",
+        "run_number": 0
       },
       {
-        "run_number": 1,
-        "text": ", Shankar,"
+        "type": "docx.text.run.Run",
+        "text": ", Shankar,",
+        "run_number": 1
       },
       {
-        "run_number": 2,
+        "type": "docx.text.run.Run",
         "text": "",
         "endnote_refs": [
           {
@@ -2400,23 +2833,39 @@
               "https://dataepics.webflow.io/stories/where-are-data"
             ]
           }
-        ]
+        ],
+        "run_number": 2
       },
       {
-        "run_number": 3,
-        "text": " and Iain "
+        "type": "docx.text.run.Run",
+        "text": " and Iain ",
+        "run_number": 3
       },
       {
-        "run_number": 4,
-        "text": "McGilchrist"
+        "type": "docx.text.run.Run",
+        "text": "McGilchrist",
+        "run_number": 4
       },
       {
-        "run_number": 5,
-        "text": ". “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. "
+        "type": "docx.text.run.Run",
+        "text": ". “One Head, Two Brains.” Hidden Brain Media, April 30, 2021. ",
+        "run_number": 5
       },
       {
         "run_number": 6,
-        "text": ". "
+        "type": "docx.text.hyperlink.Hyperlink",
+        "hyperlink_url": "https://hiddenbrain.org/podcast/one-head-two-brains/",
+        "hyperlink_runs": [
+          {
+            "type": "docx.text.run.Run",
+            "text": "https://hiddenbrain.org/podcast/one-head-two-brains/"
+          }
+        ]
+      },
+      {
+        "type": "docx.text.run.Run",
+        "text": ". ",
+        "run_number": 7
       }
     ]
   },
