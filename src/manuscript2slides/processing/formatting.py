@@ -555,6 +555,8 @@ def copy_paragraph_formatting_docx2pptx(
         # _copy_paragraph_format_docx2pptx(source_para, target_para)
         _copy_basic_font_formatting(source_para.style.font, target_para.font)
         # NOTE: Don't copy paragraph size, because it cancels the slide's ability to auto-size for visuals
+        # TODO: Study if there is some way to support applying paragraph styling size to JUST headings, without
+        # impacting all the other runs. # TODO: Or at least store the para size info in the JSON metadata.
         # _copy_font_size_formatting(source_para.style.font, target_para.font)
         _copy_font_color_formatting(source_para.style.font, target_para.font)
 
