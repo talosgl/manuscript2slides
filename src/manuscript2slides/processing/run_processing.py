@@ -16,7 +16,7 @@ from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
-
+from docx.shared import RGBColor as RGBColor_docx
 from manuscript2slides.annotations.restore_from_slides import (
     safely_extract_comment_data,
     safely_extract_experimental_formatting_data,
@@ -148,7 +148,7 @@ def process_pptx_run(
     if run.hyperlink.address:
         log.debug(f"Hyperlink address found: {run.hyperlink.address}")
         run_from_hyperlink = add_hyperlink_to_docx_paragraph(
-            new_para, run.hyperlink.address
+            new_para, run.hyperlink.address, run.text
         )
         last_run = run_from_hyperlink
         copy_run_formatting_pptx2docx(run, run_from_hyperlink, cfg)
@@ -195,7 +195,9 @@ def process_pptx_run(
 
 
 # region add_hyperlink_to_docx_paragraph
-def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_docx:
+def add_hyperlink_to_docx_paragraph(
+    paragraph: Paragraph_docx, url: str, text: str
+) -> Run_docx:
     """
     Custom function to add Hyperlink objects to docx paragraphs using XML manipulation.
 
@@ -207,8 +209,6 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
     Adapted from/referenced https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
     and https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130
     """
-    # Create a new run on this paragraph
-    run = paragraph.add_run()
 
     # Create the hyperlink structure
     part = paragraph.part
@@ -216,13 +216,22 @@ def add_hyperlink_to_docx_paragraph(paragraph: Paragraph_docx, url: str) -> Run_
     hyperlink = OxmlElement_docx("w:hyperlink")
     hyperlink.set(qn("r:id"), r_id)
 
-    # Move the run from within the paragraph to within the Hyperlink
-    run_element = run._element
-    run_element.getparent().remove(run_element)  # Remove from paragraph
-    hyperlink.append(run_element)  # Add to hyperlink
-    paragraph._p.append(hyperlink)  # Add hyperlink to paragraph
+    # 2. Create the Run with PARAGRAPH as the parent (to avoid an XML .part error)
+    # Use a new 'w:r' element
+    new_run = Run_docx(OxmlElement_docx("w:r"), paragraph)
+    new_run.text = text
 
-    return run
+    # 3. Apply formatting - Word 2025 requires manual blue/underline
+    new_run.font.color.rgb = RGBColor_docx(5, 99, 193)
+    new_run.font.underline = True
+
+    # 4. NOW move the run's internal XML inside the hyperlink XML
+    hyperlink.append(new_run._element)
+
+    # 5. Append the whole hyperlink structure to the paragraph XML
+    paragraph._p.append(hyperlink)
+
+    return new_run
 
 
 # endregion
