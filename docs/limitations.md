@@ -4,6 +4,8 @@ This document lists current limitations, design constraints, and known issues in
 
 Many of these stem from the Microsoft Office Open XML formats and the Python libraries used.
 
+**Important:** Unless explicitly noted as a potential future enhancement, the limitations listed here are by design and not planned for implementation. We focus on robust text and formatting conversion. (Still, it doesn't hurt to ask about a feature if you REALLY want it. Or fork the repo, figure out a strategy, and make a PR!)
+
 ---
 
 ## 1. File and Format Support
@@ -12,7 +14,9 @@ Many of these stem from the Microsoft Office Open XML formats and the Python lib
 
 - **Text-only conversion:** We only support text content. No images, tables, etc., are copied between the formats, and we do not have plans to support these in future.
 
-- **Sections:** "Sections" in both docx and pptx are not supported.
+- **Headers and Footers:** Word document headers and footers (including page numbers) are not preserved during conversion. PowerPoint has a different header/footer model that doesn't map well to Word's section-based approach. These elements are typically for page layout and don't usually contain critical presentation content. NOTE: This is a feature we could probably support in future if there's a desire for it.
+
+- **Document Sections:** Word "sections" (which control page layout, margins, headers/footers per section) are not preserved. PowerPoint doesn't have an equivalent concept - slides are a flat list without section-level formatting. Note that PowerPoint does have "sections" for organizing slides in the editor, but these are purely organizational and unrelated to Word's sections.
 
 ---
 ## 2. Formatting and Rendering
@@ -27,6 +31,8 @@ Basic formatting (bold, italic, underline, etc.) is always preserved. Advanced f
 | superscript / subscript             | font colors & mixed inline runs                    |
 | font size                           | nested formatting styles                           |
 | basic alignment (left/center/right) | any multi-run or partially formatted text handling |
+
+Paragraph Formatting beyond alignment and Heading styling: we don't preserve paragraph formatting for line spacing, paragraph spacing, indentations, or similar. Instead, users can customize these easily in the template files (`Documents/manuscript2slides/templates/...`), and we want to respect the template choices rather than trying to force Word formatting into Powerpoint or vice versa, where the page layouts won't match.
 
 
 ### Field-code hyperlinks:
