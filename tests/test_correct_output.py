@@ -16,6 +16,7 @@ from pptx.dml.color import RGBColor as RGBColor_pptx
 import docx
 import docx.document
 from docx.text.hyperlink import Hyperlink as Hyperlink_docx
+from docx.text.run import Run as Run_docx
 from docx.shared import RGBColor as RGBColor_docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_UNDERLINE
 
@@ -26,17 +27,11 @@ from tests import helpers
 
 # region docx2pptx tests
 
-""" 
-When converting from sample_doc.docx -> standard pptx output, with these options:
-    - preserve experimental formatting
-    - keep all annotations
-    - preserve metadata in speaker notes
-...the results should match the assertions in the tests below.
-
-# TODO: Consider if we should add similar tests for when options are disabled. 
-# (E.g., experimental formatting on, but preserve_docx_metadata_in_speaker_notes is False)
-"""
-
+# When converting from sample_doc.docx -> standard pptx output, with these options:
+#     - preserve experimental formatting
+#     - keep all annotations
+#     - preserve metadata in speaker notes
+# ...the results should match the assertions in the tests below.
 
 def test_where_are_data_slide(output_pptx: Path) -> None:
     """
@@ -377,7 +372,7 @@ def test_header_formatting_restoration_pptx2docx(output_docx: Path) -> None:
     )
 
     # Case: Heading 2 is in italics and centered
-    assert second_header_para.style.font.italic == True
+    assert second_header_para.style.font.italic is True
     assert second_header_para.paragraph_format.alignment == WD_ALIGN_PARAGRAPH.CENTER
 
     # Case Heading 3 styling is restored, and in gray text
@@ -407,24 +402,106 @@ def test_run_formatting_restoration_pptx2docx(output_docx: Path) -> None:
     Verify:
 
     In the paragraph containing: "In a cold concrete underground tunnel," ...
-    - "In a cold concrete underground tunnel" is a hyperlink and sub-run, "tunnel" is in italics
-    - "spayed" is in bold
-    - run "in three dozen directions" is italic
+    ✓ "In a cold concrete underground tunnel" is a hyperlink and sub-run, "tunnel" is in italics
+    ✓ "spayed" is in bold
+    ✓ run "in three dozen directions" is italic
     - run with "buzzing" is highlighted in yellow
     - "Dust covers the cables" is in red, and has an explicit typeface set on its run (Georgia)
-    - She could wipe them clean without too much risk is underlined (True)
+    ✓ She could wipe them clean without too much risk is underlined (True)
     - read those stories is double-underlined (enum 3)
     """
     # TODO
 
+    doc = docx.Document(str(output_docx))
+
+    cold_underground_para = helpers.find_first_docx_para_containing(
+        doc, "In a cold concrete underground tunnel"
+    )
+
+    # Case: Check that the expected texts are hyperlinks
+    first_hyperlink = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para, "In a cold concrete underground"
+    )
+    assert isinstance(first_hyperlink, Hyperlink_docx)
+    second_hyperlink = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para, "tunnel"
+    )
+    assert isinstance(second_hyperlink, Hyperlink_docx)
+
+    # Case: Hyperlink text maintains italic formatting
+    hyperlink_inner_run = helpers.find_inner_run_containing(second_hyperlink, "tunnel")
+    assert hyperlink_inner_run.italic is True
+
+    # Case: Bold formatting is preserved
+    bold_run = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para, "splayed"
+    )
+    assert bold_run.bold is True
+
+    # Case: Italics formatting is preserved
+    italic_run = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para, "three dozen directions"
+    )
+    assert italic_run.italic is True
+
+    # Case: Yellow highlight is preserved
+    hl_run = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para, "buzzing"
+    )
+    assert isinstance(hl_run, Run_docx)
+    assert hl_run.font.highlight_color == WD_COLOR_INDEX.YELLOW
+
+    # Case: Red color and Georgia typeface are preserved
+    red_typeface_run = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para, "Dust covers the cables"
+    )
+    assert isinstance(red_typeface_run, Run_docx)
+    assert red_typeface_run.font.color is not None
+    assert (
+        hasattr(red_typeface_run.font.color, "rgb")
+        and red_typeface_run.font.color.rgb is not None
+    )
+    assert red_typeface_run.font.color.rgb == RGBColor_docx(0xFF, 0x00, 0x00)  # red
+    assert red_typeface_run.font.name == "Georgia"
+
+    ul_run = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para,
+        "She could wipe them clean without too much risk",
+    )
+    assert ul_run.underline is True
+
+    # Case: Double underline is preserved
+    double_ul_run = helpers.find_first_docx_item_in_para_containing(
+        cold_underground_para, "read those stories"
+    )
+    assert isinstance(double_ul_run, Run_docx)
+    assert double_ul_run.font.underline == WD_UNDERLINE.DOUBLE
+
 
 def test_annotations_are_restored_pptx2docx(output_docx: Path) -> None:
     """
-    - The first comment contains at least: "Sample Comment"
-    - The last comment contains: "Endnote:" and "Another sample endnote with a url"
-    - Any comment contains: "Footnote:"
+    - A comment contains: "Sample Comment"
+    - A comment contains: "Endnote:" and "Another sample endnote with a url"
+    - A comment contains: "Footnote:"
     """
-    # TODO
+    doc = docx.Document(str(output_docx))
+
+    # Case: At least one comment contains "Sample Comment"
+    assert any(
+        "Sample comment" in comment.text for comment in doc.comments
+    ), "Expected to find 'Sample comment' in at least one comment"
+
+    # Case: At least one comment contains "Footnote:"
+    assert any(
+        "Footnote:" in comment.text for comment in doc.comments
+    ), "Expected to find 'Footnote:' in at least one comment"
+
+    # Case: At least one comment contains endnote text
+    assert any(
+        "Endnote:" in comment.text
+        and "Another sample endnote with a url" in comment.text
+        for comment in doc.comments
+    ), "Expected to find endnote content in at least one comment"
 
 
 # endregion
