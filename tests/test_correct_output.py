@@ -117,7 +117,7 @@ def test_author_slide(output_pptx: Path) -> None:
     # Verify color object exists and has RGB value before checking specific color
     assert para.font.color is not None
     assert hasattr(para.font.color, "rgb") and para.font.color.rgb is not None
-    assert para.font.color.rgb == RGBColor_pptx(0x99, 0x99, 0x99)  # gray
+    assert para.font.color.rgb == RGBColor_pptx(89, 89, 89)  # gray
     assert para.font.italic is True
 
     notes_text_frame: TextFrame = helpers.get_slide_notes_text(slide)
@@ -204,6 +204,9 @@ def test_in_a_cold_concrete_underground_tunnel_slide(output_pptx: Path) -> None:
     assert red_run.font.color is not None
     assert hasattr(red_run.font.color, "rgb") and red_run.font.color.rgb is not None
     assert red_run.font.color.rgb == RGBColor_pptx(0xFF, 0x00, 0x00)  # red
+
+    # Verify this run has a custom font set on it
+    assert red_run.font.name == "Georgia"
 
     # Case: "She could wipe them clean without too much risk" should be underlined
     ul_run = helpers.find_first_pptx_run_in_para_containing(
@@ -324,10 +327,69 @@ def test_vanilla_docx_theme_font_does_not_carry_into_pptx_output(
     assert para.runs[0].font.name is None
 
 
+# TODO:
+def test_speaker_notes_empty_if_json_and_annotations_off(
+    output_pptx_default_options: Path,
+) -> None:
+    """
+    Verify that if the pipeline is run with the following bools set to False, the speaker notes are empty:
+
+    - display_comments
+    - display_endnotes
+    - display_footnotes
+    - preserve_docx_metadata_in_speaker_notes
+
+    and that if experimental_formatting_on is True, the formatting is still preserved, even if the metadata
+    is not copied.
+
+    NOTE: This is an expensive test (we're running the pipeline a second time for it), so we may need to
+    consider if it's worth it.
+    """
+
+    prs = pptx.Presentation(output_pptx_default_options)
+
+    slide_result = helpers.find_first_slide_containing(
+        prs, "In a cold concrete underground tunnel"
+    )
+    assert (
+        slide_result is not None
+    ), f"Test cannot proceed because the required text could not be found."
+
+    slide, para = slide_result
+    notes_text_frame = helpers.get_slide_notes_text(slide)
+
+    assert notes_text_frame.text.strip() == ""
+
+
 # endregion
 
 
 # region pptx2docx
 # TODO: Need to add equivalent tests for the reverse pipeline.
+"""
+Test cases:
+
+Note: The input pptx has metadata preserved in the speaker notes, was generated with "headings nested" chunking, 
+and with a custom pptx template, using a custom theme font (the latter should be ignored during this pipeline, 
+because the docx template's themes should be honored).
+
+Verify: 
+- "[Link: https://dataepics.webflow.io/stories/where-are-data] Where are Data?" is a Heading1, and is 48pt size
+- "by J. King-Yost" is Heading2 and centered
+- "# Intro to Data: Places we are embodied" is Heading3 and in gray text
+
+In the paragraph containing: "In a cold concrete underground tunnel," ...
+- "In a cold concrete underground tunnel" is a hyperlink and sub-run, "tunnel" is in italics
+- "spayed" is in bold
+- run "in three dozen directions" is italic
+- run with "buzzing" is highlighted in yellow
+- "Dust covers the cables" is in red, and has an explicit typeface set on its run (Georgia)
+- She could wipe them clean without too much risk is underlined (True)
+- read those stories is double-underlined (enum 3)
+
+- The first comment contains at least: "Sample Comment"
+- The last comment contains: "Endnote:" and "Another sample endnote with a url"
+
+"""
 
 # endregion

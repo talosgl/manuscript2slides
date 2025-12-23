@@ -62,7 +62,16 @@ def path_to_empty_docx() -> Path:
 @pytest.fixture(scope="session")
 def path_to_sample_docx_with_everything() -> Path:
     """Path to a copy of the standard sample_doc.docx that lives in tests/data."""
-    path = Path("tests/data/sample_doc.docx")
+    path = Path("tests/data/where_are_data.docx")
+    assert path.exists(), f"Test file not found: {path}"
+    return path
+
+
+@pytest.fixture(scope="session")
+def path_to_sample_pptx_with_everything() -> Path:
+    """Path to a pptx in tests/data that used a custom template during docx2pptx run, for use
+    in reverse pipeline tests."""
+    path = Path("tests/data/custom_font_output.docx")
     assert path.exists(), f"Test file not found: {path}"
     return path
 
@@ -131,12 +140,59 @@ def output_pptx(
     path_to_empty_pptx: Path,
     session_temp_dir: Path,
 ) -> Path:
-    """Run the pipeline once for the entire test session."""
+    """Run the pipeline once for the entire test session with every option enabled."""
     cfg = UserConfig(
         input_docx=path_to_sample_docx_with_everything,
         template_pptx=path_to_empty_pptx,
         output_folder=session_temp_dir,
     ).enable_all_options()
+
+    output_filepath = run_pipeline(cfg)
+    return output_filepath
+
+
+@pytest.fixture(scope="session")
+def output_pptx_default_options(
+    path_to_sample_docx_with_everything: Path,
+    path_to_empty_pptx: Path,
+    session_temp_dir: Path,
+) -> Path:
+    """Run the pipeline once for the entire test session with only default options set.
+
+    Defaults (as of 2025-12-23):
+    display_comments = False
+    display_endnotes = False
+    display_footnotes = False
+    experimental_formatting_on = True
+    preserve_docx_metadata_in_speaker_notes = False
+    chunk_type = PARAGRAPH
+    comments_keep_author_and_date = True
+    comments_sort_by_date = True
+    direction = (determined by input) DOCX_TO_PPTX
+
+    """
+    cfg = UserConfig(
+        input_docx=path_to_sample_docx_with_everything,
+        template_pptx=path_to_empty_pptx,
+        output_folder=session_temp_dir,
+    )
+
+    output_filepath = run_pipeline(cfg)
+    return output_filepath
+
+
+@pytest.fixture(scope="session")
+def output_docx(
+    path_to_sample_pptx_with_everything: Path,
+    path_to_empty_docx: Path,
+    session_temp_dir: Path,
+) -> Path:
+    """Run the pipeline once for the entire test session."""
+    cfg = UserConfig(
+        input_pptx=path_to_sample_pptx_with_everything,
+        template_docx=path_to_empty_docx,
+        output_folder=session_temp_dir,
+    )
 
     output_filepath = run_pipeline(cfg)
     return output_filepath
