@@ -63,3 +63,4 @@ exports/
 tests/data/xml_extracts
 tests/data/json_extracts
 *.bak
+settings.local.json
