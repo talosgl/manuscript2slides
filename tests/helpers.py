@@ -12,15 +12,69 @@ from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 from manuscript2slides.processing.populate_docx import get_slide_paragraphs
 
+from docx import document
+from docx.text.paragraph import Paragraph as Paragraph_docx
+from docx.text.run import Run as Run_docx
+from docx.text.hyperlink import Hyperlink as Hyperlink_docx
+
+
+def find_first_docx_para_containing(
+    doc: document.Document, search_text: str
+) -> Paragraph_docx:
+    """Find the first paragraph instance with the search text.
+
+    Raises:
+        AssertionError: If the paragraph cannot be found.
+    """
+    if not doc.paragraphs:
+        raise AssertionError(
+            f"Test cannot proceed because there aren't any paragraphs in this document."
+        )
+
+    for para in doc.paragraphs:
+        if search_text in para.text:
+            return para
+
+    raise AssertionError(
+        f"Test cannot proceed because the required text '{search_text}' could not be found in document."
+    )
+
+
+def find_first_docx_run_in_para_exact_match(
+    parent: Paragraph_docx | Hyperlink_docx, search_text: str
+) -> Run_docx:
+    """Find the first run in a docx paragraph or hyperlink with exact matching text.
+
+    Raises:
+        AssertionError: If the run cannot be found.
+    """
+    if not parent.runs:
+        raise AssertionError(
+            f"Test cannot proceed because this paragraph doesn't have any runs."
+        )
+
+    for run in parent.runs:
+        if run.text == search_text:
+            return run
+
+    raise AssertionError(
+        f"Test cannot proceed because the required text '{search_text}' could not be found in paragraph."
+    )
+
 
 def find_first_slide_containing(
     prs: presentation.Presentation, search_text: str
-) -> tuple[Slide, Paragraph_pptx] | None:
+) -> tuple[Slide, Paragraph_pptx]:
     """Find the first slide that contains the given text anywhere in its shapes (but not searching its speaker notes).
-    Returns None if no slide found with this text."""
+
+    Raises:
+        AssertionError: If no slide is found with this text.
+    """
 
     if not prs.slides:
-        return None
+        raise AssertionError(
+            f"Test cannot proceed because there's no slides in this presentation."
+        )
 
     slides = list(prs.slides)
 
@@ -31,7 +85,9 @@ def find_first_slide_containing(
             if search_text in para.text:
                 return (slide, para)
 
-    return None
+    raise AssertionError(
+        f"Test cannot proceed because the required text '{search_text}' could not be found."
+    )
 
 
 def find_first_pptx_run_in_para_containing(
@@ -44,7 +100,7 @@ def find_first_pptx_run_in_para_containing(
     """
     if not para.text or (len(para.runs) < 1):
         raise AssertionError(
-            f"Test cannot proceed because the required text '{search_text}' could not be found in paragraph."
+            f"Test cannot proceed because this paragraph has no text or runs."
         )
 
     for run in para.runs:
@@ -66,7 +122,7 @@ def find_first_pptx_run_in_para_with_exact_match(
     """
     if not para.text or len(para.runs) < 1:
         raise AssertionError(
-            f"Test cannot proceed because the required text '{exact_text}' could not be found in paragraph."
+            f"Test cannot proceed because this paragraph has no text or runs."
         )
 
     for run in para.runs:
