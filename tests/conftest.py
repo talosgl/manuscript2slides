@@ -27,7 +27,7 @@ def path_to_sample_docx_with_formatting() -> Path:
 @pytest.fixture
 def path_to_sample_pptx_with_formatting() -> Path:
     """Path to test pptx with various formatting examples"""
-    path = Path("tests/data/test_formatting_expected_output.pptx")
+    path = Path("tests/data/test_formatting.pptx")
     assert path.exists(), f"Test file not found: {path}"
     return path
 
@@ -62,7 +62,7 @@ def path_to_empty_docx() -> Path:
 @pytest.fixture(scope="session")
 def path_to_sample_docx_with_everything() -> Path:
     """Path to a copy of the standard sample_doc.docx that lives in tests/data."""
-    path = Path("tests/data/where_are_data.docx")
+    path = Path("tests/data/sample_doc.docx")
     assert path.exists(), f"Test file not found: {path}"
     return path
 
@@ -71,7 +71,7 @@ def path_to_sample_docx_with_everything() -> Path:
 def path_to_sample_pptx_with_everything() -> Path:
     """Path to a pptx in tests/data that used a custom template during docx2pptx run, for use
     in reverse pipeline tests."""
-    path = Path("tests/data/custom_font_output.docx")
+    path = Path("tests/data/custom_template_output.docx")
     assert path.exists(), f"Test file not found: {path}"
     return path
 
