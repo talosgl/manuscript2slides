@@ -30,8 +30,8 @@ When converting from sample_doc.docx -> standard pptx output, with these options
     - preserve metadata in speaker notes
 ...the results should match the assertions in the tests below.
 
-# TODO: Consider if we should do similar testing for when options are disabled. 
-# (E.g., experimental formatting on, but speaker notes are empty.)
+# TODO: Consider if we should add similar tests for when options are disabled. 
+# (E.g., experimental formatting on, but preserve_docx_metadata_in_speaker_notes is False)
 """
 
 
@@ -303,5 +303,11 @@ def test_endnotes_slide(output_pptx: Path) -> None:
         and '"note_type": "endnote"' in notes_text_frame.text
     )
 
+
+# endregion
+
+
+# region pptx2docx
+# TODO: Need to add equivalent tests for the reverse pipeline.
 
 # endregion
