@@ -1624,9 +1624,7 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         )
         annotations_label.setWordWrap(True)
 
-        # Parent checkbox
-        # TODO, BUG: If you check the parent, first, it doesn't actually "check" the children until you do it twice. 
-        # Starting state is [ ], one click state is [-], two-click state is [✓] and clicks the children
+        # Parent checkbox (tristate: updates based on children's state)
         self.keep_all_annotations_chk = QCheckBox("Keep all annotations")
         self.keep_all_annotations_chk.setTristate(True)
 
@@ -1685,17 +1683,24 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
             self.keep_endnotes_chk.isChecked(),
         ]
 
+        # Block parent signals to prevent _on_parent_annotation_changed from firing
+        # when we programmatically update the parent's state
+        self.keep_all_annotations_chk.blockSignals(True)
         if all(children_checked):
             self.keep_all_annotations_chk.setCheckState(Qt.CheckState.Checked)
         elif any(children_checked):
             self.keep_all_annotations_chk.setCheckState(Qt.CheckState.PartiallyChecked)
         else:
             self.keep_all_annotations_chk.setCheckState(Qt.CheckState.Unchecked)
+        self.keep_all_annotations_chk.blockSignals(False)
 
     def _on_parent_annotation_changed(self) -> None:
         """Observer: When parent changes, update all children."""
         parent_value = self.keep_all_annotations_chk.checkState()
-        if parent_value == Qt.CheckState.Checked:
+        if (
+            parent_value == Qt.CheckState.Checked
+            or parent_value == Qt.CheckState.PartiallyChecked
+        ):
             parent_bool = True
         elif parent_value == Qt.CheckState.Unchecked:
             parent_bool = False
@@ -1717,6 +1722,13 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self.keep_endnotes_chk.blockSignals(True)
         self.keep_endnotes_chk.setChecked(parent_bool)
         self.keep_endnotes_chk.blockSignals(False)
+
+        # Since we blocked signals above, _on_child_annotation_changed won't be called.
+        # We need to explicitly update the parent's visual state to match the children.
+        if parent_bool is True:
+            self.keep_all_annotations_chk.setCheckState(Qt.CheckState.Checked)
+        else:
+            self.keep_all_annotations_chk.setCheckState(Qt.CheckState.Unchecked)
 
     # endregion
 
