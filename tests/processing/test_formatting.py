@@ -260,7 +260,7 @@ def pptx_formatting_runs_dict(
     bold_slide = pptx_with_formatting.slides[1]
     bold_paragraphs = bold_slide.shapes.placeholders[1].text_frame.paragraphs
     bold_run = bold_paragraphs[0].runs[0]
-    assert bold_run.font.bold == True, (
+    assert bold_run.font.bold is True, (
         test_err + "expected bold run at slide 1, placeholder 1, para 0, run 0"
     )
 
