@@ -18,7 +18,6 @@ from docx.text.run import Run as Run_docx
 
 from manuscript2slides.processing.formatting import (
     get_theme_fonts_from_docx_package,
-    get_effective_font_name_docx,
 )
 from manuscript2slides.annotations.extract import (
     get_all_docx_comments,
@@ -192,14 +191,11 @@ def main() -> None:
         # Extract paragraph-level font properties (from style)
         para_font = {}
         if para.style and para.style.font:
-            # Get effective font name (resolves theme fonts)
-            effective_font_name = get_effective_font_name_docx(para.style, theme_fonts)
-
             para_font = {
                 "bold": para.style.font.bold,
                 "italic": para.style.font.italic,
                 "underline": para.style.font.underline,
-                "font_name": effective_font_name,  # Use resolved font name
+                "font_name": para.style.font.name,
                 "font_size": para.style.font.size.pt if para.style.font.size else None,
             }
             # Add color if present

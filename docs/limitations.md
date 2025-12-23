@@ -34,6 +34,12 @@ Basic formatting (bold, italic, underline, etc.) is always preserved. Advanced f
 
 Paragraph Formatting beyond alignment and Heading styling: we don't preserve paragraph formatting for line spacing, paragraph spacing, indentations, or similar. Instead, users can customize these easily in the template files (`Documents/manuscript2slides/templates/...`), and we want to respect the template choices rather than trying to force Word formatting into Powerpoint or vice versa, where the page layouts won't match.
 
+### Font typeface (font family):
+**Typeface is determined by the output template, not the source document.** When converting from DOCX to PPTX (or vice versa), the output file's template defines which fonts are used. This is by design - we respect the user's template choices for typography rather than trying to preserve the source document's typeface, which may not match the presentation's design system.
+
+**Exception:** If you've explicitly changed the font for specific words or phrases within a paragraph (for example, formatting code snippets in Courier New while the rest of the paragraph is in Arial), that explicit font choice will be preserved. However, fonts that come from paragraph styles or document defaults will use the output template's fonts instead.
+
+Other character-level formatting like bold, italic, color, and size are always preserved.
 
 ### Field-code hyperlinks:
 Some hyperlinks (like the sample_doc.docx's first "Where are Data?" link) (often in headings or pasted content) are stored as "field codes" in Word and appear as plain text after conversion. These are uncommon; normal hyperlinks should work. manuscript2slides will log a warning when such links are detected and will try to copy them as plaintext.

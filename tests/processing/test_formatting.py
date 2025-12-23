@@ -1053,33 +1053,6 @@ def test_copy_paragraph_formatting_docx2pptx_advanced(
 
 # endregion
 
-# region _copy_paragraph_font_name_docx2pptx
-
-
-def test_copy_paragraph_font_name_docx2pptx_resolves_theme_fonts(
-    path_to_sample_docx_with_formatting: Path,
-    pptx_w_twenty_empty_slides: presentation.Presentation,
-) -> None:
-    """Test that _copy_paragraph_font_name_docx2pptx resolves theme fonts correctly."""
-    # Arrange
-    docx_with_formatting = Document(str(path_to_sample_docx_with_formatting))
-    # Paragraph 1 is Heading 1 which uses the Major theme font (Calibri Light)
-    para_with_heading_style_from_theme = docx_with_formatting.paragraphs[1]
-
-    slide = pptx_w_twenty_empty_slides.slides[0]
-    text_frame: TextFrame = slide.shapes.placeholders[1].text_frame
-    target_para = text_frame.add_paragraph()
-
-    # Act
-    formatting._copy_paragraph_font_name_docx2pptx(
-        para_with_heading_style_from_theme, target_para
-    )
-
-    # Assert - Should resolve majorHAnsi to "Calibri Light" from the theme
-    assert target_para.font.name == "Calibri Light"
-
-
-# endregion
 
 # region _copy_paragraph_alignment_docx2pptx
 
@@ -1150,49 +1123,6 @@ def test_copy_paragraph_alignment_docx2pptx_no_alignment_set(
 
 # endregion
 
-
-# region get_style_font_name_with_fallback_docx
-def test_get_effective_font_name_docx_explicit_font(
-    blank_docx: document.Document,
-) -> None:
-    """Test that the function returns explicit font names from a style."""
-    # Arrange - Create a paragraph with Normal style and set explicit font
-    para = blank_docx.add_paragraph("Test")
-    para.style.font.name = "Georgia"
-
-    # Act
-    assert para.style is not None
-    result = formatting.get_effective_font_name_docx(para.style)
-
-    # Assert
-    assert result == "Georgia"
-
-
-def test_get_effective_font_name_docx_traverses_style_hierarchy(
-    blank_docx: document.Document,
-) -> None:
-    """Test that the function traverses the style hierarchy to find font names."""
-    # Arrange - Create a base style with explicit font, then a derived style without one
-    # Create base style with explicit font
-    base_style = blank_docx.styles.add_style("BaseStyle", WD_STYLE_TYPE.PARAGRAPH)
-    base_style.font.name = "Georgia"
-
-    # Create a custom style based on BaseStyle without setting its own font
-    custom_style = blank_docx.styles.add_style("CustomStyle", WD_STYLE_TYPE.PARAGRAPH)
-    custom_style.base_style = base_style
-    # Don't set custom_style.font.name - it should inherit from base_style
-
-    para = blank_docx.add_paragraph("Test", style="CustomStyle")
-
-    # Act
-    assert para.style is not None
-    result = formatting.get_effective_font_name_docx(para.style)
-
-    # Assert - Should find "Georgia" from the base style
-    assert result == "Georgia"
-
-
-# endregion
 
 # endregion
 
@@ -1542,32 +1472,6 @@ def test_copy_run_formatting_pptx2docx_skips_experimental_when_disabled(
 
 
 # region copy_paragraph_formatting_pptx2docx tests
-def test_copy_paragraph_formatting_pptx2docx_copies_font_name(
-    path_to_pptx_w_twenty_empty_slides: Path, path_to_empty_docx: Path
-) -> None:
-    """Test that copy_paragraph_formatting_pptx2docx copies font name from pptx to docx.
-
-    This test validates that get_effective_font_name_pptx works correctly by testing
-    through the orchestrator function copy_paragraph_formatting_pptx2docx.
-    """
-    pptx_with_formatting: presentation.Presentation = Presentation(
-        path_to_pptx_w_twenty_empty_slides
-    )
-    new_docx = Document(str(path_to_empty_docx))
-    source_slide = pptx_with_formatting.slides[0]
-    source_paragraphs = source_slide.shapes.placeholders[1].text_frame.paragraphs
-    source_pptx_para: Paragraph_pptx = source_paragraphs[0]
-    assert (
-        source_pptx_para.font.name is None
-    ), f"Test cannot proceed; test data source_pptx_para.font.name should be None but is {source_pptx_para.font.name}"
-
-    target_docx_para = new_docx.add_paragraph()
-
-    formatting.copy_paragraph_formatting_pptx2docx(
-        source_para=source_pptx_para, target_para=target_docx_para
-    )
-
-    assert target_docx_para.style.font.name == "Times New Roman"
 
 
 def test_copy_paragraph_formatting_pptx2docx_copies_alignment(
