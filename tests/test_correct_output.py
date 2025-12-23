@@ -5,16 +5,19 @@ import pytest
 from pathlib import Path
 
 import pptx
-from pptx import presentation
-from pptx.slide import Slide
 from pptx.text.text import TextFrame
 from pptx.text.text import _Hyperlink as Hyperlink_pptx
 from pptx.enum.text import MSO_TEXT_UNDERLINE_TYPE as MSO_TEXT_UNDERLINE_TYPE_pptx
-
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 from pptx.dml.color import RGBColor as RGBColor_pptx
+
+
+import docx
+import docx.document
 from docx.text.hyperlink import Hyperlink as Hyperlink_docx
+from docx.shared import RGBColor as RGBColor_docx
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_UNDERLINE
 
 
 from manuscript2slides.internals.define_config import UserConfig
@@ -54,13 +57,7 @@ def test_where_are_data_slide(output_pptx: Path) -> None:
     prs = pptx.Presentation(output_pptx)
 
     # Arrange: Find the slide and paragraph containing the formatted text we are going to assert against.
-    slide_result = helpers.find_first_slide_containing(prs, "Where are Data?")
-
-    assert (
-        slide_result is not None
-    ), f"Test cannot proceed because the required text could not be found."
-
-    slide, para = slide_result
+    slide, para = helpers.find_first_slide_containing(prs, "Where are Data?")
 
     # Assert
     # Case: The paragraph should be bolded at the paragraph-level
@@ -101,15 +98,9 @@ def test_author_slide(output_pptx: Path) -> None:
     """
 
     prs = pptx.Presentation(output_pptx)
-    slide_result = helpers.find_first_slide_containing(prs, "by J. King-Yost")
+    slide, para = helpers.find_first_slide_containing(prs, "by J. King-Yost")
 
-    assert (
-        slide_result is not None
-    ), f"Test cannot proceed because the required text could not be found."
-
-    slide, para = slide_result
-
-    # Case: The text should be gray, in italics, and in Times New Roman typeface
+    # Case: The text should be gray and in italics
     # NOTE: Because this is a heading, the formatting is applied at the paragraph-level, not the run-level.
     # We will explicitly check the paragraph's font here; it is possible the test may need to be adapted
     # to be more flexible and to check both (either/or) in the future.
@@ -141,15 +132,9 @@ def test_in_a_cold_concrete_underground_tunnel_slide(output_pptx: Path) -> None:
     - footnotes data is copied when metadata preservation is enabled, including its hyperlinks
     """
     prs = pptx.Presentation(output_pptx)
-    slide_result = helpers.find_first_slide_containing(
+    slide, para = helpers.find_first_slide_containing(
         prs, "In a cold concrete underground tunnel"
     )
-
-    assert (
-        slide_result is not None
-    ), f"Test cannot proceed because the required text could not be found."
-
-    slide, para = slide_result
 
     # Case: Hyperlinks are preserved
     # "In a cold concrete underground tunnel" should be a functional hyperlink to https://dataepics.webflow.io/stories/where-are-data
@@ -276,13 +261,7 @@ def test_endnotes_slide(output_pptx: Path) -> None:
     - "START OF JSON METADATA FROM SOURCE DOCUMENT" and "endnotes" and "reference_text"
     """
     prs = pptx.Presentation(output_pptx)
-    slide_result = helpers.find_first_slide_containing(prs, "Vedantam, Shankar")
-
-    assert (
-        slide_result is not None
-    ), f"Test cannot proceed because the required text could not be found."
-
-    slide, para = slide_result
+    slide, para = helpers.find_first_slide_containing(prs, "Vedantam, Shankar")
 
     notes_text_frame = helpers.get_slide_notes_text(slide)
 
@@ -314,20 +293,13 @@ def test_vanilla_docx_theme_font_does_not_carry_into_pptx_output(
     """
     prs = pptx.Presentation(output_pptx)
 
-    slide_result = helpers.find_first_slide_containing(
+    _slide, para = helpers.find_first_slide_containing(
         prs, "In a cold concrete underground tunnel"
     )
-
-    assert (
-        slide_result is not None
-    ), f"Test cannot proceed because the required text could not be found."
-
-    slide, para = slide_result
 
     assert para.runs[0].font.name is None
 
 
-# TODO:
 def test_speaker_notes_empty_if_json_and_annotations_off(
     output_pptx_default_options: Path,
 ) -> None:
@@ -348,14 +320,9 @@ def test_speaker_notes_empty_if_json_and_annotations_off(
 
     prs = pptx.Presentation(output_pptx_default_options)
 
-    slide_result = helpers.find_first_slide_containing(
+    slide, _para = helpers.find_first_slide_containing(
         prs, "In a cold concrete underground tunnel"
     )
-    assert (
-        slide_result is not None
-    ), f"Test cannot proceed because the required text could not be found."
-
-    slide, para = slide_result
     notes_text_frame = helpers.get_slide_notes_text(slide)
 
     assert notes_text_frame.text.strip() == ""
@@ -365,31 +332,99 @@ def test_speaker_notes_empty_if_json_and_annotations_off(
 
 
 # region pptx2docx
-# TODO: Need to add equivalent tests for the reverse pipeline.
-"""
-Test cases:
+def test_header_formatting_restoration_pptx2docx(output_docx: Path) -> None:
+    """Test that the header styling we expect from the pptx input file is restored in docx output.
 
-Note: The input pptx has metadata preserved in the speaker notes, was generated with "headings nested" chunking, 
-and with a custom pptx template, using a custom theme font (the latter should be ignored during this pipeline, 
-because the docx template's themes should be honored).
+    Note: The input pptx has metadata preserved in the speaker notes, was generated with "headings nested" chunking,
+    and with a custom pptx template, using a custom theme font (the latter should be ignored during this pipeline,
+    because the docx template's themes should be honored).
+    """
 
-Verify: 
-- "[Link: https://dataepics.webflow.io/stories/where-are-data] Where are Data?" is a Heading1, and is 48pt size
-- "by J. King-Yost" is Heading2 and centered
-- "# Intro to Data: Places we are embodied" is Heading3 and in gray text
+    doc = docx.Document(str(output_docx))
 
-In the paragraph containing: "In a cold concrete underground tunnel," ...
-- "In a cold concrete underground tunnel" is a hyperlink and sub-run, "tunnel" is in italics
-- "spayed" is in bold
-- run "in three dozen directions" is italic
-- run with "buzzing" is highlighted in yellow
-- "Dust covers the cables" is in red, and has an explicit typeface set on its run (Georgia)
-- She could wipe them clean without too much risk is underlined (True)
-- read those stories is double-underlined (enum 3)
+    first_header_para = helpers.find_first_docx_para_containing(doc, "Where are Data?")
 
-- The first comment contains at least: "Sample Comment"
-- The last comment contains: "Endnote:" and "Another sample endnote with a url"
+    # Case: Heading 1 data gets restored
+    assert (
+        first_header_para.style
+        and first_header_para.style.name
+        and first_header_para.style.name == "Heading 1"
+    )
 
-"""
+    # Case Heading 1 is centered
+    assert first_header_para.paragraph_format.alignment == WD_ALIGN_PARAGRAPH.CENTER
+
+    # Case: "are" in this header is in red text
+    red_are_run = helpers.find_first_docx_run_in_para_exact_match(
+        first_header_para, "are"
+    )
+
+    # Verify color object exists and has RGB value before checking specific color
+    assert red_are_run.font.color is not None
+    assert (
+        hasattr(red_are_run.font.color, "rgb")
+        and red_are_run.font.color.rgb is not None
+    )
+    assert red_are_run.font.color.rgb == RGBColor_docx(0xFF, 0x00, 0x00)  # red
+
+    second_header_para = helpers.find_first_docx_para_containing(doc, "by J. King-Yost")
+
+    # Case: Heading 2 styling is restored
+    assert (
+        second_header_para.style
+        and second_header_para.style.name
+        and second_header_para.style.name == "Heading 2"
+    )
+
+    # Case: Heading 2 is in italics and centered
+    assert second_header_para.style.font.italic == True
+    assert second_header_para.paragraph_format.alignment == WD_ALIGN_PARAGRAPH.CENTER
+
+    # Case Heading 3 styling is restored, and in gray text
+    third_header_para = helpers.find_first_docx_para_containing(
+        doc, "Intro to Data: Places we are embodied"
+    )
+
+    assert (
+        third_header_para.style
+        and third_header_para.style.name
+        and third_header_para.style.name == "Heading 3"
+    )
+    assert third_header_para.style.font.color is not None
+    assert (
+        hasattr(third_header_para.style.font.color, "rgb")
+        and third_header_para.style.font.color.rgb is not None
+    )
+    assert third_header_para.style.font.color.rgb == RGBColor_docx(
+        0x99, 0x99, 0x99
+    )  # gray
+
+
+def test_run_formatting_restoration_pptx2docx(output_docx: Path) -> None:
+    """
+    Test cases:
+
+    Verify:
+
+    In the paragraph containing: "In a cold concrete underground tunnel," ...
+    - "In a cold concrete underground tunnel" is a hyperlink and sub-run, "tunnel" is in italics
+    - "spayed" is in bold
+    - run "in three dozen directions" is italic
+    - run with "buzzing" is highlighted in yellow
+    - "Dust covers the cables" is in red, and has an explicit typeface set on its run (Georgia)
+    - She could wipe them clean without too much risk is underlined (True)
+    - read those stories is double-underlined (enum 3)
+    """
+    # TODO
+
+
+def test_annotations_are_restored_pptx2docx(output_docx: Path) -> None:
+    """
+    - The first comment contains at least: "Sample Comment"
+    - The last comment contains: "Endnote:" and "Another sample endnote with a url"
+    - Any comment contains: "Footnote:"
+    """
+    # TODO
+
 
 # endregion

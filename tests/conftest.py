@@ -16,7 +16,7 @@ def temp_output_dir(tmp_path: Path) -> Path:
     return output
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def path_to_sample_docx_with_formatting() -> Path:
     """Path to test docx with various formatting examples"""
     path = Path("tests/data/test_formatting.docx")
@@ -24,7 +24,7 @@ def path_to_sample_docx_with_formatting() -> Path:
     return path
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def path_to_sample_pptx_with_formatting() -> Path:
     """Path to test pptx with various formatting examples"""
     path = Path("tests/data/test_formatting.pptx")
@@ -41,7 +41,7 @@ def path_to_empty_pptx() -> Path:
     return path
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def path_to_pptx_w_twenty_empty_slides() -> Path:
     """Path to a slide deck object with 20 empty slides for the purpose of instantiating
     new decks with pptx.Presentation() constructor, and populating slides with test data.
@@ -51,7 +51,7 @@ def path_to_pptx_w_twenty_empty_slides() -> Path:
     return path
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def path_to_empty_docx() -> Path:
     """Path to an empty word docx file. Currently unused"""
     path = Path("tests/data/docx_template.docx")
@@ -70,8 +70,8 @@ def path_to_sample_docx_with_everything() -> Path:
 @pytest.fixture(scope="session")
 def path_to_sample_pptx_with_everything() -> Path:
     """Path to a pptx in tests/data that used a custom template during docx2pptx run, for use
-    in reverse pipeline tests."""
-    path = Path("tests/data/custom_template_output.docx")
+    in reverse pipeline tests. This was generated using chunk by heading nested."""
+    path = Path("tests/data/custom_template_output.pptx")
     assert path.exists(), f"Test file not found: {path}"
     return path
 
