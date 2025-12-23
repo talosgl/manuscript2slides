@@ -582,7 +582,9 @@ def copy_paragraph_formatting_docx2pptx(
 
         # Copy size only for Heading styles to preserve semantic sizing without breaking auto-size
         # For body text, PowerPoint's auto-sizing works better without explicit size constraints
-        is_heading = source_para.style.name and source_para.style.name.startswith("Heading")
+        is_heading = source_para.style.name and source_para.style.name.startswith(
+            "Heading"
+        )
         if is_heading:
             _copy_font_size_formatting(source_para.style.font, target_para.font)
 
@@ -753,6 +755,11 @@ def _copy_experimental_formatting_pptx2docx(
 
 
 # endregion
+
+
+# TODO: Bug? Shouldn't a user's template override any of the font settings per paragraph or run, unless a run explicitly has a typeface set separate from Normal?
+# I don't think I'm handling this correctly right now. Yes, I like when my font is preserved ... but also I think it would be better to let the user control that with the template,
+# not rely on the input file for the font. I think there's some conflicting stuff happening throughout with typeface. I probably need to remove all typeface
 
 
 # region get_effective_font_name_pptx
