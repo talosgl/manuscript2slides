@@ -27,7 +27,7 @@ from extraction_utils import safe_pprint, filter_none_keep_false, rgb_to_hex
 INPUT_PPTX = "tests/data/sample_slides_output.pptx"
 OUTPUT_JSON = "tests/baselines/pptx_sample.json"
 # Alternative configs:
-# INPUT_PPTX = "tests/data/test_formatting_expected_output.pptx"
+# INPUT_PPTX = "tests/data/test_formatting.pptx"
 # OUTPUT_JSON = "tests/baselines/pptx_formatting.json"
 # ============================================================================
 
