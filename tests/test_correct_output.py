@@ -302,10 +302,26 @@ def test_endnotes_slide(output_pptx: Path) -> None:
     )
 
 
-# endregion
+def test_vanilla_docx_theme_font_does_not_carry_into_pptx_output(
+    output_pptx: Path,
+) -> None:
+    """
+    Test if docx theme font is copied into pptx. It shouldn't be set at the paragraph or run level because
+    the pptx's theme's fonts should be respected unless a run explicitly has a font typeface set.
+    """
+    prs = pptx.Presentation(output_pptx)
 
-# region respect the user's template
-# TODO: Add a new fixture with a custom template and verify that we respect the user's template choices wrt font typeface, layout, etc.
+    slide_result = helpers.find_first_slide_containing(
+        prs, "In a cold concrete underground tunnel"
+    )
+
+    assert (
+        slide_result is not None
+    ), f"Test cannot proceed because the required text could not be found."
+
+    slide, para = slide_result
+
+    assert para.runs[0].font.name is None
 
 
 # endregion
