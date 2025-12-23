@@ -11,12 +11,11 @@
 # region imports
 import logging
 import xml.etree.ElementTree as ET
-from typing import Union, cast
+from typing import Union
 
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_UNDERLINE
 from docx.opc.package import OpcPackage
 from docx.shared import RGBColor as RGBColor_docx
-from docx.styles.style import ParagraphStyle as ParagraphStyle_docx
 from docx.text.font import Font as Font_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.parfmt import ParagraphFormat
@@ -119,10 +118,7 @@ def _copy_basic_font_formatting(
     source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
 ) -> None:
     """Extract common formatting logic for Runs (or Paragraphs)."""
-
-    # If this font lives on a Paragraph_docx instead of a run, this might duplicate a step that
-    # just happened in _copy_paragraph_font_name_docx2pptx, but it's okay, that duplication
-    # on the paragraph-level is worth it to have this function be polymorphic
+    
     if source_font.name is not None:
         target_font.name = source_font.name
 
@@ -477,102 +473,14 @@ def get_theme_fonts_from_docx_package(
 # endregion
 
 
-# region get_style_font_name_with_fallback_docx
-def get_effective_font_name_docx(
-    style: ParagraphStyle_docx, theme_fonts: dict[str, str | None] | None = None
-) -> str | None:
-    """
-    Gets the font name from a paragraph style, traversing the style hierarchy.
-
-    Priority order:
-    1. Theme fonts on the current style (highest priority - overrides explicit fonts in base styles)
-    2. Explicit font name on current style
-    3. Theme fonts on base styles
-    4. Explicit font names on base styles (E.g., Heading1 inheriting from Normal, and using Normal's font)
-
-    Args:
-        style: The paragraph style to get the font name from
-        theme_fonts: Optional dict with 'Major' and 'Minor' theme font names
-
-    Returns the resolved font name, or None if no font is found.
-    """
-    current_style = style
-    while current_style is not None:
-        # Check theme fonts FIRST - they have priority over explicit fonts in base styles
-        if theme_fonts:
-            theme_font = _resolve_theme_font_docx(current_style, theme_fonts)
-            if theme_font:
-                return theme_font
-
-        # Then check for explicit font names
-        if current_style.font.name:
-            # Found an explicit font name in this style or a base style
-            return current_style.font.name
-
-        # Move up to the base style (cast helps Pylance here if it complains)
-        current_style = cast(ParagraphStyle_docx, current_style.base_style)
-
-    # If the entire chain returns None, return None
-    return None
-
-
-def _resolve_theme_font_docx(
-    style: ParagraphStyle_docx, theme_fonts: dict[str, str | None]
-) -> str | None:
-    """
-    Attempt to resolve a theme font reference to an actual font name.
-
-    Checks the style's rPr/rFonts element for theme font attributes (like asciiTheme, hAnsiTheme)
-    and maps them to the actual font names from theme_fonts dict.
-    """
-    try:
-        # Access the style's XML element
-        style_element = style._element
-
-        # Find the rFonts element within rPr (run properties)
-        # Namespace for Word markup
-        ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-        rfonts = style_element.find(".//w:rPr/w:rFonts", ns)
-
-        if rfonts is not None:
-            # Check for various theme font attributes
-            # The 'asciiTheme' and 'hAnsiTheme' attributes indicate which theme font to use
-            ascii_theme = rfonts.get(
-                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}asciiTheme"
-            )
-            hansi_theme = rfonts.get(
-                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}hAnsiTheme"
-            )
-
-            # Common theme font references in Word:
-            # - "majorHAnsi" or "majorAscii" -> Heading font (Major)
-            # - "minorHAnsi" or "minorAscii" -> Body font (Minor)
-            theme_ref = ascii_theme or hansi_theme
-
-            if theme_ref:
-                if "major" in theme_ref.lower():
-                    return theme_fonts.get("Major")
-                elif "minor" in theme_ref.lower():
-                    return theme_fonts.get("Minor")
-
-    except Exception as e:
-        log.debug(f"Could not resolve theme font for style '{style.name}': {e}")
-
-    return None
-
-
-# endregion
-
-
 # region copy_paragraph_formatting_docx2pptx
 def copy_paragraph_formatting_docx2pptx(
     source_para: Paragraph_docx,
     target_para: Paragraph_pptx,
 ) -> None:
-    """Copy docx paragraph font name (if set explicitly), alignment, and basics like bold, italics, etc. to a pptx paragraph."""
+    """Copy docx paragraph formatting (alignment, bold, italics, size for headings, color) to a pptx paragraph.
 
-    # Font name - now works for both explicit fonts and theme fonts
-    _copy_paragraph_font_name_docx2pptx(source_para, target_para)
+    Note: Typeface is NOT copied - the output template's fonts are respected for all text."""
 
     _copy_paragraph_alignment_docx2pptx(source_para, target_para)
 
@@ -580,8 +488,8 @@ def copy_paragraph_formatting_docx2pptx(
         # _copy_paragraph_format_docx2pptx(source_para, target_para)
         _copy_basic_font_formatting(source_para.style.font, target_para.font)
 
-        # Copy size only for Heading styles to preserve semantic sizing without breaking auto-size
-        # For body text, PowerPoint's auto-sizing works better without explicit size constraints
+        # We only copy size explicitly for paragraphs styled as headings
+        # Copying size explicitly for every paragraph breaks Powerpoint's body text auto-sizer
         is_heading = source_para.style.name and source_para.style.name.startswith(
             "Heading"
         )
@@ -589,25 +497,6 @@ def copy_paragraph_formatting_docx2pptx(
             _copy_font_size_formatting(source_para.style.font, target_para.font)
 
         _copy_font_color_formatting(source_para.style.font, target_para.font)
-
-
-# endregion
-
-
-# region _copy_paragraph_font_name_docx2pptx
-def _copy_paragraph_font_name_docx2pptx(
-    source_para: Paragraph_docx,
-    target_para: Paragraph_pptx,
-) -> None:
-    """Copy paragraph font name, resolving theme fonts if necessary."""
-    name = None
-    if source_para.style:
-        # Extract theme fonts from the package for resolution
-        theme_fonts = get_theme_fonts_from_docx_package(source_para.part.package)
-        name = get_effective_font_name_docx(source_para.style, theme_fonts)
-
-    if name:
-        target_para.font.name = name
 
 
 # endregion
@@ -642,7 +531,9 @@ def _copy_paragraph_alignment_docx2pptx(
 def copy_paragraph_formatting_pptx2docx(
     source_para: Paragraph_pptx, target_para: Paragraph_docx
 ) -> None:
-    """Copy pptx paragraph font name, alignment, and basics like bold, italics, etc. to a pptx paragraph."""
+    """Copy pptx paragraph alignment and basics like bold, italics, etc. to a docx paragraph.
+
+    Note: Typeface is NOT copied - the output template's fonts are respected."""
     if (
         source_para.alignment
         and ALIGNMENT_MAP_PP2WD.get(source_para.alignment) is not None
@@ -650,13 +541,6 @@ def copy_paragraph_formatting_pptx2docx(
         alignment_value = ALIGNMENT_MAP_PP2WD.get(source_para.alignment)
         if alignment_value is not None:
             target_para.alignment = alignment_value
-
-    if source_para.font.name:
-        target_para.style.font.name = source_para.font.name  # type: ignore
-    else:
-        slide_layout_first_font = get_effective_font_name_pptx(source_para)
-        if slide_layout_first_font:
-            target_para.style.font.name = slide_layout_first_font  # type: ignore
 
 
 # endregion
@@ -756,62 +640,6 @@ def _copy_experimental_formatting_pptx2docx(
 
 # endregion
 
-
-# TODO: Bug? Shouldn't a user's template override any of the font settings per paragraph or run, unless a run explicitly has a typeface set separate from Normal?
-# I don't think I'm handling this correctly right now. Yes, I like when my font is preserved ... but also I think it would be better to let the user control that with the template,
-# not rely on the input file for the font. I think there's some conflicting stuff happening throughout with typeface. I probably need to remove all typeface
-
-
-# region get_effective_font_name_pptx
-def get_effective_font_name_pptx(paragraph: Paragraph_pptx) -> str | None:
-    """
-    Get the effective font name for a pptx paragraph.
-
-    First checks if the paragraph has an explicit font name set. If not, searches the
-    slide layouts for font definitions, prioritizing a:ea and a:cs elements (which
-    typically contain actual font names) over a:latin elements (which often contain
-    theme references like "+mj-lt"). Theme font references (starting with "+") are
-    skipped in favor of actual font names.
-
-    Returns the first actual font name found, or None if no font is found.
-
-    Example XML structure:
-    <a:defRPr sz="1800">
-        <a:latin typeface="+mj-lt"/>
-        <a:ea typeface="Arial" panose="02020602040305020204" pitchFamily="18" charset="0"/>
-        <a:cs typeface="Times New Roman" panose="02020602040305020204" pitchFamily="18" charset="0"/>
-    </a:defRPr>
-    """
-    if paragraph.font.name is not None:
-        return paragraph.font.name
-
-    try:
-        slide_layouts = (
-            paragraph.part.package.presentation_part.presentation.slide_layouts
-        )
-        for slide_layout in slide_layouts:
-            # Check a:ea, a:cs, and a:latin elements for typeface attributes
-            # Prioritize a:ea and a:cs which typically have actual font names
-            for xpath_query in [
-                ".//a:ea[@typeface]",
-                ".//a:cs[@typeface]",
-                ".//a:latin[@typeface]",
-            ]:
-                matching_elements = slide_layout.element.xpath(xpath_query)
-                for el in matching_elements:
-                    typeface = el.attrib.get("typeface")
-                    # Skip theme font references (start with +) and return first actual font
-                    if typeface and not typeface.startswith("+"):
-                        return typeface
-    except Exception as e:
-        log.debug(
-            f"Something went wrong when we tried to traverse XML to find a font name for a pptx paragraph (against our better judgment). \nException: {e}"
-        )
-
-    return None
-
-
-# endregion
 
 # endregion
 

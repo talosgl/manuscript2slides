@@ -65,7 +65,6 @@ def test_where_are_data_slide(output_pptx: Path) -> None:
     # Assert
     # Case: The paragraph should be bolded at the paragraph-level
     assert para.font.bold is True
-    assert para.font.name == "Times New Roman"
 
     # Case: "are" within "Where are Data?" should be in red
     # We have to do exact match, or the URL run will be returned
@@ -120,7 +119,6 @@ def test_author_slide(output_pptx: Path) -> None:
     assert hasattr(para.font.color, "rgb") and para.font.color.rgb is not None
     assert para.font.color.rgb == RGBColor_pptx(0x99, 0x99, 0x99)  # gray
     assert para.font.italic is True
-    assert para.font.name == "Times New Roman"
 
     notes_text_frame: TextFrame = helpers.get_slide_notes_text(slide)
 
@@ -302,6 +300,12 @@ def test_endnotes_slide(output_pptx: Path) -> None:
         in notes_text_frame.text
         and '"note_type": "endnote"' in notes_text_frame.text
     )
+
+
+# endregion
+
+# region respect the user's template
+# TODO: Add a new fixture with a custom template and verify that we respect the user's template choices wrt font typeface, layout, etc.
 
 
 # endregion
