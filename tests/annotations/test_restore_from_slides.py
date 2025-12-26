@@ -331,7 +331,7 @@ def test_safely_extract_comment_data_non_dict(
         result = safely_extract_comment_data(invalid_input)  # type: ignore[arg-type]
 
     assert result is None
-    assert "is not a dict" in caplog.text
+    assert "should be a dict" in caplog.text
 
 
 def test_safely_extract_comment_data_missing_original(
@@ -489,7 +489,7 @@ def test_safely_extract_heading_data_non_dict(
         result = safely_extract_heading_data(invalid_input)  # type: ignore[arg-type]
 
     assert result is None
-    assert "is not a dict" in caplog.text
+    assert "should be a dict" in caplog.text
 
 
 def test_safely_extract_heading_data_missing_text(
@@ -502,7 +502,7 @@ def test_safely_extract_heading_data_missing_text(
         result = safely_extract_heading_data(heading)
 
     assert result is None
-    assert "missing 'text' field" in caplog.text
+    assert "missing required field 'text'" in caplog.text
 
 
 def test_safely_extract_heading_data_missing_name(
@@ -515,7 +515,7 @@ def test_safely_extract_heading_data_missing_name(
         result = safely_extract_heading_data(heading)
 
     assert result is None
-    assert "missing 'name' field" in caplog.text
+    assert "missing required field 'name'" in caplog.text
 
 
 def test_safely_extract_heading_data_optional_style_id_missing() -> None:
@@ -568,7 +568,7 @@ def test_safely_extract_experimental_formatting_data_non_dict(
         result = safely_extract_experimental_formatting_data(invalid_input)  # type: ignore[arg-type]
 
     assert result is None
-    assert "is not a dict" in caplog.text
+    assert "should be a dict" in caplog.text
 
 
 def test_safely_extract_experimental_formatting_data_missing_ref_text(
@@ -581,7 +581,7 @@ def test_safely_extract_experimental_formatting_data_missing_ref_text(
         result = safely_extract_experimental_formatting_data(exp_fmt)
 
     assert result is None
-    assert "missing 'ref_text' field" in caplog.text
+    assert "missing required field: 'ref_text'" in caplog.text
 
 
 def test_safely_extract_experimental_formatting_data_missing_formatting_type(
@@ -594,7 +594,7 @@ def test_safely_extract_experimental_formatting_data_missing_formatting_type(
         result = safely_extract_experimental_formatting_data(exp_fmt)
 
     assert result is None
-    assert "missing 'formatting_type' field" in caplog.text
+    assert "missing required field: 'formatting_type'" in caplog.text
 
 
 def test_safely_extract_experimental_formatting_data_optional_color_missing() -> None:
