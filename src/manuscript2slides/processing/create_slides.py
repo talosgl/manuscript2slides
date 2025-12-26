@@ -66,7 +66,6 @@ def slides_from_chunks(
 
         # For each paragraph in this chunk, handle adding it
         for i, paragraph in enumerate(chunk.paragraphs):
-
             # Creating a new slide and a text frame leaves an empty paragraph in place, even when clearing it.
             # So if we're at the start of our list, use that existing empty paragraph.
             if (

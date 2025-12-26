@@ -527,9 +527,9 @@ class UserConfig:
             )
 
         # Validate chunk_type is a valid ChunkType enum member
-        assert isinstance(
-            self.chunk_type, ChunkType
-        ), f"chunk_type must be ChunkType, got {type(self.chunk_type).__name__}"
+        assert isinstance(self.chunk_type, ChunkType), (
+            f"chunk_type must be ChunkType, got {type(self.chunk_type).__name__}"
+        )
         if not isinstance(self.chunk_type, ChunkType):  # type: ignore[unreachable]
             log.error("Invalid value in chunk_type; must be enum.")
             raise ValueError(

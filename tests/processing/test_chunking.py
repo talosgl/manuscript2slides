@@ -47,9 +47,9 @@ def test_chunk_by_page_respects_page_breaks(
     page_break_count = sum(
         1 for para in sample_document.paragraphs if para.contains_page_break
     )
-    assert (
-        page_break_count > 0
-    ), "Test document should have at least one rendered page break"
+    assert page_break_count > 0, (
+        "Test document should have at least one rendered page break"
+    )
 
     # Run chunking and verify it produces chunks
     chunk_list = chunking.chunk_by_page(sample_document)

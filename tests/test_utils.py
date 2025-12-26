@@ -1,5 +1,6 @@
 # tests/test_utils.py
 """Tests for utility functions."""
+
 import pytest
 
 from manuscript2slides.internals import constants

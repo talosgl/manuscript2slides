@@ -82,9 +82,9 @@ def test_create_empty_document_returns_empty_doc(
     # Action: Pass that to our function
     docu = templates.create_empty_document(test_cfg)
 
-    assert (
-        len(docu.paragraphs) == 0
-    ), f"docu.paragraphs has {len(docu.paragraphs)} paragraphs in it."
+    assert len(docu.paragraphs) == 0, (
+        f"docu.paragraphs has {len(docu.paragraphs)} paragraphs in it."
+    )
 
 
 def test_create_empty_document_fails_gracefully_on_missing_styles(

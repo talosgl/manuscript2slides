@@ -136,15 +136,15 @@ def test_sample_config_has_valid_toml_and_correct_paths(
     sample_config_path = tmp_path / "configs" / "sample_config.toml"
 
     # Make sure the sample config exists and is a file.
-    assert (
-        sample_config_path.is_file()
-    ), f"We couldn't find the sample_config at {sample_config_path}, under {tmp_path}"
+    assert sample_config_path.is_file(), (
+        f"We couldn't find the sample_config at {sample_config_path}, under {tmp_path}"
+    )
 
     # Read and validate it's valid TOML
     try:
         import tomllib  # Python 3.11+
     except ModuleNotFoundError:
-        import tomli as tomllib  # Python 3.10
+        import tomli as tomllib  # type: ignore[no-redef]  # Python 3.10
 
     with open(sample_config_path, "rb") as f:
         config_data = tomllib.load(f)

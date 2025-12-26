@@ -34,7 +34,6 @@ def process_chunk_annotations(
     for chunk in chunks:
         for paragraph in chunk.paragraphs:
             for item in paragraph.iter_inner_content():
-
                 if isinstance(item, Run_docx):
                     process_run_annotations(
                         chunk,
@@ -93,7 +92,7 @@ def process_run_annotations(
         # Find comment references
         comment_refs = root.findall(".//w:commentReference", ns)
         for ref in comment_refs:
-            comment_id = ref.get(f'{{{ns["w"]}}}id')
+            comment_id = ref.get(f"{{{ns['w']}}}id")
             if comment_id and comment_id in all_raw_comments:
                 comment_object = all_raw_comments[comment_id]
 
@@ -105,7 +104,7 @@ def process_run_annotations(
         # Find footnote references
         footnote_refs = root.findall(".//w:footnoteReference", ns)
         for ref in footnote_refs:
-            footnote_id = ref.get(f'{{{ns["w"]}}}id')
+            footnote_id = ref.get(f"{{{ns['w']}}}id")
             if footnote_id and footnote_id in all_footnotes:
                 footnote_obj = all_footnotes[footnote_id]
                 footnote_obj.reference_text = ref_text
@@ -114,7 +113,7 @@ def process_run_annotations(
         # Find endnote references - same pattern
         endnote_refs = root.findall(".//w:endnoteReference", ns)
         for ref in endnote_refs:
-            endnote_id = ref.get(f'{{{ns["w"]}}}id')
+            endnote_id = ref.get(f"{{{ns['w']}}}id")
             if endnote_id and endnote_id in all_endnotes:
                 endnote_obj = all_endnotes[endnote_id]
                 endnote_obj.reference_text = ref_text

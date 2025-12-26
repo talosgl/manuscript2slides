@@ -1,5 +1,6 @@
 # io.py
 """File I/O operations for docx and pptx files."""
+
 # mypy: disable-error-code="import-untyped"
 import logging
 from datetime import datetime

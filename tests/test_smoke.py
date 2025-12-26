@@ -1,5 +1,6 @@
 # tests/test_smoke.py
 """Smoke tests to ensure basic functionality works."""
+
 import pytest
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.orchestrator import run_roundtrip_test

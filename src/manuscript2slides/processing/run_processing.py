@@ -56,7 +56,6 @@ def process_docx_paragraph_inner_contents(
     for item in paragraph.iter_inner_content():
         items_processed = True
         if isinstance(item, Run_docx):
-
             # If this Run has a field code for instrText and it begins with HYPERLINK, this is an old-style
             # word hyperlink, which we cannot handle the same way as normal docx hyperlinks. But we try to detect
             # when it happens and report it to the user.

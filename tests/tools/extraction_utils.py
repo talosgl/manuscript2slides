@@ -46,7 +46,10 @@ def safe_pprint(data: list[dict], width: int = 120, item_type: str = "items") ->
     try:
         pprint(data, width=width)
     except UnicodeEncodeError:
-        print(f"(Console encoding issue - data contains special characters)", file=sys.stderr)
+        print(
+            f"(Console encoding issue - data contains special characters)",
+            file=sys.stderr,
+        )
         print(f"Extracted {len(data)} {item_type}")
 
 

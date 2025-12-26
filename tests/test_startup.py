@@ -4,7 +4,6 @@
 Primarily tests whether trace logging is enabled/disabled correctly
 and that error handling happens at all when try/except exceptions are hit."""
 
-
 import pytest
 from unittest.mock import patch
 from manuscript2slides.startup import (
@@ -33,7 +32,9 @@ def test_trace_uses_default_when_no_env_var() -> None:
         assert isinstance(result, bool)  # At least verify it returns a bool
 
 
-def test_initialize_exits_on_permission_error(capsys) -> None:
+def test_initialize_exits_on_permission_error(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """Should exit cleanly with message when log directory creation fails"""
     with patch("manuscript2slides.startup.user_log_dir_path") as mock_log_dir:
         mock_log_dir.side_effect = PermissionError("Access denied")
@@ -47,7 +48,7 @@ def test_initialize_exits_on_permission_error(capsys) -> None:
         assert "Check permissions" in captured.err
 
 
-def test_initialize_exits_on_os_error(capsys) -> None:
+def test_initialize_exits_on_os_error(capsys: pytest.CaptureFixture[str]) -> None:
     """Should exit cleanly when disk full or I/O error"""
     with patch("manuscript2slides.startup.user_log_dir_path") as mock_log_dir:
         mock_log_dir.side_effect = OSError("Disk full")

@@ -38,10 +38,8 @@ def seed_session_id(value: str) -> None:
 
     # Lock this section so only one thread can run it at a time; prevents race condition bugs
     with _session_lock:
-
         # Only set it if it hasn't been set yet
         if _session_id is None:
-
             # Actually set the value
             _session_id = value
 

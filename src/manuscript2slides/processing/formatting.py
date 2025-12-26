@@ -118,7 +118,7 @@ def _copy_basic_font_formatting(
     source_font: Union[Font_docx, Font_pptx], target_font: Union[Font_docx, Font_pptx]
 ) -> None:
     """Extract common formatting logic for Runs (or Paragraphs)."""
-    
+
     if source_font.name is not None:
         target_font.name = source_font.name
 
@@ -273,7 +273,6 @@ def _copy_experimental_formatting_docx2pptx(
                 rPr.append(hl)
 
             except Exception as e:
-
                 log.warning(
                     f"We found a highlight in a docx run but couldn't apply it. \n Run text: {source_run.text[:50]}... \n Error: {e}"
                 )
@@ -506,7 +505,6 @@ def copy_paragraph_formatting_docx2pptx(
 def _copy_paragraph_alignment_docx2pptx(
     source_para: Paragraph_docx, target_para: Paragraph_pptx
 ) -> None:
-
     # 1. Start by setting the alignment based on the STYLE's definition (Lower Priority/Default)
     if source_para.style and source_para.style.paragraph_format.alignment:  # type: ignore
         target_para.alignment = ALIGNMENT_MAP_WD2PP.get(

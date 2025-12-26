@@ -296,9 +296,9 @@ def test_get_input_docx_path_works(
     test_cfg = UserConfig(input_docx=path_to_sample_docx_with_everything)
     result = test_cfg.get_input_docx_file()
 
-    assert (
-        result is not None
-    ), f"Test result is evaluating to None: probably it is not able to access the real test data from disk."
+    assert result is not None, (
+        f"Test result is evaluating to None: probably it is not able to access the real test data from disk."
+    )
 
     # Compare resolved/absolute paths
     assert result.resolve() == path_to_sample_docx_with_everything.resolve()
@@ -394,9 +394,9 @@ def test_save_toml_round_trip(
     # Action: Call the function
     starting_cfg.save_toml(save_file_path)
 
-    assert (
-        save_file_path.exists()
-    ), f"Something went wrong with the file system when we tried to save the test config, apparently"
+    assert save_file_path.exists(), (
+        f"Something went wrong with the file system when we tried to save the test config, apparently"
+    )
 
     load_config = UserConfig.from_toml(save_file_path)
 
@@ -435,9 +435,9 @@ def test_save_toml_round_trip_pptx2docx(
     # Action: Call the function
     starting_cfg.save_toml(save_file_path)
 
-    assert (
-        save_file_path.exists()
-    ), f"Something went wrong with the file system when we tried to save the test config, apparently"
+    assert save_file_path.exists(), (
+        f"Something went wrong with the file system when we tried to save the test config, apparently"
+    )
 
     load_config = UserConfig.from_toml(save_file_path)
 
@@ -462,9 +462,9 @@ def test_config_to_dict_filters_None_vals(tmp_path: Path) -> None:
     # Action: Call the function
     starting_cfg.save_toml(save_file_path)
 
-    assert (
-        save_file_path.exists()
-    ), f"Something went wrong with the file system when we tried to save the test config, apparently"
+    assert save_file_path.exists(), (
+        f"Something went wrong with the file system when we tried to save the test config, apparently"
+    )
 
     with open(save_file_path, "rb") as f:
         data = tomllib.load(f)
@@ -585,9 +585,9 @@ def test_config_to_dict_does_not_save_direction() -> None:
 
     result = cfg.direction
 
-    assert (
-        result is not None
-    ), f"We can't verify that direction doesn't get saved because it is set to None."
+    assert result is not None, (
+        f"We can't verify that direction doesn't get saved because it is set to None."
+    )
 
     # Act
     dict_result = cfg.config_to_dict()

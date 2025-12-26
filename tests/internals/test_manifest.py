@@ -32,9 +32,8 @@ def test_manifest_creates_file_on_start_and_has_required_fields(
     assert manifest.manifest_path.exists()
     assert manifest.manifest_path.is_file()
 
-
     # Read the manifest file
-    with open(manifest.manifest_path, 'r', encoding='utf-8') as f:
+    with open(manifest.manifest_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     # Check required fields
@@ -64,7 +63,7 @@ def test_manifest_updates_on_completion(
     manifest.complete(output_path)
 
     # Read updated manifest
-    with open(manifest.manifest_path, 'r', encoding='utf-8') as f:
+    with open(manifest.manifest_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     # Check completion fields
@@ -91,7 +90,7 @@ def test_manifest_updates_on_failure(
     manifest.fail(test_error)
 
     # Read updated manifest
-    with open(manifest.manifest_path, 'r', encoding='utf-8') as f:
+    with open(manifest.manifest_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     # Check failure fields
@@ -123,16 +122,22 @@ def test_manifest_environment_info(
     assert isinstance(env["platform"], str) and len(env["platform"]) > 0
 
 
-@pytest.mark.parametrize("cfg_fixture,expected_name,run_id", [
-    ("sample_d2p_cfg", "run_docx2pptx_pipeline", "test_d2p_name" ),
-    ("sample_p2d_cfg", "run_pptx2docx_pipeline", "test_p2d_name")
-])
+@pytest.mark.parametrize(
+    "cfg_fixture,expected_name,run_id",
+    [
+        ("sample_d2p_cfg", "run_docx2pptx_pipeline", "test_d2p_name"),
+        ("sample_p2d_cfg", "run_pptx2docx_pipeline", "test_p2d_name"),
+    ],
+)
 def test_manifest_gets_correct_pipeline_name(
-    cfg_fixture: str, expected_name: str, run_id: str, request: pytest.FixtureRequest, 
+    cfg_fixture: str,
+    expected_name: str,
+    run_id: str,
+    request: pytest.FixtureRequest,
 ) -> None:
-    """Verify pipeline name is correct for docx2pptx direction."""   
+    """Verify pipeline name is correct for docx2pptx direction."""
     cfg = request.getfixturevalue(cfg_fixture)
- 
+
     manifest = RunManifest(cfg, run_id=run_id)
 
     assert manifest._get_pipeline_name() == expected_name
@@ -140,9 +145,7 @@ def test_manifest_gets_correct_pipeline_name(
 
 
 def test_manifest_handles_missing_directory_gracefully_and_logs(
-    sample_d2p_cfg: UserConfig,
-    temp_output_dir: Path,
-    caplog: pytest.LogCaptureFixture
+    sample_d2p_cfg: UserConfig, temp_output_dir: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Verify manifest doesn't crash if output directory doesn't exist.
 
@@ -188,7 +191,7 @@ def test_manifest_duration_calculation(
 
     # Duration should be at least 0.1 seconds
     assert manifest.duration is not None
-    assert manifest.duration > 0 
+    assert manifest.duration > 0
     assert manifest.end_time is not None
     assert manifest.end_time > manifest.start_time
 
@@ -204,11 +207,11 @@ def test_manifest_json_format_and_encoding(
     manifest.start()
 
     # Read raw bytes (rb)
-    with open(manifest.manifest_path, 'rb') as f:
+    with open(manifest.manifest_path, "rb") as f:
         raw_bytes = f.read()
 
     # Case: Verify it's valid UTF-8 (and assign to a variable for later)
-    content = raw_bytes.decode('utf-8')  # Will raise if not valid UTF-8
+    content = raw_bytes.decode("utf-8")  # Will raise if not valid UTF-8
 
     # Case: Should be able to parse as JSON without errors
     # (This is covered in other tests, but replicated here in case
@@ -218,9 +221,9 @@ def test_manifest_json_format_and_encoding(
 
     # Case: Check if the JSON is formatted with proper indentation (pretty printed instead of minified)
     # Check if it contains 2-space indents
-    assert '  ' in content
+    assert "  " in content
     # Verify it's not minified to 1 line
-    assert '\n' in content
+    assert "\n" in content
 
     # Reserialize with indent=2 and compare
     expected = json.dumps(data, indent=2, ensure_ascii=False)

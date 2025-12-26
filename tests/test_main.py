@@ -50,7 +50,6 @@ def test_main_routes_to_cli_with_flag(monkeypatch: pytest.MonkeyPatch) -> None:
         patch("manuscript2slides.gui.run") as mock_gui,
         patch("manuscript2slides.__main__.run_cli") as mock_cli,
     ):
-
         mock_startup.return_value = MagicMock()
 
         from manuscript2slides.__main__ import main

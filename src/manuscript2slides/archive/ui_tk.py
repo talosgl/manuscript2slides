@@ -223,7 +223,8 @@ class BaseConversionTabView(ttk.Frame):
 # endregion
 
 # Type variable for generic view types
-ViewType = TypeVar('ViewType', bound=BaseConversionTabView)
+ViewType = TypeVar("ViewType", bound=BaseConversionTabView)
+
 
 # region BaseConversionTabPresenter
 class BaseConversionTabPresenter(Generic[ViewType]):
@@ -399,10 +400,13 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
 
 # Type variable for configurable view types
-ConfigViewType = TypeVar('ConfigViewType', bound=ConfigurableConversionTabView)
+ConfigViewType = TypeVar("ConfigViewType", bound=ConfigurableConversionTabView)
+
 
 # region ConfigurableConversionTabPresenter
-class ConfigurableConversionTabPresenter(BaseConversionTabPresenter[ConfigViewType], Generic[ConfigViewType]):
+class ConfigurableConversionTabPresenter(
+    BaseConversionTabPresenter[ConfigViewType], Generic[ConfigViewType]
+):
     """Presenter class for the ConfigurableConversionTab."""
 
     def __init__(self, view: ConfigViewType) -> None:
@@ -829,7 +833,6 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         self._create_widgets()
 
     def _create_widgets(self) -> None:
-
         self._create_io_section()
 
         self._create_basic_options()
@@ -1446,7 +1449,7 @@ def open_folder_in_os_explorer(folder_path: Path | str) -> None:
         log.error(f"Failed to open folder: {e}")
         messagebox.showwarning(
             "Cannot Open Folder",
-            f"Could not open the folder automatically.\n\n" f"Location: {folder_path}",
+            f"Could not open the folder automatically.\n\nLocation: {folder_path}",
         )
 
 

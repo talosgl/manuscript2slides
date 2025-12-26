@@ -89,7 +89,6 @@ def process_slide_paragraphs(
 
     # For every pptx paragraph.....
     for pptx_para in slide_paragraphs:
-
         # Make a new docx para
         new_para = new_doc.add_paragraph()
         copy_paragraph_formatting_pptx2docx(pptx_para, new_para)

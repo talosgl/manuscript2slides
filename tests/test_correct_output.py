@@ -33,6 +33,7 @@ from tests import helpers
 #     - preserve metadata in speaker notes
 # ...the results should match the assertions in the tests below.
 
+
 def test_where_are_data_slide(output_pptx: Path) -> None:
     """Verify formatting preservation (bold, italic, color, typeface) and metadata/comments in speaker notes."""
 
@@ -370,12 +371,14 @@ def test_run_formatting_restoration_pptx2docx(output_docx: Path) -> None:
     bold_run = helpers.find_first_docx_item_in_para_containing(
         cold_underground_para, "splayed"
     )
+    assert isinstance(bold_run, Run_docx)
     assert bold_run.bold is True
 
     # Case: Italics formatting is preserved
     italic_run = helpers.find_first_docx_item_in_para_containing(
         cold_underground_para, "three dozen directions"
     )
+    assert isinstance(italic_run, Run_docx)
     assert italic_run.italic is True
 
     # Case: Yellow highlight is preserved
@@ -402,6 +405,7 @@ def test_run_formatting_restoration_pptx2docx(output_docx: Path) -> None:
         cold_underground_para,
         "She could wipe them clean without too much risk",
     )
+    assert isinstance(ul_run, Run_docx)
     assert ul_run.underline is True
 
     # Case: Double underline is preserved
@@ -417,14 +421,14 @@ def test_annotations_are_restored_pptx2docx(output_docx: Path) -> None:
     doc = docx.Document(str(output_docx))
 
     # Case: At least one comment contains "Sample Comment"
-    assert any(
-        "Sample comment" in comment.text for comment in doc.comments
-    ), "Expected to find 'Sample comment' in at least one comment"
+    assert any("Sample comment" in comment.text for comment in doc.comments), (
+        "Expected to find 'Sample comment' in at least one comment"
+    )
 
     # Case: At least one comment contains "Footnote:"
-    assert any(
-        "Footnote:" in comment.text for comment in doc.comments
-    ), "Expected to find 'Footnote:' in at least one comment"
+    assert any("Footnote:" in comment.text for comment in doc.comments), (
+        "Expected to find 'Footnote:' in at least one comment"
+    )
 
     # Case: At least one comment contains endnote text
     assert any(

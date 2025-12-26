@@ -21,8 +21,7 @@ from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 def find_first_docx_para_containing(
     doc: document.Document, search_text: str
 ) -> Paragraph_docx:
-    """Find the first paragraph instance with the search text or raises an AssertionError if it can't be found.
-    """
+    """Find the first paragraph instance with the search text or raises an AssertionError if it can't be found."""
     if not doc.paragraphs:
         raise AssertionError(
             f"Test cannot proceed because there aren't any paragraphs in this document."
@@ -164,7 +163,9 @@ def get_slide_notes_text(slide: Slide) -> TextFrame:
         slide.has_notes_slide is True
         and slide.notes_slide is not None
         and slide.notes_slide.notes_text_frame is not None
-    ), f"Test cannot proceed because we expected the slide, {slide.slide_id} to have a speaker notes section and it does not."
+    ), (
+        f"Test cannot proceed because we expected the slide, {slide.slide_id} to have a speaker notes section and it does not."
+    )
 
     notes_text_frame: TextFrame = slide.notes_slide.notes_text_frame
 

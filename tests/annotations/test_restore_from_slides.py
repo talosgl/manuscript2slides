@@ -89,7 +89,7 @@ def test_remove_ranges_from_text(text: str, ranges: list, expected: str) -> None
 
 
 def test_split_speaker_notes_empty_input() -> None:
-    """Test with empty speaker notes. 
+    """Test with empty speaker notes.
     Case: if speaker notes are empty, then both user_notes and metadata should be empty."""
     result = split_speaker_notes("")
     assert isinstance(result, SlideNotes)
@@ -98,7 +98,7 @@ def test_split_speaker_notes_empty_input() -> None:
 
 
 def test_split_speaker_notes_only_user_notes() -> None:
-    """Test with only user notes, no markers. 
+    """Test with only user notes, no markers.
     Case: if there are only user notes (no markers), then notes should be populated, and metadata should be an empty dict."""
     notes = "These are my personal notes about the slide."
     result = split_speaker_notes(notes)
@@ -126,7 +126,7 @@ def test_split_speaker_notes_with_valid_json() -> None:
 
 def test_split_speaker_notes_with_invalid_json() -> None:
     """Test handling of invalid JSON in metadata section.
-    Case: if invalid JSON is passed in (but with proper header/footer markers), we preserve the user notes, 
+    Case: if invalid JSON is passed in (but with proper header/footer markers), we preserve the user notes,
     but still remove the JSON."""
     notes = f"""{METADATA_MARKER_HEADER}
 {{invalid json}}
@@ -153,7 +153,7 @@ Old copied annotations from previous run.
 def test_split_speaker_notes_with_both_sections_and_user_notes_interspersed() -> None:
     """When the speaker notes contains all 3 things: json metadata, copied annotations, and user notes--
     AND the user notes are interspersed at the top, middle, and bottom of the marker sections, ensure we
-    parse as expected; the user notes should all get into the user notes, json content gets assigned to 
+    parse as expected; the user notes should all get into the user notes, json content gets assigned to
     the right place, and copied annotations should be removed."""
     json_content = '{"headings": [{"name": "Heading1", "text": "My Heading"}]}'
     notes = f"""My user notes at the top.
@@ -222,20 +222,26 @@ def test_extract_slide_metadata_valid_dict() -> None:
     assert result.experimental_formatting == metadata["experimental_formatting"]
 
 
-def test_extract_slide_metadata_non_dict_input(caplog: pytest.LogCaptureFixture) -> None:
+def test_extract_slide_metadata_non_dict_input(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test that non-dict input returns unmutated SlideNotes."""
     slide_notes = SlideNotes()
-    original_metadata = slide_notes.metadata.copy() # Empty
+    original_metadata = slide_notes.metadata.copy()  # Empty
 
     with caplog.at_level(logging.DEBUG):
         result = extract_slide_metadata("not a dict", slide_notes)  # type: ignore[arg-type]
 
     assert "should be a dict" in caplog.text
     assert result is slide_notes
-    assert result.metadata == original_metadata # It should still be empty, since invalid data was passed in
+    assert (
+        result.metadata == original_metadata
+    )  # It should still be empty, since invalid data was passed in
 
 
-def test_extract_slide_metadata_invalid_list_types(caplog: pytest.LogCaptureFixture) -> None:
+def test_extract_slide_metadata_invalid_list_types(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test that non-list values for expected list fields are replaced with empty lists."""
     metadata = {
         "comments": "should be list",
@@ -260,7 +266,10 @@ def test_extract_slide_metadata_invalid_list_types(caplog: pytest.LogCaptureFixt
     assert "Footnotes from the slide notes JSON should be a list" in caplog.text
     assert "Endnotes from the slide notes JSON should be a list" in caplog.text
     assert "Headings from the slide notes JSON should be a list" in caplog.text
-    assert "Experimental_formatting from the slide notes JSON should be a list" in caplog.text
+    assert (
+        "Experimental_formatting from the slide notes JSON should be a list"
+        in caplog.text
+    )
 
 
 def test_extract_slide_metadata_partial_fields() -> None:
@@ -305,12 +314,18 @@ def test_safely_extract_comment_data_valid() -> None:
     assert result["author"] == "Jane Eyre"
     assert result["initials"] == "JE"
 
-@pytest.mark.parametrize("invalid_input", [
-    "not a dict",
-    [1, 2, 3],
-    None,
-])
-def test_safely_extract_comment_data_non_dict(invalid_input, caplog: pytest.LogCaptureFixture) -> None:
+
+@pytest.mark.parametrize(
+    "invalid_input",
+    [
+        "not a dict",
+        [1, 2, 3],
+        None,
+    ],
+)
+def test_safely_extract_comment_data_non_dict(
+    invalid_input, caplog: pytest.LogCaptureFixture # noqa: ANN001
+) -> None:  
     """Test that non-dict input returns None."""
     with caplog.at_level(logging.DEBUG):
         result = safely_extract_comment_data(invalid_input)  # type: ignore[arg-type]
@@ -319,20 +334,25 @@ def test_safely_extract_comment_data_non_dict(invalid_input, caplog: pytest.LogC
     assert "is not a dict" in caplog.text
 
 
-def test_safely_extract_comment_data_missing_original(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_comment_data_missing_original(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test comment missing 'original' field."""
     comment = {
         "id": "abc123",
         "reference_text": "text",
     }
-    
+
     with caplog.at_level(logging.DEBUG):
         result = safely_extract_comment_data(comment)
-    
+
     assert result is None
     assert "missing 'original' field" in caplog.text
 
-def test_safely_extract_comment_data_original_not_dict(caplog: pytest.LogCaptureFixture) -> None:
+
+def test_safely_extract_comment_data_original_not_dict(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test comment where 'original' is not a dict."""
     comment = {
         "id": "abc123",
@@ -345,7 +365,9 @@ def test_safely_extract_comment_data_original_not_dict(caplog: pytest.LogCapture
     assert "is not a dict" in caplog.text
 
 
-def test_safely_extract_comment_data_missing_text(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_comment_data_missing_text(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test comment with original dict but no text."""
     comment = {
         "id": "abc123",
@@ -361,7 +383,9 @@ def test_safely_extract_comment_data_missing_text(caplog: pytest.LogCaptureFixtu
     assert "no text content" in caplog.text
 
 
-def test_safely_extract_comment_data_empty_text(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_comment_data_empty_text(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test comment with empty text string."""
     comment = {
         "id": "abc123",
@@ -378,7 +402,9 @@ def test_safely_extract_comment_data_empty_text(caplog: pytest.LogCaptureFixture
     assert "no text content" in caplog.text
 
 
-def test_safely_extract_comment_data_missing_reference_text(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_comment_data_missing_reference_text(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test comment missing reference_text field."""
     comment = {
         "id": "abc123",
@@ -393,7 +419,9 @@ def test_safely_extract_comment_data_missing_reference_text(caplog: pytest.LogCa
     assert "missing 'reference_text' field" in caplog.text
 
 
-def test_safely_extract_comment_data_missing_id(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_comment_data_missing_id(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test comment missing id field."""
     comment = {
         "reference_text": "text",
@@ -446,11 +474,16 @@ def test_safely_extract_heading_data_valid() -> None:
     assert result["style_id"] == "Heading1"
 
 
-@pytest.mark.parametrize("invalid_input", [
-    "not a dict",
-    [1, 2, 3],
-])
-def test_safely_extract_heading_data_non_dict(invalid_input, caplog: pytest.LogCaptureFixture) -> None:
+@pytest.mark.parametrize(
+    "invalid_input",
+    [
+        "not a dict",
+        [1, 2, 3],
+    ],
+)
+def test_safely_extract_heading_data_non_dict(
+    invalid_input, caplog: pytest.LogCaptureFixture  # noqa: ANN001
+) -> None:
     """Test that non-dict input returns None."""
     with caplog.at_level(logging.DEBUG):
         result = safely_extract_heading_data(invalid_input)  # type: ignore[arg-type]
@@ -459,7 +492,9 @@ def test_safely_extract_heading_data_non_dict(invalid_input, caplog: pytest.LogC
     assert "is not a dict" in caplog.text
 
 
-def test_safely_extract_heading_data_missing_text(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_heading_data_missing_text(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test heading missing required 'text' field."""
     heading = {"name": "Heading 1"}
 
@@ -470,7 +505,9 @@ def test_safely_extract_heading_data_missing_text(caplog: pytest.LogCaptureFixtu
     assert "missing 'text' field" in caplog.text
 
 
-def test_safely_extract_heading_data_missing_name(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_heading_data_missing_name(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test heading missing required 'name' field."""
     heading = {"text": "Introduction"}
 
@@ -516,11 +553,16 @@ def test_safely_extract_experimental_formatting_data_valid() -> None:
     assert result["highlight_color_enum"] == "yellow"
 
 
-@pytest.mark.parametrize("invalid_input", [
-    "not a dict",
-    [1, 2, 3],
-])
-def test_safely_extract_experimental_formatting_data_non_dict(invalid_input, caplog: pytest.LogCaptureFixture) -> None:
+@pytest.mark.parametrize(
+    "invalid_input",
+    [
+        "not a dict",
+        [1, 2, 3],
+    ],
+)
+def test_safely_extract_experimental_formatting_data_non_dict(
+    invalid_input, caplog: pytest.LogCaptureFixture   # noqa: ANN001
+) -> None:
     """Test that non-dict input returns None."""
     with caplog.at_level(logging.DEBUG):
         result = safely_extract_experimental_formatting_data(invalid_input)  # type: ignore[arg-type]
@@ -529,7 +571,9 @@ def test_safely_extract_experimental_formatting_data_non_dict(invalid_input, cap
     assert "is not a dict" in caplog.text
 
 
-def test_safely_extract_experimental_formatting_data_missing_ref_text(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_experimental_formatting_data_missing_ref_text(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test formatting missing required 'ref_text' field."""
     exp_fmt = {"formatting_type": "highlight"}
 
@@ -540,7 +584,9 @@ def test_safely_extract_experimental_formatting_data_missing_ref_text(caplog: py
     assert "missing 'ref_text' field" in caplog.text
 
 
-def test_safely_extract_experimental_formatting_data_missing_formatting_type(caplog: pytest.LogCaptureFixture) -> None:
+def test_safely_extract_experimental_formatting_data_missing_formatting_type(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     """Test formatting missing required 'formatting_type' field."""
     exp_fmt = {"ref_text": "text"}
 

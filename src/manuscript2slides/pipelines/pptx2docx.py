@@ -1,5 +1,6 @@
 # pptx2docx.py
 """PowerPoint to Word conversion pipeline."""
+
 # mypy: disable-error-code="import-untyped"
 import logging
 
