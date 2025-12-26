@@ -34,18 +34,7 @@ from tests import helpers
 # ...the results should match the assertions in the tests below.
 
 def test_where_are_data_slide(output_pptx: Path) -> None:
-    """
-    Find the slide with the 'Where are Data?' title text. Test slide's text formatting
-    and the contents of slide notes against expectations.
-
-    This verifies:
-        - standard formatting (font color, italics) is copied from docx runs to pptx runs
-        - standard formatting (bold) gets copied from docx paragraphs to pptx paragraphs
-        - the above two things BOTH happen and don't stomp each other unexpectedly (we do expect run font to stomp paragraph font)
-        - typeface gets copied from docx paragraphs OR runs to pptx paragraphs
-        - when display_comments is enabled, they get copied into the speaker notes successfully
-        - when preserve_docx_metadata_in_speaker_notes is enabled, the Heading's font data is copied into the speaker notes successfully
-    """
+    """Verify formatting preservation (bold, italic, color, typeface) and metadata/comments in speaker notes."""
 
     # Action: note that the "Action" here is running the docx2pptx pipeline, which we do
     # in a fixture one time instead of repeatedly for many tests.
@@ -86,11 +75,7 @@ def test_where_are_data_slide(output_pptx: Path) -> None:
 
 
 def test_author_slide(output_pptx: Path) -> None:
-    """Find slide containing 'by J. King-Yost' and verify:
-    - In paragraphs where there is only heading-level font data in the docx, it is copied to the paragraph-level
-    in the pptx successfully, including color, italics, and typeface
-    - When preserve_docx_metadata_in_speaker_notes is enabled, the Heading's font data is copied into the speaker notes successfully
-    """
+    """Verify heading-level formatting (color, italics) is copied to paragraph level and metadata preserved in speaker notes."""
 
     prs = pptx.Presentation(output_pptx)
     slide, para = helpers.find_first_slide_containing(prs, "by J. King-Yost")
@@ -114,18 +99,7 @@ def test_author_slide(output_pptx: Path) -> None:
 
 
 def test_in_a_cold_concrete_underground_tunnel_slide(output_pptx: Path) -> None:
-    """
-    Test the following cases:
-    Slide body:
-    - standard formatting is preserved via italic, bold, color, and underline runs individually
-
-    - experimental formatting via highlight text is preserved
-    Speaker notes:
-    - footnotes are copied when display_footnotes is enabled, including any hyperlinks
-    - comments are copied when display_comments is enabled
-    - experimental formatting data is copied when preserve_metadata... is enabled
-    - footnotes data is copied when metadata preservation is enabled, including its hyperlinks
-    """
+    """Verify standard formatting (italic, bold, color, underline, hyperlinks), experimental formatting (highlights), and speaker notes (footnotes, comments, metadata)."""
     prs = pptx.Presentation(output_pptx)
     slide, para = helpers.find_first_slide_containing(
         prs, "In a cold concrete underground tunnel"
@@ -249,12 +223,7 @@ def test_in_a_cold_concrete_underground_tunnel_slide(output_pptx: Path) -> None:
 
 
 def test_endnotes_slide(output_pptx: Path) -> None:
-    """
-    Find the slide containing "Vedantam, Shankar" in the main body of the slide, probably the last slide, and
-    test that the endnote attached to this gets added to the speaker notes.
-    - speaker notes on this slide should contain "ENDNOTES FROM SOURCE DOCUMENT" and "sample endnote"
-    - "START OF JSON METADATA FROM SOURCE DOCUMENT" and "endnotes" and "reference_text"
-    """
+    """Verify endnotes and their metadata (including hyperlinks) are copied to speaker notes."""
     prs = pptx.Presentation(output_pptx)
     slide, para = helpers.find_first_slide_containing(prs, "Vedantam, Shankar")
 
@@ -282,10 +251,7 @@ def test_endnotes_slide(output_pptx: Path) -> None:
 def test_vanilla_docx_theme_font_does_not_carry_into_pptx_output(
     output_pptx: Path,
 ) -> None:
-    """
-    Test if docx theme font is copied into pptx. It shouldn't be set at the paragraph or run level because
-    the pptx's theme's fonts should be respected unless a run explicitly has a font typeface set.
-    """
+    """Verify docx theme font is not copied to pptx (pptx theme fonts should be respected)."""
     prs = pptx.Presentation(output_pptx)
 
     _slide, para = helpers.find_first_slide_containing(
@@ -298,20 +264,7 @@ def test_vanilla_docx_theme_font_does_not_carry_into_pptx_output(
 def test_speaker_notes_empty_if_json_and_annotations_off(
     output_pptx_default_options: Path,
 ) -> None:
-    """
-    Verify that if the pipeline is run with the following bools set to False, the speaker notes are empty:
-
-    - display_comments
-    - display_endnotes
-    - display_footnotes
-    - preserve_docx_metadata_in_speaker_notes
-
-    and that if experimental_formatting_on is True, the formatting is still preserved, even if the metadata
-    is not copied.
-
-    NOTE: This is an expensive test (we're running the pipeline a second time for it), so we may need to
-    consider if it's worth it.
-    """
+    """Verify speaker notes are empty when all annotation and metadata display options are disabled."""
 
     prs = pptx.Presentation(output_pptx_default_options)
 
@@ -328,12 +281,7 @@ def test_speaker_notes_empty_if_json_and_annotations_off(
 
 # region pptx2docx
 def test_header_formatting_restoration_pptx2docx(output_docx: Path) -> None:
-    """Test that the header styling we expect from the pptx input file is restored in docx output.
-
-    Note: The input pptx has metadata preserved in the speaker notes, was generated with "headings nested" chunking,
-    and with a custom pptx template, using a custom theme font (the latter should be ignored during this pipeline,
-    because the docx template's themes should be honored).
-    """
+    """Verify heading styles (Heading 1-3) and formatting (color, italics, alignment) are restored from pptx to docx."""
 
     doc = docx.Document(str(output_docx))
 
@@ -396,21 +344,7 @@ def test_header_formatting_restoration_pptx2docx(output_docx: Path) -> None:
 
 
 def test_run_formatting_restoration_pptx2docx(output_docx: Path) -> None:
-    """
-    Test cases:
-
-    Verify:
-
-    In the paragraph containing: "In a cold concrete underground tunnel," ...
-    ✓ "In a cold concrete underground tunnel" is a hyperlink and sub-run, "tunnel" is in italics
-    ✓ "spayed" is in bold
-    ✓ run "in three dozen directions" is italic
-    - run with "buzzing" is highlighted in yellow
-    - "Dust covers the cables" is in red, and has an explicit typeface set on its run (Georgia)
-    ✓ She could wipe them clean without too much risk is underlined (True)
-    - read those stories is double-underlined (enum 3)
-    """
-    # TODO
+    """Verify run-level formatting (bold, italic, color, underline, highlights, hyperlinks, typeface) is restored from pptx to docx."""
 
     doc = docx.Document(str(output_docx))
 
@@ -479,11 +413,7 @@ def test_run_formatting_restoration_pptx2docx(output_docx: Path) -> None:
 
 
 def test_annotations_are_restored_pptx2docx(output_docx: Path) -> None:
-    """
-    - A comment contains: "Sample Comment"
-    - A comment contains: "Endnote:" and "Another sample endnote with a url"
-    - A comment contains: "Footnote:"
-    """
+    """Verify comments, footnotes, and endnotes are restored from pptx speaker notes to docx comments."""
     doc = docx.Document(str(output_docx))
 
     # Case: At least one comment contains "Sample Comment"
