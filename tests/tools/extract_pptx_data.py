@@ -10,7 +10,7 @@ Extracts slide structure, formatting, and experimental XML properties.
 from pathlib import Path
 import json
 import sys
-from typing import cast
+from typing import cast, Any
 import xml.etree.ElementTree as ET
 
 from pptx.presentation import Presentation
@@ -18,7 +18,7 @@ from pptx.slide import Slides
 from manuscript2slides import io
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
 
-from extraction_utils import safe_pprint, filter_none_keep_false, rgb_to_hex
+from extraction_utils import safe_pprint, filter_none_keep_false, rgb_to_hex  # type: ignore[import-not-found]
 
 
 # ============================================================================
@@ -56,7 +56,7 @@ def main() -> None:
 
     data = []
     for idx, slide in enumerate(slides):
-        slide_data = {
+        slide_data: dict[str, Any] = {
             "slide_number": idx + 1,
             "shapes": [],
         }
@@ -72,28 +72,30 @@ def main() -> None:
 
             # Only add speaker_notes if there's actual content
             if parsed_notes.user_notes or parsed_notes.metadata:
-                slide_data["speaker_notes"] = {
+                speaker_notes_data: dict[str, Any] = {
                     "user_notes": parsed_notes.user_notes,
                     "metadata": parsed_notes.metadata,
                 }
 
                 # Also capture the individual annotation lists for easier testing
                 if parsed_notes.comments:
-                    slide_data["speaker_notes"]["comments"] = parsed_notes.comments
+                    speaker_notes_data["comments"] = parsed_notes.comments
                 if parsed_notes.footnotes:
-                    slide_data["speaker_notes"]["footnotes"] = parsed_notes.footnotes
+                    speaker_notes_data["footnotes"] = parsed_notes.footnotes
                 if parsed_notes.endnotes:
-                    slide_data["speaker_notes"]["endnotes"] = parsed_notes.endnotes
+                    speaker_notes_data["endnotes"] = parsed_notes.endnotes
                 if parsed_notes.headings:
-                    slide_data["speaker_notes"]["headings"] = parsed_notes.headings
+                    speaker_notes_data["headings"] = parsed_notes.headings
                 if parsed_notes.experimental_formatting:
-                    slide_data["speaker_notes"][
-                        "experimental_formatting"
-                    ] = parsed_notes.experimental_formatting
+                    speaker_notes_data["experimental_formatting"] = (
+                        parsed_notes.experimental_formatting
+                    )
+
+                slide_data["speaker_notes"] = speaker_notes_data
 
         for shape in slide.shapes:
             if shape.has_text_frame:
-                shape_data = {"text": shape.text, "paragraphs": []}
+                shape_data: dict[str, Any] = {"text": shape.text, "paragraphs": []}
 
                 for para in shape.text_frame.paragraphs:
                     para_font = {

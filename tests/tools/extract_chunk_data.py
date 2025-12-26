@@ -16,7 +16,7 @@ from manuscript2slides.processing.chunking import create_docx_chunks
 from manuscript2slides.models import Chunk_docx
 from manuscript2slides.internals.define_config import ChunkType
 
-from extraction_utils import rgb_to_hex, safe_pprint, filter_none_keep_false
+from extraction_utils import rgb_to_hex, safe_pprint, filter_none_keep_false  # type: ignore[import-not-found]
 
 
 # ============================================================================
@@ -24,7 +24,9 @@ from extraction_utils import rgb_to_hex, safe_pprint, filter_none_keep_false
 # ============================================================================
 INPUT_DOCX = "tests/data/sample_doc.docx"
 OUTPUT_JSON = "tests/baselines/docx_chunks_sample.json"
-CHUNK_TYPE = ChunkType.HEADING_FLAT  # Try: HEADING_FLAT, HEADING_NESTED, PAGE, PARAGRAPH
+CHUNK_TYPE = (
+    ChunkType.HEADING_FLAT
+)  # Try: HEADING_FLAT, HEADING_NESTED, PAGE, PARAGRAPH
 # ============================================================================
 
 
@@ -37,7 +39,10 @@ def main() -> None:
 
     if not test_docx_path.exists():
         print(f"Error: {test_docx_path} not found!", file=sys.stderr)
-        print(f"Please check the INPUT_DOCX configuration at the top of this script.", file=sys.stderr)
+        print(
+            f"Please check the INPUT_DOCX configuration at the top of this script.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Load the docx
@@ -63,7 +68,7 @@ def main() -> None:
             para_data = {
                 "text": para.text,
                 "style": para.style.name if para.style else None,
-                "runs": []
+                "runs": [],
             }
 
             for run_idx, run in enumerate(para.runs):

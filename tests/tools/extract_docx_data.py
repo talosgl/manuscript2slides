@@ -26,8 +26,9 @@ from manuscript2slides.annotations.extract import (
 )
 from manuscript2slides.internals.define_config import UserConfig
 import xml.etree.ElementTree as ET
+from typing import Any
 
-from extraction_utils import (
+from extraction_utils import (  # type: ignore[import-not-found]
     rgb_to_hex,
     safe_pprint,
     filter_none_keep_false,
@@ -97,12 +98,12 @@ def extract_run_data(
         # Find comment references
         comment_refs = root.findall(".//w:commentReference", XML_NS)
         if comment_refs:
-            run_data["comment_refs"] = []
+            comment_refs_list: list = []
             for ref in comment_refs:
-                comment_id = ref.get(f'{{{XML_NS["w"]}}}id')
+                comment_id = ref.get(f"{{{XML_NS['w']}}}id")
                 if comment_id and comment_id in all_comments:
                     comment_obj = all_comments[comment_id]
-                    run_data["comment_refs"].append(
+                    comment_refs_list.append(
                         {
                             "id": comment_id,
                             "text": comment_obj.text,
@@ -113,38 +114,41 @@ def extract_run_data(
                             ),
                         }
                     )
+            run_data["comment_refs"] = comment_refs_list
 
         # Find footnote references
         footnote_refs = root.findall(".//w:footnoteReference", XML_NS)
         if footnote_refs:
-            run_data["footnote_refs"] = []
+            footnote_refs_list: list = []
             for ref in footnote_refs:
-                footnote_id = ref.get(f'{{{XML_NS["w"]}}}id')
+                footnote_id = ref.get(f"{{{XML_NS['w']}}}id")
                 if footnote_id and footnote_id in all_footnotes:
                     footnote_obj = all_footnotes[footnote_id]
-                    run_data["footnote_refs"].append(
+                    footnote_refs_list.append(
                         {
                             "id": footnote_id,
                             "text_body": footnote_obj.text_body,
                             "hyperlinks": footnote_obj.hyperlinks,
                         }
                     )
+            run_data["footnote_refs"] = footnote_refs_list
 
         # Find endnote references
         endnote_refs = root.findall(".//w:endnoteReference", XML_NS)
         if endnote_refs:
-            run_data["endnote_refs"] = []
+            endnote_refs_list: list = []
             for ref in endnote_refs:
-                endnote_id = ref.get(f'{{{XML_NS["w"]}}}id')
+                endnote_id = ref.get(f"{{{XML_NS['w']}}}id")
                 if endnote_id and endnote_id in all_endnotes:
                     endnote_obj = all_endnotes[endnote_id]
-                    run_data["endnote_refs"].append(
+                    endnote_refs_list.append(
                         {
                             "id": endnote_id,
                             "text_body": endnote_obj.text_body,
                             "hyperlinks": endnote_obj.hyperlinks,
                         }
                     )
+            run_data["endnote_refs"] = endnote_refs_list
     except (AttributeError, ET.ParseError):
         pass  # No annotations in this run
 
@@ -205,7 +209,7 @@ def main() -> None:
             # Filter out None values but keep False
             para_font = filter_none_keep_false(para_font)
 
-        para_data = {
+        para_data: dict[str, Any] = {
             "paragraph_number": para_idx,
             "text": para.text,
             "style": para.style.name if para.style else None,
@@ -219,7 +223,7 @@ def main() -> None:
             # Check if this is a Hyperlink object
             if isinstance(item, Hyperlink):
                 # This is a hyperlink containing nested runs
-                hyperlink_data = {
+                hyperlink_data: dict[str, Any] = {
                     "run_number": run_idx,
                     "type": f"{type(item).__module__}.{type(item).__name__}",
                     "hyperlink_url": item.url,

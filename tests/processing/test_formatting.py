@@ -90,7 +90,7 @@ def docx_formatting_runs_dict(
     assert (
         bold_and_italic_run.font.bold is True
         and bold_and_italic_run.font.italic is True
-    ), (test_err + "expected italic + bold at para 4, run 0")
+    ), test_err + "expected italic + bold at para 4, run 0"
 
     underline_run = docx_with_formatting.paragraphs[5].runs[0]
     assert underline_run.font.underline is True, (
@@ -101,20 +101,20 @@ def docx_formatting_runs_dict(
     assert (
         bold_and_underline_run.font.bold is True
         and bold_and_underline_run.font.underline is True
-    ), (test_err + "expected bold + underline at para 6, run 0")
+    ), test_err + "expected bold + underline at para 6, run 0"
 
     underline_and_italic_run = docx_with_formatting.paragraphs[7].runs[0]
     assert (
         underline_and_italic_run.font.underline is True
         and underline_and_italic_run.font.italic is True
-    ), (test_err + "expected underline + italic at para 7, run 0")
+    ), test_err + "expected underline + italic at para 7, run 0"
 
     all_three_run = docx_with_formatting.paragraphs[8].runs[0]
     assert (
         all_three_run.font.bold is True
         and all_three_run.font.italic is True
         and all_three_run.font.underline is True
-    ), (test_err + "expected bold + italic + underline at para 8, run 0")
+    ), test_err + "expected bold + italic + underline at para 8, run 0"
 
     # font.name or Typeface
     typeface_run = docx_with_formatting.paragraphs[9].runs[0]
@@ -124,9 +124,11 @@ def docx_formatting_runs_dict(
 
     # Size
     large_size_run = docx_with_formatting.paragraphs[11].runs[0]
+    assert large_size_run.font.size is not None
     assert large_size_run.font.size.pt == 48
 
     small_size_run = docx_with_formatting.paragraphs[12].runs[0]
+    assert small_size_run.font.size is not None
     assert small_size_run.font.size.pt == 8
 
     # Color
@@ -168,7 +170,7 @@ def docx_formatting_runs_dict(
     assert (
         hl_and_underlined.font.highlight_color is not None
         and hl_and_underlined.font.underline is True
-    ), (test_err + "expected highlight + underline at para 35, run 1")
+    ), test_err + "expected highlight + underline at para 35, run 1"
 
     hl_only = complex_hl_para.runs[2]
     assert hl_only.font.highlight_color is not None, (
@@ -179,12 +181,12 @@ def docx_formatting_runs_dict(
     assert (
         hl_and_italic.font.highlight_color is not None
         and hl_and_italic.font.italic is True
-    ), (test_err + "expected highlight + italic at para 35, run 3")
+    ), test_err + "expected highlight + italic at para 35, run 3"
 
     hl_and_bold = complex_hl_para.runs[5]
     assert (
         hl_and_bold.font.highlight_color is not None and hl_and_bold.font.bold is True
-    ), (test_err + "expected highlight + bold at para 35, run 5")
+    ), test_err + "expected highlight + bold at para 35, run 5"
 
     super_sub_para = docx_with_formatting.paragraphs[36]
     assert "superscript" in super_sub_para.text, (
@@ -283,7 +285,7 @@ def pptx_formatting_runs_dict(
     assert (
         bold_and_italic_run.font.bold is True
         and bold_and_italic_run.font.italic is True
-    ), (test_err + "expected bold + italic at slide 3, placeholder 1, para 0, run 0")
+    ), test_err + "expected bold + italic at slide 3, placeholder 1, para 0, run 0"
 
     underline_run = (
         pptx_with_formatting.slides[4]
@@ -304,7 +306,7 @@ def pptx_formatting_runs_dict(
     assert (
         bold_and_underline_run.font.bold is True
         and bold_and_underline_run.font.underline is True
-    ), (test_err + "expected bold + underline at slide 5, placeholder 1, para 0, run 0")
+    ), test_err + "expected bold + underline at slide 5, placeholder 1, para 0, run 0"
 
     underline_and_italic_run = (
         pptx_with_formatting.slides[6]
@@ -315,10 +317,7 @@ def pptx_formatting_runs_dict(
     assert (
         underline_and_italic_run.font.underline is True
         and underline_and_italic_run.font.italic is True
-    ), (
-        test_err
-        + "expected underline + italic at slide 6, placeholder 1, para 0, run 0"
-    )
+    ), test_err + "expected underline + italic at slide 6, placeholder 1, para 0, run 0"
 
     all_three_run = (
         pptx_with_formatting.slides[7]
@@ -379,17 +378,13 @@ def pptx_formatting_runs_dict(
         255,
         0,
         0,
-    ), (
-        test_err + "expected red color at slide 13, placeholder 1, para 0, run 1"
-    )
+    ), test_err + "expected red color at slide 13, placeholder 1, para 0, run 1"
     blue_run = color_para.runs[3]  # guessing run 3 for blue
     assert blue_run.font.color.rgb is not None and blue_run.font.color.rgb == (
         68,
         114,
         196,
-    ), (
-        test_err + "expected blue color at slide 13, placeholder 1, para 0, run 3"
-    )
+    ), test_err + "expected blue color at slide 13, placeholder 1, para 0, run 3"
 
     # skip 14
 
@@ -420,7 +415,7 @@ def pptx_formatting_runs_dict(
     assert (
         helpers.run_has_highlight(hl_and_underlined)
         and hl_and_underlined.font.underline is True
-    ), (test_err + "expected highlight + underline at slide 16, run 1")
+    ), test_err + "expected highlight + underline at slide 16, run 1"
 
     super_sub_para = (
         pptx_with_formatting.slides[17].shapes.placeholders[1].text_frame.paragraphs[0]
@@ -624,7 +619,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_highlight(
     """Test that experimental formatting correctly copies highlight from docx to pptx."""
     source_run = docx_formatting_runs_dict["highlight"]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
@@ -634,6 +629,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_highlight(
     assert len(metadata) == 1
     assert metadata[0]["formatting_type"] == "highlight"
     assert metadata[0]["ref_text"] == source_run.text
+    assert source_run.font.highlight_color is not None
     assert metadata[0]["highlight_color_enum"] == source_run.font.highlight_color.name
 
 
@@ -644,7 +640,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_single_strike(
     """Test that experimental formatting correctly copies single strike from docx to pptx."""
     source_run = docx_formatting_runs_dict["single_strike"]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
@@ -663,7 +659,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_double_strike(
     """Test that experimental formatting correctly copies double strike from docx to pptx."""
     source_run = docx_formatting_runs_dict["double_strike"]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
@@ -682,7 +678,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_subscript(
     """Test that experimental formatting correctly copies subscript from docx to pptx."""
     source_run = docx_formatting_runs_dict["subscript"]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
@@ -702,7 +698,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_superscript(
     """Test that experimental formatting correctly copies superscript from docx to pptx."""
     source_run = docx_formatting_runs_dict["superscript"]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
@@ -722,7 +718,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_all_caps(
     """Test that experimental formatting correctly copies all caps from docx to pptx."""
     source_run = docx_formatting_runs_dict["all_caps"]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
@@ -741,7 +737,7 @@ def test_copy_experimental_formatting_docx2pptx_preserves_small_caps(
     """Test that experimental formatting correctly copies small caps from docx to pptx."""
     source_run = docx_formatting_runs_dict["small_caps"]
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting._copy_experimental_formatting_docx2pptx(source_run, target_run, metadata)
 
@@ -868,7 +864,7 @@ def test_copy_run_formatting_docx2pptx_copies_experimental_when_enabled(
     # Test with highlight
     hl_source = docx_formatting_runs_dict["highlight"]
     hl_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    hl_metadata = []
+    hl_metadata: list = []
     formatting.copy_run_formatting_docx2pptx(
         hl_source, hl_target, hl_metadata, UserConfig(experimental_formatting_on=True)
     )
@@ -878,7 +874,7 @@ def test_copy_run_formatting_docx2pptx_copies_experimental_when_enabled(
     # Test with subscript
     sub_source = docx_formatting_runs_dict["subscript"]
     sub_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    sub_metadata = []
+    sub_metadata: list = []
     formatting.copy_run_formatting_docx2pptx(
         sub_source,
         sub_target,
@@ -892,7 +888,7 @@ def test_copy_run_formatting_docx2pptx_copies_experimental_when_enabled(
     # Test with all caps
     caps_source = docx_formatting_runs_dict["all_caps"]
     caps_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    caps_metadata = []
+    caps_metadata: list = []
     formatting.copy_run_formatting_docx2pptx(
         caps_source,
         caps_target,
@@ -911,7 +907,7 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
     # Test with highlight
     hl_source = docx_formatting_runs_dict["highlight"]
     hl_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    hl_metadata = []
+    hl_metadata: list = []
     formatting.copy_run_formatting_docx2pptx(
         hl_source, hl_target, hl_metadata, UserConfig(experimental_formatting_on=False)
     )
@@ -921,7 +917,7 @@ def test_copy_run_formatting_docx2pptx_skips_experimental_when_disabled(
     # Test with subscript
     sub_source = docx_formatting_runs_dict["subscript"]
     sub_target = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    sub_metadata = []
+    sub_metadata: list = []
     formatting.copy_run_formatting_docx2pptx(
         sub_source,
         sub_target,
@@ -1011,15 +1007,19 @@ def test_copy_paragraph_formatting_docx2pptx_advanced(
     """
     # Arrange - Create fresh paragraphs and explicitly set style font properties
     para_with_bold = blank_docx.add_paragraph("Bold paragraph")
+    assert para_with_bold.style is not None
     para_with_bold.style.font.bold = True
 
     para_with_italic = blank_docx.add_paragraph("Italic paragraph")
+    assert para_with_italic.style is not None
     para_with_italic.style.font.italic = True
 
     para_with_underline = blank_docx.add_paragraph("Underline paragraph")
+    assert para_with_underline.style is not None
     para_with_underline.style.font.underline = True
 
     para_with_typeface = blank_docx.add_paragraph("Georgia paragraph")
+    assert para_with_typeface.style is not None
     para_with_typeface.style.font.name = "Georgia"
 
     slide = pptx_w_twenty_empty_slides.slides[0]
@@ -1065,6 +1065,7 @@ def test_copy_paragraph_alignment_docx2pptx_from_style(
     # Arrange - Create a paragraph with center alignment from style
     source_para = blank_docx.add_paragraph("Test text")
     # Set alignment on the style's paragraph format
+    assert source_para.style is not None
     source_para.style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     slide = pptx_w_twenty_empty_slides.slides[0]
@@ -1086,6 +1087,7 @@ def test_copy_paragraph_alignment_docx2pptx_direct_formatting_overrides_style(
     # Arrange - Create a paragraph with CENTER alignment in style but RIGHT in direct formatting
     source_para = blank_docx.add_paragraph("Test text")
     # Set alignment on the style (lower priority)
+    assert source_para.style is not None
     source_para.style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     # Set direct formatting (higher priority - should win)
     source_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -1187,6 +1189,7 @@ def test_copy_font_size_formatting_pptx2docx(
 
     formatting._copy_font_size_formatting(source_run.font, target_run.font)
 
+    assert target_run.font.size is not None
     assert target_run.font.size.pt == expected_size_pt
 
 
@@ -1274,7 +1277,9 @@ def test_copy_run_formatting_pptx2docx_copies_size_formatting(
         UserConfig(experimental_formatting_on=False),
     )
 
+    assert small_size_target_run.font.size is not None
     assert small_size_target_run.font.size.pt == 8
+    assert large_size_target_run.font.size is not None
     assert large_size_target_run.font.size.pt == 48
 
 
@@ -1487,9 +1492,9 @@ def test_copy_paragraph_formatting_pptx2docx_copies_alignment(
     source_slide = pptx_with_formatting.slides[0]
     source_paragraphs = source_slide.shapes.placeholders[1].text_frame.paragraphs
     source_pptx_para: Paragraph_pptx = source_paragraphs[0]
-    assert (
-        source_pptx_para.alignment == PP_ALIGN.CENTER
-    ), f"Test cannot proceed because test data is not in expected form. Source_pptx_para.alignment should be PP_ALIGN.CENTER but is {source_pptx_para.alignment}."
+    assert source_pptx_para.alignment == PP_ALIGN.CENTER, (
+        f"Test cannot proceed because test data is not in expected form. Source_pptx_para.alignment should be PP_ALIGN.CENTER but is {source_pptx_para.alignment}."
+    )
     target_docx_para = new_docx.add_paragraph()
 
     formatting.copy_paragraph_formatting_pptx2docx(
@@ -1578,9 +1583,9 @@ def test_apply_experimental_formatting_from_metadata_bool_formatting(
 
     # Verify initial state is False (or None/not set)
     initial_value = getattr(target_run.font, expected_attr)
-    assert (
-        initial_value is not True
-    ), f"Expected {expected_attr} to start as False/None, but was {initial_value}"
+    assert initial_value is not True, (
+        f"Expected {expected_attr} to start as False/None, but was {initial_value}"
+    )
 
     format_info = {
         "formatting_type": formatting_type,
@@ -1670,10 +1675,10 @@ def test_copy_run_formatting_with_whitespace_only_text_docx2pptx(
     source_para = blank_docx.add_paragraph()
     source_run = source_para.add_run("   ")
     source_run.font.bold = True
-    source_run.font.highlight_color = 7  # Yellow
+    source_run.font.highlight_color = WD_COLOR_INDEX.YELLOW
 
     target_run = _create_target_pptx_run(pptx_w_twenty_empty_slides)
-    metadata = []
+    metadata: list = []
 
     formatting.copy_run_formatting_docx2pptx(
         source_run, target_run, metadata, UserConfig(experimental_formatting_on=True)
