@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Generic, TypeVar
 
 from PySide6.QtCore import QObject, QSettings, Qt, QThread, Signal
 from PySide6.QtGui import QColor, QIntValidator, QKeySequence, QPalette, QShortcut
@@ -37,7 +37,6 @@ from manuscript2slides.internals.define_config import (
     PipelineDirection,
     UserConfig,
 )
-
 from manuscript2slides.internals.paths import (
     get_default_docx_template_path,
     get_default_pptx_template_path,
@@ -58,7 +57,6 @@ NO_SELECTION = "No Selection"
 
 # QSettings instance
 APP_SETTINGS = QSettings("manuscript2slides", "manuscript2slides")
-
 
 # region QSettings Stuff
 
@@ -381,12 +379,6 @@ class MainWindow(QMainWindow):
 class BaseConversionTabView(QWidget):
     """Base view for all conversion tabs."""
 
-    # TODO: Add abstract properties or type stubs for attributes that subclasses must define
-    #       (convert_btn, save_btn, load_btn, get_pipeline_direction, config_to_ui, etc.)
-    #       to eliminate mypy type: ignore comments and improve type safety.
-    #       See lines 985-987, 1073, 1086 for current type ignore usage.
-    # Run mypy on this file to see all errors.
-
     # region signals
     # endregion
 
@@ -474,9 +466,19 @@ class ConversionWorker(QObject):
 
 # endregion
 
+# region TypeVars for Generic Presenters
+
+# TypeVars for Views need to go after view classes are defined, but before the presenter classes are.
+ViewType = TypeVar("ViewType", bound="BaseConversionTabView")
+ConfigViewType = TypeVar("ConfigViewType", bound="ConfigurableConversionTabView")
+
+# endregion
+
 
 # region BaseConversionTabPresenter
-class BaseConversionTabPresenter(QObject):
+class BaseConversionTabPresenter(
+    QObject, Generic[ViewType]
+):  # We still need QObject for threading even when adding Generics. Python allows multiple inheritance, and Qt's QObject needs to be first.
     """
     Base Presenter for conversion tabs.
 
@@ -486,9 +488,9 @@ class BaseConversionTabPresenter(QObject):
     """
 
     # region init
-    def __init__(self, view: BaseConversionTabView) -> None:
+    def __init__(self, view: ViewType) -> None:
         super().__init__()  # Initialize QObject
-        self.view = view
+        self.view: ViewType = view
         self.last_run_config: UserConfig | None = None
 
         # Instance variables to prevent garbage collection; storing self.worker_thread
@@ -669,6 +671,21 @@ class BaseConversionTabPresenter(QObject):
 # region ConfigurableConversionTabView
 class ConfigurableConversionTabView(BaseConversionTabView):
     """View class for the ConfigurableConversionTab."""
+
+    # Type stubs for attributes created in helper methods
+    io_section: QGroupBox
+    input_selector: PathSelector
+    advanced_io: CollapsibleFrame
+    output_selector: PathSelector
+    template_selector: PathSelector
+    save_btn: QPushButton
+    load_btn: QPushButton
+    range_layout: QHBoxLayout
+    range_start_input: QLineEdit
+    range_end_input: QLineEdit
+    range_tip: QLabel
+    convert_section: QGroupBox
+    convert_btn: QPushButton
 
     # region init
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -905,13 +922,14 @@ class ConfigurableConversionTabView(BaseConversionTabView):
 
 
 # region ConfigurableConversionTabPresenter
-class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
+class ConfigurableConversionTabPresenter(
+    BaseConversionTabPresenter[ConfigViewType], Generic[ConfigViewType]
+):
     """Presenter class for the ConfigurableConversionTab."""
 
     # region init
-    def __init__(self, view: ConfigurableConversionTabView) -> None:
+    def __init__(self, view: ConfigViewType) -> None:
         super().__init__(view)
-        self.view = view
         self.loaded_config: UserConfig | None = None
 
         # subclasses must call self._connect_signals()
@@ -1072,6 +1090,15 @@ class ConfigurableConversionTabPresenter(BaseConversionTabPresenter):
 # region DemoTabView
 class DemoTabView(BaseConversionTabView):
     """Demo Tab with sample conversion buttons."""
+
+    # Type stubs for attributes created in helper methods
+    info_label: QLabel
+    docx2pptx_btn: QPushButton
+    pptx2docx_btn: QPushButton
+    round_trip_btn: QPushButton
+    load_demo_btn: QPushButton
+    force_error_btn: QPushButton
+    clear_settings_btn: QPushButton
 
     # region init
     # Note: Unlike in Tkinter, where parents are absolutely required at all times, parent=None is a conventional pattern in Qt to allow flexibility
@@ -1394,11 +1421,8 @@ class Pptx2DocxTabView(ConfigurableConversionTabView):
 
 
 # region Pptx2DocxPresenter
-class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
+class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter[Pptx2DocxTabView]):
     """Presenter class for the PPTX -> Docx Tab."""
-
-    # Instance attribute type hints/metadata
-    view: Pptx2DocxTabView
 
     def __init__(self, view: Pptx2DocxTabView) -> None:
         super().__init__(view)
@@ -1472,6 +1496,17 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter):
 # region Docx2PptxView
 class Docx2PptxTabView(ConfigurableConversionTabView):
     """View Tab for the DOCX -> PPTX Pipeline."""
+
+    # Type stubs for attributes created in helper methods
+    basic_options: QGroupBox
+    chunk_dropdown: QComboBox
+    experimental_fmt_chk: QCheckBox
+    advanced_options: CollapsibleFrame
+    keep_metadata_chk: QCheckBox
+    keep_all_annotations_chk: QCheckBox
+    keep_comments_chk: QCheckBox
+    keep_footnotes_chk: QCheckBox
+    keep_endnotes_chk: QCheckBox
 
     # region init _create_widgets()
 
@@ -1798,11 +1833,8 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
 
 
 # region Docx2PptxPresenter
-class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter):
+class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter[Docx2PptxTabView]):
     """Presenter class for Docx2Pptx Tab."""
-
-    # Instance attribute type hints/metadata
-    view: Docx2PptxTabView
 
     # region init
     def __init__(self, view: Docx2PptxTabView) -> None:
