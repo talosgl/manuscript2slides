@@ -129,7 +129,7 @@ class RunManifest:
             return
 
         try:
-            with open(self.manifest_path, "w", encoding="utf-8") as f:
+            with open(self.manifest_path, "w", encoding="utf-8", newline="\n") as f:
                 json.dump(self.manifest, f, indent=2)
         except OSError as e:
             log.error(f"Failed to write manifest to {self.manifest_path}: {e}")

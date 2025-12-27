@@ -229,4 +229,5 @@ def test_manifest_json_format_and_encoding(
     expected = json.dumps(data, indent=2, ensure_ascii=False)
     actual = content.strip()
 
-    assert actual == expected
+    # Compare line-by-line to ignore platform line ending differences
+    assert actual.splitlines() == expected.splitlines()
