@@ -1,2 +1,519 @@
 """Baseline Tests for the GUI"""
-# TODO: at least that we can startup and maybe that a button is clickable?
+
+import logging
+from collections.abc import Generator
+from pathlib import Path
+from typing import Any
+
+import pytest
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMessageBox
+from pytestqt.qtbot import QtBot
+
+from manuscript2slides.gui import MainWindow
+
+
+@pytest.fixture(autouse=True)
+def cleanup_gui_logger() -> Generator[None, Any, None]:
+    """Remove GUI log handlers after each test to prevent cross-test pollution."""
+    yield
+    # After test completes, remove any QTextEditHandler instances
+    # that reference Qt widgets to prevent cross-test contamination
+    logger = logging.getLogger("manuscript2slides")
+    logger.handlers = [
+        h
+        for h in logger.handlers
+        if not h.__class__.__name__ == "QTextEditHandler"
+    ]
+
+
+# Level 1: Smoke Tests
+class TestGUIStartup:
+    """Smoke tests - verify basic GUI launches without crashing."""
+
+    def test_main_window_launches(self, qtbot: QtBot) -> None:
+        """Test that MainWindow can be created without crashing."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        assert window is not None
+        assert window.windowTitle() == "manuscript2slides"
+
+    def test_all_tabs_exist(self, qtbot: QtBot) -> None:
+        """Test that all expected tabs are present."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        assert window.tabs.count() == 3
+        assert window.tabs.tabText(0) == "DOCX → PPTX"
+        assert window.tabs.tabText(1) == "PPTX → DOCX"
+        assert window.tabs.tabText(2) == "DEMO"
+
+    def test_presenters_created(self, qtbot: QtBot) -> None:
+        """Test that all presenters are initialized."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        assert window.d2p_tab_presenter is not None
+        assert window.p2d_tab_presenter is not None
+        assert window.demo_presenter is not None
+
+    def test_tab_switching(self, qtbot: QtBot) -> None:
+        """Test that we can switch between all tabs without errors."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        for i in range(3):
+            window.tabs.setCurrentIndex(i)
+            assert window.tabs.currentIndex() == i
+
+
+# Level 2: Widget Existence Tests
+class TestWidgetExistence:
+    """Test that all expected widgets exist."""
+
+    def test_demo_tab_has_buttons(self, qtbot: QtBot) -> None:
+        """Test that demo tab has all expected buttons."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+        demo_view = window.demo_tab_view
+
+        assert demo_view.docx2pptx_btn is not None
+        assert demo_view.pptx2docx_btn is not None
+        assert demo_view.round_trip_btn is not None
+        assert demo_view.load_demo_btn is not None
+
+    def test_pptx2docx_tab_has_io_widgets(self, qtbot: QtBot) -> None:
+        """Test that PPTX→DOCX tab has I/O widgets."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+        p2d_view = window.p2d_tab_view
+
+        assert p2d_view.input_selector is not None
+        assert p2d_view.convert_btn is not None
+        assert p2d_view.save_btn is not None
+        assert p2d_view.load_btn is not None
+        assert p2d_view.convert_btn.text() == "Convert!"
+
+    def test_docx2pptx_tab_has_io_widgets(self, qtbot: QtBot) -> None:
+        """Test that DOCX→PPTX tab has I/O widgets."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+        d2p_view = window.d2p_tab_view
+
+        assert d2p_view.input_selector is not None
+        assert d2p_view.convert_btn is not None
+        assert d2p_view.save_btn is not None
+        assert d2p_view.load_btn is not None
+        assert d2p_view.convert_btn.text() == "Convert!"
+
+
+# Level 3: Simple Interactions
+class TestButtonInteractions:
+    """Test basic button click interactions."""
+
+    def test_demo_button_click_doesnt_crash(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that clicking load demo button doesn't crash."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        # Mock the file dialog to avoid blocking
+        def mock_get_open_filename(
+            parent: object, caption: str, directory: str, filter: str
+        ) -> tuple[str, str]:
+            # Return empty string (user cancelled)
+            return ("", "")
+
+        monkeypatch.setattr(
+            "manuscript2slides.gui.QFileDialog.getOpenFileName",
+            mock_get_open_filename,
+        )
+
+        # Click button - shouldn't crash
+        qtbot.mouseClick(
+            window.demo_tab_view.load_demo_btn, Qt.MouseButton.LeftButton
+        )
+        # If we got here, no crash occurred
+
+    def test_convert_button_disabled_initially(self, qtbot: QtBot) -> None:
+        """Test that convert button starts disabled with no input."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        # Convert button should be disabled on startup (no input selected)
+        assert not window.d2p_tab_view.convert_btn.isEnabled()
+        assert not window.p2d_tab_view.convert_btn.isEnabled()
+
+    def test_convert_button_enables_with_valid_file(
+        self, qtbot: QtBot, tmp_path: Path
+    ) -> None:
+        """Test that convert button enables when valid file is selected."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        # Create a dummy .docx file
+        test_file = tmp_path / "test.docx"
+        test_file.write_text("dummy content")
+
+        # Set the path in the DOCX→PPTX tab
+        window.d2p_tab_view.input_selector.set_path(str(test_file))
+
+        # Process events to allow signal/slot execution
+        qtbot.wait(50)
+
+        # Button should now be enabled
+        assert window.d2p_tab_view.convert_btn.isEnabled()
+
+
+# Level 4: Validation Logic Tests
+class TestValidationLogic:
+    """Test validation logic without full GUI lifecycle issues."""
+
+    def test_docx2pptx_rejects_nonexistent_file(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that validation rejects nonexistent input files."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        # Create view and presenter without full MainWindow
+        from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
+
+        view = Docx2PptxTabView()
+        qtbot.addWidget(view)
+        presenter = Docx2PptxTabPresenter(view)
+
+        # Mock the logger to prevent GUI widget access
+        import logging
+
+        mock_logger = logging.getLogger("mock")
+        monkeypatch.setattr("manuscript2slides.gui.log", mock_logger)
+
+        # Track QMessageBox.critical calls
+        dialog_calls: list[tuple[str, str]] = []
+
+        def mock_critical(
+            parent: object, title: str, text: str, *args: object, **kwargs: object
+        ) -> QMessageBox.StandardButton:
+            dialog_calls.append((title, text))
+            return QMessageBox.StandardButton.Ok
+
+        monkeypatch.setattr(QMessageBox, "critical", mock_critical)
+
+        # Test with nonexistent file
+        cfg = UserConfig()
+        cfg.input_docx = Path("nonexistent.docx")
+
+        result = presenter._validate_input(cfg)
+
+        # Validation should fail
+        assert result is False
+        # Should have shown error dialog
+        assert len(dialog_calls) == 1
+        title, text = dialog_calls[0]
+        assert "not found" in text.lower() or "does not exist" in text.lower()
+
+    def test_docx2pptx_rejects_wrong_file_type(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Test that validation rejects wrong file types."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
+
+        view = Docx2PptxTabView()
+        qtbot.addWidget(view)
+        presenter = Docx2PptxTabPresenter(view)
+
+        # Mock the logger to prevent GUI widget access
+        import logging
+
+        mock_logger = logging.getLogger("mock")
+        monkeypatch.setattr("manuscript2slides.gui.log", mock_logger)
+
+        # Track QMessageBox.critical calls
+        dialog_calls: list[tuple[str, str]] = []
+
+        def mock_critical(
+            parent: object, title: str, text: str, *args: object, **kwargs: object
+        ) -> QMessageBox.StandardButton:
+            dialog_calls.append((title, text))
+            return QMessageBox.StandardButton.Ok
+
+        monkeypatch.setattr(QMessageBox, "critical", mock_critical)
+
+        # Create a .txt file instead of .docx
+        wrong_file = tmp_path / "test.txt"
+        wrong_file.write_text("not a docx")
+
+        cfg = UserConfig()
+        cfg.input_docx = wrong_file
+
+        result = presenter._validate_input(cfg)
+
+        # Validation should fail
+        assert result is False
+        # Should have shown error dialog about file type
+        assert len(dialog_calls) == 1
+        title, text = dialog_calls[0]
+        assert "invalid" in text.lower() or ".docx" in text.lower()
+
+    def test_pptx2docx_rejects_nonexistent_file(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that PPTX→DOCX validation rejects nonexistent files."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        from manuscript2slides.gui import Pptx2DocxTabPresenter, Pptx2DocxTabView
+
+        view = Pptx2DocxTabView()
+        qtbot.addWidget(view)
+        presenter = Pptx2DocxTabPresenter(view)
+
+        # Mock the logger to prevent GUI widget access
+        import logging
+
+        mock_logger = logging.getLogger("mock")
+        monkeypatch.setattr("manuscript2slides.gui.log", mock_logger)
+
+        # Track QMessageBox.critical calls
+        dialog_calls: list[tuple[str, str]] = []
+
+        def mock_critical(
+            parent: object, title: str, text: str, *args: object, **kwargs: object
+        ) -> QMessageBox.StandardButton:
+            dialog_calls.append((title, text))
+            return QMessageBox.StandardButton.Ok
+
+        monkeypatch.setattr(QMessageBox, "critical", mock_critical)
+
+        # Test with nonexistent file
+        cfg = UserConfig()
+        cfg.input_pptx = Path("nonexistent.pptx")
+
+        result = presenter._validate_input(cfg)
+
+        # Validation should fail
+        assert result is False
+        # Should have shown error dialog
+        assert len(dialog_calls) == 1
+        title, text = dialog_calls[0]
+        assert "not found" in text.lower() or "does not exist" in text.lower()
+
+
+# Level 5: Error Handling and Recovery Tests
+class TestErrorHandling:
+    """Test that exceptions during conversion are caught and presented to users."""
+
+    def test_conversion_error_shows_dialog_and_logs(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Test that pipeline exceptions show error dialog and don't crash."""
+        from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
+
+        view = Docx2PptxTabView()
+        qtbot.addWidget(view)
+        presenter = Docx2PptxTabPresenter(view)
+
+        # Mock the logger to prevent GUI widget access
+        import logging
+
+        mock_logger = logging.getLogger("mock")
+        monkeypatch.setattr("manuscript2slides.gui.log", mock_logger)
+
+        # Track dialog calls
+        dialog_calls: list[tuple[str, str]] = []  # (title, text)
+
+        def mock_show_question_dialog(
+            _self: object,
+            title: str,
+            text: str,
+            info_text: str,
+            icon: object,
+            detailedText: str | None = None,
+        ) -> bool:
+            dialog_calls.append((title, text))
+            return False  # User clicks Cancel (don't open log folder)
+
+        # Mock the presenter's dialog method
+        monkeypatch.setattr(
+            "manuscript2slides.gui.BaseConversionTabPresenter._show_question_dialog",
+            mock_show_question_dialog,
+        )
+
+        # Mock run_pipeline to raise an exception
+        def mock_run_pipeline(_cfg: object) -> None:
+            raise ValueError("Simulated conversion error")
+
+        monkeypatch.setattr("manuscript2slides.gui.run_pipeline", mock_run_pipeline)
+
+        # Create a valid input file (to pass validation)
+        test_file = tmp_path / "test.docx"
+        test_file.write_text("dummy content")
+        view.input_selector.set_path(str(test_file))
+        qtbot.wait(50)
+
+        # Trigger conversion (which will fail)
+        presenter.on_convert_click()
+
+        # Wait for worker thread to finish and process error
+        # The thread emits an error signal which triggers _on_conversion_error
+        qtbot.wait(500)
+
+        # Verify error dialog was shown
+        assert len(dialog_calls) >= 1
+        title, _text = dialog_calls[0]
+        assert "conversion failed" in title.lower() or "failed" in title.lower()
+
+        # Verify buttons were re-enabled after error
+        assert view.convert_btn.isEnabled()
+
+    def test_force_error_button_shows_dialog(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that the demo tab's force error button shows error dialog."""
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        # Mock the logger to prevent GUI widget access
+        import logging
+
+        mock_logger = logging.getLogger("mock")
+        monkeypatch.setattr("manuscript2slides.gui.log", mock_logger)
+
+        # Track dialog calls
+        dialog_calls: list[tuple[str, str]] = []
+
+        def mock_show_question_dialog(
+            *_args: object, **_kwargs: object
+        ) -> bool:
+            # Extract title from kwargs if present, otherwise use first positional arg
+            title = _kwargs.get("title", _args[1] if len(_args) > 1 else "")
+            text = _kwargs.get("text", _args[2] if len(_args) > 2 else "")
+            dialog_calls.append((str(title), str(text)))
+            return False
+
+        monkeypatch.setattr(
+            "manuscript2slides.gui.BaseConversionTabPresenter._show_question_dialog",
+            mock_show_question_dialog,
+        )
+
+        # Click the force error button
+        qtbot.mouseClick(
+            window.demo_tab_view.force_error_btn, Qt.MouseButton.LeftButton
+        )
+
+        # Wait for worker thread to process error
+        qtbot.wait(500)
+
+        # Verify error dialog was shown
+        assert len(dialog_calls) >= 1
+        title, _text = dialog_calls[0]
+        assert "conversion failed" in title.lower() or "failed" in title.lower()
+
+        # Verify app is still responsive (buttons enabled)
+        assert window.demo_tab_view.force_error_btn.isEnabled()
+
+    def test_invalid_config_load_shows_error(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Test that loading malformed config shows error dialog."""
+        from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
+
+        view = Docx2PptxTabView()
+        qtbot.addWidget(view)
+        presenter = Docx2PptxTabPresenter(view)
+
+        # Mock the logger to prevent GUI widget access
+        import logging
+
+        mock_logger = logging.getLogger("mock")
+        monkeypatch.setattr("manuscript2slides.gui.log", mock_logger)
+
+        # Track QMessageBox.critical calls
+        dialog_calls: list[tuple[str, str]] = []
+
+        def mock_critical(
+            parent: object, title: str, text: str, *args: object, **kwargs: object
+        ) -> QMessageBox.StandardButton:
+            dialog_calls.append((title, text))
+            return QMessageBox.StandardButton.Ok
+
+        monkeypatch.setattr(QMessageBox, "critical", mock_critical)
+
+        # Create a malformed TOML file
+        bad_config = tmp_path / "bad_config.toml"
+        bad_config.write_text("this is not valid TOML [[[[")
+
+        # Try to load the bad config
+        result = presenter._load_config(bad_config)
+
+        # Should return None (failed to load)
+        assert result is None
+
+        # Should have shown error dialog
+        assert len(dialog_calls) == 1
+        title, text = dialog_calls[0]
+        # Verify it mentions config loading failure
+        assert "config" in text.lower() or "load" in text.lower()
+
+    def test_worker_thread_exception_doesnt_crash(
+        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Test that exceptions in worker thread are caught and handled."""
+        from manuscript2slides.gui import Pptx2DocxTabPresenter, Pptx2DocxTabView
+
+        view = Pptx2DocxTabView()
+        qtbot.addWidget(view)
+        presenter = Pptx2DocxTabPresenter(view)
+
+        # Mock the logger
+        import logging
+
+        mock_logger = logging.getLogger("mock")
+        monkeypatch.setattr("manuscript2slides.gui.log", mock_logger)
+
+        # Track dialog calls
+        dialog_calls: list[tuple[str, str]] = []
+
+        def mock_show_question_dialog(
+            *_args: object, **_kwargs: object
+        ) -> bool:
+            title = _kwargs.get("title", _args[1] if len(_args) > 1 else "")
+            text = _kwargs.get("text", _args[2] if len(_args) > 2 else "")
+            dialog_calls.append((str(title), str(text)))
+            return False
+
+        monkeypatch.setattr(
+            "manuscript2slides.gui.BaseConversionTabPresenter._show_question_dialog",
+            mock_show_question_dialog,
+        )
+
+        # Mock run_pipeline to raise RuntimeError (simulating deeper error)
+        def mock_run_pipeline(_cfg: object) -> None:
+            raise RuntimeError("Worker thread failure")
+
+        monkeypatch.setattr("manuscript2slides.gui.run_pipeline", mock_run_pipeline)
+
+        # Create valid input
+        test_file = tmp_path / "test.pptx"
+        test_file.write_text("dummy")
+        view.input_selector.set_path(str(test_file))
+        qtbot.wait(50)
+
+        # Trigger conversion
+        presenter.on_convert_click()
+
+        # Wait for worker to fail
+        qtbot.wait(500)
+
+        # Verify error was handled (dialog shown)
+        assert len(dialog_calls) >= 1
+
+        # Verify buttons re-enabled (app recovered)
+        assert view.convert_btn.isEnabled()
+
+        # Verify worker thread cleaned up properly
+        # (if it didn't, subsequent conversions would fail)
+        assert presenter.worker_thread is not None  # Should still exist but be stopped

@@ -272,6 +272,16 @@ def get_soft_text_color(widget: QWidget, ratio: float = 0.5) -> QColor:
 class MainWindow(QMainWindow):
     """Main Qt Application Window."""
 
+    # Type stubs for attributes created in __init__
+    tabs: QTabWidget
+    log_viewer: LogViewer
+    d2p_tab_view: Docx2PptxTabView
+    d2p_tab_presenter: Docx2PptxTabPresenter
+    p2d_tab_view: Pptx2DocxTabView
+    p2d_tab_presenter: Pptx2DocxTabPresenter
+    demo_tab_view: DemoTabView
+    demo_presenter: DemoTabPresenter
+
     # region init
     def __init__(self) -> None:
         """Constructor for the Main Window UI."""
