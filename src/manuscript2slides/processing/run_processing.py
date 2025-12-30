@@ -193,8 +193,6 @@ def process_pptx_run(
 # endregion
 
 
-# TODO: Really need to add some try/except here and probably some testing
-# region add_hyperlink_to_docx_paragraph
 def add_hyperlink_to_docx_paragraph(
     paragraph: Paragraph_docx, url: str, text: str
 ) -> Run_docx:
@@ -209,29 +207,42 @@ def add_hyperlink_to_docx_paragraph(
     Adapted from/referenced https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx
     and https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130
     """
+    try:
+        # Step 1: Create the hyperlink structure
+        part = paragraph.part
+        r_id = part.relate_to(
+            url, constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True
+        )
+        hyperlink = OxmlElement_docx("w:hyperlink")
+        hyperlink.set(qn("r:id"), r_id)
 
-    # Create the hyperlink structure
-    part = paragraph.part
-    r_id = part.relate_to(url, constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
-    hyperlink = OxmlElement_docx("w:hyperlink")
-    hyperlink.set(qn("r:id"), r_id)
+        # 2. Create the Run with PARAGRAPH as the parent (to avoid an XML .part error)
+        # Use a new 'w:r' element
+        new_run = Run_docx(OxmlElement_docx("w:r"), paragraph)
+        new_run.text = text
 
-    # 2. Create the Run with PARAGRAPH as the parent (to avoid an XML .part error)
-    # Use a new 'w:r' element
-    new_run = Run_docx(OxmlElement_docx("w:r"), paragraph)
-    new_run.text = text
+        # 3. Try to apply formatting (manual blue/underline)
+        try:
+            new_run.font.color.rgb = RGBColor_docx(5, 99, 193)
+            new_run.font.underline = True
+        except Exception as e:
+            log.warning(f"Could not apply hyperlink formatting: {e}")
+            # Continue anyway - link will work, just won't be blue/underlined
 
-    # 3. Apply formatting - Word 2025 requires manual blue/underline
-    new_run.font.color.rgb = RGBColor_docx(5, 99, 193)
-    new_run.font.underline = True
+        # 4. NOW move the run's internal XML inside the hyperlink XML
+        hyperlink.append(new_run._element)
 
-    # 4. NOW move the run's internal XML inside the hyperlink XML
-    hyperlink.append(new_run._element)
+        # 5. Append the whole hyperlink structure to the paragraph XML
+        paragraph._p.append(hyperlink)
 
-    # 5. Append the whole hyperlink structure to the paragraph XML
-    paragraph._p.append(hyperlink)
+        return new_run
 
-    return new_run
+    except Exception as e:
+        # Fallback: add as plaintext
+        log.warning(
+            f"Could not create hyperlink for '{text}' (url: {url}): {e}. Adding as plain text."
+        )
+        return paragraph.add_run(text)
 
 
 # endregion
