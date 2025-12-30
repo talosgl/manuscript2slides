@@ -8,7 +8,7 @@ from datetime import datetime
 
 from pptx.text.text import TextFrame
 
-from manuscript2slides.annotations.docx_xml import NOTE_TYPE
+from manuscript2slides.annotations.extract import NOTE_TYPE
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.internals.constants import (
     METADATA_MARKER_FOOTER,

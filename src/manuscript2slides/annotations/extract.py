@@ -3,12 +3,13 @@
 import logging
 import xml.etree.ElementTree as ET
 
+import re
 from docx import document
 from docx.comments import Comment as Comment_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 
-from manuscript2slides.annotations import docx_xml
+from manuscript2slides.processing import docx_xml
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import (
     Chunk_docx,
@@ -17,7 +18,76 @@ from manuscript2slides.models import (
     Footnote_docx,
 )
 
+from typing import TypeVar
+
 log = logging.getLogger("manuscript2slides")
+NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)
+
+
+# region extract_notes_from_xml
+def extract_notes_from_xml(
+    root: ET.Element, note_class: type[NOTE_TYPE]
+) -> dict[str, NOTE_TYPE]:
+    """Extract footnotes or endnotes from XML, depending on note_class provided."""
+
+    # Construct the strings we need to use in the XML search.
+    # First, define the prefix and the namespace to which it will refer.
+    ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+
+    # Second, construct the uri as a lookup in that dict to match how the XML works
+    namespace_uri = ns["w"]
+
+    # Third, construct the actual lookup strings. These are the full attribute name we're looking for in the data structure.
+    # We must use double-curly braces to indicate we want a real curly brace in the node string.
+    # And we also need an outer curly brace pair for the f-string syntax. That's why there's 3 total.
+    id_attribute = f"{{{namespace_uri}}}id"  # "{http://...}id"
+    type_attribute = f"{{{namespace_uri}}}type"
+
+    notes_dict: dict[str, NOTE_TYPE] = {}
+
+    for note in root:
+        note_id = note.get(id_attribute)
+        note_type = note.get(type_attribute)
+
+        if note_id is None or note_type in ["separator", "continuationSeparator"]:
+            continue
+
+        note_full_text = "".join(note.itertext())
+
+        # Strip leading footnote/endnote number (e.g. "1. text" -> "text" or "1 text" -> "text")
+        # The period after the number is optional as some Word versions don't include it
+        note_full_text = re.sub(r"^\d+\.?\s*", "", note_full_text)
+
+        note_hyperlinks = extract_hyperlinks_from_note(note)
+
+        note_obj = note_class(
+            note_id, text_body=note_full_text, hyperlinks=note_hyperlinks
+        )
+
+        notes_dict[note_id] = note_obj
+
+    return notes_dict
+
+
+# endregion
+
+
+# region extract_hyperlinks_from_note
+def extract_hyperlinks_from_note(element: ET.Element) -> list[str]:
+    """Extract all hyperlinks from a docx footnote element."""
+    hyperlinks: list[str] = []
+    ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+
+    for hyperlink in element.findall(".//w:hyperlink", ns):
+        # Get the link text
+        link_text = "".join([t.text or "" for t in hyperlink.findall(".//w:t", ns)])
+        if link_text.strip():
+            hyperlinks.append(link_text.strip())
+
+    return hyperlinks
+
+
+# endregion
 
 
 # region process_chunk_annotations
@@ -188,7 +258,7 @@ def get_all_docx_footnotes(
 
         # We think this will always be a list of one item, so assign that item to a variable.
         root = docx_xml.parse_xml_blob(footnotes_parts[0].blob)
-        return docx_xml.extract_notes_from_xml(root, Footnote_docx)
+        return extract_notes_from_xml(root, Footnote_docx)
 
     except Exception as e:
         log.warning(f"Could not extract footnotes: {e}")
@@ -216,7 +286,7 @@ def get_all_docx_endnotes(
             return {}
 
         root = docx_xml.parse_xml_blob(endnotes_parts[0].blob)
-        return docx_xml.extract_notes_from_xml(root, Endnote_docx)
+        return extract_notes_from_xml(root, Endnote_docx)
 
     except Exception as e:
         log.warning(f"Could not extract endnotes: {e}")

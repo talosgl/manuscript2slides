@@ -30,7 +30,7 @@ from manuscript2slides.processing.formatting import (
 )
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
-from manuscript2slides.annotations.docx_xml import detect_field_code_hyperlinks
+from manuscript2slides.processing.docx_xml import detect_field_code_hyperlinks
 
 # endregion
 

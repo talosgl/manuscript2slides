@@ -29,7 +29,7 @@ from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 from pptx.util import Pt
 
-from manuscript2slides.annotations.docx_xml import (
+from manuscript2slides.processing.docx_xml import (
     extract_theme_fonts_from_xml,
     parse_xml_blob,
 )
