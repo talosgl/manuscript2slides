@@ -15,6 +15,7 @@ from manuscript2slides.gui import MainWindow, QTextEditHandler
 
 # region Test Fixtures
 
+
 @pytest.fixture(autouse=True)
 def cleanup_gui_logger() -> Generator[None, Any, None]:
     """Remove GUI log handlers after each test to prevent cross-test pollution."""
@@ -26,7 +27,10 @@ def cleanup_gui_logger() -> Generator[None, Any, None]:
     # We're not literally removing handlers, instead, we're re-assigning logger.handlers
     # to a filtered version of its old list, keeping only handlers that are
     # NOT QTextEditHandler instances
-    logger.handlers = [h for h in logger.handlers if not isinstance(h, QTextEditHandler)]
+    logger.handlers = [
+        h for h in logger.handlers if not isinstance(h, QTextEditHandler)
+    ]
+
 
 @pytest.fixture
 def mock_logger(monkeypatch: pytest.MonkeyPatch) -> logging.Logger:
@@ -39,10 +43,10 @@ def mock_logger(monkeypatch: pytest.MonkeyPatch) -> logging.Logger:
 @pytest.fixture
 def mock_critical_dialog(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
     """Mock a QMessageBox.critical to allow tests to verify it is being called as expected.
-    
+
     Returns a list of (title, text) tuples representing dialog calls.
     """
-    
+
     # Track QMessageBox.critical calls
     dialog_calls: list[tuple[str, str]] = []
 
@@ -65,9 +69,7 @@ def mock_question_dialog(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str
     """
     dialog_calls: list[tuple[str, str]] = []
 
-    def mock_show_question_dialog(
-        *_args: object, **_kwargs: object
-    ) -> bool:
+    def mock_show_question_dialog(*_args: object, **_kwargs: object) -> bool:
         title = _kwargs.get("title", _args[1] if len(_args) > 1 else "")
         text = _kwargs.get("text", _args[2] if len(_args) > 2 else "")
         dialog_calls.append((str(title), str(text)))
@@ -84,6 +86,7 @@ def mock_question_dialog(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str
 
 
 # region GUI Initialization
+
 
 class TestGUIStartup:
     """Smoke tests - verify basic GUI launches without crashing."""
@@ -169,6 +172,7 @@ class TestWidgetExistence:
 
 # region User Interactions
 
+
 class TestButtonInteractions:
     """Test basic button click interactions."""
 
@@ -192,9 +196,7 @@ class TestButtonInteractions:
         )
 
         # Click button - shouldn't crash
-        qtbot.mouseClick(
-            window.demo_tab_view.load_demo_btn, Qt.MouseButton.LeftButton
-        )
+        qtbot.mouseClick(window.demo_tab_view.load_demo_btn, Qt.MouseButton.LeftButton)
         # If we got here, no crash occurred
 
     def test_convert_button_disabled_initially(self, qtbot: QtBot) -> None:
@@ -221,7 +223,9 @@ class TestButtonInteractions:
         window.d2p_tab_view.input_selector.set_path(str(test_file))
 
         # Wait for the button to become enabled, or 1000ms (whichever happens first)
-        qtbot.waitUntil(lambda: window.d2p_tab_view.convert_btn.isEnabled(), timeout=1000)
+        qtbot.waitUntil(
+            lambda: window.d2p_tab_view.convert_btn.isEnabled(), timeout=1000
+        )
 
         # Button should now be enabled
         assert window.d2p_tab_view.convert_btn.isEnabled()
@@ -232,11 +236,15 @@ class TestButtonInteractions:
 
 # region Validation Logic
 
+
 class TestValidationLogic:
     """Test validation logic without full GUI lifecycle issues."""
 
     def test_docx2pptx_rejects_nonexistent_file(
-        self, qtbot: QtBot, mock_logger: logging.Logger, mock_critical_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        mock_logger: logging.Logger,
+        mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that validation rejects nonexistent input files."""
         from manuscript2slides.internals.define_config import UserConfig
@@ -265,7 +273,11 @@ class TestValidationLogic:
         assert "not found" in text.lower() or "does not exist" in text.lower()
 
     def test_docx2pptx_rejects_wrong_file_type(
-        self, qtbot: QtBot, tmp_path: Path, mock_logger: logging.Logger, mock_critical_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        tmp_path: Path,
+        mock_logger: logging.Logger,
+        mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that validation rejects wrong file types."""
         from manuscript2slides.internals.define_config import UserConfig
@@ -275,7 +287,7 @@ class TestValidationLogic:
         view = Docx2PptxTabView()
         qtbot.addWidget(view)
         presenter = Docx2PptxTabPresenter(view)
-       
+
         # Track QMessageBox.critical calls
         dialog_calls = mock_critical_dialog
 
@@ -296,7 +308,10 @@ class TestValidationLogic:
         assert "invalid" in text.lower() or ".docx" in text.lower()
 
     def test_pptx2docx_rejects_nonexistent_file(
-        self, qtbot: QtBot, mock_logger: logging.Logger, mock_critical_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        mock_logger: logging.Logger,
+        mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that PPTX→DOCX validation rejects nonexistent files."""
         from manuscript2slides.internals.define_config import UserConfig
@@ -323,7 +338,13 @@ class TestValidationLogic:
         _title, text = dialog_calls[0]
         assert "not found" in text.lower() or "does not exist" in text.lower()
 
-    def test_docx2pptx_rejects_dir_as_input(self, qtbot: QtBot,  tmp_path: Path, mock_logger: logging.Logger, mock_critical_dialog: list[tuple[str, str]]) -> None:
+    def test_docx2pptx_rejects_dir_as_input(
+        self,
+        qtbot: QtBot,
+        tmp_path: Path,
+        mock_logger: logging.Logger,
+        mock_critical_dialog: list[tuple[str, str]],
+    ) -> None:
         """Test that validation fails if a directory, instead of a file, is passed as input."""
         # Create View and Presenter
         from manuscript2slides.internals.define_config import UserConfig
@@ -359,11 +380,17 @@ class TestValidationLogic:
 
 # region Error Handling
 
+
 class TestErrorHandling:
     """Test that exceptions during conversion are caught and presented to users."""
 
     def test_conversion_error_shows_dialog_and_logs(
-        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mock_logger: logging.Logger, mock_question_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        mock_logger: logging.Logger,
+        mock_question_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that pipeline exceptions show error dialog and don't crash."""
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
@@ -393,9 +420,10 @@ class TestErrorHandling:
         # Wait for worker thread to finish and process error
         # The thread emits an error signal which triggers _on_conversion_error
         qtbot.waitUntil(
-            lambda: len(dialog_calls) >= 1 and view.convert_btn.isEnabled(), # wait until both expressions evaluate as true
-            timeout=2000
-            )
+            lambda: len(dialog_calls) >= 1
+            and view.convert_btn.isEnabled(),  # wait until both expressions evaluate as true
+            timeout=2000,
+        )
 
         # Verify error dialog was shown
         assert len(dialog_calls) >= 1
@@ -406,7 +434,7 @@ class TestErrorHandling:
         assert view.convert_btn.isEnabled()
 
     def test_force_error_button_shows_dialog(
-        self, qtbot: QtBot,  mock_question_dialog: list[tuple[str, str]]
+        self, qtbot: QtBot, mock_question_dialog: list[tuple[str, str]]
     ) -> None:
         """Test that the demo tab's force error button shows error dialog."""
         window = MainWindow()
@@ -422,8 +450,9 @@ class TestErrorHandling:
 
         # Wait for worker thread to process error (Wait for dialog to be shown AND button to re-enable)
         qtbot.waitUntil(
-            lambda: len(dialog_calls) >= 1 and window.demo_tab_view.force_error_btn.isEnabled(),
-            timeout=2000
+            lambda: len(dialog_calls) >= 1
+            and window.demo_tab_view.force_error_btn.isEnabled(),
+            timeout=2000,
         )
 
         # Verify error dialog was shown
@@ -435,7 +464,11 @@ class TestErrorHandling:
         assert window.demo_tab_view.force_error_btn.isEnabled()
 
     def test_invalid_config_load_shows_error(
-        self, qtbot: QtBot,  tmp_path: Path, mock_logger: logging.Logger, mock_critical_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        tmp_path: Path,
+        mock_logger: logging.Logger,
+        mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that loading malformed config shows error dialog."""
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
@@ -444,9 +477,9 @@ class TestErrorHandling:
         qtbot.addWidget(view)
         presenter = Docx2PptxTabPresenter(view)
 
-        # Track QMessageBox.critical calls 
+        # Track QMessageBox.critical calls
         dialog_calls = mock_critical_dialog
-        
+
         # Create a malformed TOML file
         bad_config = tmp_path / "bad_config.toml"
         bad_config.write_text("this is not valid TOML [[[[")
@@ -464,7 +497,11 @@ class TestErrorHandling:
         assert "config" in text.lower() or "load" in text.lower()
 
     def test_worker_thread_exception_doesnt_crash(
-        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mock_question_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        mock_question_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that exceptions in worker thread are caught and handled."""
         from manuscript2slides.gui import Pptx2DocxTabPresenter, Pptx2DocxTabView
@@ -494,7 +531,8 @@ class TestErrorHandling:
         # Wait for worker to fail
         qtbot.waitUntil(
             lambda: len(dialog_calls) >= 1 and view.convert_btn.isEnabled(),
-            timeout=2000)
+            timeout=2000,
+        )
 
         # Verify error was handled (dialog shown)
         assert len(dialog_calls) >= 1
@@ -512,6 +550,7 @@ class TestErrorHandling:
 
 # region Logging
 
+
 class TestLogging:
     """Tests for logging behavior - separate from validation/error handling tests.
 
@@ -520,7 +559,10 @@ class TestLogging:
     """
 
     def test_validation_logs_error_for_nonexistent_file(
-        self, qtbot: QtBot, caplog: pytest.LogCaptureFixture, mock_critical_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        caplog: pytest.LogCaptureFixture,
+        mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that nonexistent file validation logs the correct error message."""
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
@@ -533,7 +575,6 @@ class TestLogging:
 
         # Mock the dialog (still block GUI)
         dialog_calls = mock_critical_dialog
-
 
         # DON'T mock the logger - let caplog capture it!
         # (This is the key difference from validation tests)
@@ -555,7 +596,11 @@ class TestLogging:
         assert str(cfg.input_docx) in caplog.text
 
     def test_validation_logs_error_for_wrong_file_type(
-        self, qtbot: QtBot,  caplog: pytest.LogCaptureFixture, tmp_path: Path, mock_critical_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        caplog: pytest.LogCaptureFixture,
+        tmp_path: Path,
+        mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that wrong file type validation logs the correct error message."""
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
@@ -566,7 +611,7 @@ class TestLogging:
         qtbot.addWidget(view)
         presenter = Docx2PptxTabPresenter(view)
 
-        # Mock the dialog 
+        # Mock the dialog
         dialog_calls = mock_critical_dialog
 
         # Create a file with wrong extension
@@ -586,10 +631,18 @@ class TestLogging:
         # Verify logging happened correctly
         assert len(caplog.records) == 1
         assert caplog.records[0].levelname == "ERROR"
-        assert "invalid" in caplog.text.lower() or "must be a .docx file" in caplog.text.lower()
+        assert (
+            "invalid" in caplog.text.lower()
+            or "must be a .docx file" in caplog.text.lower()
+        )
 
     def test_conversion_error_logs_exception(
-        self, qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture, tmp_path: Path, mock_question_dialog: list[tuple[str, str]]
+        self,
+        qtbot: QtBot,
+        monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+        tmp_path: Path,
+        mock_question_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that conversion errors are logged with exception details."""
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
@@ -621,16 +674,17 @@ class TestLogging:
             # Wait for worker thread to fail
             qtbot.waitUntil(
                 lambda: len(dialog_calls) >= 1 and view.convert_btn.isEnabled(),
-                timeout=2000
+                timeout=2000,
             )
 
         # Verify error was logged
         assert len(caplog.records) >= 1
-        error_log = next(
-            (r for r in caplog.records if r.levelname == "ERROR"), None
-        )
+        error_log = next((r for r in caplog.records if r.levelname == "ERROR"), None)
         assert error_log is not None
-        assert "conversion failed" in error_log.message.lower() or "error" in error_log.message.lower()
+        assert (
+            "conversion failed" in error_log.message.lower()
+            or "error" in error_log.message.lower()
+        )
 
 
 # endregion
