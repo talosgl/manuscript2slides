@@ -324,8 +324,8 @@ def test_safely_extract_comment_data_valid() -> None:
     ],
 )
 def test_safely_extract_comment_data_non_dict(
-    invalid_input, # noqa: ANN001
-    caplog: pytest.LogCaptureFixture,  
+    invalid_input,  # noqa: ANN001
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test that non-dict input returns None."""
     with caplog.at_level(logging.DEBUG):
@@ -483,8 +483,8 @@ def test_safely_extract_heading_data_valid() -> None:
     ],
 )
 def test_safely_extract_heading_data_non_dict(
-    invalid_input, # noqa: ANN001
-    caplog: pytest.LogCaptureFixture,  
+    invalid_input,  # noqa: ANN001
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test that non-dict input returns None."""
     with caplog.at_level(logging.DEBUG):
@@ -563,7 +563,7 @@ def test_safely_extract_experimental_formatting_data_valid() -> None:
     ],
 )
 def test_safely_extract_experimental_formatting_data_non_dict(
-    invalid_input, # noqa: ANN001
+    invalid_input,  # noqa: ANN001
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test that non-dict input returns None."""

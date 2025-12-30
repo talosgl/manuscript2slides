@@ -688,3 +688,171 @@ class TestLogging:
 
 
 # endregion
+
+
+# region UI to Config
+
+
+class TestUIToConfig:
+    """Test that ui_to_config handles edge cases correctly."""
+
+    def test_no_selection_converts_to_none_in_pptx2docx_ui_to_config(
+        self, qtbot: QtBot
+    ) -> None:
+        """Test that 'No Selection' in input field becomes None in config, not a Path."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        # Get the PPTX→DOCX presenter and view
+        presenter = window.p2d_tab_presenter
+        view = window.p2d_tab_view
+
+        # Simulate "No Selection" being displayed (happens when loading config with None)
+        view.input_selector.set_path("No Selection")
+
+        # Create a config and sync the view to it
+        cfg = UserConfig()
+        cfg = presenter.ui_to_config(cfg)
+
+        # Verify config has None, not Path("No Selection")
+        assert cfg.input_pptx is None
+
+    def test_no_selection_converts_to_none_in_docx2pptx_ui_to_config(
+        self, qtbot: QtBot
+    ) -> None:
+        """Test that 'No Selection' in input field becomes None in config for DOCX→PPTX."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        # Get the DOCX→PPTX presenter and view
+        presenter = window.d2p_tab_presenter
+        view = window.d2p_tab_view
+
+        # Simulate "No Selection" being displayed
+        view.input_selector.set_path("No Selection")
+
+        # Create a config and sync the view to it
+        cfg = UserConfig()
+        cfg = presenter.ui_to_config(cfg)
+
+        # Verify config has None, not Path("No Selection")
+        assert cfg.input_docx is None
+
+    def test_no_selection_for_template_and_output_paths_in_pptx2docx(
+        self, qtbot: QtBot
+    ) -> None:
+        """Test that 'No Selection' for template and output paths becomes None."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        presenter = window.p2d_tab_presenter
+        view = window.p2d_tab_view
+
+        # Set all optional paths to "No Selection"
+        view.output_selector.set_path("No Selection")
+        view.template_selector.set_path("No Selection")
+
+        # Sync to config
+        cfg = UserConfig()
+        cfg = presenter.ui_to_config(cfg)
+
+        # Verify all are None
+        assert cfg.output_folder is None
+        assert cfg.template_docx is None
+
+    def test_no_selection_for_template_and_output_paths_in_docx2pptx(
+        self, qtbot: QtBot
+    ) -> None:
+        """Test that 'No Selection' for template and output paths becomes None."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        presenter = window.d2p_tab_presenter
+        view = window.d2p_tab_view
+
+        # Set all optional paths to "No Selection"
+        view.output_selector.set_path("No Selection")
+        view.template_selector.set_path("No Selection")
+
+        # Sync to config
+        cfg = UserConfig()
+        cfg = presenter.ui_to_config(cfg)
+
+        # Verify all are None
+        assert cfg.output_folder is None
+        assert cfg.template_pptx is None
+
+    def test_config_roundtrip_preserves_none_values_pptx2docx(
+        self, qtbot: QtBot
+    ) -> None:
+        """Test that None values survive a config→UI→config round trip."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        presenter = window.p2d_tab_presenter
+        view = window.p2d_tab_view
+
+        # Create a config with None values
+        original_cfg = UserConfig()
+        original_cfg.input_pptx = None
+        original_cfg.output_folder = None
+        original_cfg.template_docx = None
+        original_cfg.range_start = None
+        original_cfg.range_end = None
+
+        # Round trip: config → UI → config
+        view.config_to_ui(original_cfg)
+        new_cfg = UserConfig()
+        new_cfg = presenter.ui_to_config(new_cfg)
+
+        # Verify None values are preserved
+        assert new_cfg.input_pptx is None
+        assert new_cfg.output_folder is None
+        assert new_cfg.template_docx is None
+        assert new_cfg.range_start is None
+        assert new_cfg.range_end is None
+
+    def test_config_roundtrip_preserves_none_values_docx2pptx(
+        self, qtbot: QtBot
+    ) -> None:
+        """Test that None values survive a config→UI→config round trip."""
+        from manuscript2slides.internals.define_config import UserConfig
+
+        window = MainWindow()
+        qtbot.addWidget(window)
+
+        presenter = window.d2p_tab_presenter
+        view = window.d2p_tab_view
+
+        # Create a config with None values
+        original_cfg = UserConfig()
+        original_cfg.input_docx = None
+        original_cfg.output_folder = None
+        original_cfg.template_pptx = None
+        original_cfg.range_start = None
+        original_cfg.range_end = None
+
+        # Round trip: config → UI → config
+        view.config_to_ui(original_cfg)
+        new_cfg = UserConfig()
+        new_cfg = presenter.ui_to_config(new_cfg)
+
+        # Verify None values are preserved
+        assert new_cfg.input_docx is None
+        assert new_cfg.output_folder is None
+        assert new_cfg.template_pptx is None
+        assert new_cfg.range_start is None
+        assert new_cfg.range_end is None
+
+
+# endregion

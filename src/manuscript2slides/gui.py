@@ -1050,9 +1050,6 @@ class ConfigurableConversionTabPresenter(
                 f"This config is for {cfg.direction.value}.\n"
                 f"Please use the correct tab.",
             )
-            # TODO, v2: Offer to swap tabs and load the config there for them or cancel.
-            # Note they'll still need to make sure an input file for conversion is selected
-            # on the new tab of the right type.
             return
 
         self.view.config_to_ui(cfg)
@@ -1480,9 +1477,7 @@ class Pptx2DocxTabPresenter(ConfigurableConversionTabPresenter[Pptx2DocxTabView]
 
         # Only update fields that have UI controls
         path = self.view.input_selector.get_path()
-        cfg.input_pptx = (
-            Path(path) if path else None
-        )  # TODO: should it be NO_SELECTION instead of none?
+        cfg.input_pptx = Path(path) if path != NO_SELECTION else None
 
         range_start_text = self.view.range_start_input.text().strip()
         range_end_text = self.view.range_end_input.text().strip()
@@ -1860,9 +1855,7 @@ class Docx2PptxTabPresenter(ConfigurableConversionTabPresenter[Docx2PptxTabView]
 
         # Only update fields that have UI controls
         input_path = self.view.input_selector.get_path()
-        cfg.input_docx = (
-            Path(input_path) if input_path else None
-        )  # TODO: should it be NO_SELECTION instead of none?
+        cfg.input_docx = Path(input_path) if input_path != NO_SELECTION else None
 
         cfg.chunk_type = ChunkType(self.view.chunk_dropdown.currentText())
         cfg.experimental_formatting_on = self.view.experimental_fmt_chk.isChecked()
