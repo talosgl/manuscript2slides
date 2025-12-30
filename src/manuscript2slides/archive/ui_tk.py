@@ -94,8 +94,7 @@ class MainWindow(tk.Tk):
         log.debug(f"Available themes: {available_themes}")
 
         # Try to use the best theme for the platform
-        if "aqua" in available_themes:  # macOS
-            # TODO: Test aesthetics on macOS and see if we need to do any workarounds
+        if "aqua" in available_themes:  # macOS            
             self.style.theme_use("aqua")
             log.info("Using 'aqua' theme.")
         elif "clam" in available_themes:  # Linux/cross-plat

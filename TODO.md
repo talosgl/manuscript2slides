@@ -1,9 +1,5 @@
 ## Major TODOs Ordered by priority/dependency
 
-### Epic: Add tests & pytest
-    - Test UI
-    - Ensure we "catch" every possible UX-impacting raise/exception: for every "raise" possible to hit from the GUI, ensure we're popping message boxes and not crashing the app.
-
 ### Epic: Package/Distribution
     - Figure out how to package it into an installer for each non-mobile platform (Win 11, MacOS, Linux)
     - Make sure to update the resources/.. source inside of scaffold.py to use the packaged version
@@ -14,6 +10,9 @@
     - for non-tech-savvy users
     - for future contributors
     - Don't forget to put the actual docstrings at the top of all the module files!
+    - TODOs moved from code:
+        - constants.py, in relation to "manuscript2slides" template name: TODO, v1: Document template editing thoroughly in the user guide!
+        
 
 ## Stretch Wishlist Features:
 I'm not likely to get around to these, but I wanted to.

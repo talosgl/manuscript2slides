@@ -6,7 +6,6 @@
 # process. I actually question the wisdom of allowing template overrides at all;
 # however, if they copy-paste the reference template and change formatting, etc.,
 # that should be fine.
-# TODO, v1: Document template editing thoroughly in the user guide!
 SLD_LAYOUT_CUSTOM_NAME = "manuscript2slides"
 
 # Metadata headers/footers used in both pipelines when writing to/reading from slide speaker notes
