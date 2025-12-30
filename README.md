@@ -16,30 +16,40 @@ Turn your Microsoft Word manuscripts into presentation slides (and back again), 
 
 ## Quick Start Guide
 
-### Option 1: Desktop App (recommended)
+### Installation
 
-1. Download the latest release for your platform from the [latest release](https://github.com/talosgl/manuscript2slides/releases/latest) page.Just download, extract (if needed), and run. No installation required.
-2. Open `manuscript2slides` (no install needed).
-3. Choose a tab:
-   - **DOCX → PPTX:** Convert your manuscript into slides.
-   - **PPTX → DOCX:** Turn a slide deck back into text.
-   - **DEMO:** Try a sample conversion.
+**Note:** Standalone executables (no Python required) are planned for a future release.
 
-4. Pick your file(s), adjust options (chunking, formatting, annotations), and click **Convert!**
-
-### Option 2: Command Line (advanced)
-
-You can install manuscript2slides via the executables above, or use pip:
+For now, you can install via pip (requires Python 3.10+ to already be installed):
 
 ```bash
+# Recommended: Create a virtual environment first
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Then install
 pip install manuscript2slides
 ```
 
-Then you can run it from the command line like:
-```bash
-# Opens GUI
-manuscript2slides
 
+
+### Using the GUI (recommended for most users)
+
+```bash
+# Launch the graphical interface
+manuscript2slides
+```
+
+Then:
+1. Choose a tab:
+   - **DOCX → PPTX:** Convert your manuscript into slides
+   - **PPTX → DOCX:** Turn a slide deck back into text
+   - **DEMO:** Try a sample conversion
+2. Pick your file(s), adjust options (chunking, formatting, annotations), and click **Convert!**
+
+### Using the Command Line
+
+```bash
 # Convert a Word document
 manuscript2slides --input-docx my-manuscript.docx
 

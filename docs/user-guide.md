@@ -121,14 +121,15 @@ sudo dnf install xcb-util-cursor
 ```
 
 ## Getting Help
-TODO, documentation: Write this more thoroughly
 
-Things to provide if you're having issues with the conversion process:
-- input file you're trying to convert
-- output file (if any)
-- logs/
-- manifests/
+If you're having issues with the conversion process, [open an issue on GitHub](https://github.com/talosgl/manuscript2slides/issues) and include/attach:
 
-Post an issue on GitHub with these attached.
+- Your input file (if possible)
+- The output file (if one was created)
+- Log files from `~/Documents/manuscript2slides/logs/`
+- Any manifest files from `~/Documents/manuscript2slides/manifests/`
+- A description of what you expected vs. what happened
+
+This information helps diagnose problems quickly.
 
 (If we're buds IRL, you can just send me an email! But do try to attach these items if you can and it'll speed up the process.)
