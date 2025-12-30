@@ -345,12 +345,8 @@ def _build_timestamped_output_filename(save_object: OUTPUT_TYPE) -> str:
 
 # endregion
 
+
 # region _validate_content_size
-# TODO, leafy: I'd really like `_validate_content_size()` to validate we're not about to save 100MB+ files.
-# But that's not easy to estimate from the runtime object. For now we'll check for absolutely insane slide
-# or paragraph counts, and just report it to the debug/logger.
-
-
 def _validate_content_size(save_object: OUTPUT_TYPE) -> None:
     """Report if the output content we're about to save is excessively large."""
     if isinstance(save_object, document.Document):
