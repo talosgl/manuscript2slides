@@ -14,6 +14,7 @@ from docx.oxml.ns import qn
 from docx.oxml.parser import OxmlElement as OxmlElement_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
+from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 from docx.shared import RGBColor as RGBColor_docx
@@ -71,7 +72,7 @@ def process_docx_paragraph_inner_contents(
         # We check the item.url field because that seems the most reliable way to see if this is a
         # basic run versus a Hyperlink containing its own nested runs.
         # https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.hyperlink.Hyperlink.url
-        elif hasattr(item, "url"):
+        elif isinstance(item, Hyperlink_docx):
             # Process all runs within the Hyperlink
             for run in item.runs:
                 process_docx_run(
@@ -79,15 +80,8 @@ def process_docx_paragraph_inner_contents(
                     pptx_paragraph,
                     experimental_formatting_metadata,
                     cfg,
-                    item.url,
+                    item,
                 )
-        # elif hasattr(item, "fragment"):
-        #   ...
-        #   TODO, leafy: We need to handle document anchors differently from other hyperlinks.
-        #   We need to 1) process the nested runs as if it were a Hyperlink object, and
-        #   2) preserve the anchor somewhere, maybe the experimental formatting metadata.
-        #   https://python-docx.readthedocs.io/en/latest/api/text.html#docx.text.hyperlink.Hyperlink.fragment
-
         else:
             log.warning(f"Unknown content type in paragraph: {type(item)}")
 
@@ -111,7 +105,7 @@ def process_docx_run(
     pptx_paragraph: Paragraph_pptx,
     experimental_formatting_metadata: list,
     cfg: UserConfig,
-    hyperlink: str | None = None,
+    hyperlink: Hyperlink_docx | None = None,
 ) -> Run_pptx:
     """Copy a run from the docx parent to the pptx paragraph, including copying its formatting."""
     # Handle formatting
@@ -121,7 +115,17 @@ def process_docx_run(
 
     if hyperlink:
         pptx_run_url = pptx_run.hyperlink
-        pptx_run_url.address = hyperlink
+
+        # Only external hyperlinks are supported in v1
+        if hyperlink.url:
+            pptx_run_url.address = hyperlink.url
+
+        # Future: handle hyperlink.fragment (document anchors) here # TODO, leafy
+        # elif hyperlink.fragment:
+        #   # Look up slide and create internal link
+        #   # (Also, will need to handle restoring the anchor in pptx2docx pipeline
+        #   # via either storing metadata here, or another intelligent parse/conversion
+        #   # from the data in the slide)
 
     return pptx_run
 

@@ -249,6 +249,24 @@ def test_endnotes_slide(output_pptx: Path) -> None:
     )
 
 
+def test_document_anchor_text_preserved_docx2pptx(output_pptx: Path) -> None:
+    """Verify that document anchors (internal links) have their text preserved even though the link itself is not converted."""
+    prs = pptx.Presentation(output_pptx)
+
+    # The text "regularly but us and the custodian" is part of a document anchor
+    # linking to the "_#_Intro_to" bookmark earlier in the document
+    # Find the paragraph using text that appears before the anchor
+    _slide, para = helpers.find_first_slide_containing(
+        prs, "No one else comes down here"
+    )
+
+    # Case: Anchor text is preserved in the output (even though link itself is not converted)
+    assert "regularly but us and the custodian" in para.text
+
+    # We don't support document anchors right now, but, later we can add test logic & asserts for
+    # "Case: The anchor is converted to a hyperlink and links to the correct slide"
+
+
 def test_vanilla_docx_theme_font_does_not_carry_into_pptx_output(
     output_pptx: Path,
 ) -> None:
