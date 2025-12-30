@@ -41,8 +41,12 @@ Paragraph Formatting beyond alignment and Heading styling: we don't preserve par
 
 Other character-level formatting like bold, italic, color, and size are always preserved.
 
-### Field-code hyperlinks:
-Some hyperlinks (like the sample_doc.docx's first "Where are Data?" link) (often in headings or pasted content) are stored as "field codes" in Word and appear as plain text after conversion. These are uncommon; normal hyperlinks should work. manuscript2slides will log a warning when such links are detected and will try to copy them as plaintext.
+### Hyperlinks:
+External hyperlinks (e.g., 'https://www..' or 'mailto:yada@address.com') are generally supported just fine and convert back-and-forth without issue.
+
+Document anchors (an internal document link to a specific heading), however, are not currently supported. These will be copied as plaintext only. Adding support seems feasible if there is future demand.
+
+Some external hyperlinks (like the sample_doc.docx's first "Where are Data?" link) (often in headings or pasted content) are stored as "field codes" in Word and appear as plain text after conversion. These are uncommon; normal hyperlinks should work. manuscript2slides will log a warning when such links are detected and will try to copy them as plaintext.
 
 ### Auto-fit text resizing:
 PowerPoint's automatic 'shrink text on overflow' feature is not applied programmatically. PowerPoint only applies auto-fit sizing when opened in the UI. To manually fix this:
