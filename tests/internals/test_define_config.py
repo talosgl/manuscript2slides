@@ -457,7 +457,7 @@ def test_config_to_dict_filters_None_vals(tmp_path: Path) -> None:
         range_end=3,
         display_comments=False,
         # See if a boolean set to None gets skipped ... it does!
-        display_endnotes=None,  # pyright: ignore[reportArgumentType]
+        display_endnotes=None,  # type: ignore[arg-type]
     )
     save_file_path = tmp_path / "test_saved_config.toml"
 

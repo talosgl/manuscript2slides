@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from manuscript2slides.internals import scaffold
+import manuscript2slides.internals.scaffold as scaffold
 
 
 # region test ensure_user_scaffold

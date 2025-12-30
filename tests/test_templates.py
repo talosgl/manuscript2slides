@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from manuscript2slides import templates
+import manuscript2slides.templates as templates
 from manuscript2slides.internals.define_config import UserConfig
 
 

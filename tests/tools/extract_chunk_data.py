@@ -68,7 +68,7 @@ def main() -> None:
         }
 
         for para in chunk.paragraphs:
-            para_data = {
+            para_data: dict[str, object] = {
                 "text": para.text,
                 "style": para.style.name if para.style else None,
                 "runs": [],
@@ -113,8 +113,12 @@ def main() -> None:
 
                 # Filter out None values but keep False
                 run_data = filter_none_keep_false(run_data)
-                para_data["runs"].append(run_data)
 
+                runs = para_data["runs"]
+                assert isinstance(runs, list)
+                runs.append(run_data)
+
+            assert isinstance(chunk_data["paragraphs"], list)
             chunk_data["paragraphs"].append(para_data)
 
         # Add annotations if present
