@@ -8,33 +8,31 @@ This tool uses manuscript2slides internal functions to extract comprehensive
 formatting and annotation data from docx files into JSON baselines for testing.
 """
 
-from pathlib import Path
 import json
 import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import Any
 
 from docx import Document
 from docx.text.hyperlink import Hyperlink
 from docx.text.run import Run as Run_docx
+from extraction_utils import (  # type: ignore[import-not-found]
+    XML_NS,
+    filter_none_keep_false,
+    rgb_to_hex,
+    safe_pprint,
+)
 
+from manuscript2slides.annotations.extract import (
+    get_all_docx_comments,
+    get_all_docx_endnotes,
+    get_all_docx_footnotes,
+)
+from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.processing.formatting import (
     get_theme_fonts_from_docx_package,
 )
-from manuscript2slides.annotations.extract import (
-    get_all_docx_comments,
-    get_all_docx_footnotes,
-    get_all_docx_endnotes,
-)
-from manuscript2slides.internals.define_config import UserConfig
-import xml.etree.ElementTree as ET
-from typing import Any
-
-from extraction_utils import (  # type: ignore[import-not-found]
-    rgb_to_hex,
-    safe_pprint,
-    filter_none_keep_false,
-    XML_NS,
-)
-
 
 # ============================================================================
 # CONFIGURATION - Edit these to change input/output files

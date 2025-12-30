@@ -4,19 +4,18 @@ from __future__ import annotations
 
 import json
 import logging
-
 import platform
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from manuscript2slides.internals.define_config import (
-    UserConfig,
     PipelineDirection,
+    UserConfig,
 )
+from manuscript2slides.internals.paths import user_log_dir_path, user_manifests_dir
 from manuscript2slides.internals.run_context import get_session_id
-from manuscript2slides.internals.paths import user_manifests_dir, user_log_dir_path
-from typing import Any
 
 log = logging.getLogger("manuscript2slides")
 

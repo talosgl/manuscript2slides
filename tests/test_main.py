@@ -3,9 +3,10 @@
 
 # tests/test_main.py
 
-import pytest
 import sys
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 def test_main_routes_to_gui_by_default(monkeypatch: pytest.MonkeyPatch) -> None:

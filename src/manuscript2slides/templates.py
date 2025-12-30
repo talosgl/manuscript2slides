@@ -3,19 +3,18 @@
 # pyright: reportArgumentType=false, reportIndexIssue=false,  reportAttributeAccessIssue=false
 # mypy: disable-error-code="import-untyped"
 
+import logging
 from pathlib import Path
 
-import pptx
-from pptx import presentation
 import docx
+import pptx
 from docx import document
 from docx.text.paragraph import Paragraph as Paragraph_docx
+from pptx import presentation
 
 from manuscript2slides import io
 from manuscript2slides.internals import constants
 from manuscript2slides.internals.define_config import UserConfig
-
-import logging
 
 log = logging.getLogger("manuscript2slides")
 

@@ -3,17 +3,16 @@
 
 # mypy: disable-error-code="import-untyped"
 import logging
+from pathlib import Path
 
 from pptx import presentation
-from manuscript2slides.templates import create_empty_document
 
 from manuscript2slides import io
 from manuscript2slides.internals.define_config import UserConfig
-from manuscript2slides.processing.populate_docx import copy_slides_to_docx_body
-from manuscript2slides.internals.run_context import get_pipeline_run_id
-from pathlib import Path
 from manuscript2slides.internals.paths import user_log_dir_path, user_output_dir
-
+from manuscript2slides.internals.run_context import get_pipeline_run_id
+from manuscript2slides.processing.populate_docx import copy_slides_to_docx_body
+from manuscript2slides.templates import create_empty_document
 
 log = logging.getLogger("manuscript2slides")
 

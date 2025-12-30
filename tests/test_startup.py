@@ -4,8 +4,10 @@
 Primarily tests whether trace logging is enabled/disabled correctly
 and that error handling happens at all when try/except exceptions are hit."""
 
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from manuscript2slides.startup import (
     _should_enable_trace_on_startup,
     initialize_application,

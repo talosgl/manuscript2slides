@@ -1,10 +1,12 @@
 """Entry point for manuscript2slides desktop application."""
 
 from __future__ import annotations
+
+import logging
 import sys
+
 from manuscript2slides import startup
 from manuscript2slides.cli import run as run_cli
-import logging
 
 
 def main() -> None:

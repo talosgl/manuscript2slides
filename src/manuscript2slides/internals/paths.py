@@ -7,11 +7,12 @@ Uses platformdirs to find OS-appropriate locations for:
 - Templates (custom pptx/docx templates)
 """
 
+import os
 from pathlib import Path
+
 from platformdirs import (
     user_documents_dir,
 )  # Gives us the "right" place for files on each OS
-import os
 
 PACKAGE_NAME = "manuscript2slides"
 

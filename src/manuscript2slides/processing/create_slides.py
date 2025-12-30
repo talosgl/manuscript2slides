@@ -13,15 +13,14 @@ from manuscript2slides.annotations.apply_to_slides import (
     add_metadata_to_slide_notes,
     annotate_slide,
 )
-from manuscript2slides.processing.chunking import is_standard_heading
 from manuscript2slides.internals import constants
 from manuscript2slides.internals.define_config import UserConfig
+from manuscript2slides.internals.run_context import get_pipeline_run_id
 from manuscript2slides.models import Chunk_docx
+from manuscript2slides.processing.chunking import is_standard_heading
 from manuscript2slides.processing.run_processing import (
     process_docx_paragraph_inner_contents,
 )
-
-from manuscript2slides.internals.run_context import get_pipeline_run_id
 
 log = logging.getLogger("manuscript2slides")
 

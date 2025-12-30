@@ -10,7 +10,7 @@ import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, scrolledtext, ttk
-from typing import Callable, TypeVar, Generic
+from typing import Callable, Generic, TypeVar
 
 from manuscript2slides.internals.define_config import (
     ChunkType,
@@ -94,7 +94,7 @@ class MainWindow(tk.Tk):
         log.debug(f"Available themes: {available_themes}")
 
         # Try to use the best theme for the platform
-        if "aqua" in available_themes:  # macOS            
+        if "aqua" in available_themes:  # macOS
             self.style.theme_use("aqua")
             log.info("Using 'aqua' theme.")
         elif "clam" in available_themes:  # Linux/cross-plat

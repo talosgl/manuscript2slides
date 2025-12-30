@@ -8,11 +8,12 @@ Handles common setup tasks required by both CLI and GUI interfaces:
 
 import logging
 import sys
-from manuscript2slides.internals.logger import setup_logger
-from manuscript2slides.internals.scaffold import ensure_user_scaffold, user_log_dir_path
-from manuscript2slides.internals.paths import user_base_dir
-from manuscript2slides.utils import get_debug_mode, setup_console_encoding
 from pathlib import Path
+
+from manuscript2slides.internals.logger import setup_logger
+from manuscript2slides.internals.paths import user_base_dir
+from manuscript2slides.internals.scaffold import ensure_user_scaffold, user_log_dir_path
+from manuscript2slides.utils import get_debug_mode, setup_console_encoding
 
 
 # region initialize_application

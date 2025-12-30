@@ -21,19 +21,19 @@ from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.parfmt import ParagraphFormat
 from docx.text.run import Run as Run_docx
 from pptx.dml.color import RGBColor as RGBColor_pptx
-from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_TEXT_UNDERLINE_TYPE
+from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.oxml.xmlchemy import OxmlElement as OxmlElement_pptx
 from pptx.text.text import Font as Font_pptx
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
 from pptx.util import Pt
 
+from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.processing.docx_xml import (
     extract_theme_fonts_from_xml,
     parse_xml_blob,
 )
-from manuscript2slides.internals.define_config import UserConfig
 
 # endregion
 

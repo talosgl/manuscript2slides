@@ -1,12 +1,14 @@
 """Wide scoped tests that touch many parts of the pipeline and program to ensure no catastrophic failures during golden path runs."""
 
 # tests/test_integration.py
-import pytest
 from pathlib import Path
-from manuscript2slides.internals.define_config import UserConfig, PipelineDirection
-from manuscript2slides.orchestrator import run_roundtrip_test, run_pipeline
+
+import pytest
 from docx import Document
 from pptx import Presentation  # pyright: ignore[reportPrivateImportUsage]
+
+from manuscript2slides.internals.define_config import PipelineDirection, UserConfig
+from manuscript2slides.orchestrator import run_pipeline, run_roundtrip_test
 
 
 # region test_round_trip

@@ -4,7 +4,7 @@
 import pytest
 
 from manuscript2slides.internals import constants
-from manuscript2slides.utils import str_to_bool, get_debug_mode
+from manuscript2slides.utils import get_debug_mode, str_to_bool
 
 
 # region basic pytest confidence check

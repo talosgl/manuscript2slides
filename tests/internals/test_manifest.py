@@ -5,11 +5,13 @@ metadata about pipeline runs. Tests focus on ensuring it writes correct data and
 gracefully.
 """
 
-import pytest
-from pathlib import Path
-from manuscript2slides.internals.manifest import RunManifest, MANIFEST_VERSION
-from manuscript2slides.internals.define_config import UserConfig, PipelineDirection
 import json
+from pathlib import Path
+
+import pytest
+
+from manuscript2slides.internals.define_config import PipelineDirection, UserConfig
+from manuscript2slides.internals.manifest import MANIFEST_VERSION, RunManifest
 
 
 def test_manifest_creates_file_on_start_and_has_required_fields(

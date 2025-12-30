@@ -8,16 +8,18 @@ Known missing tests for:
 We will add tests for these later if we see bugs related to them.
 """
 
-import pytest
-from manuscript2slides.internals.define_config import (
-    ChunkType,
-    UserConfig,
-    PipelineDirection,
-)
-import sys
 import logging
+import sys
 from pathlib import Path
 from typing import Any
+
+import pytest
+
+from manuscript2slides.internals.define_config import (
+    ChunkType,
+    PipelineDirection,
+    UserConfig,
+)
 
 try:
     import tomllib  # Python 3.11+

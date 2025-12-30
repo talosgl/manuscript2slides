@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+
 from docx.comments import Comment as Comment_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 

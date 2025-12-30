@@ -1,15 +1,15 @@
 """Extract annotations from Word documents."""
 
 import logging
-import xml.etree.ElementTree as ET
-
 import re
+import xml.etree.ElementTree as ET
+from typing import TypeVar
+
 from docx import document
 from docx.comments import Comment as Comment_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
 
-from manuscript2slides.processing import docx_xml
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import (
     Chunk_docx,
@@ -17,8 +17,7 @@ from manuscript2slides.models import (
     Endnote_docx,
     Footnote_docx,
 )
-
-from typing import TypeVar
+from manuscript2slides.processing import docx_xml
 
 log = logging.getLogger("manuscript2slides")
 NOTE_TYPE = TypeVar("NOTE_TYPE", Footnote_docx, Endnote_docx)

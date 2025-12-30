@@ -1,23 +1,25 @@
 """Tests for restore_from_slides module - JSON parsing, string manipulation, and range merging."""
 
+import logging
+
 import pytest
+
 from manuscript2slides.annotations.restore_from_slides import (
+    extract_slide_metadata,
     merge_overlapping_ranges,
     remove_ranges_from_text,
-    split_speaker_notes,
-    extract_slide_metadata,
     safely_extract_comment_data,
-    safely_extract_heading_data,
     safely_extract_experimental_formatting_data,
+    safely_extract_heading_data,
+    split_speaker_notes,
 )
 from manuscript2slides.internals.constants import (
-    METADATA_MARKER_HEADER,
     METADATA_MARKER_FOOTER,
-    NOTES_MARKER_HEADER,
+    METADATA_MARKER_HEADER,
     NOTES_MARKER_FOOTER,
+    NOTES_MARKER_HEADER,
 )
 from manuscript2slides.models import SlideNotes
-import logging
 
 # region merge_overlapping_ranges tests
 

@@ -12,7 +12,6 @@ from pytestqt.qtbot import QtBot
 
 from manuscript2slides.gui import MainWindow, QTextEditHandler
 
-
 # region Test Fixtures
 
 
@@ -247,10 +246,9 @@ class TestValidationLogic:
         mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that validation rejects nonexistent input files."""
-        from manuscript2slides.internals.define_config import UserConfig
-
         # Create view and presenter without full MainWindow
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
+        from manuscript2slides.internals.define_config import UserConfig
 
         view = Docx2PptxTabView()
         qtbot.addWidget(view)
@@ -280,9 +278,8 @@ class TestValidationLogic:
         mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that validation rejects wrong file types."""
-        from manuscript2slides.internals.define_config import UserConfig
-
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
+        from manuscript2slides.internals.define_config import UserConfig
 
         view = Docx2PptxTabView()
         qtbot.addWidget(view)
@@ -314,9 +311,8 @@ class TestValidationLogic:
         mock_critical_dialog: list[tuple[str, str]],
     ) -> None:
         """Test that PPTX→DOCX validation rejects nonexistent files."""
-        from manuscript2slides.internals.define_config import UserConfig
-
         from manuscript2slides.gui import Pptx2DocxTabPresenter, Pptx2DocxTabView
+        from manuscript2slides.internals.define_config import UserConfig
 
         view = Pptx2DocxTabView()
         qtbot.addWidget(view)
@@ -347,9 +343,8 @@ class TestValidationLogic:
     ) -> None:
         """Test that validation fails if a directory, instead of a file, is passed as input."""
         # Create View and Presenter
-        from manuscript2slides.internals.define_config import UserConfig
-
         from manuscript2slides.gui import Docx2PptxTabPresenter, Docx2PptxTabView
+        from manuscript2slides.internals.define_config import UserConfig
 
         view = Docx2PptxTabView()
         qtbot.addWidget(view)

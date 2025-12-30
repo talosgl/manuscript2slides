@@ -1,10 +1,11 @@
 """Shared fixtures"""
 
 # tests/conftest.py
-import pytest
 from pathlib import Path
-from manuscript2slides.internals.define_config import UserConfig, ChunkType
 
+import pytest
+
+from manuscript2slides.internals.define_config import ChunkType, UserConfig
 from manuscript2slides.orchestrator import run_pipeline
 
 

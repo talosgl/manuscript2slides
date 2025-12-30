@@ -7,19 +7,22 @@ Usage:
 Extracts slide structure, formatting, and experimental XML properties.
 """
 
-from pathlib import Path
 import json
 import sys
-from typing import cast, Any
 import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import Any, cast
 
+from extraction_utils import (  # type: ignore[import-not-found]
+    filter_none_keep_false,
+    rgb_to_hex,
+    safe_pprint,
+)
 from pptx.presentation import Presentation
 from pptx.slide import Slides
+
 from manuscript2slides import io
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
-
-from extraction_utils import safe_pprint, filter_none_keep_false, rgb_to_hex  # type: ignore[import-not-found]
-
 
 # ============================================================================
 # CONFIGURATION - Edit these to change input/output files

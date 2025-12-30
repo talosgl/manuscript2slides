@@ -1,15 +1,17 @@
 """Tests for CLI argument parsing and config building."""
 
-import pytest
-from unittest.mock import Mock
-from manuscript2slides.cli import (
-    parse_args,
-    build_config_from_args,
-    _validate_args_match_config,
-)
-from manuscript2slides.internals.define_config import ChunkType, UserConfig
 import sys
 from pathlib import Path
+from unittest.mock import Mock
+
+import pytest
+
+from manuscript2slides.cli import (
+    _validate_args_match_config,
+    build_config_from_args,
+    parse_args,
+)
+from manuscript2slides.internals.define_config import ChunkType, UserConfig
 
 
 # region TestParseArgs

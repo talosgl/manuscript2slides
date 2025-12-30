@@ -11,11 +11,13 @@ leading number from footnote text that came from Word without a period after
 the number (e.g., "1 Text" instead of "1. Text").
 """
 
-import pytest
 from pathlib import Path
-from manuscript2slides.orchestrator import run_pipeline
-from manuscript2slides.internals.define_config import UserConfig
+
+import pytest
 from pptx import Presentation
+
+from manuscript2slides.internals.define_config import UserConfig
+from manuscript2slides.orchestrator import run_pipeline
 
 
 def test_footnote_no_double_numbering(

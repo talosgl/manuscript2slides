@@ -4,18 +4,18 @@
 # pyright: reportArgumentType=false
 
 import xml.etree.ElementTree as ET
+
+from docx import document
+from docx.text.hyperlink import Hyperlink as Hyperlink_docx
+from docx.text.paragraph import Paragraph as Paragraph_docx
+from docx.text.run import Run as Run_docx
 from pptx import presentation
 from pptx.slide import Slide
 from pptx.text.text import TextFrame
-
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
-from manuscript2slides.processing.populate_docx import get_slide_paragraphs
 
-from docx import document
-from docx.text.paragraph import Paragraph as Paragraph_docx
-from docx.text.run import Run as Run_docx
-from docx.text.hyperlink import Hyperlink as Hyperlink_docx
+from manuscript2slides.processing.populate_docx import get_slide_paragraphs
 
 
 def find_first_docx_para_containing(

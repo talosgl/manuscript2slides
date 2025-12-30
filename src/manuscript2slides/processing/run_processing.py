@@ -8,29 +8,31 @@
 # region imports
 import logging
 from typing import Any
+
 from docx import document
 from docx.opc import constants
 from docx.oxml.ns import qn
 from docx.oxml.parser import OxmlElement as OxmlElement_docx
+from docx.shared import RGBColor as RGBColor_docx
+from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from docx.text.run import Run as Run_docx
-from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from pptx.text.text import _Paragraph as Paragraph_pptx
 from pptx.text.text import _Run as Run_pptx
-from docx.shared import RGBColor as RGBColor_docx
+
 from manuscript2slides.annotations.restore_from_slides import (
     safely_extract_comment_data,
     safely_extract_experimental_formatting_data,
 )
-from manuscript2slides.processing.formatting import (
-    apply_experimental_formatting_from_metadata,
-    copy_run_formatting_docx2pptx,
-    copy_run_formatting_pptx2docx,
-    copy_paragraph_formatting_docx2pptx,
-)
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import SlideNotes
 from manuscript2slides.processing.docx_xml import detect_field_code_hyperlinks
+from manuscript2slides.processing.formatting import (
+    apply_experimental_formatting_from_metadata,
+    copy_paragraph_formatting_docx2pptx,
+    copy_run_formatting_docx2pptx,
+    copy_run_formatting_pptx2docx,
+)
 
 # endregion
 

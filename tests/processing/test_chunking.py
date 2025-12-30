@@ -4,9 +4,11 @@ Known untested: We don't test that page break detection works properly during th
 Is there an easy way to test that?
 """
 
+from pathlib import Path
+
 import pytest
 from docx import Document
-from pathlib import Path
+
 from manuscript2slides.processing import chunking
 
 

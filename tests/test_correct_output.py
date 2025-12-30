@@ -1,29 +1,25 @@
 """Tests for correctness of pipeline output based on manual test cases performed during development."""
 
 # pyright: reportAttributeAccessIssue=false
-import pytest
 from pathlib import Path
-
-import pptx
-from pptx.text.text import TextFrame
-from pptx.text.text import _Hyperlink as Hyperlink_pptx
-from pptx.enum.text import MSO_TEXT_UNDERLINE_TYPE as MSO_TEXT_UNDERLINE_TYPE_pptx
-from pptx.text.text import _Paragraph as Paragraph_pptx
-from pptx.text.text import _Run as Run_pptx
-from pptx.dml.color import RGBColor as RGBColor_pptx
-
 
 import docx
 import docx.document
+import pptx
+import pytest
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_UNDERLINE
+from docx.shared import RGBColor as RGBColor_docx
 from docx.text.hyperlink import Hyperlink as Hyperlink_docx
 from docx.text.run import Run as Run_docx
-from docx.shared import RGBColor as RGBColor_docx
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_UNDERLINE
-
+from pptx.dml.color import RGBColor as RGBColor_pptx
+from pptx.enum.text import MSO_TEXT_UNDERLINE_TYPE as MSO_TEXT_UNDERLINE_TYPE_pptx
+from pptx.text.text import TextFrame
+from pptx.text.text import _Hyperlink as Hyperlink_pptx
+from pptx.text.text import _Paragraph as Paragraph_pptx
+from pptx.text.text import _Run as Run_pptx
 
 from manuscript2slides.internals.define_config import UserConfig
 from tests import helpers
-
 
 # region docx2pptx tests
 

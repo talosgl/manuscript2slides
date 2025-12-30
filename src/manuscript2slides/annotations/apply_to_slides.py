@@ -2,27 +2,26 @@
 
 # mypy: disable-error-code="import-untyped"
 # region imports
-import logging
 import json
+import logging
 from datetime import datetime
 
 from pptx.text.text import TextFrame
 
 from manuscript2slides.annotations.extract import NOTE_TYPE
-from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.internals.constants import (
     METADATA_MARKER_FOOTER,
     METADATA_MARKER_HEADER,
     NOTES_MARKER_FOOTER,
     NOTES_MARKER_HEADER,
 )
+from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.models import (
     Chunk_docx,
     Comment_docx_custom,
     Endnote_docx,
     Footnote_docx,
 )
-
 from manuscript2slides.processing.run_processing import (
     process_docx_paragraph_inner_contents,
 )

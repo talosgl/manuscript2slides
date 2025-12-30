@@ -3,14 +3,17 @@
 import logging
 from pathlib import Path
 
-from manuscript2slides.pipelines import docx2pptx, pptx2docx
 from manuscript2slides.internals.define_config import (
     PipelineDirection,
     UserConfig,
 )
-from manuscript2slides.internals.run_context import get_session_id, get_pipeline_run_id
-from manuscript2slides.internals.run_context import start_pipeline_run
 from manuscript2slides.internals.manifest import RunManifest
+from manuscript2slides.internals.run_context import (
+    get_pipeline_run_id,
+    get_session_id,
+    start_pipeline_run,
+)
+from manuscript2slides.pipelines import docx2pptx, pptx2docx
 
 log = logging.getLogger("manuscript2slides")
 

@@ -7,17 +7,20 @@ Usage:
 Uses internal Chunk_docx classes to test chunk-based processing.
 """
 
-from pathlib import Path
 import json
 import sys
+from pathlib import Path
+
+from extraction_utils import (  # type: ignore[import-not-found]
+    filter_none_keep_false,
+    rgb_to_hex,
+    safe_pprint,
+)
 
 from manuscript2slides import io
-from manuscript2slides.processing.chunking import create_docx_chunks
-from manuscript2slides.models import Chunk_docx
 from manuscript2slides.internals.define_config import ChunkType
-
-from extraction_utils import rgb_to_hex, safe_pprint, filter_none_keep_false  # type: ignore[import-not-found]
-
+from manuscript2slides.models import Chunk_docx
+from manuscript2slides.processing.chunking import create_docx_chunks
 
 # ============================================================================
 # CONFIGURATION - Edit these to change input/output files

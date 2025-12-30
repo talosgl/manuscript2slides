@@ -5,12 +5,11 @@ This module provides common helper functions used across the docx and pptx
 extraction tools to reduce code duplication.
 """
 
-from pprint import pprint
 import sys
+from pprint import pprint
 
 from docx.shared import RGBColor as RGBColor_docx
 from pptx.dml.color import RGBColor as RGBColor_pptx
-
 
 # XML namespace constants for Office documents
 XML_NAMESPACE_WORD: str = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"

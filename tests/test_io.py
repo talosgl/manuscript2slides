@@ -11,9 +11,9 @@ from pptx import Presentation, presentation
 from manuscript2slides.io import (
     _validate_path,
     load_and_validate_docx,
+    load_and_validate_pptx,
     validate_docx_path,
     validate_pptx_path,
-    load_and_validate_pptx,
 )
 
 

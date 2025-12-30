@@ -2,11 +2,13 @@
 """Create docx2pptx chunks including by paragraph, page, heading (flat), and heading (nested).
 All strategies break a new chunk on a docx page break to prevent slide text overflow."""
 
-from manuscript2slides.models import Chunk_docx
+import logging
+
+from docx import document
+
 from manuscript2slides.internals.define_config import ChunkType
 from manuscript2slides.internals.run_context import get_pipeline_run_id
-from docx import document
-import logging
+from manuscript2slides.models import Chunk_docx
 
 log = logging.getLogger("manuscript2slides")
 

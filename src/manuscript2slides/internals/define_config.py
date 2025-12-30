@@ -11,7 +11,6 @@ except ModuleNotFoundError:
     import tomli as tomllib  # type: ignore[no-redef]
 
 import logging
-
 from dataclasses import dataclass, fields
 from enum import Enum
 from pathlib import Path
@@ -19,13 +18,12 @@ from typing import Any, Optional
 
 import tomli_w  # For writing (no stdlib equivalent yet)
 
-
 from manuscript2slides.internals.paths import (
     get_default_docx_template_path,
     get_default_pptx_template_path,
+    resolve_path,
     user_input_dir,
     user_output_dir,
-    resolve_path,
 )
 
 # endregion

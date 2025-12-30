@@ -16,8 +16,8 @@ from pptx.slide import Slide
 
 from manuscript2slides.internals import constants
 from manuscript2slides.internals.define_config import UserConfig
-from manuscript2slides.processing.populate_docx import get_slide_paragraphs
 from manuscript2slides.internals.run_context import get_pipeline_run_id
+from manuscript2slides.processing.populate_docx import get_slide_paragraphs
 
 log = logging.getLogger("manuscript2slides")
 
