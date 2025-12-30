@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only", # Not compatible with Python 2
     "Operating System :: OS Independent",
     "Environment :: X11 Applications :: Qt",
@@ -71,17 +72,11 @@ line-length = 88
 target-version = "py310"
 
 # Exclude directories
-extend-exclude = [
-    ".eggs",
-    ".git",
-    ".venv",
-    "build",
-    "dist",
-]
+extend-exclude = [".eggs", ".git", ".venv", "build", "dist"]
 
 [tool.ruff.format]
 # Formatting settings (Black-compatible)
-quote-style = "double"  # Enforce double quotes consistently
+quote-style = "double" # Enforce double quotes consistently
 
 [build-system]
 requires = ["setuptools"]
