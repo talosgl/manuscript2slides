@@ -4,7 +4,7 @@
 ### Install from Source
 
 ```bash
-git clone https://github.com/talosgl/manuscript2slides.git
+git clone https://github.com/talosgl/manuscript2slides.git # or your fork URL
 cd manuscript2slides
 pip install -e ".[dev]"
 ```
@@ -28,6 +28,21 @@ python -m manuscript2slides.cli --input-pptx="src\manuscript2slides\resources\sa
 ```
 
 If you're using VS Code, you can use the `launch.json` provided by the repo to run more easily.
+
+### Useful Commands
+```bash
+# From a venv terminal with [dev] installed
+
+# General linting & fix
+ruff check --fix
+
+# Format code per repo standards, including import organization
+ruff check --select I --fix && ruff format
+
+# Check for type issues
+mypy .
+
+```
 
 ## Contributing
 

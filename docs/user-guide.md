@@ -121,7 +121,7 @@ sudo dnf install xcb-util-cursor
 ```
 
 ## Getting Help
-TODO: Write this more thoroughly
+TODO, documentation: Write this more thoroughly
 
 Things to provide if you're having issues with the conversion process:
 - input file you're trying to convert
