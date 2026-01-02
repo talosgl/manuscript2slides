@@ -51,13 +51,29 @@ Some external hyperlinks (like the sample_doc.docx's first "Where are Data?" lin
 ### Auto-fit text resizing:
 PowerPoint's automatic 'shrink text on overflow' feature is not applied programmatically. PowerPoint only applies auto-fit sizing when opened in the UI. To manually fix this:
 
-1. Open up the output presentation in PowerPoint Desktop > View > Slide Master
-2. Select the text frame object, right-click > Format Shape
-3. Click the Size & Properties icon {TODO, doc: ADD SCREENCAPS}
-4. Click Text Box to see the options
-5. Toggle "Do not Autofit" and then back to "Shrink Text on overflow"
-6. Close Master View
-7. Now all the slides should have their text properly resized.
+1. Open up the output presentation in **PowerPoint Desktop > View > Slide Master**
+
+    <img width="400" alt="image" src="https://github.com/user-attachments/assets/eaa527b0-65f9-4fad-9423-f442b3b7e3d4" />
+
+3. Select the text frame object, right-click > Format Shape
+
+    <img width="600" alt="image" src="https://github.com/user-attachments/assets/29150674-23c8-49ec-a944-d41601eb8152" />
+
+5. Click the Size & Properties icon
+
+   <img width="200" alt="image" src="https://github.com/user-attachments/assets/c2aad1f9-b698-463b-ad8a-1fa47b5a1313" />
+
+7. Click Text Box to see the options
+
+8. Toggle "Do not Autofit" on, and then toggle back to "Shrink Text on overflow"
+
+   <img width="200" alt="image" src="https://github.com/user-attachments/assets/42260e6e-9ede-4558-bf6c-8633243e8b63" />
+
+10. Close Master View
+
+    <img width="200" alt="image" src="https://github.com/user-attachments/assets/4e2165fc-0779-46f7-a913-75b89771e2e4" />
+
+12. Now all the slides should have their text properly resized. Save your file.
 
 
 ## 3. Annotation and Metadata Handling
@@ -77,14 +93,10 @@ The reverse pipeline (PPTX → DOCX) is significantly less robust than the forwa
 If you want us to attempt to restore advanced formatting during round-trip conversion, then when you first convert a docx -> pptx, check the **Advanced Options > Preserve metadata in speaker notes** option in the UI, or in the CLI, pass `preserve_docx_metadata_in_speaker_notes = true`. With this option enabled, manuscript2slides injects compact JSON metadata into each slide's speaker notes. During a later reverse (PPTX → DOCX) conversion, that metadata helps restore highlighting, heading formatting, and comments more accurately.
 
 
-- **Lost elements:**  
-  Images, tables, charts, footnotes, and endnotes are not restored. (If footnotes and endnotes are preserved in the metadata, they're restored as plaintext in a comment.)
+- **Lost elements:** Images, tables, charts, footnotes, and endnotes are not restored. (If footnotes and endnotes are preserved in the metadata, they're restored as plaintext in a comment.)
 
-- **Advanced formatting matching:**  
-  Headings, highlighting, and other advanced formatting are re-applied using approximate text matching only.
+- **Advanced formatting matching:** Headings, highlighting, and other advanced formatting are re-applied using approximate text matching only.
 
-- **Comment restoration:**  
-  Comments are re-inserted, but their anchor positions may differ slightly.
+- **Comment restoration:** Comments are re-inserted, but their anchor positions may differ slightly.
 
-- **Blank paragraph at start:**  
-  When creating a new `.docx`, the `python-docx` library inserts an empty paragraph as required by the Open XML spec (the document `<w:body>` must contain at least one paragraph).
+- **Blank paragraph at start:** When creating a new `.docx`, the `python-docx` library inserts an empty paragraph as required by the Open XML spec (the document `<w:body>` must contain at least one paragraph).
