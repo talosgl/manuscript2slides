@@ -4,7 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.10"
 description = "Convert Word documents to PowerPoint slides and back"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "talosgl" }]
 keywords = ["docx", "pptx", "converter", "powerpoint", "word"]
 
@@ -23,7 +23,6 @@ classifiers = [
     "Topic :: Office/Business",
     "Topic :: Text Processing",
     "Topic :: Utilities",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -49,11 +48,17 @@ dev = [
 [project.urls]
 Repository = "https://github.com/talosgl/manuscript2slides"
 Issues = "https://github.com/talosgl/manuscript2slides/issues"
+Documentation = "https://github.com/talosgl/manuscript2slides/tree/main/docs"
 
 # Convention is: [project] -> [tool.*] sections -> [build-system] last.
 [project.scripts]
-manuscript2slides = "manuscript2slides.__main__:main"
+manuscript2slides = "manuscript2slides.gui:main"
+manuscript2slides-cli = "manuscript2slides.cli:main"
 
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["manuscript2slides.archive*"]
 
 [tool.setuptools.package-data]
 manuscript2slides = [

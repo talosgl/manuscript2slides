@@ -1,3 +1,4 @@
 include README.md
 include LICENSE
 recursive-include src/manuscript2slides/resources *
+prune src/manuscript2slides/archive
