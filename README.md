@@ -62,11 +62,11 @@ manuscript2slides --demo-round-trip
 
 ## Detailed User Guide
 
-For a full walkthrough of all options (including screenshots, advanced settings, and round-trip examples), see the [docs/user-guide.md](docs/user-guide.md).
+For a full walkthrough of all options (including screenshots, advanced settings, and round-trip examples), see the [User Guide](https://github.com/talosgl/manuscript2slides/blob/main/docs/user-guide.md).
 
 ## License
 
-[MIT](/LICENSE.md)
+[MIT](https://github.com/talosgl/manuscript2slides/blob/main/LICENSE)
 
 ## Acknowledgments
 
@@ -78,17 +78,17 @@ Thanks to:
 - Blog post: [A Qt GUI for Logging](https://plumberjack.blogspot.com/2019/11/a-qt-gui-for-logging.html) for showing how to use Py's logging library with PySide6/Qt
 - [StackOverflow answer](https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx) and [GitHub discussion](https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130) for guidance on advanced techniques to add hyperlinks to docx runs
 
-For full licensing details, see [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).
+For full licensing details, see [THIRD_PARTY_LICENSES.md](https://github.com/talosgl/manuscript2slides/blob/main/THIRD_PARTY_LICENSES.md).
 
 ## Known Limitations
 
-See [docs/limitations.md](docs/limitations.md) for a detailed list of current limitations, unsupported features, and known workarounds.
+See [Known Limitations](https://github.com/talosgl/manuscript2slides/blob/main/docs/limitations.md) for a detailed list of current limitations, unsupported features, and known workarounds.
 
 ## Troubleshooting
 
-If conversion fails or the GUI won’t launch, see [docs/troubleshooting.md](docs/troubleshooting.md).
+If conversion fails or the GUI won't launch, see [Troubleshooting](https://github.com/talosgl/manuscript2slides/blob/main/docs/troubleshooting.md).
 
 
 # Development & Contributing
 
-To set up the project for development, see [Developer Guide](docs/dev-guide.md).
+To set up the project for development, see [Developer Guide](https://github.com/talosgl/manuscript2slides/blob/main/docs/dev-guide.md).
