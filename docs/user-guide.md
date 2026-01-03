@@ -27,19 +27,19 @@ Launch the application and you'll see three tabs:
 
 ```bash
 # Run demo with sample files
-manuscript2slides --demo-docx2pptx
+manuscript2slides-cli --demo-docx2pptx
 
 # Convert a specific Word document
-manuscript2slides --input-docx my-manuscript.docx
+manuscript2slides-cli --input-docx my-manuscript.docx
 
 # Convert PowerPoint to Word
-manuscript2slides --input-pptx presentation.pptx --direction pptx2docx
+manuscript2slides-cli --input-pptx presentation.pptx --direction pptx2docx
 
 # Use a configuration file
-manuscript2slides --config my-settings.toml
+manuscript2slides-cli --config my-settings.toml
 
 # Customize chunking strategy
-manuscript2slides --input-docx manuscript.docx --chunk-type heading_flat
+manuscript2slides-cli --input-docx manuscript.docx --chunk-type heading_flat
 ```
 
 ## Save/Load Options
@@ -61,7 +61,7 @@ preserve_docx_metadata_in_speaker_notes = true
 Then in the CLI, run:
 
 ```bash
-manuscript2slides --config my-config.toml
+manuscript2slides-cli --config my-config.toml
 ```
 
 Or in the GUI, click "Advanced" under the input-file selector, and the "Save Config"/"Load Config" button. 

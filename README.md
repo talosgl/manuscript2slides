@@ -51,13 +51,13 @@ Then:
 
 ```bash
 # Convert a Word document
-manuscript2slides --input-docx my-manuscript.docx
+manuscript2slides-cli --input-docx my-manuscript.docx
 
 # Reverse conversion
-manuscript2slides --input-pptx presentation.pptx --direction pptx2docx
+manuscript2slides-cli --input-pptx presentation.pptx --direction pptx2docx
 
 # See a demo dry run with sample files
-manuscript2slides --demo-round-trip
+manuscript2slides-cli --demo-round-trip
 ```
 
 ## Detailed User Guide
