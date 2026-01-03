@@ -10,14 +10,20 @@ from manuscript2slides.cli import run as run_cli
 
 
 def main() -> None:
-    """Application entry point - handles initialization and interface routing.
+    """Optional source code development entry point; defaults to GUI.
 
-    Call like:
-    ```
-    python -m manuscript2slides # GUI will launch by default
-    python -m manuscript2slides --cli # CLI will launch
-    ```
+    In dev, you can call the app any of these ways:
+        # Launch GUI
+        python -m manuscript2slides
+        python -m manuscript2slides.gui (skips __main__.py)
 
+        # Launch CLI
+        python -m manuscript2slides --cli
+        python -m manuscript2slides.cli (skips __main__.py)
+
+    After pip install, use the following (and see pyproject.toml):
+        manuscript2slides        # Launch GUI (skips __main__.py)
+        manuscript2slides-cli    # Launch CLI (skips __main__.py)
     """
 
     # Set up logging and user folder scaffold.

@@ -21,7 +21,12 @@ log = logging.getLogger("manuscript2slides")
 
 # region run
 def run() -> None:
-    """Run CLI interface. Assumes startup.initialize_application() was already called."""
+    """Run CLI interface. Assumes startup.initialize_application() was already called.
+
+    Call with:
+        # From source code (routes via __main__.py's main())
+        python -m manuscript2slides --cli
+    """
 
     # (Define and) parse user-passed-in command line arguments for this app
     args = parse_args()
@@ -524,7 +529,14 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
 
 # region main
 def main() -> None:
-    """Development entry point - run CLI directly with `python -m manuscript2slides.cli`"""
+    """CLI entry point.
+
+    After pip install:
+        manuscript2slides-cli
+
+    From source (dev):
+        python -m manuscript2slides.cli
+    """
     from manuscript2slides import startup
 
     log = startup.initialize_application()

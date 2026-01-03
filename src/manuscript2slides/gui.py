@@ -2328,7 +2328,10 @@ class QTextEditHandler(logging.Handler):
 
 # region Entry Points
 def run() -> None:
-    """Run Qt GUI interface. Assumes startup.initialize_application() already called."""
+    """Run Qt GUI interface. Assumes startup.initialize_application() already called.
+
+    Called by either __main__.py or gui.py's main().
+    """
     log.info("Initializing Qt UI")
 
     app = QApplication(sys.argv)
@@ -2339,7 +2342,16 @@ def run() -> None:
 
 
 def main() -> None:
-    """Development entry point - run GUI directly with `python -m manuscript2slides.gui`"""
+    """
+    Entry point for GUI.
+
+    From source code repository, run the GUI directly with:
+        python -m manuscript2slides.gui
+        python -m manuscript2slides # GUI is the default when --cli not passed
+
+        # or, after pip install (GUI is the default mode):
+        manuscript2slides
+    """
     initialize_application()  # configure the log & other startup tasks
 
     run()
