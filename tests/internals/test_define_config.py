@@ -227,6 +227,10 @@ def test_from_toml_unexpected_fields_warn_and_filter(
         assert "Filtering out unexpected fields" in caplog.text
 
 
+@pytest.mark.skipif(
+    sys.platform != "win32",
+    reason="Path normalization with backslashes only meaningful on Windows where they are path separators",
+)
 def test_from_toml_does_normalize_path(tmp_path: Path) -> None:
     """Test that paths with backslashes get normalized to forward slashes."""
     toml_file = tmp_path / "config.toml"

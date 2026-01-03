@@ -2,6 +2,7 @@
 
 # tests/test_io.py
 import logging
+import sys
 from pathlib import Path
 
 import pytest
@@ -28,6 +29,26 @@ def test_validate_path_raises_when_path_is_dir(
             _validate_path(tmp_path)
     # Assert: test error is captured in the log at error level
     assert "Path is not a file" in caplog.text
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Windows-style path detection only applies on non-Windows systems",
+)
+def test_validate_path_detects_windows_paths_on_unix(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Ensure we provide helpful error when user provides Windows-style path on Unix/macOS."""
+    windows_style_path = r"C:\Users\test\file.docx"
+
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(FileNotFoundError, match="File not found"):
+            _validate_path(windows_style_path)
+
+    # Assert: check that we logged the helpful Windows-style path message
+    assert "Windows-style path" in caplog.text
+    assert "backslashes" in caplog.text
+    assert "forward slashes" in caplog.text
 
 
 # endregion

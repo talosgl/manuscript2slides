@@ -3,6 +3,7 @@
 
 # mypy: disable-error-code="import-untyped"
 import logging
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import TypeVar
@@ -32,7 +33,17 @@ def _validate_path(user_path: str | Path) -> Path:
     path = Path(user_path)
     pipeline_id = get_pipeline_run_id()
     if not path.exists():
-        log.error(f"File not found: {user_path} [pipeline:{pipeline_id}]")
+        # Check if this looks like a Windows path on a non-Windows system
+        path_str = str(user_path)
+        if sys.platform != "win32" and "\\" in path_str and ":" in path_str:
+            log.error(
+                f"File not found: {user_path} [pipeline:{pipeline_id}]\n"
+                f"This appears to be a Windows-style path (contains backslashes and drive letter), "
+                f"but you're running on {sys.platform}. "
+                f"Please use forward slashes (/) in your config file."
+            )
+        else:
+            log.error(f"File not found: {user_path} [pipeline:{pipeline_id}]")
         raise FileNotFoundError(f"File not found: {user_path}")
     if not path.is_file():
         log.error(

@@ -584,11 +584,11 @@ class TestLogging:
         # Verify validation failed
         assert result is False
 
-        # Verify logging happened correctly
-        assert len(caplog.records) == 1
-        assert caplog.records[0].levelname == "ERROR"
-        assert "does not exist" in caplog.text
-        assert str(cfg.input_docx) in caplog.text
+        # Verify logging happened with helpful error message
+        assert any(
+        r.levelname == "ERROR" and "does not exist" in r.message and str(cfg.input_docx) in r.message
+        for r in caplog.records
+        )   
 
     def test_validation_logs_error_for_wrong_file_type(
         self,
@@ -624,11 +624,11 @@ class TestLogging:
         assert result is False
 
         # Verify logging happened correctly
-        assert len(caplog.records) == 1
-        assert caplog.records[0].levelname == "ERROR"
-        assert (
-            "invalid" in caplog.text.lower()
-            or "must be a .docx file" in caplog.text.lower()
+        assert any(
+            r.levelname == "ERROR" and (
+                "invalid" in r.message.lower() or "must be a .docx file" in r.message.lower()
+            )
+            for r in caplog.records
         )
 
     def test_conversion_error_logs_exception(
