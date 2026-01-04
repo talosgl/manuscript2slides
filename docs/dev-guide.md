@@ -23,7 +23,7 @@ python -m manuscript2slides
 python -m manuscript2slides.gui
 
 # Launch CLI from terminal (from source directory)
-python -m manuscript2slides --cli --input-docx="input\sample_doc.docx"
+python -m manuscript2slides.cli --input-docx="input\sample_doc.docx"
 python -m manuscript2slides.cli --input-pptx="src\manuscript2slides\resources\sample_slides_output.pptx"
 ```
 

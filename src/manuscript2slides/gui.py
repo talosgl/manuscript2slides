@@ -2330,7 +2330,13 @@ class QTextEditHandler(logging.Handler):
 def run() -> None:
     """Run Qt GUI interface. Assumes startup.initialize_application() already called.
 
-    Called by either __main__.py or gui.py's main().
+    Called by:
+        # After pip install
+        manuscript2slides
+
+        # From source code
+        python -m manuscript2slides
+        python -m manuscript2slides.gui
     """
     log.info("Initializing Qt UI")
 
@@ -2342,19 +2348,22 @@ def run() -> None:
 
 
 def main() -> None:
-    """
-    Entry point for GUI.
+    """Entry point for GUI.
 
-    From source code repository, run the GUI directly with:
+    From source code repository:
         python -m manuscript2slides.gui
-        python -m manuscript2slides # GUI is the default when --cli not passed
+        python -m manuscript2slides
 
-        # or, after pip install (GUI is the default mode):
+    After pip install:
         manuscript2slides
     """
-    initialize_application()  # configure the log & other startup tasks
+    log = initialize_application()  # configure the log & other startup tasks
 
-    run()
+    try:
+        run()
+    except Exception:
+        log.exception("Fatal error in GUI")
+        raise
 
 
 if __name__ == "__main__":

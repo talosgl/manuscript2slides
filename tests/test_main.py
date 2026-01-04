@@ -9,8 +9,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 
-def test_main_routes_to_gui_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    """When no args are provided at call time, main should call run_gui()."""
+def test_main_launches_gui(monkeypatch: pytest.MonkeyPatch) -> None:
+    """__main__.py should always launch the GUI (no routing logic)."""
 
     # Monkeypatch - set up the test environment
     monkeypatch.setattr(sys, "argv", ["manuscript2slides"])
@@ -21,7 +21,6 @@ def test_main_routes_to_gui_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
             "manuscript2slides.__main__.startup.initialize_application"
         ) as mock_startup,
         patch("manuscript2slides.gui.run") as mock_gui,
-        patch("manuscript2slides.__main__.run_cli") as mock_cli,
     ):
         # Inside this block, run_gui is replaced with a MagicMock
         # You can check if it was called, how many times, with what args, etc.
@@ -35,30 +34,8 @@ def test_main_routes_to_gui_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
         main()
 
         mock_gui.assert_called_once()
-        mock_cli.assert_not_called()
 
     # Outside the "with" block, run_gui is back to normal; calling it will call the *real* version defined in __main__.py
-
-
-def test_main_routes_to_cli_with_flag(monkeypatch: pytest.MonkeyPatch) -> None:
-    """When --cli flag is present, __main__.py should route program execution flow to run_cli()"""
-    monkeypatch.setattr(sys, "argv", ["manuscript2slides", "--cli"])
-
-    with (
-        patch(
-            "manuscript2slides.__main__.startup.initialize_application"
-        ) as mock_startup,
-        patch("manuscript2slides.gui.run") as mock_gui,
-        patch("manuscript2slides.__main__.run_cli") as mock_cli,
-    ):
-        mock_startup.return_value = MagicMock()
-
-        from manuscript2slides.__main__ import main
-
-        main()
-
-        mock_cli.assert_called_once()
-        mock_gui.assert_not_called()
 
 
 def test_main_logs_and_reraises_exceptions(monkeypatch: pytest.MonkeyPatch) -> None:

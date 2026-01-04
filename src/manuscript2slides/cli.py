@@ -24,9 +24,12 @@ log = logging.getLogger("manuscript2slides")
 def run() -> None:
     """Run CLI interface. Assumes startup.initialize_application() was already called.
 
-    Call with:
-        # From source code (routes via __main__.py's main())
-        python -m manuscript2slides --cli
+    Called by:
+        # After pip install
+        manuscript2slides-cli
+
+        # From source code
+        python -m manuscript2slides.cli
     """
 
     # (Define and) parse user-passed-in command line arguments for this app
@@ -57,7 +60,7 @@ def parse_args() -> argparse.Namespace:
 
     # Create the argparse object in memory
     parser = argparse.ArgumentParser(
-        prog="manuscript2slides",
+        prog="manuscript2slides-cli",
         description="Convert text content from Word docx to PowerPoint pptx slides and vice versa",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
@@ -85,9 +88,6 @@ Examples:
   manuscript2slides-cli --config settings.toml --input-pptx path/to/your_slides.pptx
 ------------------------------------------------------------------
 """,
-    )
-    parser.add_argument(
-        "--cli", action="store_true", dest="cli_mode", help="Run the cli mode."
     )
 
     # Add all our arguments to the argparse object we just made
@@ -351,16 +351,15 @@ Examples:
 
     args = parser.parse_args()
 
-    # If no args were passed in, or the only arg passed in was `--cli`, then act as if --help was passed and show help.
+    # If no args were passed in, act as if --help was passed and show help.
     # len(sys.argv) == 1 will be true if only the script name was passed (`python -m manuscript2slides.cli` in dev, or `manuscript2slides-cli` via pip install)
-    # len(sys.argv) == 2 and args.cli_mode will be true/exist if the script name and only that flag was passed in.
-    if len(sys.argv) == 1 or (len(sys.argv) == 2 and args.cli_mode):
+    if len(sys.argv) == 1:
         # We use stderr so the message is visible even if stdout is piped to a file
         print(
-            "Error: No meaningful arguments provided. Showing help.\n", file=sys.stderr
+            "Error: No arguments provided. Showing help.\n", file=sys.stderr
         )
         log.warning(
-            "No meaningful args passed with script name. Showing help. (Try passing `--demo-round-trip` or `--demo-docx2pptx` to see the pipeline in a dry run.)"
+            "No args passed to CLI. Showing help. (Try passing `--demo-round-trip` or `--demo-docx2pptx` to see the pipeline in a dry run.)"
         )
         parser.print_help(sys.stderr)
         sys.exit(2)  # Standard argparse exit code for usage errors
@@ -503,7 +502,6 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
     excluded_args = {
         "help",
         "config",
-        "cli_mode",
         "demo_run",
         "demo_round_trip",
         "demo_pptx2docx",

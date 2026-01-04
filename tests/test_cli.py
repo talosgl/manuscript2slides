@@ -53,7 +53,7 @@ class TestParseArgs:
         expected: bool,
     ) -> None:
         """Test that boolean flags set correct True/False values when they are provided explicitly."""
-        monkeypatch.setattr(sys, "argv", ["manuscript2slides", "--cli", cli_flag])
+        monkeypatch.setattr(sys, "argv", ["manuscript2slides.cli", cli_flag])
         args = parse_args()
         assert getattr(args, arg_dest_name) == expected
 
@@ -81,8 +81,8 @@ class TestParseArgs:
             sys,
             "argv",
             [
-                "manuscript2slides",
-                "--cli",
+                "manuscript2slides.cli",
+                "--demo-docx2pptx",
             ],
         )
         args = parse_args()
@@ -96,7 +96,7 @@ class TestParseArgs:
             "demo_round_trip",
         ],
     )
-    def test_demo_flag_false__when_not_provided(
+    def test_demo_flag_false_when_not_provided(
         self, monkeypatch: pytest.MonkeyPatch, arg_dest_name: str
     ) -> None:
         """Demo flags should evaluate to False when not provided."""
@@ -104,8 +104,9 @@ class TestParseArgs:
             sys,
             "argv",
             [
-                "manuscript2slides",
-                "--cli",
+                "manuscript2slides.cli",
+                "--input-docx",
+                "dummy.docx",
             ],
         )
         args = parse_args()
@@ -123,7 +124,7 @@ class TestParseArgs:
         self, monkeypatch: pytest.MonkeyPatch, cli_flag: str, arg_dest_name: str
     ) -> None:
         """Demo flags should cause the arg destination name evaluate to True if they are provided."""
-        monkeypatch.setattr(sys, "argv", ["manuscript2slides", "--cli", cli_flag])
+        monkeypatch.setattr(sys, "argv", ["manuscript2slides.cli", cli_flag])
         args = parse_args()
         assert getattr(args, arg_dest_name) is True
 
@@ -141,7 +142,7 @@ class TestBuildConfigFromArgs:
     ) -> None:
         """Config defaults should be used when no overriding flags were provided."""
         monkeypatch.setattr(
-            sys, "argv", ["manuscript2slides", "--cli", "--input-docx", "dummy.docx"]
+            sys, "argv", ["manuscript2slides.cli", "--input-docx", "dummy.docx"]
         )  # Don't fail this particular test because no input was provided
         args = parse_args()
         cfg = build_config_from_args(args)
@@ -186,7 +187,7 @@ class TestBuildConfigFromArgs:
         monkeypatch.setattr(
             sys,
             "argv",
-            ["manuscript2slides", "--cli", "--input-docx", "dummy.docx", cli_flag],
+            ["manuscript2slides.cli", "--input-docx", "dummy.docx", cli_flag],
         )
         args = parse_args()
         cfg = build_config_from_args(args)
@@ -211,8 +212,7 @@ class TestBuildConfigFromArgs:
             sys,
             "argv",
             [
-                "manuscript2slides",
-                "--cli",
+                "manuscript2slides.cli",
                 "--input-docx",
                 "dummy.docx",
                 "--chunk-type",

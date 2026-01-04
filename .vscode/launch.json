@@ -40,15 +40,14 @@
                 "MANUSCRIPT2SLIDES_DEBUG": "true"
             }
         },
-        // launches main() from ./src/manuscript2slides/__main__.py
+        // launches main() from ./src/manuscript2slides/cli.py
         {
-            "name": "manuscript2slides round trip",
+            "name": "CLI round trip demo",
             "type": "debugpy",
             "request": "launch",
-            "module": "manuscript2slides",
+            "module": "manuscript2slides.cli",
             "console": "integratedTerminal",
             "args": [
-                "--cli",
                 "--demo-round-trip",
             ],
             "env": {
