@@ -44,6 +44,27 @@ mypy .
 
 ```
 
+### Environment Variables
+
+For development and testing, you can set these optional environment variables:
+
+```bash
+# Linux/Mac
+export MANUSCRIPT2SLIDES_DEBUG=true
+export MANUSCRIPT2SLIDES_USER_DIR="/path/to/custom/dir"
+
+# Windows (cmd)
+set MANUSCRIPT2SLIDES_DEBUG=true
+set MANUSCRIPT2SLIDES_USER_DIR=C:\path\to\custom\dir
+
+# Windows (PowerShell)
+$env:MANUSCRIPT2SLIDES_DEBUG="true"
+$env:MANUSCRIPT2SLIDES_USER_DIR="C:\path\to\custom\dir"
+```
+
+- **MANUSCRIPT2SLIDES_DEBUG**: Enable debug mode for additional validation and logging (developer use)
+- **MANUSCRIPT2SLIDES_USER_DIR**: Override the default user directory (`~/.manuscript2slides`), useful for testing with isolated environments
+
 ## Contributing
 
 Contributions are welcome. Please feel free to:

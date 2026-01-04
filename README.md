@@ -18,7 +18,7 @@ Turn your Microsoft Word manuscripts into presentation slides (and back again), 
 
 ### Installation
 
-**Note:** Standalone executables (no Python required) are planned for a future release.
+**Note:** Standalone executables for Mac and Windows (no Python required) are planned for a future release.
 
 For now, you can install via pip (requires Python 3.10+ to already be installed):
 
