@@ -1,15 +1,15 @@
 """Shared fixtures"""
 
 # tests/conftest.py
+import os
 from pathlib import Path
+from typing import Generator
 
 import pytest
 
 from manuscript2slides.internals.define_config import ChunkType, UserConfig
-from manuscript2slides.orchestrator import run_pipeline
-from typing import Generator
-import os
 from manuscript2slides.internals.scaffold import ensure_user_scaffold
+from manuscript2slides.orchestrator import run_pipeline
 
 
 @pytest.fixture(scope="session", autouse=True)
