@@ -241,6 +241,11 @@ def apply_theme(app: QApplication) -> None:
     else:
         log.info("Using native platform style for Qt.")
 
+    # macOS-specific: Add padding to QLineEdit for better appearance
+    if sys.platform == "darwin":
+        app.setStyleSheet("QLineEdit { padding: 1px }")
+        log.debug("Applied macOS-specific QLineEdit padding.")
+
 
 def get_soft_text_color(widget: QWidget, ratio: float = 0.5) -> QColor:
     """
