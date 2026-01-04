@@ -24,7 +24,7 @@ For now, you can install via pip (requires Python 3.10+ to already be installed)
 
 ```bash
 # Recommended: Create a virtual environment first
-python -m venv .venv
+python -m venv .venv # or python3 -m venv .venv on Unix systems
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Then install
@@ -92,3 +92,4 @@ If conversion fails or the GUI won't launch, see [Troubleshooting](https://githu
 # Development & Contributing
 
 To set up the project for development, see [Developer Guide](https://github.com/talosgl/manuscript2slides/blob/main/docs/dev-guide.md).
+
