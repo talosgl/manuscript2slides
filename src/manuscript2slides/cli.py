@@ -68,23 +68,21 @@ Examples:
   manuscript2slides
 
   # Use the CLI:
-  # When installed from pip, CLI version is callable with either manuscript2slides.cli or manuscript2slides-cli
   manuscript2slides-cli --help
-  manuscript2slides.cli --help
 
   # See a demo run with sample files
-  manuscript2slides.cli --demo-docx2pptx
-  manuscript2slides.cli --demo-pptx2docx
-  manuscript2slides.cli --demo-round-trip
-  
+  manuscript2slides-cli --demo-docx2pptx
+  manuscript2slides-cli --demo-pptx2docx
+  manuscript2slides-cli --demo-round-trip
+
   # Quick conversion of a real file with default options
-  manuscript2slides.cli --input-docx path/to/your_manuscript.docx
-  
+  manuscript2slides-cli --input-docx path/to/your_manuscript.docx
+
   # Use config file
-  manuscript2slides.cli --config path/to/my_settings.toml
-  
+  manuscript2slides-cli --config path/to/my_settings.toml
+
   # Override config file settings
-  manuscript2slides.cli --config settings.toml --input-pptx path/to/your_slides.pptx
+  manuscript2slides-cli --config settings.toml --input-pptx path/to/your_slides.pptx
 ------------------------------------------------------------------
 """,
     )
