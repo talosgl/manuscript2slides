@@ -57,7 +57,9 @@ def setup_logger(
         logger.addHandler(console_handler)
 
         # File handler (writes to ~/Documents/manuscript2slides/logs/manuscript2slides.log)
-        log_file = user_log_dir_path() / "manuscript2slides.log"
+        log_dir = user_log_dir_path()
+        log_dir.mkdir(parents=True, exist_ok=True)  # Ensure log directory exists
+        log_file = log_dir / "manuscript2slides.log"
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setFormatter(formatter)
         file_handler.setLevel(logging.DEBUG)  # Everything goes to file
@@ -102,7 +104,9 @@ def _add_trace_handler(logger: logging.Logger) -> None:
     trace_log_formatter = logging.Formatter(
         trace_log_format, datefmt="%Y-%m-%d %H:%M:%S"
     )
-    trace_log_file = user_log_dir_path() / "trace_manuscript2slides.log"
+    log_dir = user_log_dir_path()
+    log_dir.mkdir(parents=True, exist_ok=True)  # Ensure log directory exists
+    trace_log_file = log_dir / "trace_manuscript2slides.log"
     trace_file_handler = logging.FileHandler(trace_log_file, encoding="utf-8")
     trace_file_handler.setFormatter(trace_log_formatter)
     trace_file_handler.setLevel(logging.DEBUG)

@@ -31,7 +31,6 @@ def initialize_application() -> logging.Logger:
     expected_log_dir = user_base_dir() / "logs"
 
     try:
-        user_log_dir_path()  # Create the log directory silently
         log = setup_logger(enable_trace=_should_enable_trace_on_startup())
     except PermissionError as e:
         print(
