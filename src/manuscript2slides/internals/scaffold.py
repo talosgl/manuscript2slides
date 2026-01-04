@@ -45,15 +45,23 @@ def ensure_user_scaffold() -> None:
         - Empty input/output/logs folders
     """
 
+    # Get all directory paths (path functions do NOT create directories)
     base = user_base_dir()
-
-    # Ensure all the directories exist (paths.py functions do the mkdir stuff)
     input_dir = user_input_dir()
-    user_output_dir()
-    user_log_dir_path()
+    output_dir = user_output_dir()
+    log_dir = user_log_dir_path()
     templates = user_templates_dir()
     configs_dir = user_configs_dir()
-    user_manifests_dir()
+    manifests_dir = user_manifests_dir()
+
+    # Create all directories explicitly
+    base.mkdir(parents=True, exist_ok=True)
+    input_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    templates.mkdir(parents=True, exist_ok=True)
+    configs_dir.mkdir(parents=True, exist_ok=True)
+    manifests_dir.mkdir(parents=True, exist_ok=True)
 
     _create_readme_if_missing(base)
 

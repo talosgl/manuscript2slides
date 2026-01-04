@@ -175,6 +175,7 @@ def test_create_readme_happy_path(tmp_path: Path) -> None:
 
 def test_copy_templates_if_missing_happy_path(tmp_path: Path) -> None:
     """Verify we create templates."""
+    tmp_path.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
     template_paths_list = scaffold._copy_templates_if_missing(tmp_path)
     for path in template_paths_list:
         assert path.is_file()
@@ -182,6 +183,7 @@ def test_copy_templates_if_missing_happy_path(tmp_path: Path) -> None:
 
 def test_copy_samples_if_missing_happy_path(tmp_path: Path) -> None:
     """Verify we create sample docx and pptx."""
+    tmp_path.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
     sample_paths_list = scaffold._copy_samples_if_missing(tmp_path)
     for path in sample_paths_list:
         assert path.is_file()
@@ -189,6 +191,7 @@ def test_copy_samples_if_missing_happy_path(tmp_path: Path) -> None:
 
 def test_copy_sample_config_if_missing_happy_path(tmp_path: Path) -> None:
     """Verify we create sample config."""
+    tmp_path.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
     sample_config_path = scaffold._copy_sample_config_if_missing(tmp_path)
     assert sample_config_path.is_file()
 

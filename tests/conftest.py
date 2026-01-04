@@ -7,6 +7,33 @@ import pytest
 
 from manuscript2slides.internals.define_config import ChunkType, UserConfig
 from manuscript2slides.orchestrator import run_pipeline
+from typing import Generator
+import os
+from manuscript2slides.internals.scaffold import ensure_user_scaffold
+
+
+@pytest.fixture(scope="session", autouse=True)
+def isolate_user_directories(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Generator[None, None, None]:
+    """Redirect all user directories to temp directory for test isolation from real environment."""
+
+    # Create temp base dir for all tests in this session to use
+    test_base = tmp_path_factory.mktemp("manuscript2slides_test_base")
+
+    # Set env var to redirect paths
+    os.environ["MANUSCRIPT2SLIDES_BASE_DIR"] = str(
+        test_base
+    )  # Env var string name is defined in paths.py, user_base_dir()
+
+    # Create and scaffold once for the entire test session
+    ensure_user_scaffold()
+
+    # wait for the testing to occur using this resource
+    yield
+
+    # Cleanup
+    del os.environ["MANUSCRIPT2SLIDES_BASE_DIR"]
 
 
 @pytest.fixture

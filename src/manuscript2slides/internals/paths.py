@@ -22,6 +22,10 @@ def user_base_dir() -> Path:
     """
     Base directory for all manuscript2slides user files.
 
+    Returns path - does NOT create it. Call ensure_user_scaffold() to create.
+
+    Can be overridden with MANUSCRIPT2SLIDES_BASE_DIR environment variable.
+
     Returns:
         Path to ~/Documents/manuscript2slides/ (or OS equivalent)
 
@@ -29,10 +33,14 @@ def user_base_dir() -> Path:
         Windows: C:/Users/YourName/Documents/manuscript2slides/
         macOS: /Users/YourName/Documents/manuscript2slides/
         Linux: /home/yourname/Documents/manuscript2slides/
+
+        With env var override:
+        MANUSCRIPT2SLIDES_BASE_DIR=/tmp/test python -m manuscript2slides
     """
-    base = Path(user_documents_dir()) / PACKAGE_NAME
-    base.mkdir(parents=True, exist_ok=True)
-    return base
+    override = os.getenv("MANUSCRIPT2SLIDES_BASE_DIR")
+    if override:
+        return Path(override)
+    return Path(user_documents_dir()) / PACKAGE_NAME
 
 
 # endregion
@@ -43,12 +51,12 @@ def user_log_dir_path() -> Path:
     """
     Directory for log files.
 
+    Returns path - does NOT create it. Call ensure_user_scaffold() to create.
+
     Returns:
         Path to ~/Documents/manuscript2slides/logs/
     """
-    log_dir = user_base_dir() / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
-    return log_dir
+    return user_base_dir() / "logs"
 
 
 # endregion
@@ -59,12 +67,12 @@ def user_output_dir() -> Path:
     """
     Default output directory for converted files.
 
+    Returns path - does NOT create it. Call ensure_user_scaffold() to create.
+
     Returns:
         Path to ~/Documents/manuscript2slides/output/
     """
-    output_dir = user_base_dir() / "output"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    return output_dir
+    return user_base_dir() / "output"
 
 
 # endregion
@@ -75,12 +83,12 @@ def user_input_dir() -> Path:
     """
     Optional staging directory for input files.
 
+    Returns path - does NOT create it. Call ensure_user_scaffold() to create.
+
     Returns:
         Path to ~/Documents/manuscript2slides/input/
     """
-    input_dir = user_base_dir() / "input"
-    input_dir.mkdir(parents=True, exist_ok=True)
-    return input_dir
+    return user_base_dir() / "input"
 
 
 # endregion
@@ -91,12 +99,12 @@ def user_templates_dir() -> Path:
     """
     Directory for custom template files.
 
+    Returns path - does NOT create it. Call ensure_user_scaffold() to create.
+
     Returns:
         Path to ~/Documents/manuscript2slides/templates/
     """
-    templates_dir = user_base_dir() / "templates"
-    templates_dir.mkdir(parents=True, exist_ok=True)
-    return templates_dir
+    return user_base_dir() / "templates"
 
 
 # endregion
@@ -107,12 +115,12 @@ def user_configs_dir() -> Path:
     """
     Directory for saved configuration files.
 
+    Returns path - does NOT create it. Call ensure_user_scaffold() to create.
+
     Returns:
         Path to ~/Documents/manuscript2slides/configs/
     """
-    configs_dir = user_base_dir() / "configs"
-    configs_dir.mkdir(parents=True, exist_ok=True)
-    return configs_dir
+    return user_base_dir() / "configs"
 
 
 # endregion
@@ -123,12 +131,12 @@ def user_manifests_dir() -> Path:
     """
     Directory for saved manifest files.
 
+    Returns path - does NOT create it. Call ensure_user_scaffold() to create.
+
     Returns:
         Path to ~/Documents/manuscript2slides/manifests/
     """
-    configs_dir = user_base_dir() / "manifests"
-    configs_dir.mkdir(parents=True, exist_ok=True)
-    return configs_dir
+    return user_base_dir() / "manifests"
 
 
 # endregion
