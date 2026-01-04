@@ -163,15 +163,22 @@ def load_user_preferences() -> UserConfig:
     return cfg
 
 
-def _get_qsettings_bool(app_settings_value_str: str) -> bool:
+def _get_qsettings_bool(app_settings_value_str: str | bool) -> bool:
     """Explicitly compare the string to get a true Python boolean.
     If it is exactly the string literal "true", it'll return true here.
     Anything else will return false. (I think.)
 
     This is here because without it Pylance complains about not being able
     to assign QSettings' object to bool.
-    """
 
+    Note: On macOS, QSettings.value() returns actual bool types, while on
+    Windows/Linux it returns strings. This function handles both cases.
+    """
+    # Handle the case where macOS returns actual bools
+    if isinstance(app_settings_value_str, bool):
+        return app_settings_value_str
+
+    # Handle the string case (Windows/Linux)
     return app_settings_value_str.lower() == "true"
 
 
