@@ -75,6 +75,14 @@ PowerPoint's automatic 'shrink text on overflow' feature is not applied programm
 
 12. Now all the slides should have their text properly resized. Save your file.
 
+Before & After:
+
+<img width="500" alt="text too large for shape" src="https://github.com/user-attachments/assets/6d424e9e-2899-45bd-903e-477d68f42053" />
+
+
+<img width="500" alt="autosized after above steps" src="https://github.com/user-attachments/assets/3c93c603-2402-4055-a634-df312ff99c22" />
+
+
 
 ## 3. Annotation and Metadata Handling
 PowerPoint does not natively support true footnotes or endnotes, and the underlying library (`python-pptx`) does not yet support adding comments.
@@ -100,3 +108,4 @@ If you want us to attempt to restore advanced formatting during round-trip conve
 - **Comment restoration:** Comments are re-inserted, but their anchor positions may differ slightly.
 
 - **Blank paragraph at start:** When creating a new `.docx`, the `python-docx` library inserts an empty paragraph as required by the Open XML spec (the document `<w:body>` must contain at least one paragraph).
+
