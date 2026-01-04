@@ -3,6 +3,7 @@
 # region imports
 import argparse
 import logging
+import sys
 from dataclasses import fields
 from pathlib import Path
 
@@ -60,28 +61,30 @@ def parse_args() -> argparse.Namespace:
         description="Convert text content from Word docx to PowerPoint pptx slides and vice versa",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
+------------------------------------------------------------------
+
 Examples:
-  # Use config file
-  manuscript2slides --config path/to/my_settings.toml
+  # Use the GUI
+  manuscript2slides
+
+  # Use the CLI:
+  # When installed from pip, CLI version is callable with either manuscript2slides.cli or manuscript2slides-cli
+  manuscript2slides-cli --help
+  manuscript2slides.cli --help
 
   # See a demo run with sample files
-  manuscript2slides --demo-docx2pptx
+  manuscript2slides.cli --demo-docx2pptx
+  manuscript2slides.cli --demo-pptx2docx
+  manuscript2slides.cli --demo-round-trip
   
-  # Quick conversion of a real file with defaults
-  manuscript2slides --input-docx manuscript.docx
+  # Quick conversion of a real file with default options
+  manuscript2slides.cli --input-docx path/to/your_manuscript.docx
+  
+  # Use config file
+  manuscript2slides.cli --config path/to/my_settings.toml
   
   # Override config file settings
-  manuscript2slides --config settings.toml --input-pptx slides.pptx
-
-------------------------------------------------------------------
-GLOBAL OPTIONS:
-The following flags can be passed anywhere in the command line 
-and are checked immediately upon startup (early exit/validation):
-
-  --debug, --dbg, --debug-mode [BOOL] : Enable/Disable debug mode.
-
-For full configuration precedence (CLI > config file > env var), 
-see the documentation.
+  manuscript2slides.cli --config settings.toml --input-pptx path/to/your_slides.pptx
 ------------------------------------------------------------------
 """,
     )
@@ -348,7 +351,23 @@ see the documentation.
         # Validate args match config fields
         _validate_args_match_config(parser)
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    # If no args were passed in, or the only arg passed in was `--cli`, then act as if --help was passed and show help.
+    # len(sys.argv) == 1 will be true if only the script name was passed (`python -m manuscript2slides.cli` in dev, or `manuscript2slides-cli` via pip install)
+    # len(sys.argv) == 2 and args.cli_mode will be true/exist if the script name and only that flag was passed in.
+    if len(sys.argv) == 1 or (len(sys.argv) == 2 and args.cli_mode):
+        # We use stderr so the message is visible even if stdout is piped to a file
+        print(
+            "Error: No meaningful arguments provided. Showing help.\n", file=sys.stderr
+        )
+        log.warning(
+            "No meaningful args passed with script name. Showing help. (Try passing `--demo-round-trip` or `--demo-docx2pptx` to see the pipeline in a dry run.)"
+        )
+        parser.print_help(sys.stderr)
+        sys.exit(2)  # Standard argparse exit code for usage errors
+
+    return args
 
 
 # endregion

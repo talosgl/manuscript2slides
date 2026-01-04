@@ -17,13 +17,18 @@ def main() -> None:
         python -m manuscript2slides
         python -m manuscript2slides.gui (skips __main__.py)
 
-        # Launch CLI
+        # Launch CLI (First two will show --help output if no other args are passed)
         python -m manuscript2slides --cli
         python -m manuscript2slides.cli (skips __main__.py)
 
+        python -m manuscript2slides --cli --demo-docx2pptx
+        python -m manuscript2slides.cli --demo-round-trip (skips __main__.py)
+
+
+
     After pip install, use the following (and see pyproject.toml):
         manuscript2slides        # Launch GUI (skips __main__.py)
-        manuscript2slides-cli    # Launch CLI (skips __main__.py)
+        manuscript2slides-cli --help   # Launch CLI (skips __main__.py)
     """
 
     # Set up logging and user folder scaffold.
