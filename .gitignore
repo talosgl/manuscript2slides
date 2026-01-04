@@ -20,6 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 .ruff_cache/
+.mypy_cache/
 
 # Virtual environments
 venv/
@@ -35,6 +36,7 @@ ENV/
 *.swp
 *.swo
 *~ 
+.claude/
 
 # Testing
 .pytest_cache/
@@ -42,26 +44,12 @@ ENV/
 htmlcov/
 .logs/
 pytest_debug.log
+output/
+tests/data/xml_extracts
+tests/data/json_extracts
+~$*.docx
+~$*.pptx
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Project specific
-# Output
-output/
-
-# temp office files
-~$*.docx
-~$*.pptx
-
-# Jo stuff
-homework.md
-export_code.py
-print_outline.py
-exports/
-tests/data/xml_extracts
-tests/data/json_extracts
-*.bak
-settings.local.json
-lessons/
