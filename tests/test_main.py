@@ -20,7 +20,7 @@ def test_main_launches_gui(monkeypatch: pytest.MonkeyPatch) -> None:
         patch(
             "manuscript2slides.__main__.startup.initialize_application"
         ) as mock_startup,
-        patch("manuscript2slides.gui.run") as mock_gui,
+        patch("manuscript2slides.__main__.run_gui") as mock_gui,
     ):
         # Inside this block, run_gui is replaced with a MagicMock
         # You can check if it was called, how many times, with what args, etc.
@@ -47,7 +47,7 @@ def test_main_logs_and_reraises_exceptions(monkeypatch: pytest.MonkeyPatch) -> N
         patch(
             "manuscript2slides.__main__.startup.initialize_application"
         ) as mock_startup,
-        patch("manuscript2slides.gui.run") as mock_gui,
+        patch("manuscript2slides.__main__.run_gui") as mock_gui,
     ):
         mock_logger = MagicMock()
         mock_startup.return_value = mock_logger
