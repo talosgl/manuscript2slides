@@ -33,7 +33,7 @@ manuscript2slides-cli --demo-docx2pptx
 manuscript2slides-cli --input-docx my-manuscript.docx
 
 # Convert PowerPoint to Word
-manuscript2slides-cli --input-pptx presentation.pptx --direction pptx2docx
+manuscript2slides-cli --input-pptx presentation.pptx
 
 # Use a configuration file
 manuscript2slides-cli --config my-settings.toml
@@ -51,7 +51,6 @@ Save your preferences to avoid re-entering settings:
 # my-config.toml
 input_docx = "input/my-manuscript.docx"
 chunk_type = "paragraph"
-direction = "docx2pptx"
 experimental_formatting_on = true
 display_comments = true
 display_footnotes = true

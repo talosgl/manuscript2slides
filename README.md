@@ -54,7 +54,7 @@ Then:
 manuscript2slides-cli --input-docx my-manuscript.docx
 
 # Reverse conversion
-manuscript2slides-cli --input-pptx presentation.pptx --direction pptx2docx
+manuscript2slides-cli --input-pptx presentation.pptx
 
 # See a demo dry run with sample files
 manuscript2slides-cli --demo-round-trip
