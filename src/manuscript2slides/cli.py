@@ -7,6 +7,7 @@ import sys
 from dataclasses import fields
 from pathlib import Path
 
+from manuscript2slides import __version__
 from manuscript2slides.internals.define_config import (
     ChunkType,
     PipelineDirection,
@@ -72,6 +73,7 @@ Examples:
 
   # Use the CLI:
   manuscript2slides-cli --help
+  manuscript2slides-cli --version
 
   # See a demo run with sample files
   manuscript2slides-cli --demo-docx2pptx
@@ -86,8 +88,19 @@ Examples:
 
   # Override config file settings
   manuscript2slides-cli --config settings.toml --input-pptx path/to/your_slides.pptx
+
+Environment Variables:
+  MANUSCRIPT2SLIDES_DEBUG=true     Enable debug mode (extra validation/logging)
+  MANUSCRIPT2SLIDES_USER_DIR=path  Override default user directory
 ------------------------------------------------------------------
 """,
+    )
+
+    # Add version flag
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
 
     # Add all our arguments to the argparse object we just made
@@ -355,9 +368,7 @@ Examples:
     # len(sys.argv) == 1 will be true if only the script name was passed (`python -m manuscript2slides.cli` in dev, or `manuscript2slides-cli` via pip install)
     if len(sys.argv) == 1:
         # We use stderr so the message is visible even if stdout is piped to a file
-        print(
-            "Error: No arguments provided. Showing help.\n", file=sys.stderr
-        )
+        print("Error: No arguments provided. Showing help.\n", file=sys.stderr)
         log.warning(
             "No args passed to CLI. Showing help. (Try passing `--demo-round-trip` or `--demo-docx2pptx` to see the pipeline in a dry run.)"
         )
@@ -501,6 +512,7 @@ def _validate_args_match_config(parser: argparse.ArgumentParser) -> None:
     arg_names = set()
     excluded_args = {
         "help",
+        "version",
         "config",
         "demo_run",
         "demo_round_trip",

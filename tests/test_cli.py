@@ -269,4 +269,31 @@ def test_validate_args_match_config_raises_exception_when_debug_mode_true_and_ba
         _validate_args_match_config(fake_parser)
 
 
+def test_real_parser_passes_validation_in_debug_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify that the real CLI parser configuration passes validation in debug mode.
+
+    This test ensures that all CLI arguments are properly configured and either:
+    1. Have corresponding UserConfig fields, or
+    2. Are listed in the excluded_args set (like --help, --version, --config, etc.)
+
+    If this test fails, it means you either:
+    - Added a CLI arg without adding it to UserConfig
+    - Added a CLI arg without excluding it in _validate_args_match_config
+    """
+    # Arrange: enable debug mode so validation actually runs
+    monkeypatch.setenv("MANUSCRIPT2SLIDES_DEBUG", "true")
+
+    # Set up argv with a valid demo flag so parse_args() doesn't error out
+    monkeypatch.setattr(sys, "argv", ["manuscript2slides.cli", "--demo-docx2pptx"])
+
+    # Action: parse_args() internally calls _validate_args_match_config()
+    # This should NOT raise an exception if everything is configured correctly
+    args = parse_args()
+
+    # Assert: if we got here without an exception, validation passed
+    assert args is not None
+
+
 # endregion
