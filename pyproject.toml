@@ -1,6 +1,6 @@
 [project]
 name = "manuscript2slides"
-version = "0.1.1"
+version = "0.1.3"
 requires-python = ">=3.10"
 description = "Convert Word documents to PowerPoint slides and back"
 readme = "README.md"
@@ -46,6 +46,7 @@ dev = [
 ]
 
 [project.urls]
+Homepage = "https://github.com/talosgl/manuscript2slides"
 Repository = "https://github.com/talosgl/manuscript2slides"
 Issues = "https://github.com/talosgl/manuscript2slides/issues"
 Documentation = "https://github.com/talosgl/manuscript2slides/tree/main/docs"
