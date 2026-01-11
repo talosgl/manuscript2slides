@@ -21,6 +21,7 @@ wheels/
 *.egg
 .ruff_cache/
 .mypy_cache/
+deployment/
 
 # Virtual environments
 venv/
