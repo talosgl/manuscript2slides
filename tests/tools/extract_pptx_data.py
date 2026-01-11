@@ -21,7 +21,7 @@ from extraction_utils import (  # type: ignore[import-not-found]
 from pptx.presentation import Presentation
 from pptx.slide import Slides
 
-from manuscript2slides import io
+from manuscript2slides import file_io
 from manuscript2slides.annotations.restore_from_slides import split_speaker_notes
 
 # ============================================================================
@@ -51,7 +51,7 @@ def main() -> None:
 
     # Load the pptx
     print(f"Loading {test_pptx_path}...")
-    prs = io.load_and_validate_pptx(test_pptx_path)
+    prs = file_io.load_and_validate_pptx(test_pptx_path)
     slides = cast(Slides, prs.slides)
 
     print(f"\nFound {len(slides)} slides")

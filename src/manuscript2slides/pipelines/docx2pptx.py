@@ -4,7 +4,7 @@
 import logging
 from pathlib import Path
 
-from manuscript2slides import io
+from manuscript2slides import file_io
 from manuscript2slides.annotations.extract import process_chunk_annotations
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.internals.paths import user_log_dir_path, user_output_dir
@@ -34,7 +34,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> Path:
         )
 
     # Load the docx file at that path.
-    user_docx = io.load_and_validate_docx(user_docx_path)
+    user_docx = file_io.load_and_validate_docx(user_docx_path)
 
     # Chunk the docx by ___
     chunks = create_docx_chunks(user_docx, cfg.chunk_type)
@@ -51,7 +51,7 @@ def run_docx2pptx_pipeline(cfg: UserConfig) -> Path:
     slides_from_chunks(output_prs, chunks, cfg)
 
     # Save the presentation to an actual pptx on disk
-    saved_output_path = io.save_output(output_prs, cfg)
+    saved_output_path = file_io.save_output(output_prs, cfg)
 
     log.info(f"docx2pptx pipeline complete [pipeline:{pipeline_id}]")
     log.info(f"  Original: {user_docx_path}")

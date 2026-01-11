@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pptx import presentation
 
-from manuscript2slides import io
+from manuscript2slides import file_io
 from manuscript2slides.internals.define_config import UserConfig
 from manuscript2slides.internals.paths import user_log_dir_path, user_output_dir
 from manuscript2slides.internals.run_context import get_pipeline_run_id
@@ -34,7 +34,7 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> Path:
             "If you are trying to test something, use UserConfig.with_defaults() or UserConfig.for_demo() to create a test config."
         )
 
-    user_prs: presentation.Presentation = io.load_and_validate_pptx(user_pptx_path)
+    user_prs: presentation.Presentation = file_io.load_and_validate_pptx(user_pptx_path)
 
     # Create an empty docx
     new_doc = create_empty_document(cfg)
@@ -43,7 +43,7 @@ def run_pptx2docx_pipeline(cfg: UserConfig) -> Path:
 
     log.debug(f"Attempting to save new docx file. [pipeline:{pipeline_id}]")
 
-    saved_output_path = io.save_output(new_doc, cfg)
+    saved_output_path = file_io.save_output(new_doc, cfg)
 
     log.info(f"pptx2docx pipeline complete [pipeline:{pipeline_id}]")
     log.info(f"  Original: {user_pptx_path}")

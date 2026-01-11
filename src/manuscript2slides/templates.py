@@ -12,7 +12,7 @@ from docx import document
 from docx.text.paragraph import Paragraph as Paragraph_docx
 from pptx import presentation
 
-from manuscript2slides import io
+from manuscript2slides import file_io
 from manuscript2slides.internals import constants
 from manuscript2slides.internals.define_config import UserConfig
 
@@ -25,7 +25,7 @@ def create_empty_slide_deck(cfg: UserConfig) -> presentation.Presentation:
     # Try to load the pptx
     try:
         template_path = cfg.get_template_pptx_path()
-        validated_template = io.validate_pptx_path(Path(template_path))
+        validated_template = file_io.validate_pptx_path(Path(template_path))
         prs: presentation.Presentation = pptx.Presentation(str(validated_template))  # pyright: ignore[reportPrivateImportUsage]
     except Exception as e:
         log.error(f"Could not load template file at path {e}")
@@ -86,7 +86,7 @@ def create_empty_document(cfg: UserConfig) -> document.Document:
     Raises:
         ValueError: If template is corrupted or invalid.
     """
-    from manuscript2slides.io import validate_docx_path  # Avoid circular import
+    from manuscript2slides.file_io import validate_docx_path  # Avoid circular import
 
     try:
         template_path = cfg.get_template_docx_path()

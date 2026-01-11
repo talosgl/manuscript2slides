@@ -17,7 +17,7 @@ from extraction_utils import (  # type: ignore[import-not-found]
     safe_pprint,
 )
 
-from manuscript2slides import io
+from manuscript2slides import file_io
 from manuscript2slides.internals.define_config import ChunkType
 from manuscript2slides.models import Chunk_docx
 from manuscript2slides.processing.chunking import create_docx_chunks
@@ -50,7 +50,7 @@ def main() -> None:
 
     # Load the docx
     print(f"Loading {test_docx_path}...")
-    doc = io.load_and_validate_docx(test_docx_path)
+    doc = file_io.load_and_validate_docx(test_docx_path)
 
     print(f"\nFound {len(doc.paragraphs)} paragraphs")
     print("\n=== Extracting fixture data ===")

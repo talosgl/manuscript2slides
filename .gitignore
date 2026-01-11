@@ -22,6 +22,8 @@ wheels/
 .ruff_cache/
 .mypy_cache/
 deployment/
+deploy/
+deploy6/
 
 # Virtual environments
 venv/
