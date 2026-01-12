@@ -46,7 +46,7 @@ jobs:
           QT_QPA_PLATFORM: xcb # Force Qt to use X11/Xvfb
           QT_DEBUG_PLUGINS: 1 # This will show EXACTLY why it crashes if it fails again
         run: |
-          xvfb-run --auto-servernum pytest bash -c "sleep 2 && pytest"
+          xvfb-run --auto-servernum bash -c "sleep 2 && pytest"
 
   build-windows:
     needs: test # Only build if tests pass
