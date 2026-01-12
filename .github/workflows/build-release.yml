@@ -22,7 +22,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             libegl1 \
+            libegl1-mesa-dev \
             libgl1 \
+            libdbus-1-3 \
             libxcb-cursor0 \
             libxcb-icccm4 \
             libxcb-image0 \
@@ -44,7 +46,7 @@ jobs:
           QT_QPA_PLATFORM: xcb # Force Qt to use X11/Xvfb
           QT_DEBUG_PLUGINS: 1 # This will show EXACTLY why it crashes if it fails again
         run: |
-          xvfb-run --auto-servernum pytest
+          xvfb-run --auto-servernum pytest bash -c "sleep 2 && pytest"
 
   build-windows:
     needs: test # Only build if tests pass
