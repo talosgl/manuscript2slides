@@ -91,14 +91,10 @@ jobs:
             Download `manuscript2slides-windows.zip` below.
 
             ### Installation
-            1. Download and extract the ZIP file
+            1. Download and extract the ZIP file (recommend [7-Zip](https://www.7-zip.org/))
             2. Run `manuscript2slides.exe` from the extracted folder
-            3. Windows may show a security warning - click "More info" → "Run anyway"
+            3. Windows may show a security warning - click "More info" > "Run anyway"
             4. No Python installation required
-
-            ### Why a ZIP file instead of single EXE?
-
-            We switched from single-file to folder distribution to reduce false positives from Windows Defender and other antivirus software. This is a known issue with Python executables ([more info](https://github.com/Nuitka/Nuitka/issues/2495)).
 
             ### Verification
             **SHA256 Checksum:** `${{ steps.checksum.outputs.sha256 }}`
@@ -109,9 +105,9 @@ jobs:
             ```
 
             ### Notes
-            - This is an unsigned binary, so Windows SmartScreen may still warn you
-            - The ZIP contains ~100MB of files including the full Python runtime
+            - Unsigned binary - Windows SmartScreen may warn you
+            - ~100MB including full Python runtime
+            - Keep all files in the extracted folder together
             - Tested on Windows 11
-            - Keep all files in the extracted folder together - don't move just the .exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
