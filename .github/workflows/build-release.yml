@@ -6,7 +6,25 @@ on:
       - "v*.*.*" # Triggers on version tags like v0.1.5
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run tests
+        run: pytest
+
   build-windows:
+    needs: test  # Only build if tests pass
     runs-on: windows-latest
 
     steps:
@@ -26,6 +44,13 @@ jobs:
       - name: Build Windows executable
         run: python build.py
 
+      - name: Compute SHA256 checksum
+        id: checksum
+        run: |
+          $hash = (Get-FileHash -Algorithm SHA256 deploy\manuscript2slides.exe).Hash
+          echo "sha256=$hash" >> $env:GITHUB_OUTPUT
+          echo "SHA256: $hash"
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -39,6 +64,14 @@ jobs:
             1. Download the `.exe` file
             2. Double-click to run (Windows will show a security warning - click "More info" → "Run anyway")
             3. No Python installation required
+
+            ### Verification
+            **SHA256 Checksum:** `${{ steps.checksum.outputs.sha256 }}`
+
+            To verify the download:
+            ```powershell
+            Get-FileHash -Algorithm SHA256 manuscript2slides.exe
+            ```
 
             ### Notes
             - This is an unsigned binary, so Windows SmartScreen will warn you

@@ -1,6 +1,9 @@
 
 ## Development
 
+This is a guide for folks who want to fork and clone the source code from the repository on GitHub and inspect, modify, and/or run it locally on their machine.
+
+
 ### Install from Source
 
 ```bash

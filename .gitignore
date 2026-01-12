@@ -25,6 +25,11 @@ deployment/
 deploy/
 deploy6/
 
+# Nuitka build artifacts
+*.build/
+*.dist/
+*.onefile-build/
+
 # Virtual environments
 venv/
 env/
