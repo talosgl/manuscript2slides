@@ -13,7 +13,11 @@ pip install Nuitka==2.7.11
 python build.py
 ```
 
-**Output**: `deploy/manuscript2slides.exe` (~100MB)
+**Output**: `deploy/gui.dist/` folder containing `manuscript2slides.exe` and dependencies (~100MB total)
+
+**For distribution**: Rename `gui.dist` to `manuscript2slides` before zipping for users
+
+**Note**: We use standalone mode (folder distribution) instead of single-file to reduce Windows Defender false positives.
 
 **Requirements**: Python 3.10-3.12, Windows 10+
 

@@ -4,7 +4,9 @@ This guide is for folks who want to build new standalone executables (OS-specifi
 
 ## Windows Binary
 
-Creates a standalone `.exe` file for Windows that includes Python runtime and all dependencies. (My understanding is that Nuitka is a does this by compiling Python to C, and then compiling the C into native machine code.)
+Creates a folder containing `manuscript2slides.exe` and all dependencies (Python runtime, Qt libraries, etc.). Nuitka compiles Python to C, then compiles the C into native machine code.
+
+**Note**: We use `--standalone` mode (folder distribution) instead of `--onefile` (single .exe) because it triggers significantly fewer false positives from Windows Defender and other antivirus software. See [Nuitka issue #2495](https://github.com/Nuitka/Nuitka/issues/2495) for details.
 
 ### Requirements
 
@@ -38,9 +40,27 @@ python build.py
 
 ### Output
 
-- **Location**: `deploy/manuscript2slides.exe`
-- **Size**: ~80-120 MB (includes Python runtime, Qt libraries, and all dependencies)
-- **Portable**: Yes - can be copied to other Windows machines without Python installed
+- **Location**: `deploy/gui.dist/` folder
+- **Main executable**: `deploy/gui.dist/manuscript2slides.exe`
+- **Size**: ~80-120 MB total (includes Python runtime, Qt libraries, and all dependencies)
+- **Portable**: Yes - the entire folder can be copied to other Windows machines without Python installed
+
+### Distribution
+
+To prepare for distribution:
+
+1. Rename the folder for clarity:
+   ```powershell
+   # In deploy/ directory
+   Rename-Item gui.dist manuscript2slides
+   ```
+
+2. ZIP the folder:
+   ```powershell
+   Compress-Archive -Path manuscript2slides -DestinationPath manuscript2slides-windows.zip
+   ```
+
+The GitHub Actions workflow does this automatically on release tags.
 
 ### Build Script
 
@@ -54,7 +74,7 @@ This is the recommended way to build. For reference, here's what it does:
 
 ```bash
 python -m nuitka \
-  --onefile \
+  --standalone \
   --enable-plugin=pyside6 \
   --include-package-data=pptx \
   --include-package-data=docx \
@@ -63,7 +83,6 @@ python -m nuitka \
   --assume-yes-for-downloads \
   --windows-console-mode=disable \
   --output-dir=deploy \
-  --output-filename=manuscript2slides.exe \
   src\manuscript2slides\gui.py
 ```
 
@@ -71,12 +90,12 @@ python -m nuitka \
 
 After building, test the executable:
 
-1. **Launch test**: Double-click `deploy\manuscript2slides.exe` - GUI should open without console window
+1. **Launch test**: Double-click `deploy\gui.dist\manuscript2slides.exe` - GUI should open without console window
 2. **Smoke test**: Run a full conversion workflow:
    - File > Open > Select a .docx file
    - Click "Convert to Slides"
    - Verify output .pptx is created successfully
-3. **Portability test**: Copy `.exe` to a different machine (or clean VM) without Python and verify it works
+3. **Portability test**: Copy the entire `gui.dist` folder to a different machine (or clean VM) without Python and verify it works
 
 ### Troubleshooting
 

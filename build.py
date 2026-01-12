@@ -12,10 +12,10 @@ def build() -> int:
 
     # Nuitka build command
     cmd = [
-        "python",
+        sys.executable,  # Use the current Python interpreter
         "-m",
         "nuitka",
-        "--onefile",
+        "--standalone",  # Changed from --onefile to reduce antivirus false positives
         "--enable-plugin=pyside6",
         "--include-package-data=pptx",
         "--include-package-data=docx",
@@ -24,7 +24,7 @@ def build() -> int:
         "--assume-yes-for-downloads",
         "--windows-console-mode=disable",
         "--output-dir=deploy",
-        "--output-filename=manuscript2slides.exe",
+        "--output-filename=manuscript2slides",
         str(Path("src") / "manuscript2slides" / "gui.py"),
     ]
 
@@ -33,7 +33,8 @@ def build() -> int:
 
     if result.returncode == 0:
         print("\nPASS Build successful!")
-        print(f"Output: {Path('deploy') / 'manuscript2slides.exe'}")
+        print(f"Output: {Path('deploy') / 'gui.dist' / 'manuscript2slides.exe'}")
+        print("\nTo distribute: ZIP the entire 'deploy/gui.dist' folder")
     else:
         print("\nFAIL Build failed!")
         print("Check the output above for errors.")
