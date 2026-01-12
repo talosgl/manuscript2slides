@@ -96,16 +96,18 @@ jobs:
             3. Windows may show a security warning - click "More info" > "Run anyway"
             4. No Python installation required
 
-            ### Verification
+            ### (Optional) Verification
             **SHA256 Checksum:** `${{ steps.checksum.outputs.sha256 }}`
 
-            To verify the download:
+            To verify the download ([What are checksums?](https://www.howtogeek.com/363735/what-is-a-checksum-and-why-should-you-care/)):
             ```powershell
             Get-FileHash -Algorithm SHA256 manuscript2slides-windows.zip
             ```
 
+            Compare the output to the checksum above. They should match.
+
             ### Notes
-            - Unsigned binary - Windows SmartScreen may warn you
+            - Unsigned binary - Windows SmartScreen may warn you the app and its publisher are unknown. This is common with open source apps. Click "More Info" to get the option to "Run anyway."
             - ~100MB including full Python runtime
             - Keep all files in the extracted folder together
             - Tested on Windows 11
