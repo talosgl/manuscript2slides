@@ -43,10 +43,15 @@ jobs:
 
       - name: Run tests
         env:
-          QT_QPA_PLATFORM: xcb # Force Qt to use X11/Xvfb
+          # Forces Qt to use its built-in headless engine instead of X11/Xvfb
+          QT_QPA_PLATFORM: offscreen
+          # Prevents OpenGL-related aborts by using software rendering
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          # Mandatory for 2026: prevents crashes in newer Qt 6.5+ graphics stacks
+          QT_QUICK_BACKEND: software
           QT_DEBUG_PLUGINS: 1 # This will show EXACTLY why it crashes if it fails again
         run: |
-          xvfb-run --auto-servernum bash -c "sleep 2 && pytest"
+          pytest
 
   build-windows:
     needs: test # Only build if tests pass
