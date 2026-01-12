@@ -20,17 +20,31 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1 libgl1 libxcb-icccm4 libxcb-image0 \
-          libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 \
-          libxcb-xfixes0 x11-utils libdbus-1-3 libxcb-cursor0
+          sudo apt-get install -y \
+            libegl1 \
+            libgl1 \
+            libxcb-cursor0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-xinerama0 \
+            libxcb-xfixes0 \
+            x11-utils \
+            xvfb
 
       - name: Install dependencies
         run: |
           pip install -e ".[dev]"
-          pip install pytest-xvfb  # Automatically manages Xvfb for pytest
+          pip install pytest-xvfb  # Automatically manages Xvfb for pytest; update: pytest-xvfb is optional if using xvfb-run, but won't hurt.
 
       - name: Run tests
-        run: pytest
+        env:
+          QT_QPA_PLATFORM: xcb # Force Qt to use X11/Xvfb
+          QT_DEBUG_PLUGINS: 1 # This will show EXACTLY why it crashes if it fails again
+        run: |
+          xvfb-run --auto-servernum pytest
 
   build-windows:
     needs: test # Only build if tests pass
