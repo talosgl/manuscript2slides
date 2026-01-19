@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QSizePolicy,
+    QSpacerItem,
     QSplitter,
     QStyle,
     QTabWidget,
@@ -634,6 +635,14 @@ class BaseConversionTabPresenter(
         msg.setStandardButtons(
             QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
         )  # Remember: Qt uses the pipe | for flag composition, so we're telling it to add both of these items with this syntax
+
+        # Force minimum width to prevent text cutoff on Ubuntu/GNOME
+        # QMessageBox doesn't respect setMinimumWidth, so we add a horizontal spacer to the layout
+        # Check for required methods defensively in case Qt changes its internal implementation
+        horizontalSpacer = QSpacerItem(450, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        layout = msg.layout()
+        if layout and hasattr(layout, 'rowCount') and hasattr(layout, 'columnCount') and hasattr(layout, 'addItem'):
+            layout.addItem(horizontalSpacer, layout.rowCount(), 0, 1, layout.columnCount())  # type: ignore[attr-defined, call-arg]
 
         return (
             msg.exec() == QMessageBox.StandardButton.Ok
