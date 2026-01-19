@@ -49,11 +49,16 @@ from manuscript2slides.utils import get_debug_mode, open_folder_in_os_explorer
 
 # endregion
 
+
 log = logging.getLogger("manuscript2slides")
 
 
 # region Module-level constants and helpers
 NO_SELECTION = "No Selection"
+
+# Use Qt's cross-platform dialog instead of OS-native dialogs.
+# (macOS native dialogs can freeze/become unresponsive)
+FILE_DIALOG_OPTIONS = QFileDialog.Option.DontUseNativeDialog
 
 # QSettings instance
 APP_SETTINGS = QSettings("manuscript2slides", "manuscript2slides")
@@ -1006,6 +1011,7 @@ class ConfigurableConversionTabPresenter(
             caption="Save Config As",
             dir=initial_path,  # Sets BOTH starting directory to "look" in, and the initial filename
             filter="TOML Config (*.toml);;All Files (*)",
+            options=FILE_DIALOG_OPTIONS,
         )
 
         if path:
@@ -1039,7 +1045,11 @@ class ConfigurableConversionTabPresenter(
         # Load the last-used directory from QSettings, if it's there
         last_dir = get_last_browse_directory()
         path, _ = QFileDialog.getOpenFileName(
-            self.view, "Load Config", last_dir, "TOML Config (*.toml)"
+            self.view,
+            "Load Config",
+            last_dir,
+            "TOML Config (*.toml)",
+            options=FILE_DIALOG_OPTIONS,
         )
         if path:
             # Save the selected path to QSettings so we can load it next session.
@@ -1269,7 +1279,11 @@ class DemoTabPresenter(BaseConversionTabPresenter):
         # Load the last-used directory from QSettings, if it's there
         last_dir = get_last_browse_directory()
         path, _ = QFileDialog.getOpenFileName(
-            self.view, "Load Config", last_dir, "TOML Config (*.toml)"
+            self.view,
+            "Load Config",
+            last_dir,
+            "TOML Config (*.toml)",
+            options=FILE_DIALOG_OPTIONS,
         )
         if path:
             # Save the selected path to QSettings so we can load it next session.
@@ -1586,8 +1600,8 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         )
         explain_chunks_text = QPlainTextEdit(parent=explain_chunks.content_frame)
         explain_chunks_text.setPlainText(
-            "PARAGRAPH (default): One slide per paragraph break.\n"
-            "PAGE: One slide for every page break.\n"
+            "Paragraph (default): One slide per paragraph break.\n"
+            "Page: One slide for every page break.\n"
             "Heading (Flat): New slides for every heading, regardless of parent-child hierarchy.\n"
             "Heading (Nested): New slides only on finding a 'parent/grandparent' heading to the previously found. \n"
             "All options create a new slide if there is a page break in the middle of a section.",
@@ -2110,12 +2124,19 @@ class PathSelector(QWidget):
             # File dialog - could fail
             if self.is_dir:
                 path = QFileDialog.getExistingDirectory(
-                    parent=self, caption="Select Folder", dir=last_dir
+                    parent=self,
+                    caption="Select Folder",
+                    dir=last_dir,
+                    options=FILE_DIALOG_OPTIONS,
                 )
             else:
                 filter_str = self._build_qtfilter_str()
                 path, _ = QFileDialog.getOpenFileName(
-                    parent=self, caption="Select File", filter=filter_str, dir=last_dir
+                    parent=self,
+                    caption="Select File",
+                    filter=filter_str,
+                    dir=last_dir,
+                    options=FILE_DIALOG_OPTIONS,
                 )
 
             if path:  # if the user picked something and did not cancel...

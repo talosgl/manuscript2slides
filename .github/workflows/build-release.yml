@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*.*.*" # Triggers on version tags like v0.1.5
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for testing (e.g., 0.1.5-test)'
+        required: true
+        type: string
 
 jobs:
   test:
@@ -83,6 +89,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.version && format('v{0}', inputs.version) || github.ref_name }}
+          draft: ${{ github.event_name == 'workflow_dispatch' }}
           files: deploy/manuscript2slides-windows.zip
           generate_release_notes: true
           body: |
