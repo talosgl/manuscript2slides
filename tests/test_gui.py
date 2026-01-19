@@ -188,7 +188,7 @@ class TestButtonInteractions:
             caption: str,
             directory: str,
             filter: str,
-            options: object = None,
+            options: object,
         ) -> tuple[str, str]:
             # Return empty string (user cancelled)
             return ("", "")

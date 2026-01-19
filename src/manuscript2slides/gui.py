@@ -49,16 +49,16 @@ from manuscript2slides.utils import get_debug_mode, open_folder_in_os_explorer
 
 # endregion
 
-# macOS native file dialogs can freeze/become unresponsive. Use Qt's dialog instead.
-_FILE_DIALOG_OPTIONS = (
-    QFileDialog.Option.DontUseNativeDialog if sys.platform == "darwin" else QFileDialog.Option(0)
-)
 
 log = logging.getLogger("manuscript2slides")
 
 
 # region Module-level constants and helpers
 NO_SELECTION = "No Selection"
+
+# Use Qt's cross-platform dialog instead of OS-native dialogs.
+# (macOS native dialogs can freeze/become unresponsive)
+FILE_DIALOG_OPTIONS = QFileDialog.Option.DontUseNativeDialog
 
 # QSettings instance
 APP_SETTINGS = QSettings("manuscript2slides", "manuscript2slides")
@@ -1011,7 +1011,7 @@ class ConfigurableConversionTabPresenter(
             caption="Save Config As",
             dir=initial_path,  # Sets BOTH starting directory to "look" in, and the initial filename
             filter="TOML Config (*.toml);;All Files (*)",
-            options=_FILE_DIALOG_OPTIONS,
+            options=FILE_DIALOG_OPTIONS,
         )
 
         if path:
@@ -1049,7 +1049,7 @@ class ConfigurableConversionTabPresenter(
             "Load Config",
             last_dir,
             "TOML Config (*.toml)",
-            options=_FILE_DIALOG_OPTIONS,
+            options=FILE_DIALOG_OPTIONS,
         )
         if path:
             # Save the selected path to QSettings so we can load it next session.
@@ -1283,7 +1283,7 @@ class DemoTabPresenter(BaseConversionTabPresenter):
             "Load Config",
             last_dir,
             "TOML Config (*.toml)",
-            options=_FILE_DIALOG_OPTIONS,
+            options=FILE_DIALOG_OPTIONS,
         )
         if path:
             # Save the selected path to QSettings so we can load it next session.
@@ -2127,7 +2127,7 @@ class PathSelector(QWidget):
                     parent=self,
                     caption="Select Folder",
                     dir=last_dir,
-                    options=_FILE_DIALOG_OPTIONS,
+                    options=FILE_DIALOG_OPTIONS,
                 )
             else:
                 filter_str = self._build_qtfilter_str()
@@ -2136,7 +2136,7 @@ class PathSelector(QWidget):
                     caption="Select File",
                     filter=filter_str,
                     dir=last_dir,
-                    options=_FILE_DIALOG_OPTIONS,
+                    options=FILE_DIALOG_OPTIONS,
                 )
 
             if path:  # if the user picked something and did not cancel...
