@@ -40,6 +40,8 @@ pip install manuscript2slides
 manuscript2slides
 ```
 
+<img src="docs/assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="manuscript2slides GUI" width="600">
+
 Then:
 1. Choose a tab:
    - **DOCX → PPTX:** Convert your manuscript into slides

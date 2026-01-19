@@ -1,5 +1,17 @@
 ## Troubleshooting
 
+### Windows SmartScreen Warning
+
+When launching the Windows binary for the first time, you may see a SmartScreen warning:
+
+<img src="assets/imgs/win_smart_screen_popup.png" alt="Windows SmartScreen popup" width="500">
+
+This is normal for unsigned applications. Click "More info":
+
+<img src="assets/imgs/win_smart_screen_more_info.png" alt="Windows SmartScreen more info" width="500">
+
+Then click "Run anyway" to launch the application.
+
 ### GUI won't launch
 
 - Check log files in `~/Documents/manuscript2slides/logs/`
