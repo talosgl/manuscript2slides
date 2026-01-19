@@ -1600,8 +1600,8 @@ class Docx2PptxTabView(ConfigurableConversionTabView):
         )
         explain_chunks_text = QPlainTextEdit(parent=explain_chunks.content_frame)
         explain_chunks_text.setPlainText(
-            "PARAGRAPH (default): One slide per paragraph break.\n"
-            "PAGE: One slide for every page break.\n"
+            "Paragraph (default): One slide per paragraph break.\n"
+            "Page: One slide for every page break.\n"
             "Heading (Flat): New slides for every heading, regardless of parent-child hierarchy.\n"
             "Heading (Nested): New slides only on finding a 'parent/grandparent' heading to the previously found. \n"
             "All options create a new slide if there is a page break in the middle of a section.",
