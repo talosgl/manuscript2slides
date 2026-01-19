@@ -8,6 +8,7 @@ Launch the application and you'll see three tabs:
 **DOCX → PPTX Tab**
 
 <img src="assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="DOCX to PPTX tab - Windows" width="600">
+<img src="assets/imgs/docx2pptx_mac.png" alt="DOCX to PPTX tab - macOS" width="600">
 <img src="assets/imgs/docx2pptx_ubuntu_dark.png" alt="DOCX to PPTX tab - Ubuntu" width="600">
 
 1. Select your Word document
@@ -30,6 +31,7 @@ Launch the application and you'll see three tabs:
 **Demo Tab**
 
 <img src="assets/imgs/demo_tab_dark_mode_windows.png" alt="Demo tab - Windows" width="600">
+<img src="assets/imgs/demo_tab_mac.png" alt="Demo tab - macOS" width="600">
 <img src="assets/imgs/demo_ubuntu_dark.png" alt="Demo tab - Ubuntu" width="600">
 
 - Try sample conversions without selecting files
