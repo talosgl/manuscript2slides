@@ -184,7 +184,11 @@ class TestButtonInteractions:
 
         # Mock the file dialog to avoid blocking
         def mock_get_open_filename(
-            parent: object, caption: str, directory: str, filter: str
+            parent: object,
+            caption: str,
+            directory: str,
+            filter: str,
+            options: object = None,
         ) -> tuple[str, str]:
             # Return empty string (user cancelled)
             return ("", "")
