@@ -7,18 +7,30 @@ Launch the application and you'll see three tabs:
 
 **DOCX → PPTX Tab**
 
+<img src="assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="DOCX to PPTX tab - Windows" width="600">
+<img src="assets/imgs/docx2pptx_ubuntu_dark.png" alt="DOCX to PPTX tab - Ubuntu" width="600">
+
 1. Select your Word document
 2. Choose chunking method (paragraph, page, or heading-based)
 3. Configure options (formatting, annotations, metadata)
 4. Click "Convert!"
 
+<img src="assets/imgs/docx2pptx_tab_success_dark_mode_windows.png" alt="Conversion success - Windows" width="600">
+<img src="assets/imgs/docx2pptx_ubuntu_dark_success.png" alt="Conversion success - Ubuntu" width="600">
+
 **PPTX → DOCX Tab**
+
+<img src="assets/imgs/pptx2docx_tab_dark_mode_windows.png" alt="PPTX to DOCX tab - Windows" width="600">
+<img src="assets/imgs/pptx2docx_ubuntu_dark.png" alt="PPTX to DOCX tab - Ubuntu" width="600">
 
 1. Select your PowerPoint file
 2. Click "Convert!"
 3. Formatting and comments are restored if metadata is available
 
 **Demo Tab**
+
+<img src="assets/imgs/demo_tab_dark_mode_windows.png" alt="Demo tab - Windows" width="600">
+<img src="assets/imgs/demo_ubuntu_dark.png" alt="Demo tab - Ubuntu" width="600">
 
 - Try sample conversions without selecting files
 - Test round-trip conversion (DOCX → PPTX → DOCX)

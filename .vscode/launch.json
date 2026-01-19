@@ -40,6 +40,18 @@
                 "MANUSCRIPT2SLIDES_DEBUG": "true"
             }
         },
+        // launches main() from ./src/manuscript2slides/gui.py (lightweight, no debugging)
+        {
+            "name": "Run GUI (debug off)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "manuscript2slides.gui",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}",
+                "MANUSCRIPT2SLIDES_DEBUG": "false"
+            }
+        },
         // launches main() from ./src/manuscript2slides/cli.py
         {
             "name": "CLI round trip demo",
