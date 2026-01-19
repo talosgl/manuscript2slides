@@ -1,6 +1,24 @@
 # Building manuscript2slides
 
-Quick reference for building binaries and packages. See [docs/](docs/) for detailed documentation.
+Quick reference for building pip packages and platform-specific binaries. See [docs/](docs/) for detailed documentation.
+
+
+## PyPI Package
+
+```bash
+# Build
+python -m build
+
+# Upload to TestPyPI
+python -m twine upload --repository testpypi dist/*
+
+# Upload to PyPI
+python -m twine upload dist/*
+```
+
+See [docs/releasing.md](docs/releasing.md) for the full release process.
+
+---
 
 ## Windows Binary
 
@@ -38,20 +56,23 @@ git push origin v0.2.0
 
 GitHub Actions will build the Windows binary and create a release automatically.
 
-See [docs/releasing.md](docs/releasing.md) for details.
+### Test Binary Builds
 
-
-## PyPI Package
+To test the build process without creating a public release, use manual workflow dispatch:
 
 ```bash
-# Build
-python -m build
-
-# Upload to TestPyPI
-python -m twine upload --repository testpypi dist/*
-
-# Upload to PyPI
-python -m twine upload dist/*
+gh workflow run build-release.yml -f version=0.2.0-test
 ```
 
-See [docs/releasing.md](docs/releasing.md) for the full release process.
+This creates a draft release (only visible to logged-in contributors). To access it:
+
+1. Go to the repository's [Releases page](https://github.com/talosgl/manuscript2slides/releases)
+2. Draft releases appear at the top with a "Draft" label
+3. Click the release to download the attached `manuscript2slides-windows.zip`
+
+To publish or delete a draft:
+- **Publish**: Click "Edit" on the draft, then "Publish release" to make it visible to everyone
+- **Delete**: Click "Edit", scroll down, then "Delete this release"
+
+See [docs/releasing.md](docs/releasing.md) for details.
+
