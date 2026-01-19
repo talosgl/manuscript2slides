@@ -27,6 +27,20 @@ See [docs/building.md](docs/building.md) for detailed instructions and troublesh
 
 Coming soon. See [docs/building.md](docs/building.md)
 
+## Automated Releases
+
+Push a version tag to trigger automated builds:
+
+```bash
+git tag -a v0.2.0 -m "Release v0.2.0: Description"
+git push origin v0.2.0
+```
+
+GitHub Actions will build the Windows binary and create a release automatically.
+
+See [docs/releasing.md](docs/releasing.md) for details.
+
+
 ## PyPI Package
 
 ```bash
@@ -41,16 +55,3 @@ python -m twine upload dist/*
 ```
 
 See [docs/releasing.md](docs/releasing.md) for the full release process.
-
-## Automated Releases
-
-Push a version tag to trigger automated builds:
-
-```bash
-git tag -a v0.2.0 -m "Release v0.2.0: Description"
-git push origin v0.2.0
-```
-
-GitHub Actions will build the Windows binary and create a release automatically.
-
-See [docs/releasing.md](docs/releasing.md) for details.

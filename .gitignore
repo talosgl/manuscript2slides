@@ -45,6 +45,7 @@ ENV/
 *.swo
 *~ 
 .claude/
+.obsidian/
 
 # Testing
 .pytest_cache/
