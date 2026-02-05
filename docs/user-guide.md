@@ -38,7 +38,7 @@ Launch the application and you'll see three tabs:
   </tr>
 </table>
 
-### About DOCX → PPTX Chunking Strategies
+**About DOCX → PPTX Chunking Strategies**
 
 - **Paragraph** (default): One slide per paragraph
 - **Page**: One slide per page break
@@ -192,5 +192,6 @@ If you're having issues with the conversion process, [open an issue on GitHub](h
 - A description of what you expected vs. what happened
 
 This information helps diagnose problems quickly.
+
 
 (If we're buds IRL, you can just send me an email! But do try to attach these items if you can and it'll speed up the process.)
