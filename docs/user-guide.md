@@ -21,7 +21,7 @@ Launch the application and you'll see three tabs:
 </table>
 
 1. Select your Word document
-2. Choose chunking method (paragraph, page, or heading-based)
+2. Choose chunking method: paragraph, page, or heading-based - more info below
 3. Configure options (formatting, annotations, metadata)
 4. Click "Convert!"
 
@@ -37,6 +37,19 @@ Launch the application and you'll see three tabs:
     <td><img src="assets/imgs/docx2pptx_ubuntu_dark_success.png" alt="Ubuntu" width="300"></td>
   </tr>
 </table>
+
+### About DOCX → PPTX Chunking Strategies
+
+- **Paragraph** (default): One slide per paragraph
+- **Page**: One slide per page break
+- **Heading (Flat)**: New slide at every heading, regardless of level
+- **Heading (Nested)**: New slide only when reaching a "parent" heading level
+
+All strategies create a new slide if a page break occurs mid-section.
+
+<img src="assets/imgs/docx2pptx_tab_all_options_expanded_mac.png" alt="docx2pptx Tab with all options expanded on macOS" width="300">
+
+---
 
 **PPTX → DOCX Tab**
 
@@ -75,6 +88,8 @@ Launch the application and you'll see three tabs:
 - Try sample conversions without selecting files
 - Test round-trip conversion (DOCX → PPTX → DOCX)
 
+---
+
 ### CLI Mode
 
 ```bash
@@ -94,16 +109,6 @@ manuscript2slides-cli --config my-settings.toml
 manuscript2slides-cli --input-docx manuscript.docx --chunk-type heading_flat
 ```
 
-## Chunking Strategies
-
-- **Paragraph** (default): One slide per paragraph
-- **Page**: One slide per page break
-- **Heading (Flat)**: New slide at every heading, regardless of level
-- **Heading (Nested)**: New slide only when reaching a "parent" heading level
-
-All strategies create a new slide if a page break occurs mid-section.
-
-<img src="assets/imgs/docx2pptx_tab_all_options_expanded_mac.png" alt="docx2pptx Tab with all options expanded on macOS" width="300">
 
 ## User Files Location
 
