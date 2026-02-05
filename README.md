@@ -18,9 +18,19 @@ Turn your Microsoft Word manuscripts into presentation slides (and back again), 
 
 ### Installation
 
-**Note:** Standalone executables for Mac and Windows (no Python required) are planned for a future release.
+#### Option 1: Windows Binary (No Python Required)
 
-For now, you can install via pip (requires Python 3.10+ to already be installed):
+Download the latest Windows binary from [Releases](https://github.com/talosgl/manuscript2slides/releases):
+1. Download `manuscript2slides-windows.zip`
+2. Extract and run `manuscript2slides.exe`
+
+**New to downloading from GitHub?** See a [step-by-step guide](https://github.com/talosgl/jojos-tech-guides/blob/main/docs/software/downloading-from-github.md).
+
+**Note:** macOS binaries coming soon.
+
+#### Option 2: Install via pip (Cross-platform)
+
+Requires Python 3.10+ to already be installed:
 
 ```bash
 # Recommended: Create a virtual environment first

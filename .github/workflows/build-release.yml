@@ -96,7 +96,7 @@ jobs:
           body: |
             ## Windows Binary Release
 
-            Download `manuscript2slides-windows.zip` below.
+            Download `manuscript2slides-windows.zip` below. **New to downloading from GitHub? Here's a [step-by-step guide](https://github.com/talosgl/jojos-tech-guides/blob/main/docs/software/downloading-from-github.md).**
 
             ### Installation
             1. Download and extract the ZIP file (recommend [7-Zip](https://www.7-zip.org/))
