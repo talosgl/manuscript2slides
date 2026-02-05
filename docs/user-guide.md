@@ -48,7 +48,7 @@ Launch the application and you'll see three tabs:
   </tr>
   <tr>
     <td><img src="assets/imgs/pptx2docx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
-    <td><img src="assets/imgs/pptx2docx_tab_mac.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/pptx2docx_tab_mac.png" alt="macOS" width="300"></td>
     <td><img src="assets/imgs/pptx2docx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
   </tr>
 </table>
@@ -94,6 +94,37 @@ manuscript2slides-cli --config my-settings.toml
 manuscript2slides-cli --input-docx manuscript.docx --chunk-type heading_flat
 ```
 
+## Chunking Strategies
+
+- **Paragraph** (default): One slide per paragraph
+- **Page**: One slide per page break
+- **Heading (Flat)**: New slide at every heading, regardless of level
+- **Heading (Nested)**: New slide only when reaching a "parent" heading level
+
+All strategies create a new slide if a page break occurs mid-section.
+
+<img src="assets/imgs/docx2pptx_tab_all_options_expanded_mac.png" alt="docx2pptx Tab with all options expanded on macOS" width="300">
+
+## User Files Location
+
+On first run, manuscript2slides creates a folder structure:
+
+- **Windows**: `C:\Users\YourName\Documents\manuscript2slides\`
+- **macOS**: `/Users/YourName/Documents/manuscript2slides/`
+- **Linux**: `/home/yourname/Documents/manuscript2slides/`
+
+```
+manuscript2slides/
+├── input/          # Sample files and staging area
+├── output/         # Converted files (timestamped)
+├── templates/      # Customizable DOCX/PPTX templates
+├── logs/           # Log files for troubleshooting
+└── configs/        # Saved configuration files
+```
+
+<img src="assets/imgs/demo_tab_round_trip_output.png" alt="Screenshot of Windows Explorer showing output subdirectory" width="300">
+
+
 ## Save/Load Options
 ### Configuration Files
 
@@ -122,32 +153,6 @@ Sample configuration files are created automatically in `~/Documents/manuscript2
 ### Persistent Preferences in GUI
 In the GUI, we attempt to save/load selections across sessions automatically. You can clear saved selections from the Menu bar >  Preferences > Reset to Defaults, then relaunch the app.
 
-
-## Chunking Strategies
-
-- **Paragraph** (default): One slide per paragraph
-- **Page**: One slide per page break
-- **Heading (Flat)**: New slide at every heading, regardless of level
-- **Heading (Nested)**: New slide only when reaching a "parent" heading level
-
-All strategies create a new slide if a page break occurs mid-section.
-
-## User Files Location
-
-On first run, manuscript2slides creates a folder structure:
-
-- **Windows**: `C:\Users\YourName\Documents\manuscript2slides\`
-- **macOS**: `/Users/YourName/Documents/manuscript2slides/`
-- **Linux**: `/home/yourname/Documents/manuscript2slides/`
-
-```
-manuscript2slides/
-├── input/          # Sample files and staging area
-├── output/         # Converted files (timestamped)
-├── templates/      # Customizable DOCX/PPTX templates
-├── logs/           # Log files for troubleshooting
-└── configs/        # Saved configuration files
-```
 
 
 ## Requirements
