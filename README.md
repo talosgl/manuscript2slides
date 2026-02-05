@@ -50,7 +50,18 @@ pip install manuscript2slides
 manuscript2slides
 ```
 
-<img src="docs/assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="manuscript2slides GUI" width="600">
+<table>
+  <tr>
+    <td align="center">Windows</td>
+    <td align="center">macOS</td>
+    <td align="center">Ubuntu</td>
+  </tr>
+  <tr>
+    <td><img src="docs/assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="docs/assets/imgs/docx2pptx_mac.png" alt="macOS" width="300"></td>
+    <td><img src="docs/assets/imgs/docx2pptx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
+  </tr>
+</table>
 
 Then:
 1. Choose a tab:

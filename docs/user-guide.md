@@ -9,14 +9,14 @@ Launch the application and you'll see three tabs:
 
 <table>
   <tr>
-    <td><img src="assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
-    <td><img src="assets/imgs/docx2pptx_mac.png" alt="macOS" width="300"></td>
-    <td><img src="assets/imgs/docx2pptx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
-  </tr>
-  <tr>
     <td align="center">Windows</td>
     <td align="center">macOS</td>
     <td align="center">Ubuntu</td>
+  </tr>
+  <tr>
+    <td><img src="assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/docx2pptx_mac.png" alt="macOS" width="300"></td>
+    <td><img src="assets/imgs/docx2pptx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
   </tr>
 </table>
 
@@ -27,12 +27,14 @@ Launch the application and you'll see three tabs:
 
 <table>
   <tr>
-    <td><img src="assets/imgs/docx2pptx_tab_success_dark_mode_windows.png" alt="Windows" width="400"></td>
-    <td><img src="assets/imgs/docx2pptx_ubuntu_dark_success.png" alt="Ubuntu" width="400"></td>
+    <td align="center">Conversion success - Windows</td>
+    <td align="center">Conversion success - macOS</td>
+    <td align="center">Conversion success - Ubuntu</td>
   </tr>
   <tr>
-    <td align="center">Conversion success - Windows</td>
-    <td align="center">Conversion success - Ubuntu</td>
+    <td><img src="assets/imgs/docx2pptx_tab_success_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/docx2pptx_tab_success_mac.png" alt="macOS" width="300"></td>
+    <td><img src="assets/imgs/docx2pptx_ubuntu_dark_success.png" alt="Ubuntu" width="300"></td>
   </tr>
 </table>
 
@@ -40,12 +42,14 @@ Launch the application and you'll see three tabs:
 
 <table>
   <tr>
-    <td><img src="assets/imgs/pptx2docx_tab_dark_mode_windows.png" alt="Windows" width="400"></td>
-    <td><img src="assets/imgs/pptx2docx_ubuntu_dark.png" alt="Ubuntu" width="400"></td>
+    <td align="center">Windows</td>
+    <td align="center">macOS</td>
+    <td align="center">Ubuntu</td>
   </tr>
   <tr>
-    <td align="center">Windows</td>
-    <td align="center">Ubuntu</td>
+    <td><img src="assets/imgs/pptx2docx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/pptx2docx_tab_mac.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/pptx2docx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
   </tr>
 </table>
 
@@ -57,14 +61,14 @@ Launch the application and you'll see three tabs:
 
 <table>
   <tr>
-    <td><img src="assets/imgs/demo_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
-    <td><img src="assets/imgs/demo_tab_mac.png" alt="macOS" width="300"></td>
-    <td><img src="assets/imgs/demo_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
-  </tr>
-  <tr>
     <td align="center">Windows</td>
     <td align="center">macOS</td>
     <td align="center">Ubuntu</td>
+  </tr>
+  <tr>
+    <td><img src="assets/imgs/demo_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/demo_tab_mac.png" alt="macOS" width="300"></td>
+    <td><img src="assets/imgs/demo_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
   </tr>
 </table>
 
