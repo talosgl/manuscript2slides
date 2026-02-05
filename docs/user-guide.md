@@ -7,22 +7,47 @@ Launch the application and you'll see three tabs:
 
 **DOCX → PPTX Tab**
 
-<img src="assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="DOCX to PPTX tab - Windows" width="600">
-<img src="assets/imgs/docx2pptx_mac.png" alt="DOCX to PPTX tab - macOS" width="600">
-<img src="assets/imgs/docx2pptx_ubuntu_dark.png" alt="DOCX to PPTX tab - Ubuntu" width="600">
+<table>
+  <tr>
+    <td><img src="assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/docx2pptx_mac.png" alt="macOS" width="300"></td>
+    <td><img src="assets/imgs/docx2pptx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center">Windows</td>
+    <td align="center">macOS</td>
+    <td align="center">Ubuntu</td>
+  </tr>
+</table>
 
 1. Select your Word document
 2. Choose chunking method (paragraph, page, or heading-based)
 3. Configure options (formatting, annotations, metadata)
 4. Click "Convert!"
 
-<img src="assets/imgs/docx2pptx_tab_success_dark_mode_windows.png" alt="Conversion success - Windows" width="600">
-<img src="assets/imgs/docx2pptx_ubuntu_dark_success.png" alt="Conversion success - Ubuntu" width="600">
+<table>
+  <tr>
+    <td><img src="assets/imgs/docx2pptx_tab_success_dark_mode_windows.png" alt="Windows" width="400"></td>
+    <td><img src="assets/imgs/docx2pptx_ubuntu_dark_success.png" alt="Ubuntu" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center">Conversion success - Windows</td>
+    <td align="center">Conversion success - Ubuntu</td>
+  </tr>
+</table>
 
 **PPTX → DOCX Tab**
 
-<img src="assets/imgs/pptx2docx_tab_dark_mode_windows.png" alt="PPTX to DOCX tab - Windows" width="600">
-<img src="assets/imgs/pptx2docx_ubuntu_dark.png" alt="PPTX to DOCX tab - Ubuntu" width="600">
+<table>
+  <tr>
+    <td><img src="assets/imgs/pptx2docx_tab_dark_mode_windows.png" alt="Windows" width="400"></td>
+    <td><img src="assets/imgs/pptx2docx_ubuntu_dark.png" alt="Ubuntu" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center">Windows</td>
+    <td align="center">Ubuntu</td>
+  </tr>
+</table>
 
 1. Select your PowerPoint file
 2. Click "Convert!"
@@ -30,9 +55,18 @@ Launch the application and you'll see three tabs:
 
 **Demo Tab**
 
-<img src="assets/imgs/demo_tab_dark_mode_windows.png" alt="Demo tab - Windows" width="600">
-<img src="assets/imgs/demo_tab_mac.png" alt="Demo tab - macOS" width="600">
-<img src="assets/imgs/demo_ubuntu_dark.png" alt="Demo tab - Ubuntu" width="600">
+<table>
+  <tr>
+    <td><img src="assets/imgs/demo_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="assets/imgs/demo_tab_mac.png" alt="macOS" width="300"></td>
+    <td><img src="assets/imgs/demo_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center">Windows</td>
+    <td align="center">macOS</td>
+    <td align="center">Ubuntu</td>
+  </tr>
+</table>
 
 - Try sample conversions without selecting files
 - Test round-trip conversion (DOCX → PPTX → DOCX)
