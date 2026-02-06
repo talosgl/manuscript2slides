@@ -88,14 +88,7 @@ python -m nuitka \
 
 ### Testing the Build
 
-After building, test the executable:
-
-1. **Launch test**: Double-click `deploy\gui.dist\manuscript2slides.exe` - GUI should open without console window
-2. **Smoke test**: Run a full conversion workflow:
-   - File > Open > Select a .docx file
-   - Click "Convert to Slides"
-   - Verify output .pptx is created successfully
-3. **Portability test**: Copy the entire `gui.dist` folder to a different machine (or clean VM) without Python and verify it works
+After building, run through the full smoke test checklist in [manual-smoke-test.md](manual-smoke-test.md) to verify the binary works correctly.
 
 ### Troubleshooting
 
