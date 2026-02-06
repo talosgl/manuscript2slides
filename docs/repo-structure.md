@@ -15,7 +15,7 @@ manuscript2slides/
 ├──pyproject.toml                                 # Python project metadata, dependencies, and build system configuration
 ├──pytest.ini                                     # pytest test runner configuration and settings
 ├──requirements-binary-build.txt                  # Nuitka and other dependencies needed for building standalone binaries
-├──docs/                                          # User-facing documentation
+├──docs/                                          # User-facing documentation                                    
 |  ├──building.md                                 # Instructions for building Windows binaries with Nuitka
 |  ├──code-structure.md                           # Overview of codebase structure with file annotations
 |  ├──dev-guide.md                                # Developer guide for installation, testing, and contribution
@@ -23,10 +23,11 @@ manuscript2slides/
 |  ├──manual-smoke-test.md                        # Manual smoke test checklist for binary releases
 |  ├──releasing.md                                # Release process for PyPI packages and GitHub releases
 |  ├──troubleshooting.md                          # Troubleshooting guide for common issues
-|  └──user-guide.md                               # User guide for GUI and CLI usage
-├──src/
-|  └──manuscript2slides/
-|     ├──__init__.py                              # Package marker; handles version extraction from pyproject.toml
+|  ├──user-guide.md                               # User guide for GUI and CLI usage
+|  └──dev-process-archive/...                     # Archived process artifacts from during dev
+├──src/                                           # Top-level directory for main codebase source code; follows setuptools' suggested src-layout (https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#src-layout)
+|  └──manuscript2slides/                           
+|     ├──__init__.py                              # Package marker; also handles version extraction from pyproject.toml
 |     ├──__main__.py                              # Entry point for manuscript2slides desktop application.
 |     ├──cli.py                                   # CLI Interface Logic (argparse etc)
 |     ├──file_io.py                               # File I/O operations for docx and pptx files.
@@ -43,7 +44,7 @@ manuscript2slides/
 |     |  └──restore_from_slides.py                # Restore annotations from slide metadata.
 |     ├──archive/
 |     |  ├──__init__.py
-|     |  └──ui_tk.py                              # Tkinter and ttk GUI interface entry point.
+|     |  └──ui_tk.py                              # ARCHIVED: Tkinter and ttk GUI interface entry point. I'm just sentimental because it was my first GUI attempt.
 |     ├──internals/
 |     |  ├──__init__.py                           # Internal utilities and configuration for manuscript2slides.
 |     |  ├──constants.py                          # Application-wide constants and configuration values.
@@ -91,7 +92,8 @@ manuscript2slides/
    |  ├──test_define_config.py                    # Tests for UserConfig class definition file and related items.
    |  ├──test_manifest.py                         # Test the manifest system.
    |  └──test_scaffold.py                         # Tests to ensure the manuscript2slides directory structure gets created properly under the users' Documents.
-   └──processing/
-      ├──test_chunking.py                         # Tests for all chunking strategies as well as helpers that perform heading detection.
-      └──test_formatting.py                       # Tests for formatting in both pipeline directions.
+   ├──processing/
+   |  ├──test_chunking.py                         # Tests for all chunking strategies as well as helpers that perform heading detection.
+   |  └──test_formatting.py                       # Tests for formatting in both pipeline directions.
+   └──data/..., and baselines/..., tools/...      # Test fixture resources
 ```
