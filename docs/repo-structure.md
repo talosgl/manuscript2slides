@@ -5,7 +5,7 @@ This file provides an overview of the manuscript2slides codebase structure with 
 Last updated v0.1.5
 
 ---
-
+```
 manuscript2slides/
 ├──BUILD.md                                       # Documentation for building Windows binaries with Nuitka
 ├──MANIFEST.in                                    # Specifies additional files to include in Python source distributions
@@ -94,3 +94,4 @@ manuscript2slides/
    └──processing/
       ├──test_chunking.py                         # Tests for all chunking strategies as well as helpers that perform heading detection.
       └──test_formatting.py                       # Tests for formatting in both pipeline directions.
+```
