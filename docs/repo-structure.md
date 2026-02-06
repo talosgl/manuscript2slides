@@ -1,4 +1,4 @@
-# Code Structure
+# Repository Structure
 
 This file provides an overview of the manuscript2slides codebase structure with annotations explaining each file's purpose.
 
