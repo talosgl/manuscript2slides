@@ -17,9 +17,9 @@ git tag -a v<version> -m "Release v<version>: Description of changes"
 git push origin v<version>
 
 # GitHub Actions will automatically:
-# - Build Windows .exe
+# - Build Windows .exe and macOS .app
 # - Create GitHub Release
-# - Attach binary to release
+# - Attach both binaries to release
 ```
 
 ---
@@ -186,7 +186,7 @@ python -m manuscript2slides
 
 ## Automated Binary Builds (GitHub Actions)
 
-The repository includes a GitHub Actions workflow that automatically builds Windows binaries when you push a version tag.
+The repository includes a GitHub Actions workflow that automatically builds Windows and macOS binaries when you push a version tag.
 
 ### Workflow File
 
@@ -210,19 +210,48 @@ git push origin v<version>
 
 1. GitHub Actions detects the `v*.*.*` tag
 2. **Runs tests first** (on Ubuntu with Python 3.12)
-3. If tests pass, spins up a Windows runner
-4. Installs dependencies and Nuitka 2.7.11
-5. Runs `python build.py` (~15-20 minutes)
-6. Creates a GitHub Release with `manuscript2slides.exe` attached
-7. Release includes installation instructions
+3. If tests pass, spins up Windows and macOS runners **in parallel**
+4. Each runner installs dependencies, Nuitka 2.7.11, and runs `python build.py`
+5. Both runners upload their build artifacts
+6. A final release job downloads both artifacts, computes checksums, and creates a GitHub Release with both ZIPs attached
+7. Release includes platform-specific installation instructions
 
-**If tests fail**, the build is skipped and you'll get notified.
+**If tests fail**, both builds are skipped and you'll get notified.
+
+### Testing Builds Without a Public Release
+
+You can test the full build pipeline without creating a public release using workflow dispatch. This creates a **draft** release (only visible to logged-in contributors).
+
+**Option 1: GitHub Web UI**
+
+1. Go to [Actions](https://github.com/talosgl/manuscript2slides/actions)
+2. Click "Build Release" in the left sidebar
+3. Click "Run workflow" dropdown (top right)
+4. Enter a version string (e.g., `0.2.0-test`)
+5. Click "Run workflow"
+
+**Option 2: GitHub CLI**
+
+```bash
+gh workflow run build-release.yml -f version=0.2.0-test
+```
+
+**Accessing the draft release:**
+
+1. Go to the repository's [Releases page](https://github.com/talosgl/manuscript2slides/releases)
+2. Draft releases appear at the top with a "Draft" label
+3. Click the release to download the attached ZIP files
+4. Test the binaries locally (run through [manual-smoke-test.md](manual-smoke-test.md))
+
+**Managing drafts:**
+- **Publish**: Click "Edit" on the draft, then "Publish release" to make it visible to everyone
+- **Delete**: Click "Edit", scroll down, then "Delete this release"
 
 ### Monitoring the Build
 
 Watch build progress at: `https://github.com/talosgl/manuscript2slides/actions`
 
-**Build time**: ~15-20 minutes
+**Build time**: ~15-20 minutes per platform (both run in parallel)
 
 **If the build fails**:
 - Check the Actions tab for error logs
@@ -252,8 +281,8 @@ Before creating a release:
 
 After creating release tag:
 
-- [ ] Ensure GitHub Actions build succeeds
-- [ ] Download `.exe` from GitHub Release and smoke test
+- [ ] Ensure GitHub Actions build succeeds (both Windows and macOS)
+- [ ] Download binaries from GitHub Release and smoke test both platforms
 - [ ] (Optional) Publish to PyPI
 
 ---

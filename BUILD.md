@@ -20,30 +20,26 @@ See [docs/releasing.md](docs/releasing.md) for the full release process.
 
 ---
 
-## Windows Binary
+## Platform Binaries (Windows & macOS)
 
 ```bash
 # Install dependencies. Assumes you already have Python 3.12
 pip install -e .
 pip install Nuitka==2.7.11
 
-# Build
+# Build (auto-detects platform)
 python build.py
 ```
 
-**Output**: `deploy/gui.dist/` folder containing `manuscript2slides.exe` and dependencies (~100MB total)
+**Output**:
+- **Windows**: `deploy/gui.dist/` folder containing `manuscript2slides.exe` (~100MB total). Rename `gui.dist` to `manuscript2slides` before zipping.
+- **macOS**: `deploy/gui.app` bundle (~100MB). Rename to `manuscript2slides.app` before zipping.
 
-**For distribution**: Rename `gui.dist` to `manuscript2slides` before zipping for users
+**Note**: We use standalone mode (folder/bundle distribution) instead of single-file to reduce Windows Defender false positives.
 
-**Note**: We use standalone mode (folder distribution) instead of single-file to reduce Windows Defender false positives.
-
-**Requirements**: Python 3.10-3.12, Windows 10+
+**Requirements**: Python 3.12, Windows 10+ or macOS 15.0+ (Apple Silicon)
 
 See [docs/building.md](docs/building.md) for detailed instructions and troubleshooting.
-
-## macOS Binary
-
-Coming soon. See [docs/building.md](docs/building.md)
 
 ## Automated Releases
 
@@ -54,7 +50,7 @@ git tag -a v0.2.0 -m "Release v0.2.0: Description"
 git push origin v0.2.0
 ```
 
-GitHub Actions will build the Windows binary and create a release automatically.
+GitHub Actions will build both Windows and macOS binaries and create a release automatically.
 
 ### Test Binary Builds
 
@@ -68,7 +64,8 @@ This creates a draft release (only visible to logged-in contributors). To access
 
 1. Go to the repository's [Releases page](https://github.com/talosgl/manuscript2slides/releases)
 2. Draft releases appear at the top with a "Draft" label
-3. Click the release to download the attached `manuscript2slides-windows.zip`
+3. Click the release to download the attached ZIP files on each platform
+4. Run [docs/manual-smoke-test.md](docs/manual-smoke-test.md) on each build, per platform, to verify
 
 To publish or delete a draft:
 - **Publish**: Click "Edit" on the draft, then "Publish release" to make it visible to everyone

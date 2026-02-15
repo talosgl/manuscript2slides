@@ -18,15 +18,14 @@ Turn your Microsoft Word manuscripts into presentation slides (and back again), 
 
 ### Installation
 
-#### Option 1: Windows Binary (No Python Required)
+#### Option 1: Download Binary (No Python Required)
 
-Download the latest Windows binary from [Releases](https://github.com/talosgl/manuscript2slides/releases):
-1. Download `manuscript2slides-windows.zip`
-2. Extract and run `manuscript2slides.exe`
+Download the latest binary for your platform from [Releases](https://github.com/talosgl/manuscript2slides/releases):
+
+- **Windows**: Download `manuscript2slides-windows.zip`, extract, and run `manuscript2slides.exe`
+- **macOS (Apple Silicon)**: Download `manuscript2slides-macos.zip`, extract, right-click `manuscript2slides.app` and select "Open"
 
 **New to downloading from GitHub?** See a [step-by-step guide](https://github.com/talosgl/jojos-tech-guides/blob/main/docs/software/downloading-from-github.md).
-
-**Note:** macOS binaries coming soon.
 
 #### Option 2: Install via pip (Cross-platform)
 

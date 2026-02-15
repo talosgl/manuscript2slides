@@ -164,8 +164,14 @@ jobs:
             ### macOS (Apple Silicon)
             1. Download `manuscript2slides-macos.zip` and extract
             2. Right-click `manuscript2slides.app` and select "Open" (required for unsigned apps)
-            3. macOS will warn the app is from an unidentified developer - click "Open" to proceed.
-            4. When prompted to access your Documents folder, click "Allow" - the app stores its templates and sample files there
+            3. macOS will warn the app is from an unidentified developer. To proceed:
+              i. Click the upper-right question mark for the Apple help page on the topic.
+              ii. Click "Done" in the prompt to dismiss it.
+              iii. Open your macOS System Settings, go to Privacy & Security, and scroll down to Security.
+              iv. Note the message there: `"manuscript2slides" was blocked to protect your Mac.
+              v. Click "Open Anyway"; input your user account info if prompted.
+              vi. The app should now run normally, and should not prompt you again on subsequent launches unless you get a new version.
+            4. If prompted to access your Documents folder, click "Allow" - the app stores its templates and sample files there
             5. After the first launch, you can open it normally by double-clicking
             6. No Python installation required
 

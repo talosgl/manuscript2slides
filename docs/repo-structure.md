@@ -7,16 +7,17 @@ Last updated v0.1.5
 ---
 ```
 manuscript2slides/
-├──BUILD.md                                       # Documentation for building Windows binaries with Nuitka
+├──BUILD.md                                       # Quick reference for building platform binaries with Nuitka
 ├──MANIFEST.in                                    # Specifies additional files to include in Python source distributions
 ├──README.md                                      # Project overview, features, installation, and quick start guide
-├──build.py                                       # Build script for creating Windows binary executable using Nuitka.
+├──build.py                                       # Cross-platform build script for creating binaries using Nuitka
+├──nuitka-package.config.yaml                     # Nuitka build patches for python-pptx/docx path resolution on macOS
 ├──mypy.ini                                       # Type checking configuration for mypy static analyzer
 ├──pyproject.toml                                 # Python project metadata, dependencies, and build system configuration
 ├──pytest.ini                                     # pytest test runner configuration and settings
 ├──requirements-binary-build.txt                  # Nuitka and other dependencies needed for building standalone binaries
 ├──docs/                                          # User-facing documentation                                    
-|  ├──building.md                                 # Instructions for building Windows binaries with Nuitka
+|  ├──building.md                                 # Instructions for building platform binaries with Nuitka
 |  ├──code-structure.md                           # Overview of codebase structure with file annotations
 |  ├──dev-guide.md                                # Developer guide for installation, testing, and contribution
 |  ├──limitations.md                              # Known limitations and design constraints
