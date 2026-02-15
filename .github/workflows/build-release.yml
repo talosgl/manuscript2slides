@@ -1,4 +1,4 @@
-name: Build Windows Release
+name: Build Release
 
 on:
   push:
@@ -44,10 +44,8 @@ jobs:
           pytest
 
   build-windows:
-    needs: test # Only build if tests pass
+    needs: test
     runs-on: windows-latest
-    permissions:
-      contents: write # Mandatory for creating releases and uploading assets
 
     steps:
       - name: Checkout code
@@ -79,45 +77,117 @@ jobs:
           Compress-Archive -Path manuscript2slides -DestinationPath manuscript2slides-windows.zip
           cd ..
 
-      - name: Compute SHA256 checksum
-        id: checksum
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-zip
+          path: deploy/manuscript2slides-windows.zip
+
+  build-macos:
+    needs: test
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
         run: |
-          $hash = (Get-FileHash -Algorithm SHA256 deploy\manuscript2slides-windows.zip).Hash
-          echo "sha256=$hash" >> $env:GITHUB_OUTPUT
-          echo "SHA256: $hash"
+          pip install -e .
+          pip install Nuitka==2.7.11
+
+      - name: Build macOS app bundle
+        run: python build.py
+
+      - name: Rename app bundle
+        run: mv deploy/gui.app deploy/manuscript2slides.app
+
+      - name: Create distribution ZIP
+        run: |
+          cd deploy
+          zip -r manuscript2slides-macos.zip manuscript2slides.app
+          cd ..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-zip
+          path: deploy/manuscript2slides-macos.zip
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Compute SHA256 checksums
+        id: checksums
+        run: |
+          win_hash=$(sha256sum artifacts/windows-zip/manuscript2slides-windows.zip | awk '{print $1}')
+          mac_hash=$(sha256sum artifacts/macos-zip/manuscript2slides-macos.zip | awk '{print $1}')
+          echo "win_sha256=$win_hash" >> $GITHUB_OUTPUT
+          echo "mac_sha256=$mac_hash" >> $GITHUB_OUTPUT
+          echo "Windows SHA256: $win_hash"
+          echo "macOS SHA256: $mac_hash"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.version && format('v{0}', inputs.version) || github.ref_name }}
           draft: ${{ github.event_name == 'workflow_dispatch' }}
-          files: deploy/manuscript2slides-windows.zip
+          files: |
+            artifacts/windows-zip/manuscript2slides-windows.zip
+            artifacts/macos-zip/manuscript2slides-macos.zip
           generate_release_notes: true
           body: |
-            ## Windows Binary Release
+            ## Binary Releases
 
-            Download `manuscript2slides-windows.zip` below. **New to downloading from GitHub? Here's a [step-by-step guide](https://github.com/talosgl/jojos-tech-guides/blob/main/docs/software/downloading-from-github.md).**
+            Download the ZIP for your platform below. **New to downloading from GitHub? Here's a [step-by-step guide](https://github.com/talosgl/jojos-tech-guides/blob/main/docs/software/downloading-from-github.md).**
 
-            ### Installation
-            1. Download and extract the ZIP file (recommend [7-Zip](https://www.7-zip.org/))
+            ### Windows
+            1. Download `manuscript2slides-windows.zip` and extract (recommend [7-Zip](https://www.7-zip.org/))
             2. Run `manuscript2slides.exe` from the extracted folder
             3. Windows may show a security warning - click "More info" > "Run anyway"
             4. No Python installation required
 
-            ### (Optional) Verification
-            **SHA256 Checksum:** `${{ steps.checksum.outputs.sha256 }}`
+            ### macOS (Apple Silicon)
+            1. Download `manuscript2slides-macos.zip` and extract
+            2. Right-click `manuscript2slides.app` and select "Open" (required for unsigned apps)
+            3. macOS will warn the app is from an unidentified developer - click "Open" to proceed
+            4. After the first launch, you can open it normally by double-clicking
+            5. No Python installation required
 
-            To verify the download ([What are checksums?](https://www.howtogeek.com/363735/what-is-a-checksum-and-why-should-you-care/)):
+            ### (Optional) Verification
+            **Windows SHA256:** `${{ steps.checksums.outputs.win_sha256 }}`
+            **macOS SHA256:** `${{ steps.checksums.outputs.mac_sha256 }}`
+
+            To verify your download ([What are checksums?](https://www.howtogeek.com/363735/what-is-a-checksum-and-why-should-you-care/)):
             ```powershell
+            # Windows (PowerShell)
             Get-FileHash -Algorithm SHA256 manuscript2slides-windows.zip
+            ```
+            ```bash
+            # macOS (Terminal)
+            shasum -a 256 manuscript2slides-macos.zip
             ```
 
             Compare the output to the checksum above. They should match.
 
             ### Notes
-            - Unsigned binary - Windows SmartScreen may warn you the app and its publisher are unknown. This is common with open source apps. Click "More Info" to get the option to "Run anyway."
-            - ~100MB including full Python runtime
-            - Keep all files in the extracted folder together
-            - Tested on Windows 11
+            - Unsigned binaries - security warnings are normal for open source apps
+            - ~100MB each, including full Python runtime
+            - Windows: keep all files in the extracted folder together
+            - macOS: tested on Apple Silicon (M-series) Macs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
