@@ -1,6 +1,6 @@
 # Release Process
 
-This guide is for folks who need to publishing new manuscript2slides wheels to PyPi (`pip install` package site/host/distributor).
+This guide is for folks who need to publish new manuscript2slides wheels to PyPI (`pip install` package site/host/distributor) (Linux/Win/Mac), or who need to publish a new set of binaries (Windows/Mac) via GitHub Releases.
 
 ## Quick Reference
 
@@ -305,7 +305,7 @@ After creating release tag:
 
 ---
 
-## Post-Release: Rescope API Tokens (Recommended)
+## Post-Release: Rescope PyPI API Tokens (Recommended)
 
 After your first successful upload to PyPI, improve security by rescoping tokens:
 
