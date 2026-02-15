@@ -164,9 +164,10 @@ jobs:
             ### macOS (Apple Silicon)
             1. Download `manuscript2slides-macos.zip` and extract
             2. Right-click `manuscript2slides.app` and select "Open" (required for unsigned apps)
-            3. macOS will warn the app is from an unidentified developer - click "Open" to proceed
-            4. After the first launch, you can open it normally by double-clicking
-            5. No Python installation required
+            3. macOS will warn the app is from an unidentified developer - click "Open" to proceed.
+            4. When prompted to access your Documents folder, click "Allow" - the app stores its templates and sample files there
+            5. After the first launch, you can open it normally by double-clicking
+            6. No Python installation required
 
             ### (Optional) Verification
             **Windows SHA256:** `${{ steps.checksums.outputs.win_sha256 }}`
