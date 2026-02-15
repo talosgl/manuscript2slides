@@ -1,0 +1,30 @@
+- module-name: 'pptx.oxml'
+  anti-bloat:
+    - description: 'Fix template path resolution for compiled packages on macOS/Linux'
+      replacements_plain:
+        'os.path.join(thisdir, "..", "templates", "%s.xml" % template_name)': 'os.path.normpath(os.path.join(thisdir, "..", "templates", "%s.xml" % template_name))'
+
+- module-name: 'docx.parts.comments'
+  anti-bloat:
+    - description: 'Fix template path resolution for compiled packages on macOS/Linux'
+      replacements_plain:
+        'os.path.join(os.path.split(__file__)[0], "..", "templates", "default-comments.xml")': 'os.path.normpath(os.path.join(os.path.split(__file__)[0], "..", "templates", "default-comments.xml"))'
+
+- module-name: 'docx.parts.hdrftr'
+  anti-bloat:
+    - description: 'Fix template path resolution for compiled packages on macOS/Linux'
+      replacements_plain:
+        'os.path.join(os.path.split(__file__)[0], "..", "templates", "default-footer.xml")': 'os.path.normpath(os.path.join(os.path.split(__file__)[0], "..", "templates", "default-footer.xml"))'
+        'os.path.join(os.path.split(__file__)[0], "..", "templates", "default-header.xml")': 'os.path.normpath(os.path.join(os.path.split(__file__)[0], "..", "templates", "default-header.xml"))'
+
+- module-name: 'docx.parts.styles'
+  anti-bloat:
+    - description: 'Fix template path resolution for compiled packages on macOS/Linux'
+      replacements_plain:
+        'os.path.join(os.path.split(__file__)[0], "..", "templates", "default-styles.xml")': 'os.path.normpath(os.path.join(os.path.split(__file__)[0], "..", "templates", "default-styles.xml"))'
+
+- module-name: 'docx.parts.settings'
+  anti-bloat:
+    - description: 'Fix template path resolution for compiled packages on macOS/Linux'
+      replacements_plain:
+        'os.path.join(os.path.split(__file__)[0], "..", "templates", "default-settings.xml")': 'os.path.normpath(os.path.join(os.path.split(__file__)[0], "..", "templates", "default-settings.xml"))'

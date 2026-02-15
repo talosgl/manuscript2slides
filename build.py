@@ -10,7 +10,7 @@ def platform_helper() -> tuple:
     if sys.platform == "darwin":
         return ("--macos-create-app-bundle", "--macos-app-icon=none") # TODO: Remove second flag if/when we add a cross-platform icon for the app.
     else:
-        return ("--windows-console-mode=disable",)
+        return ("--windows-console-mode=disable","--output-filename=manuscript2slides")
     
 
 def build() -> int:
@@ -25,14 +25,14 @@ def build() -> int:
         "nuitka",
         "--standalone",  # Changed from --onefile to reduce antivirus false positives
         "--enable-plugin=pyside6",
+        "--user-package-configuration-file=nuitka-package.config.yaml",
         "--include-package-data=pptx",
         "--include-package-data=docx",
-        "--include-package-data=manuscript2slides",
+        "--include-package-data=manuscript2slides",        
         "--noinclude-qt-translations",
         "--assume-yes-for-downloads",
         *platform_helper(),
-        "--output-dir=deploy",
-        "--output-filename=manuscript2slides",
+        "--output-dir=deploy",        
         str(Path("src") / "manuscript2slides" / "gui.py"),
     ]
 
@@ -41,12 +41,12 @@ def build() -> int:
 
     if result.returncode == 0:
         print("\nPASS Build successful!")
-        ext = "exe"
         if sys.platform == "darwin":
-            ext = "app"
-
-        print(f"Output: {Path('deploy') / 'gui.dist' / f'manuscript2slides.{ext}'}")
-        print("\nTo distribute: ZIP the entire 'deploy/gui.dist' folder")
+            print(f"Output: {Path('deploy') / 'gui.app'}")
+            print("\nTo distribute: Rename gui.app to manuscript2slides.app, then ZIP it")
+        else:
+            print(f"Output: {Path('deploy') / 'gui.dist' / 'manuscript2slides.exe'}")
+            print("\nTo distribute: Rename gui.dist to manuscript2slides, then ZIP the folder")
     else:
         print("\nFAIL Build failed!")
         print("Check the output above for errors.")
