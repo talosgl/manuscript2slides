@@ -2,7 +2,7 @@
 
 This file provides an overview of the manuscript2slides codebase structure with annotations explaining each file's purpose.
 
-Last updated v0.1.5
+Last updated v0.1.6
 
 ---
 ```

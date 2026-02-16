@@ -24,7 +24,7 @@ Download the latest binary for your platform from [Releases](https://github.com/
 
 - **Windows**: Download `manuscript2slides-windows.zip`, extract, and run `manuscript2slides.exe`
 - **macOS (Apple Silicon)**: Download `manuscript2slides-macos.zip`, extract, right-click `manuscript2slides.app` and select "Open"
-- For both platforms, you'll need to allow the app to run unsigned on first launch. See [How to Allow First Launch of Downloaded Release Binary on GitHub (Windows, macOS)](docs/first-launch.md) for details.
+- For both platforms, you'll need to allow the app to run unsigned on first launch. See [How to Allow First Launch of Downloaded Release Binary on GitHub (Windows, macOS)](https://github.com/talosgl/manuscript2slides/blob/main/docs/first-launch.md) for details.
 
 **New to downloading from GitHub?** See a [step-by-step guide](https://github.com/talosgl/jojos-tech-guides/blob/main/docs/software/downloading-from-github.md).
 
@@ -57,9 +57,9 @@ manuscript2slides
     <td align="center">Ubuntu</td>
   </tr>
   <tr>
-    <td><img src="docs/assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
-    <td><img src="docs/assets/imgs/docx2pptx_mac.png" alt="macOS" width="300"></td>
-    <td><img src="docs/assets/imgs/docx2pptx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
+    <td><img src="https://raw.githubusercontent.com/talosgl/manuscript2slides/main/docs/assets/imgs/docx2pptx_tab_dark_mode_windows.png" alt="Windows" width="300"></td>
+    <td><img src="https://raw.githubusercontent.com/talosgl/manuscript2slides/main/docs/assets/imgs/docx2pptx_mac.png" alt="macOS" width="300"></td>
+    <td><img src="https://raw.githubusercontent.com/talosgl/manuscript2slides/main/docs/assets/imgs/docx2pptx_ubuntu_dark.png" alt="Ubuntu" width="300"></td>
   </tr>
 </table>
 
@@ -85,15 +85,15 @@ manuscript2slides-cli --demo-round-trip
 
 ## Detailed User Guide
 
-For a full walkthrough of all options (including screenshots, advanced settings, and round-trip examples), see the [User Guide](docs/user-guide.md).
+For a full walkthrough of all options (including screenshots, advanced settings, and round-trip examples), see the [User Guide](https://github.com/talosgl/manuscript2slides/blob/main/docs/user-guide.md).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/talosgl/manuscript2slides/blob/main/LICENSE)
 
 ## Acknowledgments
 
-Advanced text formatting features adapted from techniques used in 
+Advanced text formatting features adapted from techniques used in
 [md2pptx](https://github.com/MartinPacker/md2pptx) by Martin Packer (MIT License).
 
 Thanks to:
@@ -101,18 +101,18 @@ Thanks to:
 - Blog post: [A Qt GUI for Logging](https://plumberjack.blogspot.com/2019/11/a-qt-gui-for-logging.html) for showing how to use Py's logging library with PySide6/Qt
 - [StackOverflow answer](https://stackoverflow.com/questions/47666642/adding-an-hyperlink-in-msword-by-using-python-docx) and [GitHub discussion](https://github.com/python-openxml/python-docx/issues/384#issuecomment-294853130) for guidance on advanced techniques to add hyperlinks to docx runs
 
-For full licensing details, see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+For full licensing details, see [THIRD_PARTY_LICENSES.md](https://github.com/talosgl/manuscript2slides/blob/main/THIRD_PARTY_LICENSES.md).
 
 ## Known Limitations
 
-See [Known Limitations](docs/limitations.md) for a detailed list of current limitations, unsupported features, and known workarounds.
+See [Known Limitations](https://github.com/talosgl/manuscript2slides/blob/main/docs/limitations.md) for a detailed list of current limitations, unsupported features, and known workarounds.
 
 ## Troubleshooting
 
-If conversion fails or the GUI won't launch, see [Troubleshooting](docs/troubleshooting.md).
+If conversion fails or the GUI won't launch, see [Troubleshooting](https://github.com/talosgl/manuscript2slides/blob/main/docs/troubleshooting.md).
 
 
 # Development & Contributing
 
-To set up the project for development, see [Developer Guide](docs/dev-guide.md).
+To set up the project for development, see [Developer Guide](https://github.com/talosgl/manuscript2slides/blob/main/docs/dev-guide.md).
 
