@@ -1,6 +1,6 @@
 # Building manuscript2slides
 
-Quick reference for building pip packages and platform-specific binaries. See [docs/](docs/) for detailed documentation.
+Quick reference for locally building pip packages and platform-specific binaries. See [docs/](docs/) for detailed documentation.
 
 
 ## PyPI Package
@@ -39,9 +39,9 @@ python make_binary.py
 
 **Requirements**: Python 3.12, Windows 10+ or macOS 15.0+ (Apple Silicon)
 
-See [docs/building.md](docs/building.md) for detailed instructions and troubleshooting.
+See [docs/making-binaries.md](docs/making-binaries.md) for detailed instructions and troubleshooting.
 
-## Automated Releases
+## Automated Binary Releases
 
 Push a version tag to trigger automated builds:
 
@@ -52,24 +52,10 @@ git push origin v0.2.0
 
 GitHub Actions will build both Windows and macOS binaries and create a release automatically.
 
-### Test Binary Build Release
+### Draft Binary Build Release
 
 To test the build process without creating a public release, use manual workflow dispatch:
 
 ```bash
-gh workflow run build-release.yml -f version=0.2.0-test
+gh workflow run binary-release.yml -f version=0.2.0-test
 ```
-
-This creates a draft release (only visible to logged-in contributors). To access it:
-
-1. Go to the repository's [Releases page](https://github.com/talosgl/manuscript2slides/releases)
-2. Draft releases appear at the top with a "Draft" label
-3. Click the release to download the attached ZIP files on each platform
-4. Run [docs/manual-smoke-test.md](docs/manual-smoke-test.md) on each build, per platform, to verify
-
-To publish or delete a draft:
-- **Publish**: Click "Edit" on the draft, then "Publish release" to make it visible to everyone
-- **Delete**: Click "Edit", scroll down, then "Delete this release"
-
-See [docs/releasing.md](docs/releasing.md) for details.
-
