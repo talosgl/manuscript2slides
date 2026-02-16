@@ -1,28 +1,13 @@
-# Release Process
+# Release Workflow
 
-This guide is for folks who need to publish new manuscript2slides wheels to PyPI (`pip install` package site/host/distributor) (Linux/Win/Mac), or who need to publish a new set of binaries (Windows/Mac) via GitHub Releases.
+This guide covers:
+- publishing new new manuscript2slides wheels to PyPI (`pip install` package site/host/distributor) 
+- publishing new sets of binaries (Windows/Mac) via GitHub Releases
 
-## Quick Reference
+## Overview
+manuscript2slides is available on macOS, Windows, and Linux. All platforms can use `pip install manuscript2slides` if the user already has Python installed and is comfortable with pip packages. To update the version available for pip, follow the [PyPI Distribution](#pypi-distribution) section.
 
-**For a new release**:
-
-```bash
-# 1. Update version in pyproject.toml
-# 2. Commit changes
-git add .
-git commit -m "Bump version to <version>"
-
-# 3. Create and push tag
-git tag -a v<version> -m "Release v<version>: Description of changes"
-git push origin v<version>
-
-# GitHub Actions will automatically:
-# - Build Windows .exe and macOS .app
-# - Create GitHub Release
-# - Attach both binaries to release
-```
-
----
+Separately, we publish packaged binaries for Windows and macOS so that users do not need to know anything about Python. These are hosted on & downloadable via the Releases page for the repository on GitHub. To update these, follow the [Binary Builds](#packaged-binary-builds-for-windows--mac) section.
 
 ## PyPI Distribution
 
@@ -52,7 +37,7 @@ Save these tokens securely - you'll use them instead of passwords.
 
 ### Configure Credentials
 
-Option 1: Use `.pypirc` file (recommended):
+Option 1: Use `.pypirc` file. You can save just the username and not the password, if you prefer.
 
 Create `~/.pypirc` (Linux/Mac) or `%USERPROFILE%\.pypirc` (Windows):
 
@@ -141,7 +126,7 @@ python -m manuscript2slides  # Should launch GUI
 
 ### Fix and Reupload (if needed)
 
-If you find issues during TestPyPI testing:
+If you find issues during TestPyPI testing and need to re-upload:
 
 ```bash
 # 1. Bump version in pyproject.toml (e.g., 0.1.4 -> 0.1.5)
@@ -182,17 +167,26 @@ pip install --no-cache-dir manuscript2slides
 python -m manuscript2slides
 ```
 
+### Post-Release: Rescope PyPI API Tokens (Recommended)
+
+After your first successful upload to PyPI, improve security by rescoping tokens:
+
+1. Go to TestPyPI & PyPI settings
+2. Create new tokens scoped to `manuscript2slides` only (not account-wide)
+3. Delete the account-wide tokens
+4. Update `~/.pypirc` with the new project-scoped tokens
+
+**Why:** Project-scoped tokens can only upload to `manuscript2slides`, limiting damage if leaked.
+
 ---
 
-## Automated Binary Builds (GitHub Actions)
+## Packaged Binary Builds for Windows & Mac 
 
-The repository includes a GitHub Actions workflow that automatically builds Windows and macOS binaries when you push a version tag.
+For major changes, like Python version upgrades, it is best to build the binaries locally first (on Windows and Mac machines) and smoke test them. To do that, follow the [building.md](/building.md) guide. This guide will assume the current state of the repository's already been tested, and you're ready to trigger a new automated build to be releaseed on GitHub.
 
-### Workflow File
+The repository includes a GitHub Actions [workflow](../.github/workflows/build-release.yml) that automatically builds Windows and macOS binaries when you push a version tag.
 
-[.github/workflows/build-release.yml](../.github/workflows/build-release.yml)
-
-### Creating a Release
+### Kick a new Release Build
 
 ```bash
 # 1. Commit all your changes
@@ -211,14 +205,14 @@ git push origin v<version>
 1. GitHub Actions detects the `v*.*.*` tag
 2. **Runs tests first** (on Ubuntu with Python 3.12)
 3. If tests pass, spins up Windows and macOS runners **in parallel**
-4. Each runner installs dependencies, Nuitka 2.7.11, and runs `python build.py`
+4. Each runner installs dependencies, Nuitka 2.7.11, and runs `python make_binary.py`
 5. Both runners upload their build artifacts
 6. A final release job downloads both artifacts, computes checksums, and creates a GitHub Release with both ZIPs attached
 7. Release includes platform-specific installation instructions
 
 **If tests fail**, both builds are skipped and you'll get notified.
 
-### Testing Builds Without a Public Release
+### Testing Builds (Draft Release)
 
 You can test the full build pipeline without creating a public release using workflow dispatch. This creates a **draft** release (only visible to logged-in contributors).
 
@@ -256,7 +250,6 @@ Watch build progress at: `https://github.com/talosgl/manuscript2slides/actions`
 **If the build fails**:
 - Check the Actions tab for error logs
 - Common issues: missing dependencies, Python version mismatch
-- Test the build locally first with `python build.py` before pushing tags (see [building.md](building.md))
 
 ---
 
@@ -268,50 +261,3 @@ We use [Semantic Versioning](https://semver.org/):
 - **v0.1.0 -> v0.2.0**: Minor (new features, backwards compatible)
 - **v0.1.0 -> v1.0.0**: Major (breaking changes, stable release)
 
----
-
-## Release Checklist
-
-Before creating a release:
-
-- [ ] All tests pass (`pytest`)
-- [ ] Version updated in `pyproject.toml`
-- [ ] Binary builds successfully locally
-- [ ] Git working tree is clean (`git status`)
-
-After creating release tag:
-
-- [ ] Ensure GitHub Actions build succeeds (both Windows and macOS)
-- [ ] Download binaries from GitHub Release and smoke test both platforms
-- [ ] (Optional) Publish to PyPI
-
----
-
-## Troubleshooting
-
-**"Tag already exists"**
-- You can't reuse tag names
-- Delete the tag locally and remotely:
-  ```bash
-  git tag -d v<version>
-  git push origin :refs/tags/v<version>
-  ```
-- Create a new tag with incremented version
-
-**GitHub Actions build fails**
-- Check logs at https://github.com/talosgl/manuscript2slides/actions
-- Common fix: Test `python build.py` locally first
-- See [building.md](building.md) for troubleshooting build errors
-
----
-
-## Post-Release: Rescope PyPI API Tokens (Recommended)
-
-After your first successful upload to PyPI, improve security by rescoping tokens:
-
-1. Go to TestPyPI & PyPI settings
-2. Create new tokens scoped to `manuscript2slides` only (not account-wide)
-3. Delete the account-wide tokens
-4. Update `~/.pypirc` with the new project-scoped tokens
-
-**Why:** Project-scoped tokens can only upload to `manuscript2slides`, limiting damage if leaked.

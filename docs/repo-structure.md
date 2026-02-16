@@ -10,7 +10,7 @@ manuscript2slides/
 ├──BUILD.md                                       # Quick reference for building platform binaries with Nuitka
 ├──MANIFEST.in                                    # Specifies additional files to include in Python source distributions
 ├──README.md                                      # Project overview, features, installation, and quick start guide
-├──build.py                                       # Cross-platform build script for creating binaries using Nuitka
+├──make_binary.py                                 # Cross-platform build script for creating binaries using Nuitka
 ├──nuitka-package.config.yaml                     # Nuitka build patches for python-pptx/docx path resolution on macOS
 ├──mypy.ini                                       # Type checking configuration for mypy static analyzer
 ├──pyproject.toml                                 # Python project metadata, dependencies, and build system configuration

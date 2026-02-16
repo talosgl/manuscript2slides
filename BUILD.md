@@ -28,12 +28,12 @@ pip install -e .
 pip install Nuitka==2.7.11
 
 # Build (auto-detects platform)
-python build.py
+python make_binary.py
 ```
 
-**Output**:
-- **Windows**: `deploy/gui.dist/` folder containing `manuscript2slides.exe` (~100MB total). Rename `gui.dist` to `manuscript2slides` before zipping.
-- **macOS**: `deploy/gui.app` bundle (~100MB). Rename to `manuscript2slides.app` before zipping.
+**Local Output**:
+- **Windows**: `deploy/gui.dist/` folder containing `manuscript2slides.exe` (~100MB total). 
+- **macOS**: `deploy/gui.app` bundle (~100MB).
 
 **Note**: We use standalone mode (folder/bundle distribution) instead of single-file to reduce Windows Defender false positives.
 
@@ -52,7 +52,7 @@ git push origin v0.2.0
 
 GitHub Actions will build both Windows and macOS binaries and create a release automatically.
 
-### Test Binary Builds
+### Test Binary Build Release
 
 To test the build process without creating a public release, use manual workflow dispatch:
 

@@ -1,6 +1,6 @@
 # Building Binaries
 
-This guide is for folks who want to build new standalone executables (OS-specific binaries) for manuscript2slides.
+Extremely detailed guide for making new standalone executables (OS-specific binaries for macOS and Windows) for manuscript2slides.
 
 ## Windows Binary
 
@@ -33,7 +33,7 @@ pip install -e .
 pip install Nuitka==2.7.11
 
 # 4. Run the build
-python build.py
+python make_binary.py
 ```
 
 **Build time**: ~15-20 minutes on first build, ~10-15 minutes on subsequent builds.
@@ -62,12 +62,12 @@ To prepare for distribution:
 
 The GitHub Actions workflow does this automatically on release tags.
 
-### Build Script
+### make_binary Script
 
-The repository includes [build.py](../build.py), which wraps the Nuitka command with platform detection:
+The repository includes [make_binary.py](../make_binary.py), which wraps the Nuitka command with platform detection:
 
 ```python
-python build.py
+python make_binary.py
 ```
 
 This is the recommended way to build. The script automatically detects the platform and applies the correct flags (e.g., `--macos-create-app-bundle` on macOS, `--windows-console-mode=disable` on Windows).
@@ -92,7 +92,7 @@ After building, run through the full smoke test checklist in [manual-smoke-test.
 
 **"Missing file" errors at runtime**
 - A library needs data files that weren't bundled
-- Add `--include-package-data=<package_name>` flag to [build.py](../build.py) and rebuild
+- Add `--include-package-data=<package_name>` flag to [make_binary.py](../make_binary.py) and rebuild
 
 **Windows Defender blocks build**
 - Antivirus may block Nuitka's resource bundling
@@ -125,7 +125,7 @@ After building, run through the full smoke test checklist in [manual-smoke-test.
 - Don't name your modules after Python stdlib modules (io, sys, os, etc.)
 
 **Missing templates (pptx/docx)**
-- Ensure `--include-package-data=pptx` and `--include-package-data=docx` flags are present in [build.py](../build.py)
+- Ensure `--include-package-data=pptx` and `--include-package-data=docx` flags are present in [make_binary.py](../make_binary.py)
 - These bundle the XML templates that python-pptx and python-docx need
 
 #### Template path resolution (macOS)
@@ -185,7 +185,7 @@ pip install -e .
 pip install Nuitka==2.7.11
 
 # 4. Run the build
-python build.py
+python make_binary.py
 ```
 
 **Build time**: ~15-20 minutes on first build, faster on subsequent builds with ccache.
