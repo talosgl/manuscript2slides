@@ -17,12 +17,14 @@ manuscript2slides/
 ├──pytest.ini                                     # pytest test runner configuration and settings
 ├──requirements-binary-build.txt                  # Nuitka and other dependencies needed for building standalone binaries
 ├──docs/                                          # User-facing documentation
+|  ├──dev-guide.md                                # Developer guide for installation, testing, and contribution
+|  ├──first-launch.md                             # Platform-specific instructions for first launch of unsigned binaries
+|  ├──limitations.md                              # Known limitations and design constraints
 |  ├──making-binaries.md                          # Instructions for building platform binaries with Nuitka
 |  ├──making-pypi-wheels.md                       # Instructions for building PyPI wheels
-|  ├──dev-guide.md                                # Developer guide for installation, testing, and contribution
-|  ├──limitations.md                              # Known limitations and design constraints
 |  ├──manual-smoke-test.md                        # Manual smoke test checklist for binary releases
 |  ├──releasing.md                                # Release process for PyPI packages and GitHub releases
+|  ├──repo-structure.md                           # This file - overview of codebase structure with annotations
 |  ├──troubleshooting.md                          # Troubleshooting guide for common issues
 |  ├──user-guide.md                               # User guide for GUI and CLI usage
 |  └──dev-process-archive/...                     # Archived process artifacts from during dev
