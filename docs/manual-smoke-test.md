@@ -4,13 +4,13 @@ Basic checklist to verify core functionality, especially for binary output.
 
 ## Pre-Installation
 
-- [ ] Download `manuscript2slides-windows.zip` from GitHub Releases
-- [ ] Verify checksum matches the SHA256 hash in release notes
+- [ ] Download the platform zip from GitHub Releases
+- [ ] Verify checksum matches the hash in release notes
 - [ ] Extract zip successfully (no errors)
 
 ## Launch
 
-- [ ] `manuscript2slides.exe` launches without errors
+- [ ] `manuscript2slides.exe`/`manuscript2slides.app` launches without errors
 - [ ] GUI opens and displays three tabs (DOCX → PPTX, PPTX → DOCX, Demo)
 
 ## DOCX → PPTX Tab

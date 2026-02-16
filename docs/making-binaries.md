@@ -106,7 +106,7 @@ If you see `[Errno 2] No such file or directory` errors referencing `../template
 - **Why not pyside6-deploy?** We tried it first, but it ignored config file settings. Direct Nuitka gives us full control.
 - **Onefile vs Standalone mode**: We use `--standalone` on both platforms.
 - **Console mode** (Windows): `--windows-console-mode=disable` prevents a console window from appearing on launch. Unnecessary on Mac.
-- **Code signing**: Not currently implemented for either platform. Windows users will see a SmartScreen warning; macOS users need to right-click > Open on first launch. See the [macOS Binary](#macos-binary) section for details. If this is a barrier for you, [open an issue](https://github.com/talosgl/manuscript2slides/issues).
+- **Code signing**: Not currently implemented for either platform. Windows users will see a SmartScreen warning; macOS users need to right-click > Open on first launch. See [First Launch Guide](first-launch.md) for details. If this is a barrier for you, [open an issue](https://github.com/talosgl/manuscript2slides/issues).
 
 ---
 
@@ -122,6 +122,6 @@ After building, run through the full smoke test checklist in [manual-smoke-test.
 
 
 ## Distribution
-We don't distribute manually/locally build binaries, we use GitHub Actions to output to the releases page of the repo. One thing we'd need to do, if we *were* going to distribute local output, is zip up the output of the script and name it appropriately. But the GitHub Actions workflow does this automatically for both platforms. See [releasing](/docs/releasing.md).
+We don't distribute manually/locally build binaries, we use GitHub Actions to output to the releases page of the repo. One thing we'd need to do, if we *were* going to distribute local output, is zip up the output of the script and name it appropriately. But the GitHub Actions workflow does this automatically for both platforms. See [releasing](releasing.md).
 
 

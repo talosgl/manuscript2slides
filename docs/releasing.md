@@ -7,7 +7,7 @@ This guide covers:
 ## Overview
 manuscript2slides is available on macOS, Windows, and Linux. All platforms can use `pip install manuscript2slides` if the user already has Python installed and is comfortable with pip packages. To update the version available for pip, follow the [PyPI Distribution](#pypi-distribution) section.
 
-Separately, we publish packaged binaries for Windows and macOS so that users do not need to know anything about Python. These are hosted on & downloadable via the Releases page for the repository on GitHub. To update these, follow the [Binary Builds](#packaged-binary-builds-for-windows--mac) section.
+Separately, we publish packaged binaries for Windows and macOS so that users do not need to know anything about Python. These are hosted on & downloadable via the Releases page for the repository on GitHub. To update these, follow the [Binary Builds](#packaged-binary-builds-for-windows-mac) section.
 
 ## PyPI Distribution
 
@@ -16,13 +16,20 @@ Publishing the Python package to PyPI allows users to install with `pip install 
 
 ### Re-publish to PyPI (Production)
 
-#TODO: add short republish steps here.
+For first-time PyPI publishing, see [making-pypi-wheels.md](making-pypi-wheels.md). For subsequent releases:
+
+```bash
+# 1. Update version in pyproject.toml
+# 2. Build and upload
+python -m build
+python -m twine upload dist/*
+```
 
 ---
 
 ## Packaged Binary Builds for Windows & Mac 
 
-For major changes, like Python version upgrades, it is best to build the binaries locally first (on Windows and Mac machines) and smoke test them. To do that, follow the [making-binaries.md](/docs/making-binaries.md) guide. This guide will assume the current state of the repository's already been tested, and you're ready to trigger a new automated build to be released on GitHub.
+For major changes, like Python version upgrades, it is best to build the binaries locally first (on Windows and Mac machines) and smoke test them. To do that, follow the [making-binaries.md](making-binaries.md) guide. This guide will assume the current state of the repository's already been tested, and you're ready to trigger a new automated build to be released on GitHub.
 
 The repository includes a GitHub Actions [workflow](../.github/workflows/binary-release.yml) that automatically builds Windows and macOS binaries when you push a version tag.
 

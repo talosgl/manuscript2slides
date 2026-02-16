@@ -68,6 +68,9 @@ $env:MANUSCRIPT2SLIDES_USER_DIR="C:\path\to\custom\dir"
 - **MANUSCRIPT2SLIDES_DEBUG**: Enable debug mode for additional validation and logging (developer use)
 - **MANUSCRIPT2SLIDES_USER_DIR**: Override the default user directory (`~/.manuscript2slides`), useful for testing with isolated environments
 
+## Building packages locally
+See [making-binaries.md](making-binaries.md) and [making-pypi-wheels.md](making-pypi-wheels.md). To understand the package release process, see [releasing.md](releasing.md).
+
 ## Contributing
 
 Contributions are welcome. Please feel free to:
@@ -88,17 +91,7 @@ On Windows, you'll need to install Python from python.org. That'll include Pytho
 
 Macs have Python preinstalled, but we recommend installing from python.org for the latest version.
 
-Linux usually has Python preinstalled, too. However, you may need to install some system packages for Qt dependencies.
-
-### Ubuntu/Debian
-```bash
-sudo apt install libxcb-xinerama0 libxcb-cursor0
-```
-
-### Fedora/RHEL
-```bash
-sudo dnf install xcb-util-cursor
-```
+Linux usually has Python preinstalled, too. However, you may need to install some system packages for Qt dependencies. See [Requirements in the User Guide](user-guide.md#linux-specific-dependencies) for Qt dependency installation.
 
 ## Troubleshooting
 

@@ -1,6 +1,10 @@
 
 ## Usage
 
+### First Launch on Mac & Windows
+If you're on macOS or Windows and using a download from the releases page on GitHub (instead of pip), you'll need to take some extra steps to allow the program to run. See [How to Allow First Launch of Downloaded Release Binary on GitHub (Windows, macOS)](first-launch.md).
+
+
 ### GUI Mode (Default)
 
 Launch the application and you'll see three tabs:

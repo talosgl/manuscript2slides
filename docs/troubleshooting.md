@@ -1,16 +1,8 @@
 ## Troubleshooting
 
-### Windows SmartScreen Warning
+### Windows SmartScreen Warning / MacOS Gatekeeper Warning
 
-When launching the Windows binary for the first time, you may see a SmartScreen warning:
-
-<img src="assets/imgs/win_smart_screen_popup.png" alt="Windows SmartScreen popup" width="500">
-
-This is normal for unsigned applications. Click "More info":
-
-<img src="assets/imgs/win_smart_screen_more_info.png" alt="Windows SmartScreen more info" width="500">
-
-Then click "Run anyway" to launch the application.
+See [How to Allow First Launch of Downloaded Release Binary on GitHub (Windows, macOS)](first-launch.md)
 
 ### GUI won't launch
 

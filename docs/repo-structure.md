@@ -16,9 +16,9 @@ manuscript2slides/
 ├──pyproject.toml                                 # Python project metadata, dependencies, and build system configuration
 ├──pytest.ini                                     # pytest test runner configuration and settings
 ├──requirements-binary-build.txt                  # Nuitka and other dependencies needed for building standalone binaries
-├──docs/                                          # User-facing documentation                                    
-|  ├──building.md                                 # Instructions for building platform binaries with Nuitka
-|  ├──code-structure.md                           # Overview of codebase structure with file annotations
+├──docs/                                          # User-facing documentation
+|  ├──making-binaries.md                          # Instructions for building platform binaries with Nuitka
+|  ├──making-pypi-wheels.md                       # Instructions for building PyPI wheels
 |  ├──dev-guide.md                                # Developer guide for installation, testing, and contribution
 |  ├──limitations.md                              # Known limitations and design constraints
 |  ├──manual-smoke-test.md                        # Manual smoke test checklist for binary releases
