@@ -12,6 +12,8 @@ This is normal for unsigned applications. Click "More info":
 
 Then click "Run anyway" to launch the application.
 
+▶️ [Video - Run Application Blocked by Windows Smart Screen](https://youtu.be/JnQbOfr9rP8)
+
 ### MacOS First Launch (unsigned app)
 
 Since the app is not signed or notarized:
@@ -26,3 +28,5 @@ Since the app is not signed or notarized:
    6. The app should now run normally, and should not prompt you again on subsequent launches unless you get a new version.
 3. When prompted to access your Documents folder, click "Allow" - the app stores its templates and sample files there
 4. After the first launch, you can open it normally by double-clicking
+
+▶️ [Video - Run App Blocked by macOS Security](https://youtu.be/W70Yxx62Vrc)
