@@ -25,8 +25,8 @@ Download the latest binary for your platform from [Releases](https://github.com/
 - **Windows**: Download `manuscript2slides-windows.zip`, extract, and run `manuscript2slides.exe`
 - **macOS (Apple Silicon)**: Download `manuscript2slides-macos.zip`, extract, right-click `manuscript2slides.app` and select "Open"
 - For both platforms, you'll need to allow the app to run unsigned on first launch. See [How to Allow First Launch of Downloaded Release Binary on GitHub (Windows, macOS)](https://github.com/talosgl/manuscript2slides/blob/main/docs/first-launch.md) for details, or the following videos:
-- [Video - Run Application Blocked by Windows Smart Screen](https://youtu.be/JnQbOfr9rP8)
-- [Video - Run App Blocked by macOS Security](https://youtu.be/W70Yxx62Vrc)
+  - [Video - Run Application Blocked by Windows Smart Screen](https://youtu.be/JnQbOfr9rP8)
+  - [Video - Run App Blocked by macOS Security](https://youtu.be/W70Yxx62Vrc)
 
 
 **New to downloading from GitHub?** See a [step-by-step guide](https://github.com/talosgl/jojos-tech-guides/blob/main/docs/software/downloading-from-github.md).
@@ -118,5 +118,6 @@ If conversion fails or the GUI won't launch, see [Troubleshooting](https://githu
 # Development & Contributing
 
 To set up the project for development, see [Developer Guide](https://github.com/talosgl/manuscript2slides/blob/main/docs/dev-guide.md).
+
 
 
